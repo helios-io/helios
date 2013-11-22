@@ -12,13 +12,13 @@ namespace Helios.Core.Topology
         /// <summary>
         /// The list of active nodes in this cluster
         /// </summary>
-        public IList<INode> Nodes { get; private set; }
+        public IList<INode> ActiveNodes { get; private set; }
 
         #region IEnumerable<INode> members
 
         public IEnumerator<INode> GetEnumerator()
         {
-            return Nodes.GetEnumerator();
+            return ActiveNodes.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

@@ -44,14 +44,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Connectivity\NetworkMonitoringConstants.cs" />
+    <Compile Include="Connectivity\NodeHeartBeat.cs" />
     <Compile Include="Ops\IOperationResult.cs" />
     <Compile Include="Ops\OperationResult.cs" />
+    <Compile Include="Connectivity\Timeouts\INodeHealthPolicy.cs" />
+    <Compile Include="Connectivity\ConnectivityCheck.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Topology\INode.cs" />
     <Compile Include="Topology\Node.cs" />
     <Compile Include="Topology\NodeBuilder.cs" />
     <Compile Include="Topology\NodeCapability.cs" />
+    <Compile Include="Topology\NodeCluster.cs" />
     <Compile Include="Topology\TransportType.cs" />
+    <Compile Include="Util\Collections\ConcurrentFixedSizeStack.cs" />
+    <Compile Include="Util\Collections\FixedSizeStack.cs" />
     <Compile Include="Util\NullGuard.cs" />
   </ItemGroup>
   <ItemGroup>
