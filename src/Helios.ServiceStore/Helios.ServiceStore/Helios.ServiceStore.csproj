@@ -42,6 +42,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IOperationResult.cs" />
+    <Compile Include="NullGuard.cs" />
+    <Compile Include="OperationResult.cs" />
+    <Compile Include="Persistence\InMemory\InMemoryServiceStore.cs" />
     <Compile Include="Persistence\IServiceStore.cs" />
     <Compile Include="ServiceDefinition.cs" />
     <Compile Include="IServiceDefinition.cs" />

@@ -36,6 +36,12 @@ namespace Helios.ServiceStore
         /// </summary>
         public long LastPulse { get; set; }
 
+        public override int GetHashCode()
+        {
+            var hashCode = Host.GetHashCode();
+            return hashCode;
+        }
+
         public Node()
         {
             Capabilities = new List<NodeCapability>();

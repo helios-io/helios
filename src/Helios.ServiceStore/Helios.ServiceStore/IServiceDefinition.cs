@@ -1,8 +1,9 @@
+using System;
 using System.Collections.Generic;
 
 namespace Helios.ServiceStore
 {
-    public interface IServiceDefinition
+    public interface IServiceDefinition : ICloneable
     {
         /// <summary>
         /// The name of the service - used as the primary lookup criteria
