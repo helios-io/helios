@@ -42,13 +42,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Definition\ServiceDefinition.cs" />
-    <Compile Include="Definition\IServiceDefinition.cs" />
+    <Compile Include="ServiceDefinition.cs" />
+    <Compile Include="IServiceDefinition.cs" />
+    <Compile Include="ServiceDefinitionBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Definition\INode.cs" />
-    <Compile Include="Definition\NodeCapability.cs" />
-    <Compile Include="Definition\Node.cs" />
-    <Compile Include="Definition\NodeBuilder.cs" />
+    <Compile Include="INode.cs" />
+    <Compile Include="NodeCapability.cs" />
+    <Compile Include="Node.cs" />
+    <Compile Include="NodeBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

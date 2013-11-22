@@ -1,4 +1,4 @@
-﻿namespace Helios.ServiceStore.Definition
+﻿namespace Helios.ServiceStore
 {
     /// <summary>
     /// Describes some of the capabilities of the node

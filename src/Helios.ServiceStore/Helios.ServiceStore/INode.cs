@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 
-namespace Helios.ServiceStore.Definition
+namespace Helios.ServiceStore
 {
     public interface INode
     {

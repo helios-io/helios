@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Helios.ServiceStore.Definition
+namespace Helios.ServiceStore
 {
     public interface IServiceDefinition
     {
@@ -18,12 +18,6 @@ namespace Helios.ServiceStore.Definition
         /// <summary>
         /// The list of available nodes in this service
         /// </summary>
-        IList<Node> Nodes { get; }
-
-        /// <summary>
-        /// A DateTime.Ticks representation of the last time we heard anything
-        /// from a node in this service
-        /// </summary>
-        long LastPulse { get; set; }
+        IList<INode> Nodes { get; }
     }
 }

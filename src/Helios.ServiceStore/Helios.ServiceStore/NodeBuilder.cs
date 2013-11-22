@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using Newtonsoft.Json;
 
-namespace Helios.ServiceStore.Definition
+namespace Helios.ServiceStore
 {
     /// <summary>
     /// Static builder class for creating INode instances
