@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 
-namespace Helios.ServiceStore.Seeds
+namespace Helios.ServiceStore.Definition
 {
     /// <summary>
     /// Node belonging to a service
     /// </summary>
-    public class SeedNode
+    public class Node : INode
     {
         /// <summary>
         /// The IP address of this seed
@@ -17,6 +17,9 @@ namespace Helios.ServiceStore.Seeds
         /// The name of this machine
         /// </summary>
         public string MachineName { get; set; }
+
+        public string OS { get; set; }
+        public string ServiceVersion { get; set; }
 
         /// <summary>
         /// All of the exposed capabilities of this node
@@ -33,7 +36,7 @@ namespace Helios.ServiceStore.Seeds
         /// </summary>
         public long LastPulse { get; set; }
 
-        public SeedNode()
+        public Node()
         {
             Capabilities = new List<NodeCapability>();
         }

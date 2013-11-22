@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Helios.ServiceStore.Seeds
+﻿namespace Helios.ServiceStore.Definition
 {
     /// <summary>
     /// Describes some of the capabilities of the node
@@ -20,5 +14,10 @@ namespace Helios.ServiceStore.Seeds
         /// The name of this capability. I.E. "Thrift", "RDP", "SSH", "FTP", etc...
         /// </summary>
         public string Capability { get; set; }
+
+        public static NodeCapability Create(int portNum, string capabilityName)
+        {
+            return new NodeCapability() {Capability = capabilityName, Port = portNum};
+        }
     }
 }

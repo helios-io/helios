@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 
-namespace Helios.ServiceStore.Seeds
+namespace Helios.ServiceStore.Definition
 {
     /// <summary>
     /// Entity which represents a service that can be discovered
     /// </summary>
-    public class DiscoverableService
+    public class ServiceDefinition : IServiceDefinition
     {
         /// <summary>
         /// The name of the service - used as the primary lookup criteria
@@ -21,7 +21,7 @@ namespace Helios.ServiceStore.Seeds
         /// <summary>
         /// The list of available nodes in this service
         /// </summary>
-        public IList<SeedNode> Nodes { get; private set; }
+        public IList<Node> Nodes { get; private set; }
 
         /// <summary>
         /// A DateTime.Ticks representation of the last time we heard anything
@@ -29,9 +29,9 @@ namespace Helios.ServiceStore.Seeds
         /// </summary>
         public long LastPulse { get; set; }
 
-        public DiscoverableService()
+        public ServiceDefinition()
         {
-            Nodes = new List<SeedNode>();
+            Nodes = new List<Node>();
         }
     }
 }

@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -39,10 +42,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Seeds\DiscoverableService.cs" />
+    <Compile Include="Definition\ServiceDefinition.cs" />
+    <Compile Include="Definition\IServiceDefinition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Seeds\NodeCapability.cs" />
-    <Compile Include="Seeds\SeedNode.cs" />
+    <Compile Include="Definition\INode.cs" />
+    <Compile Include="Definition\NodeCapability.cs" />
+    <Compile Include="Definition\Node.cs" />
+    <Compile Include="Definition\NodeBuilder.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
