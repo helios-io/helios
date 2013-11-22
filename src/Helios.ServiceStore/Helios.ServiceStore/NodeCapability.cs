@@ -15,9 +15,11 @@
         /// </summary>
         public string Capability { get; set; }
 
-        public static NodeCapability Create(int portNum, string capabilityName)
+        public TransportType TransportType { get; set; }
+
+        public static NodeCapability Create(int portNum, string capabilityName, TransportType transportType)
         {
-            return new NodeCapability() {Capability = capabilityName, Port = portNum};
+            return new NodeCapability() {Capability = capabilityName, Port = portNum, TransportType = transportType};
         }
     }
 }

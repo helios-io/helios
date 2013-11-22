@@ -18,6 +18,6 @@ namespace Helios.ServiceStore
         /// <summary>
         /// The list of available nodes in this service
         /// </summary>
-        IList<INode> Nodes { get; }
+        ISet<INode> Nodes { get; }
     }
 }

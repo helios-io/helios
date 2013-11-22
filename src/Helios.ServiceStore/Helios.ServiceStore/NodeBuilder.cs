@@ -98,10 +98,11 @@ namespace Helios.ServiceStore
         /// <param name="n">A valid INode instance</param>
         /// <param name="portNum">the port number for this capabiltiy</param>
         /// <param name="capabilityName">the name of this capabiltiy</param>
+        /// <param name="transportType">the type of network connection used by this capability</param>
         /// <returns>A valid node</returns>
-        public static INode WithCapability(this INode n, int portNum, string capabilityName)
+        public static INode WithCapability(this INode n, int portNum, string capabilityName, TransportType transportType)
         {
-            n.Capabilities.Add(NodeCapability.Create(portNum, capabilityName));
+            n.Capabilities.Add(NodeCapability.Create(portNum, capabilityName, transportType));
             return n;
         }
 

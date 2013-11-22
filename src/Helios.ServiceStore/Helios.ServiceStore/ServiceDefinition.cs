@@ -21,11 +21,11 @@ namespace Helios.ServiceStore
         /// <summary>
         /// The list of available nodes in this service
         /// </summary>
-        public IList<INode> Nodes { get; private set; }
+        public ISet<INode> Nodes { get; private set; }
 
         public ServiceDefinition()
         {
-            Nodes = new List<INode>();
+            Nodes = new HashSet<INode>();
         }
     }
 }

@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Persistence\IServiceStore.cs" />
     <Compile Include="ServiceDefinition.cs" />
     <Compile Include="IServiceDefinition.cs" />
     <Compile Include="ServiceDefinitionBuilder.cs" />
@@ -50,6 +51,7 @@
     <Compile Include="NodeCapability.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="NodeBuilder.cs" />
+    <Compile Include="TransportType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
