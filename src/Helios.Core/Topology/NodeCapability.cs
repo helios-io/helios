@@ -1,4 +1,4 @@
-﻿namespace Helios.ServiceStore
+﻿namespace Helios.Core.Topology
 {
     /// <summary>
     /// Describes some of the capabilities of the node

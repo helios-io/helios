@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-namespace Helios.ServiceStore
+
+namespace Helios.Core.Ops
 {
     /// <summary>
     /// Returns meta-data used to process the results of critical operations, such

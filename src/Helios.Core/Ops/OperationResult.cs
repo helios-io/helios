@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Helios.ServiceStore
+namespace Helios.Core.Ops
 {
     public class OperationResult : IOperationResult
     {

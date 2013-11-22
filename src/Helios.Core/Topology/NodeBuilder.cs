@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using Newtonsoft.Json;
 
-namespace Helios.ServiceStore
+namespace Helios.Core.Topology
 {
     /// <summary>
     /// Static builder class for creating INode instances

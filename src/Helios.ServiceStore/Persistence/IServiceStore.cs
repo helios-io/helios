@@ -1,4 +1,6 @@
 ﻿using System.Net;
+using Helios.Core.Ops;
+using Helios.Core.Topology;
 
 namespace Helios.ServiceStore.Persistence
 {

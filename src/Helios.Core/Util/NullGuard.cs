@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.ServiceStore
+namespace Helios.Core.Util
 {
     /// <summary>
     /// A static helper class for protecting against pesky null reference errors

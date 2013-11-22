@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Helios.ServiceStore
+namespace Helios.Core.Topology
 {
     /// <summary>
     /// The type of transport used for a given node capability

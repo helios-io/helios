@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Helios.Core.Topology;
 
 namespace Helios.ServiceStore
 {
