@@ -84,11 +84,11 @@ namespace Helios.Core.Topology
         /// Adds a capability to a given INode instance
         /// </summary>
         /// <param name="n">A valid INode instance</param>
-        /// <param name="capability">A populated NodeCapability object</param>
+        /// <param name="portNum">the port number for this node</param>
         /// <returns>A valid node</returns>
-        public static INode WithCapability(this INode n, NodeCapability capability)
+        public static INode WithPort(this INode n, int portNum)
         {
-            n.Capabilities.Add(capability);
+            n.Port = portNum;
             return n;
         }
 
@@ -96,28 +96,11 @@ namespace Helios.Core.Topology
         /// Adds a capability to a given INode instance
         /// </summary>
         /// <param name="n">A valid INode instance</param>
-        /// <param name="portNum">the port number for this capabiltiy</param>
-        /// <param name="capabilityName">the name of this capabiltiy</param>
-        /// <param name="transportType">the type of network connection used by this capability</param>
+        /// <param name="transportType">the type of network connection used by this node</param>
         /// <returns>A valid node</returns>
-        public static INode WithCapability(this INode n, int portNum, string capabilityName, TransportType transportType)
+        public static INode WithTransportType(this INode n, TransportType transportType)
         {
-            n.Capabilities.Add(NodeCapability.Create(portNum, capabilityName, transportType));
-            return n;
-        }
-
-        /// <summary>
-        /// Add a set of capabilities to a node
-        /// </summary>
-        /// <param name="n">A valid INode instance</param>
-        /// <param name="capabilities">A list of populated NodeCapability objects</param>
-        /// <returns>A valid node</returns>
-        public static INode WithCapabilities(this INode n, IEnumerable<NodeCapability> capabilities)
-        {
-            foreach (var nodeCapability in capabilities)
-            {
-                n.Capabilities.Add(nodeCapability);
-            }
+            n.TransportType = transportType;
             return n;
         }
 

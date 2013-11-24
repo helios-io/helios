@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using Helios.Core.Topology;
 
 namespace Helios.Core.Monitoring
 {
@@ -12,10 +11,7 @@ namespace Helios.Core.Monitoring
     {
         public IPAddress NodeAddress { get; private set; }
 
-        /// <summary>
-        /// The capability we're evaluating for a given node
-        /// </summary>
-        public NodeCapability Capability { get; private set; }
+        public int Port { get; private set; }
 
         /// <summary>
         /// The latency in milliseconds. If the connection timed out, this value will be -1
@@ -37,13 +33,13 @@ namespace Helios.Core.Monitoring
             TimeChecked = DateTimeOffset.UtcNow;
         }
 
-        public static ConnectivityCheck Create(IPAddress ipAddress, NodeCapability capability, int latency,
+        public static ConnectivityCheck Create(IPAddress ipAddress, int portNum, int latency,
             bool timedOut)
         {
             return new ConnectivityCheck()
             {
                 NodeAddress = ipAddress,
-                Capability = capability,
+                Port = portNum,
                 Latency = latency,
                 TimedOut = timedOut
             };

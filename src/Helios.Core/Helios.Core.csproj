@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Connections\IConnection.cs" />
+    <Compile Include="Connections\INodeConnectionProvider.cs" />
     <Compile Include="Monitoring\ClusterMonitor.cs" />
     <Compile Include="Monitoring\NetworkMonitoringConstants.cs" />
     <Compile Include="Monitoring\NodeHeartBeat.cs" />
@@ -56,7 +57,6 @@
     <Compile Include="Topology\INode.cs" />
     <Compile Include="Topology\Node.cs" />
     <Compile Include="Topology\NodeBuilder.cs" />
-    <Compile Include="Topology\NodeCapability.cs" />
     <Compile Include="Topology\NodeCluster.cs" />
     <Compile Include="Topology\TransportType.cs" />
     <Compile Include="Util\Collections\ConcurrentFixedSizeStack.cs" />

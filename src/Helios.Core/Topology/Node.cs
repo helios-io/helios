@@ -22,14 +22,17 @@ namespace Helios.Core.Topology
         public string ServiceVersion { get; set; }
 
         /// <summary>
-        /// All of the exposed capabilities of this node
-        /// </summary>
-        public IList<NodeCapability> Capabilities { get; private set; }
-
-        /// <summary>
         /// A JSON blob representing arbtirary data about this node
         /// </summary>
         public string CustomData { get; set; }
+
+        /// <summary>
+        /// The port number of this node
+        /// </summary>
+        public int Port { get; set; }
+
+
+        public TransportType TransportType { get; set; }
 
         /// <summary>
         /// A DateTime.Ticks representation of when we last heard from this node
@@ -40,11 +43,6 @@ namespace Helios.Core.Topology
         {
             var hashCode = Host.GetHashCode();
             return hashCode;
-        }
-
-        public Node()
-        {
-            Capabilities = new List<NodeCapability>();
         }
     }
 }

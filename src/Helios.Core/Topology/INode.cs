@@ -11,6 +11,16 @@ namespace Helios.Core.Topology
         IPAddress Host { get; set; }
 
         /// <summary>
+        /// The port number of this node's capability
+        /// </summary>
+        int Port { get; set; }
+
+        /// <summary>
+        /// The connection type used by this node
+        /// </summary>
+        TransportType TransportType { get; set; }
+
+        /// <summary>
         /// The name of this machine
         /// </summary>
         string MachineName { get; set; }
@@ -26,18 +36,8 @@ namespace Helios.Core.Topology
         string ServiceVersion { get; set; }
 
         /// <summary>
-        /// All of the exposed capabilities of this node
-        /// </summary>
-        IList<NodeCapability> Capabilities { get; }
-
-        /// <summary>
         /// A JSON blob representing arbtirary data about this node
         /// </summary>
         string CustomData { get; set; }
-
-        /// <summary>
-        /// A DateTime.Ticks representation of when we last heard from this node
-        /// </summary>
-        long LastPulse { get; set; }
     }
 }
