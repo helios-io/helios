@@ -10,7 +10,8 @@ namespace Helios.Core.Topology
     public class NodeCluster : IEnumerable<INode>
     {
         /// <summary>
-        /// The list of active nodes in this cluster
+        /// The list of active nodes in this cluster, regardless of
+        /// whether they are blacklisted or not
         /// </summary>
         public IList<INode> ActiveNodes { get; private set; }
 

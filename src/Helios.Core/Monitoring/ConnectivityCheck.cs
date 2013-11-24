@@ -2,7 +2,7 @@
 using System.Net;
 using Helios.Core.Topology;
 
-namespace Helios.Core.Connectivity
+namespace Helios.Core.Monitoring
 {
     /// <summary>
     /// Entity for keeping track of the connectivity state

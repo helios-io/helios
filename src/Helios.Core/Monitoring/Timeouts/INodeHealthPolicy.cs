@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.Core.Connectivity.Timeouts
+namespace Helios.Core.Monitoring.Timeouts
 {
     /// <summary>
     /// Interface used to describe timeout policies and rules

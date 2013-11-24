@@ -1,12 +1,17 @@
 ﻿using System;
 
-namespace Helios.Core.Connectivity
+namespace Helios.Core.Monitoring
 {
     /// <summary>
     /// constants used by Helios during network operations
     /// </summary>
     public static class NetworkMonitoringConstants
     {
+        /// <summary>
+        /// The default keep-alive interval used to see if our servers are still alive
+        /// </summary>
+        public static readonly TimeSpan DefaultHealthCheckPollingInterval = TimeSpan.FromSeconds(1);
+
         /// <summary>
         /// All of the exponential back off intervals used for checking the health
         /// of blacked-out nodes

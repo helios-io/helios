@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Helios.Core.Topology;
+﻿using Helios.Core.Topology;
 
-namespace Helios.Core.Connectivity
+namespace Helios.Core.Monitoring
 {
     /// <summary>
     /// Class used for tracking the heartbeat
