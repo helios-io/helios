@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Helios.Core.Connections
+﻿namespace Helios.Core.Net
 {
     /// <summary>
     /// Interface used to provide data

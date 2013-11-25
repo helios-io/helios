@@ -1,4 +1,4 @@
-﻿namespace Helios.Core.Connections.Exceptions
+﻿namespace Helios.Core.Net.Exceptions
 {
     public enum ExceptionType
     {

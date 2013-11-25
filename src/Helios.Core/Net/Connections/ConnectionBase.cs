@@ -3,7 +3,7 @@ using System.Net;
 using Helios.Core.Monitoring;
 using Helios.Core.Topology;
 
-namespace Helios.Core.Connections.Transports
+namespace Helios.Core.Net.Connections
 {
     public abstract class ConnectionBase : IConnection
     {

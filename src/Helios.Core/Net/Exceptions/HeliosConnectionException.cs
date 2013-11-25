@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Helios.Core.Connections.Exceptions
+namespace Helios.Core.Net.Exceptions
 {
     public class HeliosConnectionException : Exception
     {

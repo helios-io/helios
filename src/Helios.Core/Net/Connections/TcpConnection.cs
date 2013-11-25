@@ -1,10 +1,10 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using Helios.Core.Connections.Exceptions;
+using Helios.Core.Net.Exceptions;
 using Helios.Core.Topology;
 
-namespace Helios.Core.Connections.Transports
+namespace Helios.Core.Net.Connections
 {
     public class TcpConnection : ConnectionBase
     {

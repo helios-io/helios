@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Helios.Core.Connections;
+using Helios.Core.Net;
 using Helios.Core.Topology;
 using Helios.Core.Util.Collections;
 

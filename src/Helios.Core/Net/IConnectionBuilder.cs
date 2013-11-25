@@ -1,7 +1,7 @@
 ﻿using System;
 using Helios.Core.Topology;
 
-namespace Helios.Core.Connections
+namespace Helios.Core.Net
 {
     /// <summary>
     /// Interface used for building connections

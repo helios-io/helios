@@ -44,14 +44,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Connections\Exceptions\ExceptionType.cs" />
-    <Compile Include="Connections\Exceptions\HeliosConnectionException.cs" />
-    <Compile Include="Connections\IClusterManager.cs" />
-    <Compile Include="Connections\IConnection.cs" />
-    <Compile Include="Connections\IConnectionBuilder.cs" />
-    <Compile Include="Connections\IConnectionProvider.cs" />
-    <Compile Include="Connections\Transports\ConnectionBase.cs" />
-    <Compile Include="Connections\Transports\TcpConnection.cs" />
+    <Compile Include="Net\Exceptions\ExceptionType.cs" />
+    <Compile Include="Net\Exceptions\HeliosConnectionException.cs" />
+    <Compile Include="Net\IClusterManager.cs" />
+    <Compile Include="Net\IConnection.cs" />
+    <Compile Include="Net\IConnectionBuilder.cs" />
+    <Compile Include="Net\IConnectionProvider.cs" />
+    <Compile Include="Net\Transports\IStreamTransport.cs" />
+    <Compile Include="Net\Connections\ConnectionBase.cs" />
+    <Compile Include="Net\Connections\TcpConnection.cs" />
     <Compile Include="Monitoring\NetworkMonitoringConstants.cs" />
     <Compile Include="Monitoring\ClusterHeartBeat.cs" />
     <Compile Include="Ops\IOperationResult.cs" />
