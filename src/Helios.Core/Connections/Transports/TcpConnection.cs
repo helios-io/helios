@@ -1,8 +1,7 @@
 using System;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using Helios.Core.Connections.Exceptions;
 using Helios.Core.Topology;
 
 namespace Helios.Core.Connections.Transports
@@ -27,13 +26,17 @@ namespace Helios.Core.Connections.Transports
         public override void Send(byte[] buffer, int offset, int size)
         {
             if (!IsOpen())
+                throw new HeliosConnectionException(ExceptionType.NotOpen, "Connection is not open");
 
-                throw new NotImplementedException();
+            _client.Client.Send(buffer, offset, size, SocketFlags.None);
         }
 
         public override void Receieve(byte[] buffer, int offset, int size)
         {
-            throw new NotImplementedException();
+            if (!IsOpen())
+                throw new HeliosConnectionException(ExceptionType.NotOpen, "Connection is not open");
+
+            _client.Client.Receive(buffer, offset, size, SocketFlags.None);
         }
 
         public override bool IsOpen()
@@ -50,12 +53,12 @@ namespace Helios.Core.Connections.Transports
 
             if (Node == null || Node.Host == null)
             {
-                throw new ArgumentNullException("Node", "Node and Node.Host cannot be null");
+                throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to a null Node or null Node.Host");
             }
 
             if (Node.Port <= 0)
             {
-                throw new ArgumentOutOfRangeException("Node.Port", "Cannot open without port");
+                throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to an invalid port");
             }
 
             if (_client == null)
@@ -69,7 +72,7 @@ namespace Helios.Core.Connections.Transports
             else
             {
                 _client.Close();
-                throw new TimeoutException();
+                throw new HeliosConnectionException(ExceptionType.TimedOut, "Timed out on connect");
             }
         }
 
