@@ -13,6 +13,11 @@ namespace Helios.Core.Monitoring
         public static readonly TimeSpan DefaultHealthCheckPollingInterval = TimeSpan.FromSeconds(1);
 
         /// <summary>
+        /// The default connectivity timeout
+        /// </summary>
+        public static readonly TimeSpan DefaultConnectivityTimeout = TimeSpan.FromSeconds(30);
+
+        /// <summary>
         /// All of the exponential back off intervals used for checking the health
         /// of blacked-out nodes
         /// </summary>

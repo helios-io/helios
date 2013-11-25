@@ -10,7 +10,7 @@ namespace Helios.Core.Monitoring.Timeouts
         /// <summary>
         /// The permitted timeout window in seconds
         /// </summary>
-        int TimeoutSeconds { get; }
+        TimeSpan ConnectionTimeout { get; }
 
         /// <summary>
         /// The maximum number of timeouts on a node before

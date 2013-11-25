@@ -44,11 +44,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Connections\IClusterManager.cs" />
     <Compile Include="Connections\IConnection.cs" />
-    <Compile Include="Connections\INodeConnectionProvider.cs" />
-    <Compile Include="Monitoring\ClusterMonitor.cs" />
+    <Compile Include="Connections\IConnectionBuilder.cs" />
+    <Compile Include="Connections\IConnectionProvider.cs" />
+    <Compile Include="Connections\Transports\ConnectionBase.cs" />
+    <Compile Include="Connections\Transports\TcpConnection.cs" />
     <Compile Include="Monitoring\NetworkMonitoringConstants.cs" />
-    <Compile Include="Monitoring\NodeHeartBeat.cs" />
+    <Compile Include="Monitoring\ClusterHeartBeat.cs" />
     <Compile Include="Ops\IOperationResult.cs" />
     <Compile Include="Ops\OperationResult.cs" />
     <Compile Include="Monitoring\Timeouts\INodeHealthPolicy.cs" />
@@ -57,10 +60,10 @@
     <Compile Include="Topology\INode.cs" />
     <Compile Include="Topology\Node.cs" />
     <Compile Include="Topology\NodeBuilder.cs" />
-    <Compile Include="Topology\NodeCluster.cs" />
-    <Compile Include="Topology\TransportType.cs" />
+    <Compile Include="Topology\Cluster.cs" />
     <Compile Include="Util\Collections\ConcurrentFixedSizeStack.cs" />
     <Compile Include="Util\Collections\FixedSizeStack.cs" />
+    <Compile Include="Util\Collections\IFixedSizeStack.cs" />
     <Compile Include="Util\NullGuard.cs" />
   </ItemGroup>
   <ItemGroup>

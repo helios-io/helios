@@ -8,7 +8,7 @@ namespace Helios.Core.Util.Collections
     /// Stack with a fixed size number of members - old items get pushed
     /// off the stack
     /// </summary>
-    public class FixedSizeStack<T> : IEnumerable<T>, ICollection
+    public class FixedSizeStack<T> : IFixedSizeStack<T>
     {
         /// <summary>
         /// Default capacity for fixed size stacks

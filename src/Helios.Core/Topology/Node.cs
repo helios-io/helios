@@ -44,5 +44,10 @@ namespace Helios.Core.Topology
             var hashCode = Host.GetHashCode();
             return hashCode;
         }
+
+        public override string ToString()
+        {
+            return string.Format("{0}:{1}", Host, Port);
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using Helios.Core.Topology;
 
 namespace Helios.Core.Connections
 {
@@ -10,13 +11,17 @@ namespace Helios.Core.Connections
     {
         DateTimeOffset Created { get; }
 
-        IPAddress Host { get; }
+        INode Node { get; }
 
-        int Port { get; }
+        TimeSpan Timeout { get; }
 
-        int Timeout { get; }
+        TransportType Transport { get; }
 
-        Topology.TransportType Transport { get; }
+        bool WasDisposed { get; }
+
+        void Send(byte[] buffer, int offset, int size);
+
+        void Receieve(byte[] buffer, int offset, int size);
 
         bool IsOpen();
 
