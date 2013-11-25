@@ -22,8 +22,6 @@ namespace Helios.Core.Net.Connections
         public TimeSpan Timeout { get; private set; }
         public abstract TransportType Transport { get; }
         public bool WasDisposed { get; protected set; }
-        public abstract void Send(byte[] buffer, int offset, int size);
-        public abstract void Receieve(byte[] buffer, int offset, int size);
 
         public abstract bool IsOpen();
 

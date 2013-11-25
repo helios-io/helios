@@ -1,10 +1,11 @@
-﻿namespace Helios.Core.Net.Transports
+﻿using System.IO;
+
+namespace Helios.Core.Net.Transports
 {
-    /// <summary>
-    /// Interface used to place a Stream interface
-    /// on top of a connection
-    /// </summary>
-    public interface IStreamTransport : IConnection
+    public interface IStreamTransport
     {
+        Stream OutputStream { get; }
+
+        Stream InputStream { get; }
     }
 }

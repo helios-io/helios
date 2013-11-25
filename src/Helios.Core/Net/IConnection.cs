@@ -19,10 +19,6 @@ namespace Helios.Core.Net
 
         bool WasDisposed { get; }
 
-        void Send(byte[] buffer, int offset, int size);
-
-        void Receieve(byte[] buffer, int offset, int size);
-
         bool IsOpen();
 
         void Open();

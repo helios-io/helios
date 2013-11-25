@@ -8,7 +8,7 @@ namespace Helios.Core.Net.Connections
 {
     public class TcpConnection : ConnectionBase
     {
-        private TcpClient _client;
+        protected TcpClient _client;
 
         public TcpConnection(INode node, TimeSpan timeout)
             : base(node, timeout)
@@ -23,7 +23,7 @@ namespace Helios.Core.Net.Connections
         }
 
         public override TransportType Transport { get { return TransportType.Tcp; } }
-        public override void Send(byte[] buffer, int offset, int size)
+/*        public override void Send(byte[] buffer, int offset, int size)
         {
             if (!IsOpen())
                 throw new HeliosConnectionException(ExceptionType.NotOpen, "Connection is not open");
@@ -37,7 +37,7 @@ namespace Helios.Core.Net.Connections
                 throw new HeliosConnectionException(ExceptionType.NotOpen, "Connection is not open");
 
             _client.Client.Receive(buffer, offset, size, SocketFlags.None);
-        }
+        }*/
 
         public override bool IsOpen()
         {

@@ -51,10 +51,13 @@
     <Compile Include="Net\IConnectionBuilder.cs" />
     <Compile Include="Net\IConnectionProvider.cs" />
     <Compile Include="Net\Transports\IStreamTransport.cs" />
+    <Compile Include="Net\Transports\ITransport.cs" />
     <Compile Include="Net\Connections\ConnectionBase.cs" />
     <Compile Include="Net\Connections\TcpConnection.cs" />
     <Compile Include="Monitoring\NetworkMonitoringConstants.cs" />
     <Compile Include="Monitoring\ClusterHeartBeat.cs" />
+    <Compile Include="Net\Transports\StreamTransport.cs" />
+    <Compile Include="Net\Transports\TransportBase.cs" />
     <Compile Include="Ops\IOperationResult.cs" />
     <Compile Include="Ops\OperationResult.cs" />
     <Compile Include="Monitoring\Timeouts\INodeHealthPolicy.cs" />
@@ -67,6 +70,7 @@
     <Compile Include="Util\Collections\ConcurrentFixedSizeStack.cs" />
     <Compile Include="Util\Collections\FixedSizeStack.cs" />
     <Compile Include="Util\Collections\IFixedSizeStack.cs" />
+    <Compile Include="Util\Concurrency\TaskRunner.cs" />
     <Compile Include="Util\NullGuard.cs" />
   </ItemGroup>
   <ItemGroup>
