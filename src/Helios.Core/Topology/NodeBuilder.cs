@@ -127,5 +127,16 @@ namespace Helios.Core.Topology
             n.CustomData = JsonConvert.SerializeObject(customData);
             return n;
         }
+
+        /// <summary>
+        /// Creates an INode instance from an IP endpoint
+        /// </summary>
+        /// <param name="endPoint">A System.NET.IPEndpoint argument, usually from an incoming socket connection</param>
+        /// <returns>An active INode instance</returns>
+        public static INode FromEndpoint(IPEndPoint endPoint)
+        {
+            var n = new Node {Host = endPoint.Address, Port = endPoint.Port};
+            return n;
+        }
     }
 }

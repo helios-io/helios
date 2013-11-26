@@ -44,8 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Net\Exceptions\ExceptionType.cs" />
-    <Compile Include="Net\Exceptions\HeliosConnectionException.cs" />
+    <Compile Include="Exceptions\ExceptionType.cs" />
+    <Compile Include="Exceptions\HeliosConnectionException.cs" />
     <Compile Include="Net\IClusterManager.cs" />
     <Compile Include="Net\IConnection.cs" />
     <Compile Include="Net\IConnectionBuilder.cs" />
@@ -63,6 +63,10 @@
     <Compile Include="Monitoring\Timeouts\INodeHealthPolicy.cs" />
     <Compile Include="Monitoring\ConnectivityCheck.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reactor\IReactor.cs" />
+    <Compile Include="Reactor\ReactorBase.cs" />
+    <Compile Include="Reactor\ReactorEventArgs.cs" />
+    <Compile Include="Reactor\TcpReactor.cs" />
     <Compile Include="Topology\INode.cs" />
     <Compile Include="Topology\Node.cs" />
     <Compile Include="Topology\NodeBuilder.cs" />

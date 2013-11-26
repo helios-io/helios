@@ -8,6 +8,8 @@ namespace Helios.Core.Net.Connections
 {
     public abstract class ConnectionBase : StreamTransport, IConnection
     {
+        protected ConnectionBase() : this(null) { }
+
         protected ConnectionBase(INode node, TimeSpan timeout) : base()
         {
             Created = DateTimeOffset.UtcNow;
@@ -18,7 +20,7 @@ namespace Helios.Core.Net.Connections
         protected ConnectionBase(INode node) : this(node, NetworkMonitoringConstants.DefaultConnectivityTimeout) { }
 
         public DateTimeOffset Created { get; private set; }
-        public INode Node { get; private set; }
+        public INode Node { get; protected set; }
 
         public TimeSpan Timeout { get; private set; }
         public abstract TransportType Transport { get; }

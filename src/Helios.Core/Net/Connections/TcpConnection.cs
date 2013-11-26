@@ -22,6 +22,11 @@ namespace Helios.Core.Net.Connections
             InitClient();
         }
 
+        public TcpConnection(TcpClient client)
+        {
+            InitClient(client);
+        }
+
         public override TransportType Transport { get { return TransportType.Tcp; } }
 
         public override bool IsOpen()
@@ -91,6 +96,14 @@ namespace Helios.Core.Net.Connections
 
         #endregion
 
+        private void InitClient(TcpClient client)
+        {
+            _client = client;
+            var ipAddress = (IPEndPoint)_client.Client.RemoteEndPoint;
+            Node = NodeBuilder.FromEndpoint(ipAddress);
+            InitStream();
+        }
+
         private void InitClient()
         {
             _client = new TcpClient(Node.Host.ToString(), Node.Port)
@@ -100,6 +113,11 @@ namespace Helios.Core.Net.Connections
                 Client = {NoDelay = true}
             };
 
+            InitStream();
+        }
+
+        private void InitStream()
+        {
             InputStream = _client.GetStream();
             OutputStream = _client.GetStream();
         }
