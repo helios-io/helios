@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Helios.Core.Net.Transports
@@ -8,14 +7,8 @@ namespace Helios.Core.Net.Transports
     /// Interface used to place an I/O interface
     /// on top of a connection
     /// </summary>
-    public interface ITransport : IDisposable
+    public interface ITransport
     {
-        bool IsOpen();
-
-        void Open();
-
-        void Close();
-
         bool Peek();
 
         int Read(byte[] buffer, int offset, int length);
@@ -47,7 +40,5 @@ namespace Helios.Core.Net.Transports
         Task FlushAsync();
 
         Task FlushAsync(CancellationToken token);
-
-        void Dispose(bool disposing);
     }
 }

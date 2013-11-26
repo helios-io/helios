@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Net;
 using Helios.Core.Monitoring;
+using Helios.Core.Net.Transports;
 using Helios.Core.Topology;
 
 namespace Helios.Core.Net.Connections
 {
-    public abstract class ConnectionBase : IConnection
+    public abstract class ConnectionBase : StreamTransport, IConnection
     {
-        protected ConnectionBase(INode node, TimeSpan timeout)
+        protected ConnectionBase(INode node, TimeSpan timeout) : base()
         {
             Created = DateTimeOffset.UtcNow;
             Node = node;
@@ -24,6 +25,11 @@ namespace Helios.Core.Net.Connections
         public bool WasDisposed { get; protected set; }
 
         public abstract bool IsOpen();
+
+        public override bool Peek()
+        {
+            return IsOpen();
+        }
 
         public abstract void Open();
 
@@ -47,6 +53,7 @@ namespace Helios.Core.Net.Connections
 
         public virtual void Dispose()
         {
+            DisposeStreams(true);
             Dispose(true);
             GC.SuppressFinalize(this);
         }

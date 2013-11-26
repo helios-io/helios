@@ -8,14 +8,7 @@ namespace Helios.Core.Net.Transports
 {
     public abstract class TransportBase : ITransport
     {
-        public abstract bool IsOpen();
-        public abstract void Open();
-        public abstract void Close();
-
-        public bool Peek()
-        {
-            return IsOpen();
-        }
+        public abstract bool Peek();
 
         public abstract int Read(byte[] buffer, int offset, int length);
         public abstract Task<int> ReadAsync(byte[] buffer, int offset, int length);
@@ -68,17 +61,5 @@ namespace Helios.Core.Net.Transports
 
         public abstract Task FlushAsync();
         public abstract Task FlushAsync(CancellationToken token);
-
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public abstract void Dispose(bool disposing);
-
-        #endregion
     }
 }

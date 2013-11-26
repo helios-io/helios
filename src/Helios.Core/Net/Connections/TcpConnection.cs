@@ -23,21 +23,6 @@ namespace Helios.Core.Net.Connections
         }
 
         public override TransportType Transport { get { return TransportType.Tcp; } }
-/*        public override void Send(byte[] buffer, int offset, int size)
-        {
-            if (!IsOpen())
-                throw new HeliosConnectionException(ExceptionType.NotOpen, "Connection is not open");
-
-            _client.Client.Send(buffer, offset, size, SocketFlags.None);
-        }
-
-        public override void Receieve(byte[] buffer, int offset, int size)
-        {
-            if (!IsOpen())
-                throw new HeliosConnectionException(ExceptionType.NotOpen, "Connection is not open");
-
-            _client.Client.Receive(buffer, offset, size, SocketFlags.None);
-        }*/
 
         public override bool IsOpen()
         {
@@ -114,6 +99,9 @@ namespace Helios.Core.Net.Connections
                 SendTimeout = Timeout.Seconds,
                 Client = {NoDelay = true}
             };
+
+            InputStream = _client.GetStream();
+            OutputStream = _client.GetStream();
         }
     }
 }

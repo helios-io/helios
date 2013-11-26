@@ -15,16 +15,7 @@ namespace Helios.Core.Net.Transports
             OutputStream = outputStream;
         }
 
-        public override bool IsOpen()
-        {
-            return true;
-        }
-
-        public override void Open()
-        {
-        }
-
-        public override void Close()
+        public void CloseStreams()
         {
             if (InputStream != null)
             {
@@ -40,6 +31,11 @@ namespace Helios.Core.Net.Transports
         }
 
         #region Reads
+
+        public override bool Peek()
+        {
+            return true;
+        }
 
         public override int Read(byte[] buffer, int offset, int length)
         {
@@ -120,7 +116,7 @@ namespace Helios.Core.Net.Transports
 
         private bool _isDisposed;
 
-        public override void Dispose(bool disposing)
+        public virtual void DisposeStreams(bool disposing)
         {
             if (!_isDisposed)
             {

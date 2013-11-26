@@ -7,5 +7,9 @@ namespace Helios.Core.Net.Transports
         Stream OutputStream { get; }
 
         Stream InputStream { get; }
+
+        void CloseStreams();
+
+        void DisposeStreams(bool disposing);
     }
 }
