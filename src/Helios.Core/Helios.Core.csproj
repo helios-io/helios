@@ -50,6 +50,7 @@
     <Compile Include="Net\IConnection.cs" />
     <Compile Include="Net\IConnectionBuilder.cs" />
     <Compile Include="Net\IConnectionProvider.cs" />
+    <Compile Include="Net\NormalConnectionBuilder.cs" />
     <Compile Include="Net\Transports\IStreamTransport.cs" />
     <Compile Include="Net\Transports\ITransport.cs" />
     <Compile Include="Net\Connections\ConnectionBase.cs" />

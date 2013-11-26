@@ -6,6 +6,7 @@
         NotOpen,
         AlreadyOpen,
         TimedOut,
-        EndOfFile
+        EndOfFile,
+        NotSupported
     }
 }

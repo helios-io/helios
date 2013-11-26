@@ -17,16 +17,17 @@ namespace Helios.Core.Reactor
         {
             ResetEvent = new ManualResetEventSlim();
             this.LocalEndpoint = new IPEndPoint(localAddress, localPort);
-           Listener = new TcpListener(this.LocalEndpoint);
+            Listener = new TcpListener(this.LocalEndpoint);
         }
 
         public override bool IsActive { get; protected set; }
         public override void Start()
         {
             //Don't restart
-            if(IsActive) return;
+            if (IsActive) return;
 
             CheckWasDisposed();
+            IsActive = true;
             Listener.Start();
             EventLoop();
         }
@@ -35,6 +36,7 @@ namespace Helios.Core.Reactor
         {
             CheckWasDisposed();
             Listener.Stop();
+            IsActive = false;
             ResetEvent.Set();
         }
 
@@ -50,11 +52,11 @@ namespace Helios.Core.Reactor
             }
             catch (SocketException e)
             {
-                
+
             }
         }
 
-        public override event EventHandler<ReactorEventArgs> AcceptConnection = delegate {};
+        public override event EventHandler<ReactorEventArgs> AcceptConnection = delegate { };
 
         private void InvokeAcceptConnection(TcpClient tcpClient)
         {
@@ -72,7 +74,7 @@ namespace Helios.Core.Reactor
                 Listener.Stop();
                 AcceptConnection = delegate { };
             }
-
+            IsActive = false;
             WasDisposed = true;
         }
 

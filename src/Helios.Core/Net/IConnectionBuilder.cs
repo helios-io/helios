@@ -8,8 +8,8 @@ namespace Helios.Core.Net
     /// </summary>
     public interface IConnectionBuilder
     {
-        IConnection BuildConnection(INode node);
+        TimeSpan Timeout { get; }
 
-        TimeSpan ConnectionTimeout { get; }
+        IConnection BuildConnection(INode node);
     }
 }
