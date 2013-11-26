@@ -18,6 +18,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Core", "src\Helios.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Tests.Core", "tests\Helios.Tests.Core\Helios.Tests.Core.csproj", "{622145C4-0780-412C-9094-B57CEC84E216}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{CDCC7F36-83CF-430B-86CF-46CDF610301F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Samples.TcpReactorServer", "samples\Helios.Samples.TcpReactorServer\Helios.Samples.TcpReactorServer.csproj", "{9217F519-A433-4C8F-9C09-ACE0A5CECC1D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,8 +44,15 @@ Global
 		{622145C4-0780-412C-9094-B57CEC84E216}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{622145C4-0780-412C-9094-B57CEC84E216}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{622145C4-0780-412C-9094-B57CEC84E216}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9217F519-A433-4C8F-9C09-ACE0A5CECC1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9217F519-A433-4C8F-9C09-ACE0A5CECC1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9217F519-A433-4C8F-9C09-ACE0A5CECC1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9217F519-A433-4C8F-9C09-ACE0A5CECC1D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9217F519-A433-4C8F-9C09-ACE0A5CECC1D} = {CDCC7F36-83CF-430B-86CF-46CDF610301F}
 	EndGlobalSection
 EndGlobal

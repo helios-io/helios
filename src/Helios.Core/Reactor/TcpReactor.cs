@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using System.Threading.Tasks;
 using Helios.Core.Net.Exceptions;
 using Helios.Core.Util.Concurrency;
 
@@ -12,12 +10,12 @@ namespace Helios.Core.Reactor
     public class TcpReactor : ReactorBase
     {
         protected TcpListener Listener;
-        protected CancellationTokenSource TokenSource;
-        protected Task EventLoopThread;
+        protected ManualResetEventSlim ResetEvent;
+
 
         public TcpReactor(IPAddress localAddress, int localPort)
         {
-            TokenSource = new CancellationTokenSource();
+            ResetEvent = new ManualResetEventSlim();
             this.LocalEndpoint = new IPEndPoint(localAddress, localPort);
            Listener = new TcpListener(this.LocalEndpoint);
         }
@@ -30,32 +28,24 @@ namespace Helios.Core.Reactor
 
             CheckWasDisposed();
             Listener.Start();
-            EventLoopThread = TaskRunner.Run(EventLoop, TokenSource.Token);
+            EventLoop();
         }
 
         public override void Stop()
         {
             CheckWasDisposed();
-            try
-            {
-                TokenSource.Cancel();
-                EventLoopThread = null;
-            }
-            catch (AggregateException ex)
-            {
-                Debug.Write(ex.Flatten());
-            }
             Listener.Stop();
+            ResetEvent.Set();
         }
 
         public void EventLoop()
         {
             try
             {
-                while (true)
+                while (!ResetEvent.IsSet)
                 {
                     var client = Listener.AcceptTcpClient();
-                    InvokeAcceptConnection(client);
+                    TaskRunner.Run(() => InvokeAcceptConnection(client));
                 }
             }
             catch (SocketException e)

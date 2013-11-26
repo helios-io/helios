@@ -2,7 +2,7 @@
 
 namespace Helios.Core.Net.Transports
 {
-    public interface IStreamTransport
+    public interface IStreamTransport : ITransport
     {
         Stream OutputStream { get; }
 
