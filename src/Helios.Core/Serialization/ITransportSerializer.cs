@@ -8,16 +8,10 @@ namespace Helios.Core.Serialization
     /// </summary>
     public interface ITransportSerializer
     {
-        bool TryDeserialize<T>(out T obj, byte[] buffer, int offset, int length);
+        bool TryDeserialize<T>(out T obj, Stream stream);
 
-        bool TryDeserialize<T>(out T obj, byte[] buffer);
-
-        T Deserialize<T>(byte[] buffer);
-
-        T Deserialize<T>(byte[] buffer, int offset, int length);
+        T Deserialize<T>(Stream stream);
 
         void Serialize<T>(T obj, Stream stream);
-
-        void Serialize<T>(T obj, byte[] buffer, int offset, int length);
     }
 }
