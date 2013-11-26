@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
-using JsonFx.Json;
+using Newtonsoft.Json;
 
 
 namespace Helios.Core.Topology
@@ -125,8 +124,7 @@ namespace Helios.Core.Topology
         /// <returns>A valid node</returns>
         public static INode WithCustomDataObject(this INode n, object customData)
         {
-            var writer =  new JsonWriter();
-            n.CustomData = writer.Write(customData);
+            n.CustomData = JsonConvert.SerializeObject(customData);
             return n;
         }
 
