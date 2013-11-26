@@ -1,7 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using Helios.Core.Net.Exceptions;
+using Helios.Core.Exceptions;
 using Helios.Core.Topology;
 
 namespace Helios.Core.Net.Connections

@@ -11,7 +11,5 @@ namespace Helios.Core.Net
         IConnection BuildConnection(INode node);
 
         TimeSpan ConnectionTimeout { get; }
-
-        TimeSpan ServerPollingInterval { get; }
     }
 }

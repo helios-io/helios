@@ -17,7 +17,7 @@ namespace Helios.Core.Net.Connections
             Timeout = timeout;
         }
 
-        protected ConnectionBase(INode node) : this(node, NetworkMonitoringConstants.DefaultConnectivityTimeout) { }
+        protected ConnectionBase(INode node) : this(node, NetworkConstants.DefaultConnectivityTimeout) { }
 
         public DateTimeOffset Created { get; private set; }
         public INode Node { get; protected set; }

@@ -54,7 +54,7 @@
     <Compile Include="Net\Transports\ITransport.cs" />
     <Compile Include="Net\Connections\ConnectionBase.cs" />
     <Compile Include="Net\Connections\TcpConnection.cs" />
-    <Compile Include="Monitoring\NetworkMonitoringConstants.cs" />
+    <Compile Include="Net\NetworkConstants.cs" />
     <Compile Include="Monitoring\ClusterHeartBeat.cs" />
     <Compile Include="Net\Transports\StreamTransport.cs" />
     <Compile Include="Net\Transports\TransportBase.cs" />

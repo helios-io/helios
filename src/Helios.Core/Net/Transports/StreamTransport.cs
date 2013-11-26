@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Helios.Core.Net.Exceptions;
+using Helios.Core.Exceptions;
 
 namespace Helios.Core.Net.Transports
 {

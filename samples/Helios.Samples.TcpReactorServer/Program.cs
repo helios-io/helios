@@ -2,8 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Timers;
-using Helios.Core.Net.Exceptions;
+using Helios.Core.Exceptions;
 using Helios.Core.Reactor;
 using Helios.Core.Topology;
 

@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace Helios.Core.Monitoring
+namespace Helios.Core.Net
 {
     /// <summary>
     /// constants used by Helios during network operations
     /// </summary>
-    public static class NetworkMonitoringConstants
+    public static class NetworkConstants
     {
         /// <summary>
         /// The default keep-alive interval used to see if our servers are still alive

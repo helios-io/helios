@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.Core.Net.Exceptions
+namespace Helios.Core.Exceptions
 {
     public class HeliosConnectionException : Exception
     {
