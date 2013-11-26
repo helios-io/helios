@@ -44,6 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Eventing\EventSubscriptionEventArgs.cs" />
+    <Compile Include="Eventing\IEventBroker.cs" />
+    <Compile Include="Eventing\SimpleEventBroker.cs" />
     <Compile Include="Exceptions\ExceptionType.cs" />
     <Compile Include="Exceptions\HeliosConnectionException.cs" />
     <Compile Include="Net\IClusterManager.cs" />
@@ -83,6 +86,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
