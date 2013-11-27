@@ -15,7 +15,7 @@ namespace Helios.Core.Eventing
         event EventHandler<EventSubscriptionEventArgs<TTopic, TSubscriber>> SubscriptionAdded;
         event EventHandler<EventSubscriptionEventArgs<TTopic, TSubscriber>> SubscriptionRemoved;
 
-        void Subscribe(TTopic id, TSubscriber subscriber, TopicSubscription topicSubscription);
+        void Subscribe(TTopic id, TSubscriber subscriber, ITopicSubscription normalTopicSubscription);
 
         void Unsubscribe(TTopic id, TSubscriber subscriber);
 

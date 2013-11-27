@@ -1,5 +1,7 @@
 ﻿using System;
 using Helios.Core.Eventing;
+using Helios.Core.Eventing.Brokers;
+using Helios.Core.Eventing.Subscriptions;
 using NUnit.Framework;
 
 namespace Helios.Tests.Core.Eventing
@@ -50,7 +52,7 @@ namespace Helios.Tests.Core.Eventing
                 changes++;
             };
 
-            eventBroker.Subscribe(0, subscriber1.GetHashCode(), new TopicSubscription((o,e)=> { }));
+            eventBroker.Subscribe(0, subscriber1.GetHashCode(), new NormalTopicSubscription((o,e)=> { }));
             eventBroker.Unsubscribe(0, subscriber1.GetHashCode());
 
             //assert
@@ -67,11 +69,11 @@ namespace Helios.Tests.Core.Eventing
             var subscriber2 = new SampleEventBrokerSubscriber();
 
             //act
-            eventBroker.Subscribe(0, subscriber1.GetHashCode(), new TopicSubscription((o, e) =>
+            eventBroker.Subscribe(0, subscriber1.GetHashCode(), new NormalTopicSubscription((o, e) =>
             {
                 subscriber1.ReceivedEvent = true;
             }));
-            eventBroker.Subscribe(0, subscriber2.GetHashCode(), new TopicSubscription((o, e) =>
+            eventBroker.Subscribe(0, subscriber2.GetHashCode(), new NormalTopicSubscription((o, e) =>
             {
                 subscriber2.ReceivedEvent = true;
             }));

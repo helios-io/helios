@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 
-namespace Helios.Core.Eventing
+namespace Helios.Core.Eventing.Brokers
 {
     /// <summary>
     /// Basic implementation of an EventBroker - designed
@@ -14,23 +13,23 @@ namespace Helios.Core.Eventing
         public event EventHandler<EventSubscriptionEventArgs<TTopic, TSubscriber>> SubscriptionAdded = delegate { };
         public event EventHandler<EventSubscriptionEventArgs<TTopic, TSubscriber>> SubscriptionRemoved = delegate { };
 
-        protected IDictionary<TTopic, IDictionary<TSubscriber, TopicSubscription>> Subscribers;
+        protected IDictionary<TTopic, IDictionary<TSubscriber, ITopicSubscription>> Subscribers;
 
         public SimpleEventBroker()
         {
-            Subscribers = new Dictionary<TTopic, IDictionary<TSubscriber, TopicSubscription>>();
+            Subscribers = new Dictionary<TTopic, IDictionary<TSubscriber, ITopicSubscription>>();
         } 
 
-        public void Subscribe(TTopic id, TSubscriber subscriber, TopicSubscription topicSubscription)
+        public void Subscribe(TTopic id, TSubscriber subscriber, ITopicSubscription normalTopicSubscription)
         {
             if (!Subscribers.ContainsKey(id))
             {
-                Subscribers[id] = new Dictionary<TSubscriber, TopicSubscription>();
+                Subscribers[id] = new Dictionary<TSubscriber, ITopicSubscription>();
             }
 
             if (Subscribers[id].ContainsKey(subscriber)) return;
 
-            Subscribers[id].Add(subscriber, topicSubscription);
+            Subscribers[id].Add(subscriber, normalTopicSubscription);
             InvokeSubscriptionAdded(new EventSubscriptionEventArgs<TTopic, TSubscriber>(id, subscriber, Subscribers[id].Count));
         }
 

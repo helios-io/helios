@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.Core.Eventing
+namespace Helios.Core.Eventing.Subscriptions
 {
     /// <summary>
     /// Extension method class used to help create EventBroker
@@ -8,9 +8,9 @@ namespace Helios.Core.Eventing
     /// </summary>
     public static class TopicHelpers
     {
-        public static TopicSubscription Subscription(this Action<object, EventArgs> h)
+        public static NormalTopicSubscription Subscription(this Action<object, EventArgs> h)
         {
-            return new TopicSubscription(h);
+            return new NormalTopicSubscription(h);
         }
     }
 }

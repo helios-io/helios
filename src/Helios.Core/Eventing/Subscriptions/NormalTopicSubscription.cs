@@ -1,14 +1,13 @@
 ﻿using System;
 
-namespace Helios.Core.Eventing
+namespace Helios.Core.Eventing.Subscriptions
 {
     /// <summary>
-    /// A subscription object - exists primarily to make subscription callbacks
-    /// refactorable in the future
+    /// Basic implementation of a topic subscription
     /// </summary>
-    public class TopicSubscription
+    public class NormalTopicSubscription : ITopicSubscription
     {
-        public TopicSubscription(Action<object, EventArgs> callback)
+        public NormalTopicSubscription(Action<object, EventArgs> callback)
         {
             InternalCallback = callback;
         }
