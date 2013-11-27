@@ -64,7 +64,6 @@ namespace Helios.Tests.Core.Eventing
         public void Should_notify_subscribers()
         {
             //arrange
-            var topic = "MagicalEvent";
             var subscriber1 = new SampleEventBrokerSubscriber();
             var subscriber2 = new SampleEventBrokerSubscriber();
 
@@ -82,6 +81,51 @@ namespace Helios.Tests.Core.Eventing
             //assert
             Assert.IsTrue(subscriber1.ReceivedEvent);
             Assert.IsTrue(subscriber2.ReceivedEvent);
+        }
+
+        [Test(Description = "Should only notify subscribers who are on the relevant topic")]
+        public void Should_only_notify_subscribers_on_relevant_topic()
+        {
+            //arrange
+            var invoked = 0;
+            var subscriber1 = new SampleEventBrokerSubscriber();
+            var subscriber2 = new SampleEventBrokerSubscriber();
+            var subscriber3 = new SampleEventBrokerSubscriber();
+            var subscriber4 = new SampleEventBrokerSubscriber();
+
+            
+            eventBroker.Subscribe(0, subscriber1.GetHashCode(), new NormalTopicSubscription((o, e) =>
+            {
+                subscriber1.ReceivedEvent = true;
+                invoked++;
+            }));
+            eventBroker.Subscribe(0, subscriber2.GetHashCode(), new NormalTopicSubscription((o, e) =>
+            {
+                subscriber2.ReceivedEvent = true;
+                invoked++;
+            }));
+
+            eventBroker.Subscribe(2, subscriber3.GetHashCode(), new NormalTopicSubscription((o, e) =>
+            {
+                subscriber3.ReceivedEvent = true;
+                invoked++;
+            }));
+            eventBroker.Subscribe(1, subscriber4.GetHashCode(), new NormalTopicSubscription((o, e) =>
+            {
+                subscriber4.ReceivedEvent = true;
+                invoked++;
+            }));
+
+            //act
+            eventBroker.InvokeEvent(1, this, new EventArgs());
+            eventBroker.InvokeEvent(0, this, new EventArgs());
+
+            //assert
+            Assert.AreEqual(3, invoked);
+            Assert.IsTrue(subscriber1.ReceivedEvent);
+            Assert.IsTrue(subscriber2.ReceivedEvent);
+            Assert.IsFalse(subscriber3.ReceivedEvent);
+            Assert.IsTrue(subscriber4.ReceivedEvent);
         }
 
         #endregion
