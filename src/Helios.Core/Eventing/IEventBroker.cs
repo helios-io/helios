@@ -8,14 +8,16 @@ namespace Helios.Core.Eventing
     /// Truth be told - this class can be used over sockets and inter-process communication; it's
     /// a configuration detail.
     /// </summary>
-    public interface IEventBroker<TKey>
+    /// <typeparam name="TTopic">The type used to identify the topic</typeparam>
+    /// <typeparam name="TSubscriber">The type used to identify the subscriber</typeparam>
+    public interface IEventBroker<TTopic, TSubscriber>
     {
-        event EventHandler<EventSubscriptionEventArgs<TKey>> SubscriptionAdded;
-        event EventHandler<EventSubscriptionEventArgs<TKey>> SubscriptionRemoved;
+        event EventHandler<EventSubscriptionEventArgs<TTopic, TSubscriber>> SubscriptionAdded;
+        event EventHandler<EventSubscriptionEventArgs<TTopic, TSubscriber>> SubscriptionRemoved;
 
-        void Subscribe(TKey id, Delegate method);
+        void Subscribe(TTopic id, TSubscriber subscriber, TopicSubscription topicSubscription);
 
-        void Unsubscribe(TKey id, Delegate method);
+        void Unsubscribe(TTopic id, TSubscriber subscriber);
 
         /// <summary>
         /// Fire the event specified by the identifier
@@ -24,6 +26,6 @@ namespace Helios.Core.Eventing
         /// <param name="id">The id of the event to fire</param>
         /// <param name="sender">The object responsible for firing the event</param>
         /// <param name="e">The arguments for this event</param>
-        void InvokeEvent(TKey id, object sender, EventArgs e);
+        void InvokeEvent(TTopic id, object sender, EventArgs e);
     }
 }

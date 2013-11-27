@@ -2,16 +2,18 @@
 
 namespace Helios.Core.Eventing
 {
-    public class EventSubscriptionEventArgs<TKey> : EventArgs
+    public class EventSubscriptionEventArgs<TTopic, TSubscriber> : EventArgs
     {
-        public EventSubscriptionEventArgs(TKey topic, int subcribers)
+        public EventSubscriptionEventArgs(TTopic topic, TSubscriber subscriber, int subscriberCount)
         {
             Topic = topic;
-            Subscribers = subcribers;
+            SubscriberCount = subscriberCount;
         }
 
-        public TKey Topic { get; protected set; }
+        public TTopic Topic { get; protected set; }
 
-        public int Subscribers { get; protected set; }
+        public TSubscriber Subscriber { get; protected set; }
+
+        public int SubscriberCount { get; protected set; }
     }
 }

@@ -47,6 +47,8 @@
     <Compile Include="Eventing\EventSubscriptionEventArgs.cs" />
     <Compile Include="Eventing\IEventBroker.cs" />
     <Compile Include="Eventing\SimpleEventBroker.cs" />
+    <Compile Include="Eventing\TopicHelpers.cs" />
+    <Compile Include="Eventing\TopicSubscription.cs" />
     <Compile Include="Exceptions\ExceptionType.cs" />
     <Compile Include="Exceptions\HeliosConnectionException.cs" />
     <Compile Include="Net\IClusterManager.cs" />

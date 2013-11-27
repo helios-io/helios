@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Eventing\SimpleEventBrokerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\Bson\BsonSerializerTests.cs" />
     <Compile Include="Util\Collections\ConcurrentFixedSizeStackTests.cs" />
