@@ -91,6 +91,7 @@
     <Compile Include="Util\Concurrency\TaskRunner.cs" />
     <Compile Include="Util\Guard.cs" />
     <Compile Include="Util\NullGuard.cs" />
+    <Compile Include="Util\TimedOps\ScheduledValue.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
