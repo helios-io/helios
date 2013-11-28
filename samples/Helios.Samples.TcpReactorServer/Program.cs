@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -41,13 +42,14 @@ namespace Helios.Samples.TcpReactorServer
                     {
                         read = connection.Read(bytes, 0, bytes.Length);
                         ServerPrint(connection.Node, string.Format("recieved {0} bytes", read));
-                        var str = Encoding.UTF8.GetString(bytes).Trim();
+                        var cleanBuffer = bytes.Take(read).ToArray();
+                        var str = Encoding.UTF8.GetString(cleanBuffer).Trim();
                         if (str.Trim().Equals("close"))
                             break;
                         ServerPrint(connection.Node, string.Format("recieved \"{0}\"", str));
                         ServerPrint(connection.Node,
                             string.Format("sending \"{0}\" back to {1}:{2}", str, node.Host, node.Port));
-                        var sendBytes = Encoding.UTF8.GetBytes(str);
+                        var sendBytes = Encoding.UTF8.GetBytes(str + Environment.NewLine);
                         connection.Write(sendBytes);
                         connection.Flush();
                     }

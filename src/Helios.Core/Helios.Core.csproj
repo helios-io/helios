@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Concurrency\IFiber.cs" />
     <Compile Include="Eventing\EventSubscriptionEventArgs.cs" />
     <Compile Include="Eventing\IEventBroker.cs" />
     <Compile Include="Eventing\ITopicSubscription.cs" />
@@ -65,6 +66,8 @@
     <Compile Include="Monitoring\ClusterHeartBeat.cs" />
     <Compile Include="Net\Transports\StreamTransport.cs" />
     <Compile Include="Net\Transports\TransportBase.cs" />
+    <Compile Include="Ops\Executors\BasicExecutor.cs" />
+    <Compile Include="Ops\IExecutor.cs" />
     <Compile Include="Ops\IOperationResult.cs" />
     <Compile Include="Ops\OperationResult.cs" />
     <Compile Include="Monitoring\Timeouts\INodeHealthPolicy.cs" />
@@ -80,10 +83,12 @@
     <Compile Include="Topology\Node.cs" />
     <Compile Include="Topology\NodeBuilder.cs" />
     <Compile Include="Topology\Cluster.cs" />
+    <Compile Include="Util\Collections\CollectionExtensions.cs" />
     <Compile Include="Util\Collections\ConcurrentFixedSizeStack.cs" />
     <Compile Include="Util\Collections\FixedSizeStack.cs" />
     <Compile Include="Util\Collections\IFixedSizeStack.cs" />
     <Compile Include="Util\Concurrency\TaskRunner.cs" />
+    <Compile Include="Util\Guard.cs" />
     <Compile Include="Util\NullGuard.cs" />
   </ItemGroup>
   <ItemGroup>

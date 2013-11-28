@@ -14,6 +14,11 @@ namespace Helios.Core.Eventing.Subscriptions
 
         protected Action<object, EventArgs> InternalCallback;
 
+        public void Invoke()
+        {
+            Invoke(this, new EventArgs());
+        }
+
         public void Invoke(object sender, EventArgs e)
         {
             var h = InternalCallback;

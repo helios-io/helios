@@ -8,6 +8,8 @@ namespace Helios.Core.Eventing
     /// </summary>
     public interface ITopicSubscription
     {
+        void Invoke();
+
         void Invoke(object sender, EventArgs e);
     }
 }

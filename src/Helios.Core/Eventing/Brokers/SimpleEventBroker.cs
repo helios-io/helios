@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Helios.Core.Ops;
+using Helios.Core.Ops.Executors;
 
 namespace Helios.Core.Eventing.Brokers
 {
@@ -13,10 +15,14 @@ namespace Helios.Core.Eventing.Brokers
         public event EventHandler<EventSubscriptionEventArgs<TTopic, TSubscriber>> SubscriptionAdded = delegate { };
         public event EventHandler<EventSubscriptionEventArgs<TTopic, TSubscriber>> SubscriptionRemoved = delegate { };
 
+        protected IExecutor Executor;
         protected IDictionary<TTopic, IDictionary<TSubscriber, ITopicSubscription>> Subscribers;
 
-        public SimpleEventBroker()
+        public SimpleEventBroker() : this(new BasicExecutor()){}
+
+        public SimpleEventBroker(IExecutor executor)
         {
+            Executor = executor;
             Subscribers = new Dictionary<TTopic, IDictionary<TSubscriber, ITopicSubscription>>();
         } 
 
@@ -48,7 +54,7 @@ namespace Helios.Core.Eventing.Brokers
                 {
                     var h = subscriber;
                     if (h == null) continue; //shouldn't happen, but in case any delegates have been GC-ed...
-                    h.Invoke(sender, e);
+                    Executor.Execute(() => h.Invoke(sender, e));
                 }
             }
         }
