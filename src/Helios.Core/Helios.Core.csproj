@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Concurrency\IFiber.cs" />
+    <Compile Include="Concurrency\SynchronousFiber.cs" />
     <Compile Include="Eventing\EventSubscriptionEventArgs.cs" />
     <Compile Include="Eventing\IEventBroker.cs" />
     <Compile Include="Eventing\ITopicSubscription.cs" />
@@ -57,7 +58,7 @@
     <Compile Include="Net\IConnection.cs" />
     <Compile Include="Net\IConnectionBuilder.cs" />
     <Compile Include="Net\IConnectionProvider.cs" />
-    <Compile Include="Net\NormalConnectionBuilder.cs" />
+    <Compile Include="Net\Builders\NormalConnectionBuilder.cs" />
     <Compile Include="Net\Transports\IStreamTransport.cs" />
     <Compile Include="Net\Transports\ITransport.cs" />
     <Compile Include="Net\Connections\ConnectionBase.cs" />
