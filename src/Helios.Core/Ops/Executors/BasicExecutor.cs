@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Helios.Core.Util.Collections;
+using Helios.Core.Util.TimedOps;
 
 namespace Helios.Core.Ops.Executors
 {
@@ -14,7 +15,20 @@ namespace Helios.Core.Ops.Executors
             AcceptingJobs = true;
         }
 
-        public bool AcceptingJobs { get; private set; }
+        private ScheduledValue<bool> _scheduledValue;
+
+        public bool AcceptingJobs
+        {
+            get
+            {
+                return _scheduledValue.Value;
+            }
+            set
+            {
+                _scheduledValue = value;
+            }
+        }
+
         public void Execute(Action op)
         {
             if (!AcceptingJobs) return;
@@ -47,6 +61,12 @@ namespace Helios.Core.Ops.Executors
         public void Shutdown()
         {
             AcceptingJobs = false;
+        }
+
+        ~BasicExecutor()
+        {
+            if(!_scheduledValue.WasDisposed)
+                _scheduledValue.Dispose();
         }
     }
 }

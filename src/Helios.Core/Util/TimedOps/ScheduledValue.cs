@@ -24,7 +24,7 @@ namespace Helios.Core.Util.TimedOps
 
         protected T FutureValue;
 
-        public T Value { get; protected set; }
+        public T Value { get; set; }
 
         public bool IsScheduled { get; protected set; }
 
@@ -65,6 +65,22 @@ namespace Helios.Core.Util.TimedOps
             Cancel();
         }
 
+        #region Conversion
+
+        public static implicit operator T(ScheduledValue<T> o)
+        {
+            return o.Value;
+        }
+
+        public static implicit operator ScheduledValue<T>(T o)
+        {
+            return new ScheduledValue<T>(o);
+        }
+
+        #endregion
+
+        #region Object overloads
+
         public override bool Equals(object obj)
         {
             return Value.Equals(obj);
@@ -79,6 +95,8 @@ namespace Helios.Core.Util.TimedOps
         {
             return Value.ToString();
         }
+
+        #endregion
 
         #region IDisposable Members
 
