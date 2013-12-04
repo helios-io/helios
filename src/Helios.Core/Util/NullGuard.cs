@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Helios.Core.Util
 {
@@ -7,8 +9,9 @@ namespace Helios.Core.Util
     /// </summary>
     public static class NullGuard
     {
-        public static TOut NotNull<TIn, TOut>(this TIn obj, Func<TIn, TOut> nextOp) where TOut:class
-                                                                                 where TIn:class
+        public static TOut NotNull<TIn, TOut>(this TIn obj, Func<TIn, TOut> nextOp)
+            where TOut : class
+            where TIn : class
         {
             if (obj == null)
                 return default(TOut);
@@ -20,6 +23,16 @@ namespace Helios.Core.Util
             if (obj == null)
                 return;
             nextOp.Invoke(obj);
+        }
+
+        public static void InitializeIfNull<TIn>(this IEnumerable<TIn> obj, int initialSize = 10)
+        {
+           if(obj == null) obj = new List<TIn>(initialSize);
+        }
+
+        public static void InitializeIfNull<TIn>(this TIn obj, TIn defaultValue) where TIn:class
+        {
+            if (obj == null) obj = defaultValue;
         }
     }
 }

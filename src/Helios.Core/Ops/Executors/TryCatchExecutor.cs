@@ -7,16 +7,19 @@ using Helios.Core.Util.TimedOps;
 
 namespace Helios.Core.Ops.Executors
 {
-    /// <summary>
-    /// Basic synchronous executor
-    /// </summary>
-    public class BasicExecutor : IExecutor
+    class TryCatchExecutor : IExecutor
     {
-        public BasicExecutor()
+        public TryCatchExecutor() : this(exception => { })
         {
+        }
+
+        public TryCatchExecutor(Action<Exception> callback)
+        {
+            _exceptionCallback = callback;
             AcceptingJobs = true;
         }
 
+        private readonly Action<Exception> _exceptionCallback;
         protected ScheduledValue<bool> ScheduledValue;
 
         public bool AcceptingJobs
@@ -33,9 +36,15 @@ namespace Helios.Core.Ops.Executors
 
         public void Execute(Action op)
         {
-            if (!AcceptingJobs) return;
-
-            op();
+            try
+            {
+                if (!AcceptingJobs) return;
+                op();
+            }
+            catch (Exception ex)
+            {
+                _exceptionCallback(ex);
+            }
         }
 
         public void Execute(IList<Action> op)
@@ -45,15 +54,25 @@ namespace Helios.Core.Ops.Executors
 
         public void Execute(IList<Action> ops, Action<IEnumerable<Action>> remainingOps)
         {
-            for (var i = 0; i < ops.Count; i++)
+            var i = 0;
+            try
             {
-                if (!AcceptingJobs)
+                for (; i < ops.Count; i++)
                 {
-                    remainingOps.NotNull(obj => remainingOps(ops.Skip(i + 1)));
-                    break;
-                }
+                    if (!AcceptingJobs)
+                    {
+// ReSharper disable once AccessToModifiedClosure
+                        remainingOps.NotNull(obj => remainingOps(ops.Skip(i + 1)));
+                        break;
+                    }
 
-                ops[i]();
+                    ops[i]();
+                }
+            }
+            catch (Exception ex)
+            {
+                remainingOps.NotNull(obj => remainingOps(ops.Skip(i + 1)));
+                _exceptionCallback(ex);
             }
         }
 
@@ -68,7 +87,7 @@ namespace Helios.Core.Ops.Executors
             ScheduledValue.Schedule(false, gracePeriod);
         }
 
-        ~BasicExecutor()
+        ~TryCatchExecutor()
         {
             if(!ScheduledValue.WasDisposed)
                 ScheduledValue.Dispose();

@@ -68,6 +68,7 @@
     <Compile Include="Net\Transports\StreamTransport.cs" />
     <Compile Include="Net\Transports\TransportBase.cs" />
     <Compile Include="Ops\Executors\BasicExecutor.cs" />
+    <Compile Include="Ops\Executors\TryCatchExecutor.cs" />
     <Compile Include="Ops\IExecutor.cs" />
     <Compile Include="Ops\IOperationResult.cs" />
     <Compile Include="Ops\OperationResult.cs" />

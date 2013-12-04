@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Timers;
+using Newtonsoft.Json.Linq;
 
 namespace Helios.Core.Util.TimedOps
 {
@@ -11,6 +12,8 @@ namespace Helios.Core.Util.TimedOps
     public class ScheduledValue<T> : IDisposable
     {
         protected Timer SetTimer;
+
+        public event EventHandler ScheduleFinished;
 
         public ScheduledValue(T initialValue)
         {
@@ -63,7 +66,19 @@ namespace Helios.Core.Util.TimedOps
             WasSet = true;
             IsScheduled = false;
             Cancel();
+            InvokeScheduleFinished();
         }
+
+        #region Events
+
+        private void InvokeScheduleFinished()
+        {
+            var h = ScheduleFinished;
+            if (h == null) return;
+            h(this, new EventArgs());
+        }
+
+        #endregion
 
         #region Conversion
 
