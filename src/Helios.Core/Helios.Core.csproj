@@ -52,6 +52,8 @@
     <Compile Include="Eventing\Brokers\SimpleEventBroker.cs" />
     <Compile Include="Eventing\Subscriptions\TopicHelpers.cs" />
     <Compile Include="Eventing\Subscriptions\NormalTopicSubscription.cs" />
+    <Compile Include="Exceptions\Events\ExceptionEventArgs.cs" />
+    <Compile Include="Exceptions\Events\ExceptionTopicSubscription.cs" />
     <Compile Include="Exceptions\ExceptionType.cs" />
     <Compile Include="Exceptions\HeliosConnectionException.cs" />
     <Compile Include="Net\IClusterManager.cs" />
@@ -92,6 +94,7 @@
     <Compile Include="Util\Concurrency\TaskRunner.cs" />
     <Compile Include="Util\Guard.cs" />
     <Compile Include="Util\NullGuard.cs" />
+    <Compile Include="Util\CollectionBuilder.cs" />
     <Compile Include="Util\TimedOps\ScheduledValue.cs" />
   </ItemGroup>
   <ItemGroup>
