@@ -4,8 +4,6 @@ using System.Net.Sockets;
 using System.Threading;
 using Helios.Core.Concurrency;
 using Helios.Core.Exceptions;
-using Helios.Core.Ops;
-using Helios.Core.Util.Concurrency;
 
 namespace Helios.Core.Reactor.Tcp
 {
@@ -13,13 +11,16 @@ namespace Helios.Core.Reactor.Tcp
     {
         protected TcpListener Listener;
         protected ManualResetEventSlim ResetEvent;
+        protected IFiber Fiber;
 
+        public SimpleTcpReactor(IPAddress localAddress, int localPort) : this(localAddress, localPort, FiberFactory.CreateFiber(FiberMode.MaximumConcurrency)) { }
 
-        public SimpleTcpReactor(IPAddress localAddress, int localPort)
+        public SimpleTcpReactor(IPAddress localAddress, int localPort, IFiber fiber)
         {
             ResetEvent = new ManualResetEventSlim();
             this.LocalEndpoint = new IPEndPoint(localAddress, localPort);
             Listener = new TcpListener(this.LocalEndpoint);
+            Fiber = fiber;
         }
 
         public override bool IsActive { get; protected set; }
@@ -49,7 +50,7 @@ namespace Helios.Core.Reactor.Tcp
                 while (!ResetEvent.IsSet)
                 {
                     var client = Listener.AcceptTcpClient();
-                    TaskRunner.Run(() => InvokeAcceptConnection(client));
+                    Fiber.Add(() => InvokeAcceptConnection(client));
                 }
             }
             catch (SocketException e)
@@ -75,6 +76,7 @@ namespace Helios.Core.Reactor.Tcp
             {
                 Listener.Stop();
                 AcceptConnection = delegate { };
+                Fiber.Dispose();
             }
             IsActive = false;
             WasDisposed = true;
