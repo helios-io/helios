@@ -1,44 +1,37 @@
 ﻿using System;
-using System.Timers;
 using Helios.Core.Ops;
+using Helios.Core.Ops.Executors;
 
 namespace Helios.Core.Concurrency
 {
+    /// <summary>
+    /// IFiber implementation that doesn't use any form of concurrency under the hood
+    /// </summary>
     public class SynchronousFiber : IFiber
     {
-        bool _acceptingRequests;
-
-        protected Timer ShutdownTimer;
         protected readonly IExecutor Executor;
+
+        public SynchronousFiber() : this(new BasicExecutor()) { }
 
         public SynchronousFiber(IExecutor executor)
         {
-            _acceptingRequests = true;
             Executor = executor;
         }
 
         public void Add(Action op)
         {
-            if(_acceptingRequests)
-                op();
+            if(Executor.AcceptingJobs)
+                Executor.Execute(op);
         }
 
         public void Shutdown(TimeSpan gracePeriod)
         {
-            ShutdownTimer = new Timer(gracePeriod.TotalMilliseconds);
-
-            ShutdownTimer.Elapsed += (sender, args) =>
-            {
-                Stop();
-                ShutdownTimer.Stop();
-                ShutdownTimer.Dispose();
-                ShutdownTimer = null;
-            };
+            Executor.Shutdown(gracePeriod);
         }
 
         public void Stop()
         {
-            _acceptingRequests = false;
+            Executor.Shutdown();
         }
     }
 }

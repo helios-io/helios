@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using Helios.Core.Exceptions;
 using Helios.Core.Reactor;
+using Helios.Core.Reactor.Tcp;
 using Helios.Core.Topology;
 
 namespace Helios.Samples.TcpReactorServer
@@ -27,7 +28,7 @@ namespace Helios.Samples.TcpReactorServer
             
             Console.WriteLine("Starting echo server...");
             Console.WriteLine("Will begin listening for requests on {0}:{1}", ip, Port);
-            IReactor reactor = new TcpReactor(ip, Port);
+            IReactor reactor = new SimpleTcpReactor(ip, Port);
             reactor.AcceptConnection += (sender, eventArgs) =>
             {
                 var connection = eventArgs.Connection;

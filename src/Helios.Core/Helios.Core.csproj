@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Concurrency\TaskPerActionFiber.cs" />
     <Compile Include="Concurrency\IFiber.cs" />
     <Compile Include="Concurrency\SynchronousFiber.cs" />
     <Compile Include="Eventing\EventSubscriptionEventArgs.cs" />
@@ -80,7 +81,7 @@
     <Compile Include="Reactor\IReactor.cs" />
     <Compile Include="Reactor\ReactorBase.cs" />
     <Compile Include="Reactor\ReactorEventArgs.cs" />
-    <Compile Include="Reactor\TcpReactor.cs" />
+    <Compile Include="Reactor\Tcp\SimpleTcpReactor.cs" />
     <Compile Include="Serialization\Bson\BsonTransportSerializer.cs" />
     <Compile Include="Serialization\ITransportSerializer.cs" />
     <Compile Include="Topology\INode.cs" />
@@ -91,6 +92,7 @@
     <Compile Include="Util\Collections\ConcurrentFixedSizeStack.cs" />
     <Compile Include="Util\Collections\FixedSizeStack.cs" />
     <Compile Include="Util\Collections\IFixedSizeStack.cs" />
+    <Compile Include="Util\Concurrency\FixedSizeThreadPoolTaskScheduler.cs" />
     <Compile Include="Util\Concurrency\TaskRunner.cs" />
     <Compile Include="Util\Guard.cs" />
     <Compile Include="Util\NullGuard.cs" />
