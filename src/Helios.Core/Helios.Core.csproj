@@ -59,11 +59,14 @@
     <Compile Include="Exceptions\Events\ExceptionTopicSubscription.cs" />
     <Compile Include="Exceptions\ExceptionType.cs" />
     <Compile Include="Exceptions\HeliosConnectionException.cs" />
+    <Compile Include="Exceptions\HeliosNodeException.cs" />
     <Compile Include="Net\IClusterManager.cs" />
     <Compile Include="Net\IConnection.cs" />
     <Compile Include="Net\IConnectionBuilder.cs" />
+    <Compile Include="Net\IConnectionExtensions.cs" />
     <Compile Include="Net\IConnectionProvider.cs" />
     <Compile Include="Net\Builders\NormalConnectionBuilder.cs" />
+    <Compile Include="Net\Clustering\RoundRobinClusterManager.cs" />
     <Compile Include="Net\Transports\IStreamTransport.cs" />
     <Compile Include="Net\Transports\ITransport.cs" />
     <Compile Include="Net\Connections\ConnectionBase.cs" />

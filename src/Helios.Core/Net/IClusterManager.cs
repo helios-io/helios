@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Helios.Core.Topology;
 
 namespace Helios.Core.Net
@@ -6,7 +7,7 @@ namespace Helios.Core.Net
     /// <summary>
     /// Class used to manage a cluster of servers
     /// </summary>
-    public interface IClusterManager
+    public interface IClusterManager : IEnumerable<INode>
     {
         /// <summary>
         /// Are they any servers available?
@@ -32,5 +33,7 @@ namespace Helios.Core.Net
         void Add(INode node);
 
         void Remove(INode node);
+
+        bool Exists(INode node);
     }
 }

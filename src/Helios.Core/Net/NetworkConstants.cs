@@ -8,9 +8,9 @@ namespace Helios.Core.Net
     public static class NetworkConstants
     {
         /// <summary>
-        /// The default keep-alive interval used to see if our servers are still alive
+        /// The default interval used to check-in on blacked out nodes, when not using exponential backoff
         /// </summary>
-        public static readonly TimeSpan DefaultHealthCheckPollingInterval = TimeSpan.FromSeconds(1);
+        public static readonly TimeSpan DefaultNodeRecoveryInterval = TimeSpan.FromSeconds(30);
 
         /// <summary>
         /// The default connectivity timeout

@@ -8,9 +8,14 @@ namespace Helios.Core.Topology
     /// </summary>
     public class Cluster : IEnumerable<INode>
     {
-        public Cluster()
+        public Cluster(IEnumerable<INode> nodes)
         {
-            Nodes = new HashSet<INode>();
+            Nodes = new HashSet<INode>(nodes);
+        }
+
+        public Cluster()
+            : this(new List<INode>())
+        {
         }
 
         /// <summary>
@@ -41,5 +46,15 @@ namespace Helios.Core.Topology
         }
 
         #endregion
+
+        public void Clear()
+        {
+            Nodes.Clear();
+        }
+
+        public int Count
+        {
+            get { return Nodes.Count; }
+        }
     }
 }
