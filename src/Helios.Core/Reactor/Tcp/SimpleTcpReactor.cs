@@ -5,15 +5,15 @@ using System.Threading;
 using Helios.Core.Exceptions;
 using Helios.Core.Util.Concurrency;
 
-namespace Helios.Core.Reactor
+namespace Helios.Core.Reactor.Tcp
 {
-    public class TcpReactor : ReactorBase
+    public class SimpleTcpReactor : ReactorBase
     {
         protected TcpListener Listener;
         protected ManualResetEventSlim ResetEvent;
 
 
-        public TcpReactor(IPAddress localAddress, int localPort)
+        public SimpleTcpReactor(IPAddress localAddress, int localPort)
         {
             ResetEvent = new ManualResetEventSlim();
             this.LocalEndpoint = new IPEndPoint(localAddress, localPort);
@@ -40,7 +40,7 @@ namespace Helios.Core.Reactor
             ResetEvent.Set();
         }
 
-        public void EventLoop()
+        public virtual void EventLoop()
         {
             try
             {
@@ -58,7 +58,7 @@ namespace Helios.Core.Reactor
 
         public override event EventHandler<ReactorEventArgs> AcceptConnection = delegate { };
 
-        private void InvokeAcceptConnection(TcpClient tcpClient)
+        protected virtual void InvokeAcceptConnection(TcpClient tcpClient)
         {
             var h = AcceptConnection;
             if (h == null) return;
