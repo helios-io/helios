@@ -5,8 +5,10 @@ namespace Helios.Core.Concurrency
     /// <summary>
     /// Interface for lightweight threading and execution
     /// </summary>
-    public interface IFiber
+    public interface IFiber : IDisposable
     {
+        bool WasDisposed { get; }
+
         void Add(Action op);
 
         /// <summary>
@@ -19,5 +21,7 @@ namespace Helios.Core.Concurrency
         /// Performs a hard-stop on the Fiber - no more actions can be executed
         /// </summary>
         void Stop();
+
+        void Dispose(bool isDisposing);
     }
 }

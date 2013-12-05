@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,6 +9,15 @@ namespace Helios.Core.Util.Concurrency
     /// </summary>
     internal class TaskRunner
     {
+        public const int DefaultConcurrency = 0;
+
+        public static TaskFactory GetTaskFactory(int concurrencyLevel = DefaultConcurrency)
+        {
+            if (concurrencyLevel <= DefaultConcurrency)
+                return new TaskFactory(TaskScheduler.Default);
+            return new TaskFactory(new FixedSizeThreadPoolTaskScheduler(concurrencyLevel));
+        }
+
         public static Task Run(Action a)
         {
             return Task.Run(a);

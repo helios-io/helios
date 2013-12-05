@@ -84,6 +84,11 @@ namespace Helios.Core.Util.Concurrency
             }
         }
 
+        ~FixedSizeThreadPoolTaskScheduler()
+        {
+            Dispose();
+        }
+
         #endregion
     }
 }

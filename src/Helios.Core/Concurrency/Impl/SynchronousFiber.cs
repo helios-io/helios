@@ -2,7 +2,7 @@
 using Helios.Core.Ops;
 using Helios.Core.Ops.Executors;
 
-namespace Helios.Core.Concurrency
+namespace Helios.Core.Concurrency.Impl
 {
     /// <summary>
     /// IFiber implementation that doesn't use any form of concurrency under the hood
@@ -17,6 +17,8 @@ namespace Helios.Core.Concurrency
         {
             Executor = executor;
         }
+
+        public bool WasDisposed { get; private set; }
 
         public void Add(Action op)
         {
@@ -33,5 +35,27 @@ namespace Helios.Core.Concurrency
         {
             Executor.Shutdown();
         }
+
+        public void Dispose(bool isDisposing)
+        {
+            if (!WasDisposed)
+            {
+                if (isDisposing)
+                {
+                    Executor.Shutdown();
+                } 
+            }
+
+            WasDisposed = true;
+        }
+
+        #region IDisposable members
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        #endregion
     }
 }

@@ -16,6 +16,7 @@ namespace Helios.Core.Ops.Executors
         {
             _exceptionCallback = callback;
             AcceptingJobs = true;
+            ScheduledValue.ScheduleFinished += (sender, args) => ScheduledValue.Dispose();
         }
 
         private readonly Action<Exception> _exceptionCallback;
@@ -27,7 +28,7 @@ namespace Helios.Core.Ops.Executors
             {
                 return ScheduledValue.Value;
             }
-            set
+            protected set
             {
                 ScheduledValue = value;
             }
@@ -78,7 +79,7 @@ namespace Helios.Core.Ops.Executors
         public void Shutdown()
         {
             AcceptingJobs = false;
-            ScheduledValue.Cancel();
+            ScheduledValue.Dispose();
         }
 
         public void Shutdown(TimeSpan gracePeriod)

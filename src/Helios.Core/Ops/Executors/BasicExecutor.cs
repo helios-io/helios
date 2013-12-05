@@ -14,6 +14,7 @@ namespace Helios.Core.Ops.Executors
         public BasicExecutor()
         {
             AcceptingJobs = true;
+            ScheduledValue.ScheduleFinished += (sender, args) => ScheduledValue.Dispose();
         }
 
         protected ScheduledValue<bool> ScheduledValue;
@@ -24,7 +25,7 @@ namespace Helios.Core.Ops.Executors
             {
                 return ScheduledValue.Value;
             }
-            set
+            protected set
             {
                 ScheduledValue = value;
             }
@@ -59,7 +60,7 @@ namespace Helios.Core.Ops.Executors
         public void Shutdown()
         {
             AcceptingJobs = false;
-            ScheduledValue.Cancel();
+            ScheduledValue.Dispose();
         }
 
         public void Shutdown(TimeSpan gracePeriod)

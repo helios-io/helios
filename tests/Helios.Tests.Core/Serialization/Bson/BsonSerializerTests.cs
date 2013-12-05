@@ -17,10 +17,12 @@ namespace Helios.Tests.Core.Serialization.Bson
         #region Setup / Teardown
 
         // input from example at http://bsonspec.org/#/specification
+/*
         string expectedJson =
         @"{
                 ""hello"" : ""world""
         }";
+*/
 
         byte[] expectedBinary = Encoding.UTF8.GetBytes(
                                 "\x16\x00\x00\x00\x02hello\x00" +

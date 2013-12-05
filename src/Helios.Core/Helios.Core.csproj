@@ -44,9 +44,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Concurrency\TaskPerActionFiber.cs" />
+    <Compile Include="Concurrency\FiberExtensions.cs" />
+    <Compile Include="Concurrency\FiberFactory.cs" />
+    <Compile Include="Concurrency\FiberMode.cs" />
+    <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />
     <Compile Include="Concurrency\IFiber.cs" />
-    <Compile Include="Concurrency\SynchronousFiber.cs" />
+    <Compile Include="Concurrency\Impl\SynchronousFiber.cs" />
     <Compile Include="Eventing\EventSubscriptionEventArgs.cs" />
     <Compile Include="Eventing\IEventBroker.cs" />
     <Compile Include="Eventing\ITopicSubscription.cs" />
