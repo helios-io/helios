@@ -6,7 +6,7 @@ using Helios.Core.Util.TimedOps;
 
 namespace Helios.Core.Ops.Executors
 {
-    class TryCatchExecutor : IExecutor
+    public class TryCatchExecutor : IExecutor
     {
         public TryCatchExecutor() : this(exception => { })
         {
