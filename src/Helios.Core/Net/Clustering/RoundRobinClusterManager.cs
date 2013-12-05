@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Helios.Core.Exceptions;
 using Helios.Core.Topology;
 using Helios.Core.Util;
 
@@ -66,7 +67,8 @@ namespace Helios.Core.Net.Clustering
             {
                 Blacklisted.AddNode(node);
                 RefreshServerQueue();
-                ErrorCallback.NotNull(a => a(exc));
+                exc.InitializeIfNull(new Exception("Unknown exception"));
+                ErrorCallback.NotNull(a => a(new HeliosNodeException(exc, node)));
             }
         }
 

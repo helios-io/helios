@@ -7,7 +7,7 @@ using Helios.Core.Util.Concurrency;
 
 namespace Helios.Core.Concurrency.Impl
 {
-    public class ThreadPoolFiber : IFiber, IDisposable
+    public class ThreadPoolFiber : IFiber
     {
         protected readonly IExecutor Executor;
         protected readonly TaskFactory TF;

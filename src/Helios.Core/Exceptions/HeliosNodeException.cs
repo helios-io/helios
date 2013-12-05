@@ -5,6 +5,10 @@ namespace Helios.Core.Exceptions
 {
     public class HeliosNodeException : Exception
     {
+        public HeliosNodeException(Exception innerException, INode affectedNode) : this(innerException.Message, innerException, affectedNode)
+        {
+        }
+
         public HeliosNodeException(string message) : base(message) { }
 
         public HeliosNodeException(string message, Exception innerException) : base(message, innerException) { }

@@ -1,5 +1,5 @@
 ﻿using System;
-using Helios.Core.Topology;
+using Helios.Core.Net.Providers;
 
 namespace Helios.Core.Net
 {
@@ -8,5 +8,17 @@ namespace Helios.Core.Net
     /// </summary>
     public interface IConnectionProvider
     {
+        IClusterManager Cluster { get; }
+
+        IConnection GetConnection();
+
+        ConnectionProviderType Type { get; }
+
+        /// <summary>
+        /// Report an error with the current connection
+        /// </summary>
+        /// <param name="connection">An IConnection object</param>
+        /// <param name="exc">OPTIONAL. An exception that occurred on the network</param>
+        void MarkConnectionAsUnhealthy(IConnection connection, Exception exc = null);
     }
 }

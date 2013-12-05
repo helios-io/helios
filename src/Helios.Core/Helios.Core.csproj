@@ -60,6 +60,9 @@
     <Compile Include="Exceptions\ExceptionType.cs" />
     <Compile Include="Exceptions\HeliosConnectionException.cs" />
     <Compile Include="Exceptions\HeliosNodeException.cs" />
+    <Compile Include="Net\IKeyedConnectionProvider.cs" />
+    <Compile Include="Net\Providers\ConnectionProviderBase.cs" />
+    <Compile Include="Net\Providers\ConnectionProviderType.cs" />
     <Compile Include="Net\IClusterManager.cs" />
     <Compile Include="Net\IConnection.cs" />
     <Compile Include="Net\IConnectionBuilder.cs" />
@@ -67,6 +70,9 @@
     <Compile Include="Net\IConnectionProvider.cs" />
     <Compile Include="Net\Builders\NormalConnectionBuilder.cs" />
     <Compile Include="Net\Clustering\RoundRobinClusterManager.cs" />
+    <Compile Include="Net\Clustering\SingleNodeClusterManager.cs" />
+    <Compile Include="Net\Providers\KeyedConnectionProviderBase.cs" />
+    <Compile Include="Net\Providers\PooledKeyedConnectionProvider.cs" />
     <Compile Include="Net\Transports\IStreamTransport.cs" />
     <Compile Include="Net\Transports\ITransport.cs" />
     <Compile Include="Net\Connections\ConnectionBase.cs" />
@@ -99,6 +105,7 @@
     <Compile Include="Util\Collections\IFixedSizeStack.cs" />
     <Compile Include="Util\Concurrency\FixedSizeThreadPoolTaskScheduler.cs" />
     <Compile Include="Util\Concurrency\TaskRunner.cs" />
+    <Compile Include="Util\FlagsHelper.cs" />
     <Compile Include="Util\Guard.cs" />
     <Compile Include="Util\NullGuard.cs" />
     <Compile Include="Util\CollectionBuilder.cs" />
