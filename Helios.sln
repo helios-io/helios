@@ -10,9 +10,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1AB2FE
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios", "src\Helios.Core\Helios.csproj", "{FCC26FA6-1B8E-413D-ACA5-A25B9C6459A1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios", "src\Helios\Helios.csproj", "{FCC26FA6-1B8E-413D-ACA5-A25B9C6459A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Tests", "tests\Helios.Tests.Core\Helios.Tests.csproj", "{622145C4-0780-412C-9094-B57CEC84E216}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Tests", "tests\Helios.Tests\Helios.Tests.csproj", "{622145C4-0780-412C-9094-B57CEC84E216}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{CDCC7F36-83CF-430B-86CF-46CDF610301F}"
 EndProject
