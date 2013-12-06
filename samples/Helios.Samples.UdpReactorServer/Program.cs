@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Text;
+using Helios.Core.Concurrency;
 using Helios.Core.Net;
 using Helios.Core.Reactor;
 using Helios.Core.Reactor.Udp;
@@ -27,13 +28,15 @@ namespace Helios.Samples.UdpReactorServer
 
             Console.WriteLine("Starting UDP echo server...");
             Console.WriteLine("Will begin listening for requests on {0}:{1}", ip, Port);
-            IConnectionlessReactor reactor = new SimpleUdpReactor(ip, Port);
+            IConnectionlessReactor reactor = new SimpleUdpReactor(ip, Port, FiberFactory.CreateFiber(1));
             reactor.DataAvailable += (sender, bytes) =>
             {
                 var connection = bytes.ResponseChannel;
                 var node = bytes.Data.RemoteHost;
                 var cleanBuffer = bytes.Data.Data;
                 var str = Encoding.UTF8.GetString(cleanBuffer.Take(bytes.Data.Bytes).ToArray()).Trim();
+                if(str.ToLowerInvariant().Equals("close"))
+                    reactor.Stop();
                 ServerPrint(connection.Node, string.Format("recieved \"{0}\"", str));
                 ServerPrint(connection.Node,
                     string.Format("sending \"{0}\" back to {1}:{2}", str, node.Host, node.Port));

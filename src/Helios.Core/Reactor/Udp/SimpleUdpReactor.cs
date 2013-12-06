@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using Helios.Core.Concurrency;
 using Helios.Core.Exceptions;
@@ -19,6 +20,12 @@ namespace Helios.Core.Reactor.Udp
             this(
             new UdpConnection(new Node() { Host = localAddress, Port = localPort, TransportType = TransportType.Udp}), 
             FiberFactory.CreateFiber(FiberMode.MaximumConcurrency)) { }
+
+        public SimpleUdpReactor(IPAddress localAddress, int localPort, IFiber fiber) :
+            this(new UdpConnection(new Node() { Host = localAddress, Port = localPort, TransportType = TransportType.Udp }), fiber)
+        {
+            
+        }
 
         public SimpleUdpReactor(IConnection udpConnection, IFiber fiber)
         {
@@ -44,10 +51,20 @@ namespace Helios.Core.Reactor.Udp
             Connection.Close();
         }
 
-        public virtual async void EventLoop()
+        public virtual void EventLoop()
         {
-            var data = await Connection.RecieveAsync();
-            Fiber.Add(() => InvokeDataAvailable(data));
+            try
+            {
+                while (!ResetEvent.IsSet)
+                {
+                    var data = Connection.Receive();
+                    Fiber.Add(() => InvokeDataAvailable(data));
+                }
+            }
+            catch (SocketException)
+            {
+
+            }
         }
 
         public event EventHandler<ReactorReceivedDataEventArgs> DataAvailable = delegate { };
