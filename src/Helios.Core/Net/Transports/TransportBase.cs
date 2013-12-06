@@ -9,7 +9,6 @@ namespace Helios.Core.Net.Transports
     public abstract class TransportBase : ITransport
     {
         public abstract bool Peek();
-
         public abstract int Read(byte[] buffer, int offset, int length);
         public abstract Task<int> ReadAsync(byte[] buffer, int offset, int length);
         public abstract Task<int> ReadAsync(byte[] buffer, int offset, int length, CancellationToken token);

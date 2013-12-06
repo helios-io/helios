@@ -1,9 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
-using Helios.Core.Net.Transports;
+using Helios.Core.Ops;
 using Helios.Core.Topology;
 
 namespace Helios.Core.Net
@@ -11,7 +9,7 @@ namespace Helios.Core.Net
     /// <summary>
     /// Interface used to describe an open connection to a client node / capability
     /// </summary>
-    public interface IConnection : IStreamTransport, IDisposable
+    public interface IConnection : IDisposable
     {
         DateTimeOffset Created { get; }
 
@@ -25,8 +23,31 @@ namespace Helios.Core.Net
 
         bool IsOpen();
 
+
+        /// <summary>
+        /// The total number of bytes written the network that are available to be read
+        /// </summary>
+        /// <returns>the number of bytes received from the network that are available to be read</returns>
+        int Available { get; }
+
         void Open();
 
         void Close();
+
+        /// <summary>
+        /// Recieve data from a remote host
+        /// </summary>
+        /// <returns>A NetworkData payload</returns>
+        NetworkData Receive();
+
+        Task<NetworkData> RecieveAsync();
+
+        /// <summary>
+        /// Send data to a remote host
+        /// </summary>
+        /// <param name="payload">A NetworkData payload</param>
+        void Send(NetworkData payload);
+
+        Task SendAsync(NetworkData payload);
     }
 }

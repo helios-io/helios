@@ -22,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{CDCC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Samples.TcpReactorServer", "samples\Helios.Samples.TcpReactorServer\Helios.Samples.TcpReactorServer.csproj", "{9217F519-A433-4C8F-9C09-ACE0A5CECC1D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Samples.UdpReactorServer", "samples\Helios.Samples.UdpReactorServer\Helios.Samples.UdpReactorServer.csproj", "{CAD07BA2-80FC-4C24-8395-85FC24F42047}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,11 +50,16 @@ Global
 		{9217F519-A433-4C8F-9C09-ACE0A5CECC1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9217F519-A433-4C8F-9C09-ACE0A5CECC1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9217F519-A433-4C8F-9C09-ACE0A5CECC1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAD07BA2-80FC-4C24-8395-85FC24F42047}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAD07BA2-80FC-4C24-8395-85FC24F42047}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAD07BA2-80FC-4C24-8395-85FC24F42047}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAD07BA2-80FC-4C24-8395-85FC24F42047}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9217F519-A433-4C8F-9C09-ACE0A5CECC1D} = {CDCC7F36-83CF-430B-86CF-46CDF610301F}
+		{CAD07BA2-80FC-4C24-8395-85FC24F42047} = {CDCC7F36-83CF-430B-86CF-46CDF610301F}
 	EndGlobalSection
 EndGlobal

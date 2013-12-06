@@ -11,8 +11,6 @@ namespace Helios.Core.Reactor
         public abstract void Stop();
         public IPEndPoint LocalEndpoint { get; protected set; }
 
-        public abstract event EventHandler<ReactorEventArgs> AcceptConnection;
-
         #region IDisposable Members
 
         public void Dispose()

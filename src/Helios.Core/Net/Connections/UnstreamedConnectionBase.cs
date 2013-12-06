@@ -1,47 +1,51 @@
 ﻿using System;
 using System.Net;
-using Helios.Core.Net.Transports;
+using System.Threading.Tasks;
+using Helios.Core.Ops;
 using Helios.Core.Topology;
 
 namespace Helios.Core.Net.Connections
 {
-    public abstract class ConnectionBase : StreamTransport, IConnection
+    public abstract class UnstreamedConnectionBase : IConnection
     {
-        protected ConnectionBase() : this(null) { }
+        protected UnstreamedConnectionBase() : this(null) { }
 
-        protected ConnectionBase(INode node, TimeSpan timeout) : base()
+        protected UnstreamedConnectionBase(INode node, TimeSpan timeout)
+            : base()
         {
             Created = DateTimeOffset.UtcNow;
             Node = node;
             Timeout = timeout;
         }
 
-        protected ConnectionBase(INode node) : this(node, NetworkConstants.DefaultConnectivityTimeout) { }
+        protected UnstreamedConnectionBase(INode node) : this(node, NetworkConstants.DefaultConnectivityTimeout) { }
 
         public DateTimeOffset Created { get; private set; }
         public INode Node { get; protected set; }
-
         public TimeSpan Timeout { get; private set; }
         public abstract TransportType Transport { get; }
         public bool WasDisposed { get; protected set; }
 
         public abstract bool IsOpen();
-
-        public override bool Peek()
-        {
-            return IsOpen();
-        }
-
+        public abstract int Available { get; }
         public abstract void Open();
 
         public abstract void Close();
+
+        public abstract NetworkData Receive();
+
+        public abstract Task<NetworkData> RecieveAsync();
+
+        public abstract void Send(NetworkData payload);
+
+        public abstract Task SendAsync(NetworkData payload);
 
         public override string ToString()
         {
             return string.Format("{0}/{1}", Node, Created);
         }
 
-        #region IDisposable Members
+        #region IDisposable members
 
         /// <summary>
         /// Prevents disposed connections from being re-used again
@@ -54,21 +58,11 @@ namespace Helios.Core.Net.Connections
 
         public virtual void Dispose()
         {
-            DisposeStreams(true);
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
         protected abstract void Dispose(bool disposing);
-
-        /// <summary>
-        /// Releases unmanaged resources and performs other cleanup operations before the
-        /// <see cref="IConnection"/> is reclaimed by garbage collection.
-        /// </summary>
-        ~ConnectionBase()
-        {
-            Dispose(true);
-        }
 
         #endregion
     }

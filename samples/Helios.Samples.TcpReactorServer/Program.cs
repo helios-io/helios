@@ -28,7 +28,7 @@ namespace Helios.Samples.TcpReactorServer
             
             Console.WriteLine("Starting echo server...");
             Console.WriteLine("Will begin listening for requests on {0}:{1}", ip, Port);
-            IReactor reactor = new SimpleTcpReactor(ip, Port);
+            IConnectedReactor reactor = new SimpleTcpReactor(ip, Port);
             reactor.AcceptConnection += (sender, eventArgs) =>
             {
                 var connection = eventArgs.Connection;

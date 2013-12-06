@@ -3,11 +3,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Helios.Core.Exceptions;
+using Helios.Core.Net.Transports;
 using Helios.Core.Topology;
 
 namespace Helios.Core.Net.Connections
 {
-    public class TcpConnection : ConnectionBase
+    public class TcpConnection : StreamedConnectionBase
     {
         protected TcpClient _client;
 
@@ -34,6 +35,15 @@ namespace Helios.Core.Net.Connections
         {
             if (_client == null) return false;
             return _client.Connected;
+        }
+
+        public override int Available
+        {
+            get
+            {
+                if (!IsOpen()) return 0;
+                return _client.Available;
+            }
         }
 
         public override void Open()

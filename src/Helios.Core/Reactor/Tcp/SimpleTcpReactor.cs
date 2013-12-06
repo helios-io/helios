@@ -7,7 +7,7 @@ using Helios.Core.Exceptions;
 
 namespace Helios.Core.Reactor.Tcp
 {
-    public class SimpleTcpReactor : ReactorBase
+    public class SimpleTcpReactor : ReactorBase, IConnectedReactor
     {
         protected TcpListener Listener;
         protected ManualResetEventSlim ResetEvent;
@@ -53,19 +53,19 @@ namespace Helios.Core.Reactor.Tcp
                     Fiber.Add(() => InvokeAcceptConnection(client));
                 }
             }
-            catch (SocketException e)
+            catch (SocketException)
             {
 
             }
         }
 
-        public override event EventHandler<ReactorEventArgs> AcceptConnection = delegate { };
+        public event EventHandler<ReactorAcceptedConnectionEventArgs> AcceptConnection = delegate { };
 
         protected virtual void InvokeAcceptConnection(TcpClient tcpClient)
         {
             var h = AcceptConnection;
             if (h == null) return;
-            h(this, ReactorEventArgs.Create(tcpClient));
+            h(this, ReactorAcceptedConnectionEventArgs.Create(tcpClient));
         }
 
         #region IDisposable Members

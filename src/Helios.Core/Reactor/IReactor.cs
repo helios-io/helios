@@ -19,11 +19,6 @@ namespace Helios.Core.Reactor
 
         IPEndPoint LocalEndpoint { get; }
 
-        /// <summary>
-        /// Event that is fired each time an incoming connection is received
-        /// </summary>
-        event EventHandler<ReactorEventArgs> AcceptConnection;
-
         void Dispose(bool disposing);
     }
 }
