@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -8,18 +7,24 @@ using Helios.Core.Topology;
 
 namespace Helios.Core.Net.Connections
 {
+    /// <summary>
+    /// UDP IConnection implementation.
+    /// 
+    /// <remarks>N.B. It's worth nothing that <see cref="Node"/> in this IConnection implementation
+    /// refers to the local port / address that this UDP socket is bound to, rather than a remote host.</remarks>
+    /// </summary>
     public class UdpConnection : UnstreamedConnectionBase
     {
         protected UdpClient _client;
 
-        public UdpConnection(INode node, TimeSpan timeout)
-            : base(node, timeout)
+        public UdpConnection(INode binding, TimeSpan timeout)
+            : base(binding, timeout)
         {
             InitClient();
         }
 
-        public UdpConnection(INode node)
-            : base(node)
+        public UdpConnection(INode binding)
+            : base(binding)
         {
             InitClient();
         }
@@ -57,12 +62,12 @@ namespace Helios.Core.Net.Connections
 
             if (IsOpen()) return;
 
-            if (Node == null || Node.Host == null)
+            if (Binding == null || Binding.Host == null)
             {
                 throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to a null Node or null Node.Host");
             }
 
-            if (Node.Port <= 0)
+            if (Binding.Port <= 0)
             {
                 throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to an invalid port");
             }
@@ -73,7 +78,7 @@ namespace Helios.Core.Net.Connections
             try
             {
                 // ReSharper disable once PossibleNullReferenceException
-                _client.Client.Bind(Node.ToEndPoint());
+                _client.Client.Bind(Binding.ToEndPoint());
             }
             catch (SocketException ex)
             {
@@ -94,7 +99,7 @@ namespace Helios.Core.Net.Connections
 
         public override NetworkData Receive()
         {
-            var remoteHost = Node.ToEndPoint();
+            var remoteHost = Binding.ToEndPoint();
             var bytes = _client.Receive(ref remoteHost);
             return NetworkData.Create(remoteHost.ToNode(Transport), bytes, bytes.Length);
         }
@@ -120,16 +125,16 @@ namespace Helios.Core.Net.Connections
         #region Internal members
 
 
-        private void InitClient()
+        protected void InitClient()
         {
-            _client = new UdpClient();
+            _client = new UdpClient(){ MulticastLoopback = false };
         }
 
-        private void InitClient(UdpClient client)
+        protected void InitClient(UdpClient client)
         {
             _client = client;
             var ipAddress = (IPEndPoint)_client.Client.RemoteEndPoint;
-            Node = NodeBuilder.FromEndpoint(ipAddress);
+            Binding = NodeBuilder.FromEndpoint(ipAddress);
         }
 
         #endregion

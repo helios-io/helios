@@ -9,6 +9,10 @@ using Helios.Core.Util;
 
 namespace Helios.Core.Net.Clustering
 {
+    /// <summary>
+    /// Round-robin cluster manager - more appropriate for connection-oriented transports like TCP than it is
+    /// for connectionless ones
+    /// </summary>
     public class RoundRobinClusterManager : IClusterManager
     {
         protected object _lock = new object();

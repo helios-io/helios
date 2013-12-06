@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
-using Helios.Core.Ops;
 using Helios.Core.Topology;
 
 namespace Helios.Core.Net.Connections
@@ -10,18 +9,19 @@ namespace Helios.Core.Net.Connections
     {
         protected UnstreamedConnectionBase() : this(null) { }
 
-        protected UnstreamedConnectionBase(INode node, TimeSpan timeout)
+        protected UnstreamedConnectionBase(INode binding, TimeSpan timeout)
             : base()
         {
             Created = DateTimeOffset.UtcNow;
-            Node = node;
+            Binding = binding;
             Timeout = timeout;
         }
 
-        protected UnstreamedConnectionBase(INode node) : this(node, NetworkConstants.DefaultConnectivityTimeout) { }
+        protected UnstreamedConnectionBase(INode binding) : this(binding, NetworkConstants.DefaultConnectivityTimeout) { }
 
         public DateTimeOffset Created { get; private set; }
-        public INode Node { get; protected set; }
+        public INode Node { get { return Binding; } }
+        public INode Binding { get; protected set; }
         public TimeSpan Timeout { get; private set; }
         public abstract TransportType Transport { get; }
         public bool WasDisposed { get; protected set; }
@@ -42,7 +42,7 @@ namespace Helios.Core.Net.Connections
 
         public override string ToString()
         {
-            return string.Format("{0}/{1}", Node, Created);
+            return string.Format("{0}/{1}", Binding, Created);
         }
 
         #region IDisposable members

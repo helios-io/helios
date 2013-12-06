@@ -23,5 +23,11 @@ namespace Helios.Core.Util
             if(value > maximumValue)
                 throw new ArgumentOutOfRangeException("value", string.Format("Value was {0} - cannot be greater than {1}!", value, maximumValue));
         }
+
+        public static void True(bool boolean, string errorMessage = "Expression should be true, but was false")
+        {
+            if(!boolean)
+                throw new ArgumentException(errorMessage);
+        }
     }
 }
