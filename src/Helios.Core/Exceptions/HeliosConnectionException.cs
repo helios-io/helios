@@ -7,7 +7,7 @@ namespace Helios.Core.Exceptions
         private readonly ExceptionType _type;
 
         public HeliosConnectionException()
-			: base()
+			: this(ExceptionType.Unknown)
 		{
 		}
 
@@ -17,7 +17,18 @@ namespace Helios.Core.Exceptions
             this._type = type;
         }
 
+        public HeliosConnectionException(ExceptionType type, Exception innerException)
+            : this(type, innerException.Message, innerException)
+        {
+        }
+
         public HeliosConnectionException(ExceptionType type, string message) : base(message)
+        {
+            this._type = type;
+        }
+
+        public HeliosConnectionException(ExceptionType type, string message, Exception innerException)
+            : base(message, innerException)
         {
             this._type = type;
         }

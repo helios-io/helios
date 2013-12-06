@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Eventing\SimpleEventBrokerTests.cs" />
+    <Compile Include="Net\TcpConnectionTests.cs" />
     <Compile Include="Ops\BasicExecutorTests.cs" />
     <Compile Include="Ops\TryCatchExecutorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -55,16 +55,27 @@ namespace Helios.Core.Net.Connections
             if (_client == null)
                 InitClient();
 
+           
+
             var ar = _client.BeginConnect(Node.Host, Node.Port, null, null);
             if (ar.AsyncWaitHandle.WaitOne(Timeout))
             {
-                _client.EndConnect(ar);
+                try
+                {
+                    _client.EndConnect(ar);
+                }
+                catch (SocketException ex)
+                {
+                    throw new HeliosConnectionException(ExceptionType.NotOpen, ex);
+                }
             }
             else
             {
                 _client.Close();
                 throw new HeliosConnectionException(ExceptionType.TimedOut, "Timed out on connect");
             }
+
+            InitStream();
         }
 
         public override void Close()
@@ -107,14 +118,12 @@ namespace Helios.Core.Net.Connections
 
         private void InitClient()
         {
-            _client = new TcpClient(Node.Host.ToString(), Node.Port)
+            _client = new TcpClient()
             {
                 ReceiveTimeout = Timeout.Seconds,
                 SendTimeout = Timeout.Seconds,
                 Client = {NoDelay = true}
             };
-
-            InitStream();
         }
 
         private void InitStream()

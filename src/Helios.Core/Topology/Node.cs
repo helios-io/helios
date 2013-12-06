@@ -8,6 +8,11 @@ namespace Helios.Core.Topology
     /// </summary>
     public class Node : INode
     {
+        public Node()
+        {
+            TransportType = TransportType.Tcp;
+        }
+
         /// <summary>
         /// The IP address of this seed
         /// </summary>
