@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using Helios.Core.Util.TimedOps;
+using Helios.Util.TimedOps;
 using NUnit.Framework;
 
-namespace Helios.Tests.Core.Util.TimedOps
+namespace Helios.Tests.Util.TimedOps
 {
     [TestFixture]
     public class ScheduledValueTests

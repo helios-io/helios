@@ -1,7 +1,7 @@
 ﻿using System;
-using Helios.Core.Eventing;
+using Helios.Eventing;
 
-namespace Helios.Core.Exceptions.Events
+namespace Helios.Exceptions.Events
 {
     /// <summary>
     /// Used by internal event brokers for routing events

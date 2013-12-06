@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.Core.Eventing.Subscriptions
+namespace Helios.Eventing.Subscriptions
 {
     /// <summary>
     /// Basic implementation of a topic subscription

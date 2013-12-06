@@ -1,7 +1,7 @@
 ﻿using System;
-using Helios.Core.Net;
+using Helios.Net;
 
-namespace Helios.Core.Reactor
+namespace Helios.Reactor
 {
     public class ReactorReceivedDataEventArgs : EventArgs
     {

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Helios.Core.Util;
-using Helios.Core.Util.TimedOps;
+using Helios.Util;
+using Helios.Util.TimedOps;
 
-namespace Helios.Core.Ops.Executors
+namespace Helios.Ops.Executors
 {
     /// <summary>
     /// Basic synchronous executor

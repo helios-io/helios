@@ -48,9 +48,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Helios.Core\Helios.Core.csproj">
+    <ProjectReference Include="..\..\src\Helios.Core\Helios.csproj">
       <Project>{fcc26fa6-1b8e-413d-aca5-a25b9c6459a1}</Project>
-      <Name>Helios.Core</Name>
+      <Name>Helios</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

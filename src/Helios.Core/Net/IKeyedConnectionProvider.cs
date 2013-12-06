@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Helios.Core.Net
+namespace Helios.Net
 {
     /// <summary>
     /// Keyed connection provider, which allows connection look-ups and searches

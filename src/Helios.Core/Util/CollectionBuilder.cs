@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace Helios.Core.Util
+namespace Helios.Util
 {
     /// <summary>
     /// Utility class for synthesizing arrays

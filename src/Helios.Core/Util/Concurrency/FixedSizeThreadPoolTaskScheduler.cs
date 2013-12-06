@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Helios.Core.Util.Concurrency
+namespace Helios.Util.Concurrency
 {
     /// <summary>
     /// Task scheduler that allows callers to use a limited-size thread pool

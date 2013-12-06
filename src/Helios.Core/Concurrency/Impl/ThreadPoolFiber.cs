@@ -1,24 +1,24 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Helios.Core.Ops;
-using Helios.Core.Ops.Executors;
-using Helios.Core.Util;
-using Helios.Core.Util.Concurrency;
+using Helios.Ops;
+using Helios.Ops.Executors;
+using Helios.Util;
+using Helios.Util.Concurrency;
 
-namespace Helios.Core.Concurrency.Impl
+namespace Helios.Concurrency.Impl
 {
     public class ThreadPoolFiber : IFiber
     {
         protected readonly IExecutor Executor;
         protected readonly TaskFactory TF;
 
-        public ThreadPoolFiber(int numThreads) : this(new TryCatchExecutor(), TaskRunner.GetTaskFactory(numThreads)) { }
+        public ThreadPoolFiber(int numThreads) : this((IExecutor) new TryCatchExecutor(), (TaskFactory) TaskRunner.GetTaskFactory(numThreads)) { }
 
-        public ThreadPoolFiber(IExecutor executor, int numThreads) : this(executor, TaskRunner.GetTaskFactory(numThreads)) { }
+        public ThreadPoolFiber(IExecutor executor, int numThreads) : this(executor, (TaskFactory) TaskRunner.GetTaskFactory(numThreads)) { }
 
-        public ThreadPoolFiber(IExecutor executor) : this(executor, TaskRunner.GetTaskFactory()) { }
+        public ThreadPoolFiber(IExecutor executor) : this(executor, (TaskFactory) TaskRunner.GetTaskFactory()) { }
 
-        public ThreadPoolFiber() : this(new TryCatchExecutor(), TaskRunner.GetTaskFactory()) { }
+        public ThreadPoolFiber() : this((IExecutor) new TryCatchExecutor(), (TaskFactory) TaskRunner.GetTaskFactory()) { }
 
         public ThreadPoolFiber(IExecutor executor, TaskFactory tf)
         {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.Core.Eventing
+namespace Helios.Eventing
 {
     public class EventSubscriptionEventArgs<TTopic, TSubscriber> : EventArgs
     {

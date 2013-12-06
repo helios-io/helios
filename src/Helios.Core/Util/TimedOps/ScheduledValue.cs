@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Timers;
-using Newtonsoft.Json.Linq;
 
-namespace Helios.Core.Util.TimedOps
+namespace Helios.Util.TimedOps
 {
     /// <summary>
     /// When triggered, ScheduledValue will update an underlying

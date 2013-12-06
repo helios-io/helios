@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
-using Helios.Core.Ops;
-using Helios.Core.Topology;
+using Helios.Topology;
 
-namespace Helios.Core.Net
+namespace Helios.Net
 {
     /// <summary>
     /// Interface used to describe an open connection to a client node / capability

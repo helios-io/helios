@@ -1,10 +1,9 @@
 ﻿using System;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using Helios.Core.Topology;
+using Helios.Topology;
 
-namespace Helios.Core.Net
+namespace Helios.Net
 {
     /// <summary>
     /// Data arrived via a remote host - used to help provide a common interface

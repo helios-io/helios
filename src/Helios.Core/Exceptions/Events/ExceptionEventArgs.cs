@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.Core.Exceptions.Events
+namespace Helios.Exceptions.Events
 {
     /// <summary>
     /// Event arguments used for topic subscriptions that subscribe to Exception Events

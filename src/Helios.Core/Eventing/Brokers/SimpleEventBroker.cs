@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Helios.Core.Ops;
-using Helios.Core.Ops.Executors;
+using Helios.Ops;
+using Helios.Ops.Executors;
 
-namespace Helios.Core.Eventing.Brokers
+namespace Helios.Eventing.Brokers
 {
     /// <summary>
     /// Basic implementation of an EventBroker - designed

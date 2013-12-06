@@ -1,8 +1,8 @@
 ﻿using System.Net;
-using Helios.Core.Net;
+using Helios.Net;
 using NUnit.Framework;
 
-namespace Helios.Tests.Core.Net
+namespace Helios.Tests.Net
 {
     [TestFixture]
     public class MulticastHelperTests

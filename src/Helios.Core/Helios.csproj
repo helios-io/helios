@@ -7,8 +7,8 @@
     <ProjectGuid>{FCC26FA6-1B8E-413D-ACA5-A25B9C6459A1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Helios.Core</RootNamespace>
-    <AssemblyName>Helios.Core</AssemblyName>
+    <RootNamespace>Helios</RootNamespace>
+    <AssemblyName>Helios</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>

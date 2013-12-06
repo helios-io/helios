@@ -2,8 +2,7 @@
 using System.Net;
 using Newtonsoft.Json;
 
-
-namespace Helios.Core.Topology
+namespace Helios.Topology
 {
     /// <summary>
     /// Static builder class for creating INode instances

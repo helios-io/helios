@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Helios.Core.Exceptions;
-using Helios.Core.Topology;
-using Helios.Core.Util;
+using Helios.Exceptions;
+using Helios.Topology;
+using Helios.Util;
 
-namespace Helios.Core.Net.Clustering
+namespace Helios.Net.Clustering
 {
     /// <summary>
     /// Cluster manager for managing a single node

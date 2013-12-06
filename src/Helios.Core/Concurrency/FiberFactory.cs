@@ -1,7 +1,7 @@
-﻿using Helios.Core.Concurrency.Impl;
-using Helios.Core.Ops;
+﻿using Helios.Concurrency.Impl;
+using Helios.Ops;
 
-namespace Helios.Core.Concurrency
+namespace Helios.Concurrency
 {
     /// <summary>
     /// Factory class for creating Fiber instances

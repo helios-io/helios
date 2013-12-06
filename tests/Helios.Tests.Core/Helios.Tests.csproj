@@ -7,8 +7,8 @@
     <ProjectGuid>{622145C4-0780-412C-9094-B57CEC84E216}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Helios.Tests.Core</RootNamespace>
-    <AssemblyName>Helios.Tests.Core</AssemblyName>
+    <RootNamespace>Helios.Tests</RootNamespace>
+    <AssemblyName>Helios.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -59,9 +59,9 @@
     <Compile Include="Util\TimedOps\ScheduledValueTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Helios.Core\Helios.Core.csproj">
+    <ProjectReference Include="..\..\src\Helios.Core\Helios.csproj">
       <Project>{fcc26fa6-1b8e-413d-aca5-a25b9c6459a1}</Project>
-      <Name>Helios.Core</Name>
+      <Name>Helios</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

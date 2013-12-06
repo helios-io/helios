@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Helios.Core.Net.Transports
+namespace Helios.Net.Transports
 {
     /// <summary>
     /// Interface used to place an I/O interface

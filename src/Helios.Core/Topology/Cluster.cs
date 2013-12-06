@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace Helios.Core.Topology
+namespace Helios.Topology
 {
     /// <summary>
     /// Represents a cluster of connected nodes belonging to a single service

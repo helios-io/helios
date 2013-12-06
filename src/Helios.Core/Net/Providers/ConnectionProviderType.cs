@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.Core.Net.Providers
+namespace Helios.Net.Providers
 {
     [Flags]
     public enum ConnectionProviderType

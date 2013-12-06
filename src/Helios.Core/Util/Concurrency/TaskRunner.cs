@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Helios.Core.Util.Concurrency
+namespace Helios.Util.Concurrency
 {
     /// <summary>
     /// Internal factory class for spawning Task instances

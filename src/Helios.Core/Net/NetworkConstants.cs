@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.Core.Net
+namespace Helios.Net
 {
     /// <summary>
     /// constants used by Helios during network operations

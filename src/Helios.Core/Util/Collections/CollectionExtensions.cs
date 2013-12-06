@@ -1,8 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Helios.Core.Util.Collections
+namespace Helios.Util.Collections
 {
     /// <summary>
     /// Static helpers for working with collections

@@ -1,10 +1,10 @@
 ﻿using System;
-using Helios.Core.Eventing;
-using Helios.Core.Eventing.Brokers;
-using Helios.Core.Eventing.Subscriptions;
+using Helios.Eventing;
+using Helios.Eventing.Brokers;
+using Helios.Eventing.Subscriptions;
 using NUnit.Framework;
 
-namespace Helios.Tests.Core.Eventing
+namespace Helios.Tests.Eventing
 {
     /// <summary>
     /// Tests for validating the approach of our SimpleEventBroker implementation

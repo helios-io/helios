@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Helios.Core.Topology
+namespace Helios.Topology
 {
     /// <summary>
     /// Extension methods to make it easier to work with INode implementations

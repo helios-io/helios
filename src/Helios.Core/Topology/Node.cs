@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Net;
+﻿using System.Net;
 
-namespace Helios.Core.Topology
+namespace Helios.Topology
 {
     /// <summary>
     /// Node belonging to a service

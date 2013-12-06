@@ -2,10 +2,10 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Helios.Core.Exceptions;
-using Helios.Core.Topology;
+using Helios.Exceptions;
+using Helios.Topology;
 
-namespace Helios.Core.Net.Connections
+namespace Helios.Net.Connections
 {
     /// <summary>
     /// UDP IConnection implementation.

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
-using Helios.Core.Topology;
+using Helios.Topology;
 
-namespace Helios.Core.Net.Connections
+namespace Helios.Net.Connections
 {
     public abstract class UnstreamedConnectionBase : IConnection
     {

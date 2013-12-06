@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.Core.Concurrency
+namespace Helios.Concurrency
 {
     /// <summary>
     /// Interface for lightweight threading and execution

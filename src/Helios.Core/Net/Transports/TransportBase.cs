@@ -1,10 +1,9 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using Helios.Core.Exceptions;
-using Helios.Core.Util.Concurrency;
+using Helios.Exceptions;
+using Helios.Util.Concurrency;
 
-namespace Helios.Core.Net.Transports
+namespace Helios.Net.Transports
 {
     public abstract class TransportBase : ITransport
     {

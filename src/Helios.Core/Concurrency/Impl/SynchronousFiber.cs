@@ -1,8 +1,8 @@
 ﻿using System;
-using Helios.Core.Ops;
-using Helios.Core.Ops.Executors;
+using Helios.Ops;
+using Helios.Ops.Executors;
 
-namespace Helios.Core.Concurrency.Impl
+namespace Helios.Concurrency.Impl
 {
     /// <summary>
     /// IFiber implementation that doesn't use any form of concurrency under the hood

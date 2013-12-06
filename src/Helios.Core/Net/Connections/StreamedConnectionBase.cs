@@ -2,11 +2,10 @@
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Helios.Core.Net.Transports;
-using Helios.Core.Ops;
-using Helios.Core.Topology;
+using Helios.Net.Transports;
+using Helios.Topology;
 
-namespace Helios.Core.Net.Connections
+namespace Helios.Net.Connections
 {
     /// <summary>
     /// Base class for streamed connections, like TCP

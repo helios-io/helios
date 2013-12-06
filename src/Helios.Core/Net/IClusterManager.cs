@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Helios.Core.Topology;
+using Helios.Topology;
 
-namespace Helios.Core.Net
+namespace Helios.Net
 {
     /// <summary>
     /// Class used to manage a cluster of servers

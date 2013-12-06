@@ -1,10 +1,10 @@
 ﻿using System.Net;
-using Helios.Core.Exceptions;
-using Helios.Core.Net;
-using Helios.Core.Topology;
+using Helios.Exceptions;
+using Helios.Net;
+using Helios.Topology;
 using NUnit.Framework;
 
-namespace Helios.Tests.Core.Net
+namespace Helios.Tests.Net
 {
     [TestFixture]
     public class TcpConnectionTests

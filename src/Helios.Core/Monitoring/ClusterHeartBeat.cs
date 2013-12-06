@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Helios.Core.Net;
-using Helios.Core.Topology;
-using Helios.Core.Util.Collections;
+using Helios.Net;
+using Helios.Topology;
+using Helios.Util.Collections;
 
-namespace Helios.Core.Monitoring
+namespace Helios.Monitoring
 {
     /// <summary>
     /// Class used for tracking the heartbeat

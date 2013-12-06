@@ -1,12 +1,11 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Text;
-using Helios.Core.Serialization;
-using Helios.Core.Serialization.Bson;
+using Helios.Serialization;
+using Helios.Serialization.Bson;
 using NUnit.Framework;
 
-namespace Helios.Tests.Core.Serialization.Bson
+namespace Helios.Tests.Serialization.Bson
 {
     /// <summary>
     /// Tests for ensuring that our BSON serializer works properly

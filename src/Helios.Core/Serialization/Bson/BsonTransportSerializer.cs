@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 
-namespace Helios.Core.Serialization.Bson
+namespace Helios.Serialization.Bson
 {
     public class BsonTransportSerializer : ITransportSerializer
     {

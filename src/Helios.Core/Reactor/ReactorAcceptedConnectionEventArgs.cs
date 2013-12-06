@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Net.Sockets;
-using Helios.Core.Net;
-using Helios.Core.Net.Connections;
+using Helios.Net.Connections;
 
-namespace Helios.Core.Reactor
+namespace Helios.Reactor
 {
     public class ReactorAcceptedConnectionEventArgs : EventArgs
     {

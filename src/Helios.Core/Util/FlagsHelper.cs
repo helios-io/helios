@@ -1,4 +1,4 @@
-﻿namespace Helios.Core.Util
+﻿namespace Helios.Util
 {
     /// <summary>
     /// Static helper class for setting bitmask flags

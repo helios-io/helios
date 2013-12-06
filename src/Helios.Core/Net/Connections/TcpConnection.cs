@@ -1,12 +1,10 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
-using Helios.Core.Exceptions;
-using Helios.Core.Net.Transports;
-using Helios.Core.Topology;
+using Helios.Exceptions;
+using Helios.Topology;
 
-namespace Helios.Core.Net.Connections
+namespace Helios.Net.Connections
 {
     public class TcpConnection : StreamedConnectionBase
     {

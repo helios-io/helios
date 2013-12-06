@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Helios.Core.Serialization
+namespace Helios.Serialization
 {
     /// <summary>
     /// A binary serializer interface for working with messages

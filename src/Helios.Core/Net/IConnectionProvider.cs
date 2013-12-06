@@ -1,7 +1,7 @@
 ﻿using System;
-using Helios.Core.Net.Providers;
+using Helios.Net.Providers;
 
-namespace Helios.Core.Net
+namespace Helios.Net
 {
     /// <summary>
     /// Interface used to provide data

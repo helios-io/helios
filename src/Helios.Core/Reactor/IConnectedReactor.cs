@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.Core.Reactor
+namespace Helios.Reactor
 {
     /// <summary>
     /// Used for reactors that accept connections (such as TCP)

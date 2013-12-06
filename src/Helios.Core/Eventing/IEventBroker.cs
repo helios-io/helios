@@ -1,5 +1,6 @@
 ﻿using System;
-namespace Helios.Core.Eventing
+
+namespace Helios.Eventing
 {
     /// <summary>
     /// An interface for notifying classes inside a single process about 

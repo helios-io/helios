@@ -2,10 +2,10 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using Helios.Core.Concurrency;
-using Helios.Core.Exceptions;
+using Helios.Concurrency;
+using Helios.Exceptions;
 
-namespace Helios.Core.Reactor.Tcp
+namespace Helios.Reactor.Tcp
 {
     public class SimpleTcpReactor : ReactorBase, IConnectedReactor
     {

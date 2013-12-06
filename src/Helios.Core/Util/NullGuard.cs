@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
-namespace Helios.Core.Util
+namespace Helios.Util
 {
     /// <summary>
     /// A static helper class for protecting against pesky null reference errors

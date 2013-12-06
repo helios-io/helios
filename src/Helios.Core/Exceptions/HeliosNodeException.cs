@@ -1,7 +1,7 @@
 ﻿using System;
-using Helios.Core.Topology;
+using Helios.Topology;
 
-namespace Helios.Core.Exceptions
+namespace Helios.Exceptions
 {
     public class HeliosNodeException : Exception
     {

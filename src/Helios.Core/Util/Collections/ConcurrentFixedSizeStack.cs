@@ -1,4 +1,4 @@
-﻿namespace Helios.Core.Util.Collections
+﻿namespace Helios.Util.Collections
 {
     /// <summary>
     /// Stack with a fixed size number of members - old items get pushed

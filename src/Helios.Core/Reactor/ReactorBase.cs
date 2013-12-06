@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace Helios.Core.Reactor
+namespace Helios.Reactor
 {
     public abstract class ReactorBase : IReactor
     {

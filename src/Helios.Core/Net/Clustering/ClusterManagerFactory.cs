@@ -1,7 +1,7 @@
 ﻿using System;
-using Helios.Core.Topology;
+using Helios.Topology;
 
-namespace Helios.Core.Net.Clustering
+namespace Helios.Net.Clustering
 {
     /// <summary>
     /// Static factory class for creating IClusterManager instances

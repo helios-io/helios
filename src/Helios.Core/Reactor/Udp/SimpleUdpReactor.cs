@@ -2,13 +2,13 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using Helios.Core.Concurrency;
-using Helios.Core.Exceptions;
-using Helios.Core.Net;
-using Helios.Core.Net.Connections;
-using Helios.Core.Topology;
+using Helios.Concurrency;
+using Helios.Exceptions;
+using Helios.Net;
+using Helios.Net.Connections;
+using Helios.Topology;
 
-namespace Helios.Core.Reactor.Udp
+namespace Helios.Reactor.Udp
 {
     public class SimpleUdpReactor : ReactorBase, IConnectionlessReactor
     {

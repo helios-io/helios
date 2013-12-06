@@ -1,4 +1,4 @@
-﻿namespace Helios.Core.Concurrency
+﻿namespace Helios.Concurrency
 {
     public enum FiberMode
     {

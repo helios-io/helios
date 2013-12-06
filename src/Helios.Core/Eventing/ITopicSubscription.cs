@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.Core.Eventing
+namespace Helios.Eventing
 {
     /// <summary>
     /// A subscription object - exists primarily to make subscription callbacks

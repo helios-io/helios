@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Helios.Core.Exceptions;
+using Helios.Exceptions;
 
-namespace Helios.Core.Net.Transports
+namespace Helios.Net.Transports
 {
     public class StreamTransport : TransportBase, IStreamTransport
     {

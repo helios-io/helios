@@ -1,9 +1,8 @@
 ﻿using System;
-using Helios.Core.Exceptions;
-using Helios.Core.Topology;
-using Helios.Core.Util;
+using Helios.Exceptions;
+using Helios.Topology;
 
-namespace Helios.Core.Net.Providers
+namespace Helios.Net.Providers
 {
     public abstract class ConnectionProviderBase : IConnectionProvider
     {

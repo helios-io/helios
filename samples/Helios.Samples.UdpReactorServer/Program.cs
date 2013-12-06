@@ -2,11 +2,11 @@
 using System.Linq;
 using System.Net;
 using System.Text;
-using Helios.Core.Concurrency;
-using Helios.Core.Net;
-using Helios.Core.Reactor;
-using Helios.Core.Reactor.Udp;
-using Helios.Core.Topology;
+using Helios.Concurrency;
+using Helios.Net;
+using Helios.Reactor;
+using Helios.Reactor.Udp;
+using Helios.Topology;
 
 namespace Helios.Samples.UdpReactorServer
 {

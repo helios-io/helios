@@ -3,10 +3,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using Helios.Core.Exceptions;
-using Helios.Core.Reactor;
-using Helios.Core.Reactor.Tcp;
-using Helios.Core.Topology;
+using Helios.Exceptions;
+using Helios.Reactor;
+using Helios.Reactor.Tcp;
+using Helios.Topology;
 
 namespace Helios.Samples.TcpReactorServer
 {

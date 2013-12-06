@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Helios.Core.Exceptions;
-using Helios.Core.Topology;
-using Helios.Core.Util;
+using Helios.Exceptions;
+using Helios.Topology;
+using Helios.Util;
 
-namespace Helios.Core.Net.Clustering
+namespace Helios.Net.Clustering
 {
     /// <summary>
     /// Round-robin cluster manager - more appropriate for connection-oriented transports like TCP than it is

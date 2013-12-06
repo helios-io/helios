@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Helios.Core.Net.Transports
+namespace Helios.Net.Transports
 {
     public interface IStreamTransport : ITransport
     {

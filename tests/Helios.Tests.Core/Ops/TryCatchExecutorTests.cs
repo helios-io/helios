@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
-using Helios.Core.Ops.Executors;
-using Helios.Core.Util;
+using Helios.Ops.Executors;
+using Helios.Util;
 using NUnit.Framework;
 
-namespace Helios.Tests.Core.Ops
+namespace Helios.Tests.Ops
 {
     public class TryCatchExecutorTests : BasicExecutorTests
     {

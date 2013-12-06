@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Helios.Core.Util;
-using Helios.Core.Util.Concurrency;
+using Helios.Util;
+using Helios.Util.Concurrency;
 using NUnit.Framework;
 
-namespace Helios.Tests.Core.Util.Concurrency
+namespace Helios.Tests.Util.Concurrency
 {
     [TestFixture]
     public class FixedSizeTaskSchedulerTests

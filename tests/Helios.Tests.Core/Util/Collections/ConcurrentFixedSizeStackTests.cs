@@ -1,7 +1,7 @@
-﻿using Helios.Core.Util.Collections;
+﻿using Helios.Util.Collections;
 using NUnit.Framework;
 
-namespace Helios.Tests.Core.Util.Collections
+namespace Helios.Tests.Util.Collections
 {
     [TestFixture]
     public class ConcurrentFixedSizeStackTests

@@ -1,6 +1,6 @@
-using Helios.Core.Topology;
+using Helios.Topology;
 
-namespace Helios.Core.Net.Providers
+namespace Helios.Net.Providers
 {
     /// <summary>
     /// Connection provider implementation that uses INode as the key type

@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.ServiceStore", "src\Helios.ServiceStore\Helios.ServiceStore.csproj", "{CD88AC18-BA9D-447C-AF93-A2353EAF8A11}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1AB2FECB-55DF-40C9-980C-A2648FBC2F9E}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
@@ -12,11 +10,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1AB2FE
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Client", "src\Helios.Client\Helios.Client.csproj", "{CC74CA13-0635-4A02-AACE-5176276C5D1F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios", "src\Helios.Core\Helios.csproj", "{FCC26FA6-1B8E-413D-ACA5-A25B9C6459A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Core", "src\Helios.Core\Helios.Core.csproj", "{FCC26FA6-1B8E-413D-ACA5-A25B9C6459A1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Tests.Core", "tests\Helios.Tests.Core\Helios.Tests.Core.csproj", "{622145C4-0780-412C-9094-B57CEC84E216}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Tests", "tests\Helios.Tests.Core\Helios.Tests.csproj", "{622145C4-0780-412C-9094-B57CEC84E216}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{CDCC7F36-83CF-430B-86CF-46CDF610301F}"
 EndProject
@@ -30,14 +26,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CD88AC18-BA9D-447C-AF93-A2353EAF8A11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CD88AC18-BA9D-447C-AF93-A2353EAF8A11}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CD88AC18-BA9D-447C-AF93-A2353EAF8A11}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CD88AC18-BA9D-447C-AF93-A2353EAF8A11}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CC74CA13-0635-4A02-AACE-5176276C5D1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CC74CA13-0635-4A02-AACE-5176276C5D1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CC74CA13-0635-4A02-AACE-5176276C5D1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CC74CA13-0635-4A02-AACE-5176276C5D1F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FCC26FA6-1B8E-413D-ACA5-A25B9C6459A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FCC26FA6-1B8E-413D-ACA5-A25B9C6459A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FCC26FA6-1B8E-413D-ACA5-A25B9C6459A1}.Release|Any CPU.ActiveCfg = Release|Any CPU

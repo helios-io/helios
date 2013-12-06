@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.Core.Eventing.Subscriptions
+namespace Helios.Eventing.Subscriptions
 {
     /// <summary>
     /// Extension method class used to help create EventBroker

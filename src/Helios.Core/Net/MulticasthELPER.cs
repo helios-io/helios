@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 
-namespace Helios.Core.Net
+namespace Helios.Net
 {
     /// <summary>
     /// Class used to help with some UDP-specific connection properties

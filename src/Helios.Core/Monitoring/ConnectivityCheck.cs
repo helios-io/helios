@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace Helios.Core.Monitoring
+namespace Helios.Monitoring
 {
     /// <summary>
     /// Entity for keeping track of the connectivity state

@@ -1,9 +1,9 @@
 ﻿using System;
-using Helios.Core.Net.Builders;
-using Helios.Core.Net.Clustering;
-using Helios.Core.Topology;
+using Helios.Net.Builders;
+using Helios.Net.Clustering;
+using Helios.Topology;
 
-namespace Helios.Core.Net.Providers
+namespace Helios.Net.Providers
 {
     /// <summary>
     /// Factory class for creating IConnectionProvider instances

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace Helios.Core.Util.Collections
+namespace Helios.Util.Collections
 {
     public interface IFixedSizeStack<T> : IEnumerable<T>, ICollection
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace Helios.Core.Reactor
+namespace Helios.Reactor
 {
     /// <summary>
     /// Reactive interface for receiving input from

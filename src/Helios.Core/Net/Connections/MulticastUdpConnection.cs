@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Net.Sockets;
-using Helios.Core.Topology;
+using Helios.Topology;
 
-namespace Helios.Core.Net.Connections
+namespace Helios.Net.Connections
 {
     /// <summary>
     /// Multi-cast implementation of a UDP 

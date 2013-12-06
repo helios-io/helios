@@ -1,7 +1,7 @@
-﻿using Helios.Core.Net.Builders;
-using Helios.Core.Topology;
+﻿using Helios.Net.Builders;
+using Helios.Topology;
 
-namespace Helios.Core.Net
+namespace Helios.Net
 {
     /// <summary>
     /// Extension methods using a default connection builder, to help make it easier to establish ad-hoc connections with INode instances

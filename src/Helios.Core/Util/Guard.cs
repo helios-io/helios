@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.Core.Util
+namespace Helios.Util
 {
     /// <summary>
     /// Guard class for protecting against stupid input

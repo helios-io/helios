@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
-using Helios.Core.Ops;
-using Helios.Core.Ops.Executors;
-using Helios.Core.Util;
+using Helios.Ops;
+using Helios.Ops.Executors;
+using Helios.Util;
 using NUnit.Framework;
 
-namespace Helios.Tests.Core.Ops
+namespace Helios.Tests.Ops
 {
     [TestFixture]
     public class BasicExecutorTests

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Helios.Core.Net.Providers
+namespace Helios.Net.Providers
 {
     public abstract class KeyedConnectionProviderBase<TKey> : ConnectionProviderBase, IKeyedConnectionProvider<TKey>
     {
