@@ -1,4 +1,4 @@
 helios
 ======
 
-service discovery and monitoring
+The best damn networking middleware ever made for .NET.
