@@ -6,9 +6,12 @@ root_folder = File.expand_path("#{File.dirname(__FILE__)}/..")
 Folders = {
     :root => root_folder,
     :src => File.join(root_folder, "src"),
+    :tests => File.join(root_folder, "tests"),
     :out => File.join(root_folder, "build"),
+    :tools => File.join(root_folder,"tools"),
     :nuget_bin => File.join(root_folder, ".nuget"),
     :nuget_out => File.join(root_folder, "build", "nuget"),
+    :nunit => File.join(root_folder, "tools", "nunit"),
 
     #Output folder for creating Helios nuget distributions
     :helios_nuspec => {
@@ -27,6 +30,7 @@ Folders = {
     #specifies the locations of the binary DLLs we want to use in NuGet / NUnit
     :bin => {
         :helios_net45 => 'placeholder - specify build environment',
+        :helios_net45_tests => 'placeholder - specify build environment'
     }
 }
 
@@ -37,11 +41,13 @@ Files = {
 
     :helios_net45 => {
         :bin => "#{Projects[:helios_net45][:id]}.dll",
-        :pdb => "#{Projects[:helios_net45][:id]}.pdb"
+        :pdb => "#{Projects[:helios_net45][:id]}.pdb",
+        :tests => "#{Projects[:helios_net45][:tests]}.dll",
     }
 }
 
 Commands = {
+    :nunit => File.join(Folders[:nunit], "nunit-console.exe"),
     :nuget => File.join(Folders[:nuget_bin], "NuGet.exe"),
 }
 

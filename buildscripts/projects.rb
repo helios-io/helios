@@ -5,7 +5,7 @@
 Projects = {
     :language => "en-US",
     :licenseUrl => "https://github.com/aaronontheweb/helios/blob/master/LICENSE",
-    :projectUrl => "https://github.com/aaronontheweb/helios"
+    :projectUrl => "https://github.com/aaronontheweb/helios",
 
     :helios_net45 => {
         :id => "Helios",
@@ -16,5 +16,6 @@ Projects = {
         :authors => "Aaron Stannard",
         :company => "MarkedUp, Inc.",
         :nuget_tags => "socket sockets udp multicast tcp reactor BSON eventing",
+        :tests => "Helios.Tests",
     }
 }

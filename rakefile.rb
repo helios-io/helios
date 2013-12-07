@@ -31,13 +31,13 @@ end
 #-----------------------
 
 desc "Creates a new Release build of helios locally"
-task :default => [:build]
+task :default => [:build, :nunit_tests]
 
 desc "Creates a new Debug build of helios locally"
-task :debug => [:set_debug_config, :build]
+task :debug => [:set_debug_config, :default]
 
 desc "Packs a Release build of helios for NuGet"
-task :nuget => [:build, :pack, :pack_symbol]
+task :nuget => [:default, :pack, :pack_symbol]
 
 desc "Packs a Debug build of helios for NuGet"
 task :nuget_debug => [:debug, :pack, :pack_symbol]
@@ -106,6 +106,7 @@ desc "Sets the output / bin folders based on the current build configuration"
 task :set_output_folders do
     #.NET 4.5
     Folders[:bin][:helios_net45] = File.join(Folders[:src], Projects[:helios_net45][:dir],"bin", @env_buildconfigname)
+    Folders[:bin][:helios_net45_tests] = File.join(Folders[:tests], Projects[:helios_net45][:tests],"bin", @env_buildconfigname)
 end
 
 desc "Wipes out the build folder so we have a clean slate to work with"
@@ -150,15 +151,15 @@ task :helios_symbol_src_nuget_output => [:create_output_folders] do |out|
     src = File.join(Folders[:src], Projects[:helios_net45][:dir])
     dest = Folders[:helios_symbol_nuspec][:src]
     FileUtils.cp_r Dir.glob(src + '/*.cs'), dest
-    FileUtils.cp_r File.join(src, "Apache"), dest
-    FileUtils.cp_r File.join(src, "Connections"), dest
-    FileUtils.cp_r File.join(src, "Linq"), dest
-    FileUtils.cp_r File.join(src, "ObjectSerializer"), dest
-    FileUtils.cp_r File.join(src, "Operations"), dest
+    FileUtils.cp_r File.join(src, "Concurrency"), dest
+    FileUtils.cp_r File.join(src, "Eventing"), dest
+    FileUtils.cp_r File.join(src, "Exceptions"), dest
+    FileUtils.cp_r File.join(src, "Net"), dest
+    FileUtils.cp_r File.join(src, "Ops"), dest
     FileUtils.cp_r File.join(src, "Properties"), dest
-    FileUtils.cp_r File.join(src, "System"), dest
-    FileUtils.cp_r File.join(src, "Thrift"), dest
-    FileUtils.cp_r File.join(src, "Types"), dest
+    FileUtils.cp_r File.join(src, "Reactor"), dest
+    FileUtils.cp_r File.join(src, "Topology"), dest
+    FileUtils.cp_r File.join(src, "Util"), dest
 end
 
 desc "Executes all file/copy tasks"
@@ -182,11 +183,6 @@ nuspec :nuspec => [:all_output] do |nuspec|
     nuspec.language = Projects[:language]
     nuspec.tags = Projects[:helios_net45][:nuget_tags]
     nuspec.output_file = File.join(Folders[:nuget_out], "#{Projects[:helios_net45][:id]}-v#{env_nuget_version}(#{@env_buildconfigname}).nuspec");
-
-    #framework assemblies
-    Projects[:helios_net45][:framework_assemblies].each do |key, array|
-        nuspec.framework_assembly array[:assemblyName], array[:targetFramework]
-    end
 end
 
 #-----------------------
@@ -207,4 +203,14 @@ nugetpack :pack_symbol => [:nuspec] do |nuget|
     nuget.base_folder = Folders[:helios_symbol_nuspec][:root]
     nuget.output = Folders[:nuget_out]
     nuget.symbols = true
+end
+
+#-----------------------
+# NUnit Tests
+#-----------------------
+nunit :nunit_tests => [:build, :create_output_folders] do |nunit|
+    nunit.command = Commands[:nunit]
+    nunit.options '/framework v4.0.30319'
+
+    nunit.assemblies File.join(Folders[:bin][:helios_net45_tests], Files[:helios_net45][:tests])
 end
