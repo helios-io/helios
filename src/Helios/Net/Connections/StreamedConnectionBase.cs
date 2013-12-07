@@ -57,12 +57,12 @@ namespace Helios.Net.Connections
 
         public void Send(NetworkData payload)
         {
-            Write(payload.Data, 0, payload.Bytes);
+            Write(payload.Buffer, 0, payload.Length);
         }
 
         public async Task SendAsync(NetworkData payload)
         {
-            await WriteAsync(payload.Data, 0, payload.Bytes);
+            await WriteAsync(payload.Buffer, 0, payload.Length);
         }
 
         public override string ToString()

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Helios.Net;
 
 namespace Helios.Serialization
 {
@@ -10,8 +11,14 @@ namespace Helios.Serialization
     {
         bool TryDeserialize<T>(out T obj, Stream stream);
 
+        bool TryDeserialize<T>(out T obj, NetworkData data);
+
         T Deserialize<T>(Stream stream);
 
+        T Deserialize<T>(NetworkData data);
+
         void Serialize<T>(T obj, Stream stream);
+
+        void Serialize<T>(T obj, NetworkData data);
     }
 }

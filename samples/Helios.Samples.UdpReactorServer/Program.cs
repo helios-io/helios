@@ -33,8 +33,8 @@ namespace Helios.Samples.UdpReactorServer
             {
                 var connection = bytes.ResponseChannel;
                 var node = bytes.Data.RemoteHost;
-                var cleanBuffer = bytes.Data.Data;
-                var str = Encoding.UTF8.GetString(cleanBuffer.Take(bytes.Data.Bytes).ToArray()).Trim();
+                var cleanBuffer = bytes.Data.Buffer;
+                var str = Encoding.UTF8.GetString(cleanBuffer.Take(bytes.Data.Length).ToArray()).Trim();
                 if(str.ToLowerInvariant().Equals("close"))
                     reactor.Stop();
                 ServerPrint(connection.Node, string.Format("recieved \"{0}\"", str));

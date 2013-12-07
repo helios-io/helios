@@ -112,12 +112,12 @@ namespace Helios.Net.Connections
 
         public override void Send(NetworkData payload)
         {
-            _client.Send(payload.Data, payload.Bytes, payload.RemoteHost.ToEndPoint());
+            _client.Send(payload.Buffer, payload.Length, payload.RemoteHost.ToEndPoint());
         }
 
         public override async Task SendAsync(NetworkData payload)
         {
-            await _client.SendAsync(payload.Data, payload.Bytes, payload.RemoteHost.ToEndPoint());
+            await _client.SendAsync(payload.Buffer, payload.Length, payload.RemoteHost.ToEndPoint());
         }
 
         #endregion

@@ -11,13 +11,13 @@ namespace Helios.Net
     /// </summary>
     public class NetworkData
     {
-        public INode RemoteHost { get; protected set; }
+        public INode RemoteHost { get; set; }
 
         public DateTime Recieved { get; protected set; }
 
-        public byte[] Data { get; protected set; }
+        public byte[] Buffer { get;  set; }
 
-        public int Bytes { get; protected set; }
+        public int Length { get; set; }
 
         public NetworkData()
         {
@@ -28,8 +28,8 @@ namespace Helios.Net
         {
             return new NetworkData()
             {
-                Data = data,
-                Bytes = bytes,
+                Buffer = data,
+                Length = bytes,
                 RemoteHost = node
             };
         }
@@ -38,8 +38,8 @@ namespace Helios.Net
         {
             return new NetworkData()
             {
-                Data = receiveResult.Buffer,
-                Bytes = receiveResult.Buffer.Length,
+                Buffer = receiveResult.Buffer,
+                Length = receiveResult.Buffer.Length,
                 RemoteHost = receiveResult.RemoteEndPoint.ToNode(TransportType.Udp)
             };
         }

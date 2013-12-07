@@ -66,6 +66,7 @@
     <Compile Include="Net\Connections\UnstreamedConnectionBase.cs" />
     <Compile Include="Net\IKeyedConnectionProvider.cs" />
     <Compile Include="Net\NetworkData.cs" />
+    <Compile Include="Net\NetworkDataExtensions.cs" />
     <Compile Include="Net\Providers\ConnectionProviderBase.cs" />
     <Compile Include="Net\Providers\ConnectionProviderFactory.cs" />
     <Compile Include="Net\Providers\ConnectionProviderType.cs" />
