@@ -31,7 +31,8 @@ namespace Helios.Net.Providers
 
         public void AddConnection(IConnection connection)
         {
-            if (HasConnectionForNode(connection.Node)) return; //Already have a connection for this node - ignore
+            //Add this node to the cluster, in case it doesn't exist already
+            ClusterManager.Add(connection.Node);
             AddConnectionInternal(connection);
         }
         public virtual void MarkConnectionAsUnhealthy(IConnection connection, Exception exc = null)
