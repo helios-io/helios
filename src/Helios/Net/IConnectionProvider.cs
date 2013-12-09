@@ -12,6 +12,10 @@ namespace Helios.Net
 
         IConnection GetConnection();
 
+        void AddConnection(IConnection connection);
+
+
+
         ConnectionProviderType Type { get; }
 
         /// <summary>

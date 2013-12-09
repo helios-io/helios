@@ -14,6 +14,11 @@ namespace Helios.Net.Providers
             _connections = new Dictionary<TKey, IConnection>();
         }
 
+        public void AddConnection(TKey key, IConnection connection)
+        {
+            _connections[key] = connection;
+        }
+
         public IConnection GetConnection(TKey key)
         {
             return _connections[key];

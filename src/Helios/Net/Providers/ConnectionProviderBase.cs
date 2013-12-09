@@ -29,6 +29,11 @@ namespace Helios.Net.Providers
             return ConnectionBuilder.BuildConnection(nextNode);
         }
 
+        public void AddConnection(IConnection connection)
+        {
+            if (HasConnectionForNode(connection.Node)) return; //Already have a connection for this node - ignore
+            AddConnectionInternal(connection);
+        }
         public virtual void MarkConnectionAsUnhealthy(IConnection connection, Exception exc = null)
         {
             Cluster.ErrorOccurred(connection.Node, exc);
@@ -41,5 +46,7 @@ namespace Helios.Net.Providers
         protected abstract IConnection GetExistingConnectionForNode(INode node);
 
         protected abstract INode GetNodeInternal();
+
+        protected abstract void AddConnectionInternal(IConnection connection);
     }
 }

@@ -25,5 +25,10 @@ namespace Helios.Net.Providers
         {
             return Cluster.Next();
         }
+
+        protected override void AddConnectionInternal(IConnection connection)
+        {
+            AddConnection(connection.Node, connection);
+        }
     }
 }
