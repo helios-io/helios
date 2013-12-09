@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Helios.Net.Transports;
@@ -45,14 +46,14 @@ namespace Helios.Net.Connections
         {
             var memoryStream = new MemoryStream(1024);
             var buffer = Read(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
-            return NetworkData.Create(Node, memoryStream.GetBuffer(), (int)memoryStream.Capacity);
+            return NetworkData.Create(Node, memoryStream.GetBuffer().Take(buffer).ToArray(), buffer);
         }
 
         public async Task<NetworkData> RecieveAsync()
         {
             var memoryStream = new MemoryStream(1024);
             var buffer = await ReadAsync(memoryStream.GetBuffer(), 0, (int)memoryStream.Capacity);
-            return NetworkData.Create(Node, memoryStream.GetBuffer(),(int)memoryStream.Length);
+            return NetworkData.Create(Node, memoryStream.GetBuffer().Take(buffer).ToArray(), buffer);
         }
 
         public void Send(NetworkData payload)
