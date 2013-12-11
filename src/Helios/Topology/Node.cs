@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Helios.Net;
 
 namespace Helios.Topology
 {
@@ -53,5 +54,14 @@ namespace Helios.Topology
         {
             return string.Format("{0}:{1}", Host, Port);
         }
+
+        #region Static methods
+
+        public static INode GetLoopbackNode(int port = NetworkConstants.InMemoryPort)
+        {
+            return NodeBuilder.BuildNode().Host(IPAddress.Loopback).WithPort(port);
+        }
+
+        #endregion
     }
 }

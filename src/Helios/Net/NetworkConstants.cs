@@ -35,5 +35,10 @@ namespace Helios.Net
                 TimeSpan.FromDays(1), //1 day
                 TimeSpan.FromDays(2) //2 days
             };
+
+        /// <summary>
+        /// Port used to tell Helios (and dependent applications) to bypass the network stack altogether and just use in-memory operations
+        /// </summary>
+        public const int InMemoryPort = 0;
     }
 }
