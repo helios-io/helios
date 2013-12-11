@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 
 namespace Helios.Topology
 {
@@ -15,6 +16,16 @@ namespace Helios.Topology
         public static INode ToNode(this IPEndPoint endPoint, TransportType transportType)
         {
             return new Node() {Host = endPoint.Address, Port = endPoint.Port, TransportType = transportType};
+        }
+
+        public static Uri ToUri(this INode node)
+        {
+            return new NodeUri(node);
+        }
+
+        public static INode ToNode(this Uri uri)
+        {
+            return NodeUri.GetNodeFromUri(uri);
         }
     }
 }
