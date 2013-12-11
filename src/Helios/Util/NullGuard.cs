@@ -8,6 +8,12 @@ namespace Helios.Util
     /// </summary>
     public static class NullGuard
     {
+        public static void NotNull(this object obj)
+        {
+            if(obj == null)
+                throw new ArgumentNullException("obj");
+        }
+
         public static TOut NotNull<TIn, TOut>(this TIn obj, Func<TIn, TOut> nextOp)
             where TOut : class
             where TIn : class

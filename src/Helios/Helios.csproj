@@ -115,6 +115,7 @@
     <Compile Include="Topology\NodeBuilder.cs" />
     <Compile Include="Topology\Cluster.cs" />
     <Compile Include="Topology\NodeExtensions.cs" />
+    <Compile Include="Topology\NodeUri.cs" />
     <Compile Include="Util\Collections\CollectionExtensions.cs" />
     <Compile Include="Util\Collections\ConcurrentFixedSizeStack.cs" />
     <Compile Include="Util\Collections\FixedSizeStack.cs" />
