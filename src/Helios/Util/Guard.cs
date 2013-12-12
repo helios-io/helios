@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Helios.Util
 {
@@ -7,6 +8,18 @@ namespace Helios.Util
     /// </summary>
     public static class Guard
     {
+        public static void Against(this string str, string illegalSubstr, string message = null)
+        {
+            if(str.Contains(illegalSubstr))
+                throw new ArgumentException(message ?? string.Format("{0} is illegal in your input string {1}", illegalSubstr, str));
+        }
+
+        public static void Against(this string str, char illegalChar, string message = null)
+        {
+            if (str.Any(c => c == illegalChar))
+                throw new ArgumentException(message ?? string.Format("{0} is illegal in your input string {1}", illegalChar, str));
+        }
+
         public static void NotNegative(this int value)
         {
             NotLessThan(value, 0);
