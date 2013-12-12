@@ -1,8 +1,9 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 
 namespace Helios.Topology
 {
-    public interface INode
+    public interface INode : ICloneable
     {
         /// <summary>
         /// The IP address of this seed

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using Helios.Net;
+using Helios.Util;
 
 namespace Helios.Topology
 {
@@ -48,6 +49,18 @@ namespace Helios.Topology
         {
             var hashCode = Host.GetHashCode();
             return hashCode;
+        }
+
+        public object Clone()
+        {
+            return new Node()
+            {
+                CustomData = CustomData.NotNull(s => (string) s.Clone()),
+                Host = new IPAddress(Host.GetAddressBytes()),
+                MachineName = MachineName.NotNull(s => (string) s.Clone()),
+                Port = Port,
+                TransportType = TransportType
+            };
         }
 
         public override string ToString()

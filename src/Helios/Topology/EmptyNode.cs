@@ -14,5 +14,9 @@ namespace Helios.Topology
         public string OS { get; set; }
         public string ServiceVersion { get; set; }
         public string CustomData { get; set; }
+        public object Clone()
+        {
+            return Node.Empty();
+        }
     }
 }
