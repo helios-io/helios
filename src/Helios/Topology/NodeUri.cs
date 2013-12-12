@@ -26,6 +26,7 @@ namespace Helios.Topology
 
         public static string GetUriStringForNode(INode node)
         {
+            if (node.IsEmpty()) return string.Empty;
             return string.Format("{0}://{1}:{2}", GetProtocolStringForTransportType(node.TransportType), node.Host, node.Port);
         }
 

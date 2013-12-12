@@ -57,14 +57,14 @@ namespace Helios.Topology
 
         #region Static methods
 
-        public static INode GetLoopbackNode(int port = NetworkConstants.InMemoryPort)
+        public static INode Loopback(int port = NetworkConstants.InMemoryPort)
         {
             return NodeBuilder.BuildNode().Host(IPAddress.Loopback).WithPort(port);
         }
 
         public static INode Empty()
         {
-            
+            return new EmptyNode();
         }
 
         #endregion
