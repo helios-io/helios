@@ -23,7 +23,7 @@ end
 
 def env_nuget_version
     version = env_buildversion.split(".")
-    "#{version[0]}.#{version[1]}.#{version[2]}"
+    "#{version[0]}.#{version[1]}.#{version[2]}.#{version[3]}"
 end
 
 #-----------------------
