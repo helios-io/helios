@@ -27,5 +27,10 @@ namespace Helios.Topology
         {
             return NodeUri.GetNodeFromUri(uri);
         }
+
+        public static bool IsEmpty(this INode node)
+        {
+            return node is EmptyNode;
+        }
     }
 }

@@ -62,6 +62,11 @@ namespace Helios.Topology
             return NodeBuilder.BuildNode().Host(IPAddress.Loopback).WithPort(port);
         }
 
+        public static INode Empty()
+        {
+            
+        }
+
         #endregion
     }
 }

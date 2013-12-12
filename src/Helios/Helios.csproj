@@ -110,6 +110,7 @@
     <Compile Include="Reactor\Udp\SimpleUdpReactor.cs" />
     <Compile Include="Serialization\Bson\BsonTransportSerializer.cs" />
     <Compile Include="Serialization\ITransportSerializer.cs" />
+    <Compile Include="Topology\EmptyNode.cs" />
     <Compile Include="Topology\INode.cs" />
     <Compile Include="Topology\Node.cs" />
     <Compile Include="Topology\NodeBuilder.cs" />
