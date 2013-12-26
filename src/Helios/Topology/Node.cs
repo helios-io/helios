@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Helios.Net;
 using Helios.Util;
 
@@ -79,6 +80,14 @@ namespace Helios.Topology
         {
             return new EmptyNode();
         }
+
+
+        public static INode FromString(string nodeUri)
+        {
+            var uri = new Uri(nodeUri);
+            return uri.ToNode();
+        }
+
 
         #endregion
     }
