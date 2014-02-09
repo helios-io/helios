@@ -19,7 +19,7 @@ namespace Helios.Util.Concurrency
         {
             maximumThreadCount.NotLessThan(0);
             _maximumConcurrencyLevel = maximumThreadCount;
-            _threads = SpawnThreads(2);
+            _threads = SpawnThreads(_maximumConcurrencyLevel);
         }
 
         private readonly int _maximumConcurrencyLevel;
