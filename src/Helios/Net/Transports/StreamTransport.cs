@@ -43,6 +43,7 @@ namespace Helios.Net.Transports
             return InputStream.Read(buffer, offset, length);
         }
 
+#if !NET35
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int length)
         {
             CheckInputStream();
@@ -54,11 +55,13 @@ namespace Helios.Net.Transports
             CheckInputStream();
             return await InputStream.ReadAsync(buffer, offset, length, token);
         }
+#endif
 
         #endregion
 
         #region Writes
 
+#if !NET35
         public override async Task WriteAsync(byte[] buffer)
         {
             CheckOutputStream();
@@ -70,6 +73,7 @@ namespace Helios.Net.Transports
             CheckOutputStream();
             await OutputStream.WriteAsync(buffer, 0, buffer.Length, token);
         }
+#endif
 
         public override void Write(byte[] buffer, int offset, int length)
         {
@@ -77,6 +81,7 @@ namespace Helios.Net.Transports
             OutputStream.Write(buffer, offset, length);
         }
 
+#if !NET35
         public override async Task WriteAsync(byte[] buffer, int offset, int length)
         {
             CheckOutputStream();
@@ -88,6 +93,7 @@ namespace Helios.Net.Transports
             CheckOutputStream();
             await OutputStream.WriteAsync(buffer, offset, length, token);
         }
+#endif
 
         #endregion
 
@@ -97,6 +103,7 @@ namespace Helios.Net.Transports
             OutputStream.Flush();
         }
 
+#if !NET35
         public override async Task FlushAsync()
         {
             CheckOutputStream();
@@ -108,6 +115,7 @@ namespace Helios.Net.Transports
             CheckOutputStream();
             await OutputStream.FlushAsync(token);
         }
+#endif
 
         public Stream OutputStream { get; protected set; }
         public Stream InputStream { get; protected set; }

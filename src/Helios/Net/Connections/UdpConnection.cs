@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Exceptions;
 using Helios.Topology;
+using Helios.Util.Concurrency;
 
 namespace Helios.Net.Connections
 {
@@ -104,21 +105,35 @@ namespace Helios.Net.Connections
             return NetworkData.Create(remoteHost.ToNode(Transport), bytes, bytes.Length);
         }
 
+#if !NET35
         public override async Task<NetworkData> RecieveAsync()
         {
             var bytes = await _client.ReceiveAsync();
             return NetworkData.Create(bytes);
         }
+#else
+        public override Task<NetworkData> RecieveAsync()
+        {
+            return TaskRunner.Run(() => Receive());
+        }
+#endif
 
         public override void Send(NetworkData payload)
         {
             _client.Send(payload.Buffer, payload.Length, payload.RemoteHost.ToEndPoint());
         }
 
+#if !NET35
         public override async Task SendAsync(NetworkData payload)
         {
             await _client.SendAsync(payload.Buffer, payload.Length, payload.RemoteHost.ToEndPoint());
         }
+#else
+        public override Task SendAsync(NetworkData payload)
+        {
+            return TaskRunner.Run(() => Send(payload));
+        }
+#endif
 
         #endregion
 

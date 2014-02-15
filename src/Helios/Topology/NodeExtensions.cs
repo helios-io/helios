@@ -23,10 +23,12 @@ namespace Helios.Topology
             return new NodeUri(node);
         }
 
+#if !NET35
         public static INode ToNode(this Uri uri)
         {
             return NodeUri.GetNodeFromUri(uri);
         }
+#endif
 
         public static bool IsEmpty(this INode node)
         {

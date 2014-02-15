@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Helios.Net.Transports;
 using Helios.Topology;
+using Helios.Util.Concurrency;
 
 namespace Helios.Net.Connections
 {
@@ -49,11 +50,19 @@ namespace Helios.Net.Connections
             return NetworkData.Create(Node, memoryStream.GetBuffer().Take(buffer).ToArray(), buffer);
         }
 
+#if NET35
+        public Task<NetworkData> RecieveAsync()
+#else
         public async Task<NetworkData> RecieveAsync()
+#endif
         {
             var memoryStream = new MemoryStream(1024);
+#if NET35
+            return TaskRunner.Run(() => Read(memoryStream.GetBuffer(), 0, (int)memoryStream.Capacity)).ContinueWith(count => NetworkData.Create(Node, memoryStream.GetBuffer().Take(count.Result).ToArray(), count.Result));
+#else
             var buffer = await ReadAsync(memoryStream.GetBuffer(), 0, (int)memoryStream.Capacity);
             return NetworkData.Create(Node, memoryStream.GetBuffer().Take(buffer).ToArray(), buffer);
+#endif
         }
 
         public void Send(NetworkData payload)
@@ -61,10 +70,17 @@ namespace Helios.Net.Connections
             Write(payload.Buffer, 0, payload.Length);
         }
 
+#if !NET35
         public async Task SendAsync(NetworkData payload)
         {
             await WriteAsync(payload.Buffer, 0, payload.Length);
         }
+#else
+        public Task SendAsync(NetworkData payload)
+        {
+            return TaskRunner.Run(() => Send(payload));
+        }
+#endif
 
         public override string ToString()
         {

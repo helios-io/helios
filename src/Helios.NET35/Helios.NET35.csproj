@@ -1,0 +1,277 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{CEFDF028-1EDB-448C-9848-1AB41EC77150}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Helios</RootNamespace>
+    <AssemblyName>Helios.NET35</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NET35</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.8\lib\net35\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Threading">
+      <HintPath>..\..\packages\TaskParallelLibrary.1.0.2856.0\lib\Net35\System.Threading.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Helios\Concurrency\FiberFactory.cs">
+      <Link>Concurrency\FiberFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Concurrency\FiberMode.cs">
+      <Link>Concurrency\FiberMode.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Concurrency\IFiber.cs">
+      <Link>Concurrency\IFiber.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Concurrency\Impl\SynchronousFiber.cs">
+      <Link>Concurrency\Impl\SynchronousFiber.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Concurrency\Impl\ThreadPoolFiber.cs">
+      <Link>Concurrency\Impl\ThreadPoolFiber.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Eventing\Brokers\SimpleEventBroker.cs">
+      <Link>Eventing\Brokers\SimpleEventBroker.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Eventing\EventSubscriptionEventArgs.cs">
+      <Link>Eventing\EventSubscriptionEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Eventing\IEventBroker.cs">
+      <Link>Eventing\IEventBroker.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Eventing\ITopicSubscription.cs">
+      <Link>Eventing\ITopicSubscription.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Eventing\Subscriptions\NormalTopicSubscription.cs">
+      <Link>Eventing\Subscriptions\NormalTopicSubscription.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Eventing\Subscriptions\TopicHelpers.cs">
+      <Link>Eventing\Subscriptions\TopicHelpers.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Exceptions\Events\ExceptionEventArgs.cs">
+      <Link>Exceptions\Events\ExceptionEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Exceptions\Events\ExceptionTopicSubscription.cs">
+      <Link>Exceptions\Events\ExceptionTopicSubscription.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Exceptions\ExceptionType.cs">
+      <Link>Exceptions\ExceptionType.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Exceptions\HeliosConnectionException.cs">
+      <Link>Exceptions\HeliosConnectionException.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Exceptions\HeliosNodeException.cs">
+      <Link>Exceptions\HeliosNodeException.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Builders\NormalConnectionBuilder.cs">
+      <Link>Net\Builders\NormalConnectionBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Clustering\ClusterManagerFactory.cs">
+      <Link>Net\Clustering\ClusterManagerFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Clustering\RoundRobinClusterManager.cs">
+      <Link>Net\Clustering\RoundRobinClusterManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Clustering\SingleNodeClusterManager.cs">
+      <Link>Net\Clustering\SingleNodeClusterManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Connections\MulticastUdpConnection.cs">
+      <Link>Net\Connections\MulticastUdpConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Connections\StreamedConnectionBase.cs">
+      <Link>Net\Connections\StreamedConnectionBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Connections\TcpConnection.cs">
+      <Link>Net\Connections\TcpConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Connections\UdpConnection.cs">
+      <Link>Net\Connections\UdpConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Connections\UnstreamedConnectionBase.cs">
+      <Link>Net\Connections\UnstreamedConnectionBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\IClusterManager.cs">
+      <Link>Net\IClusterManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\IConnection.cs">
+      <Link>Net\IConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\IConnectionBuilder.cs">
+      <Link>Net\IConnectionBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\IConnectionExtensions.cs">
+      <Link>Net\IConnectionExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\IConnectionProvider.cs">
+      <Link>Net\IConnectionProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\IKeyedConnectionProvider.cs">
+      <Link>Net\IKeyedConnectionProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\MulticastHelper.cs">
+      <Link>Net\MulticastHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\NetworkConstants.cs">
+      <Link>Net\NetworkConstants.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\NetworkData.cs">
+      <Link>Net\NetworkData.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\NetworkDataExtensions.cs">
+      <Link>Net\NetworkDataExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Providers\ConnectionProviderBase.cs">
+      <Link>Net\Providers\ConnectionProviderBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Providers\ConnectionProviderFactory.cs">
+      <Link>Net\Providers\ConnectionProviderFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Providers\ConnectionProviderType.cs">
+      <Link>Net\Providers\ConnectionProviderType.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Providers\KeyedConnectionProviderBase.cs">
+      <Link>Net\Providers\KeyedConnectionProviderBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Providers\PooledKeyedConnectionProvider.cs">
+      <Link>Net\Providers\PooledKeyedConnectionProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Transports\IStreamTransport.cs">
+      <Link>Net\Transports\IStreamTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Transports\ITransport.cs">
+      <Link>Net\Transports\ITransport.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Transports\StreamTransport.cs">
+      <Link>Net\Transports\StreamTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Transports\TransportBase.cs">
+      <Link>Net\Transports\TransportBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Ops\Executors\BasicExecutor.cs">
+      <Link>Ops\Impl\BasicExecutor.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Ops\Executors\TryCatchExecutor.cs">
+      <Link>Ops\Impl\TryCatchExecutor.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Ops\IExecutor.cs">
+      <Link>Ops\IExecutor.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Ops\IOperationResult.cs">
+      <Link>Ops\IOperationResult.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Ops\OperationResult.cs">
+      <Link>Ops\OperationResult.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Serialization\Bson\BsonTransportSerializer.cs">
+      <Link>Serialization\Bson\BsonTransportSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Serialization\ITransportSerializer.cs">
+      <Link>Serialization\ITransportSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Topology\Cluster.cs">
+      <Link>Topology\Cluster.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Topology\EmptyNode.cs">
+      <Link>Topology\EmptyNode.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Topology\INode.cs">
+      <Link>Topology\INode.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Topology\Node.cs">
+      <Link>Topology\Node.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Topology\NodeBuilder.cs">
+      <Link>Topology\NodeBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Topology\NodeExtensions.cs">
+      <Link>Topology\NodeExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Topology\NodeUri.cs">
+      <Link>Topology\NodeUri.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\CollectionBuilder.cs">
+      <Link>Util\CollectionBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\Collections\CollectionExtensions.cs">
+      <Link>Util\Collections\CollectionExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\Collections\ConcurrentFixedSizeStack.cs">
+      <Link>Util\Collections\ConcurrentFixedSizeStack.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\Collections\FixedSizeStack.cs">
+      <Link>Util\Collections\FixedSizeStack.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\Collections\IFixedSizeStack.cs">
+      <Link>Util\Collections\IFixedSizeStack.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\Concurrency\FixedSizeThreadPoolTaskScheduler.cs">
+      <Link>Util\Concurrency\FixedSizeThreadPoolTaskScheduler.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\Concurrency\TaskRunner.cs">
+      <Link>Util\Concurrency\TaskRunner.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\FlagsHelper.cs">
+      <Link>Util\FlagsHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\Guard.cs">
+      <Link>Util\Guard.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\NullGuard.cs">
+      <Link>Util\NullGuard.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\TimedOps\ScheduledValue.cs">
+      <Link>Util\TimedOps\ScheduledValue.cs</Link>
+    </Compile>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Monitoring\" />
+    <Folder Include="Reactor\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

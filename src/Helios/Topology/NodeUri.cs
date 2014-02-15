@@ -43,6 +43,7 @@ namespace Helios.Topology
             }
         }
 
+#if !NET35
         public static INode GetNodeFromUri(Uri uri)
         {
             uri.NotNull();
@@ -50,6 +51,7 @@ namespace Helios.Topology
             Enum.TryParse(uri.Scheme, true, out transport);
             return NodeBuilder.BuildNode().Host(uri.Host).WithPort(uri.Port).WithTransportType(transport);
         }
+#endif
 
         #endregion
     }

@@ -81,13 +81,13 @@ namespace Helios.Topology
             return new EmptyNode();
         }
 
-
+#if !NET35
         public static INode FromString(string nodeUri)
         {
             var uri = new Uri(nodeUri);
             return uri.ToNode();
         }
-
+#endif
 
         #endregion
     }

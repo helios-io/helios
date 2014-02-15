@@ -9,8 +9,11 @@ namespace Helios.Net.Transports
     {
         public abstract bool Peek();
         public abstract int Read(byte[] buffer, int offset, int length);
+
+#if !NET35
         public abstract Task<int> ReadAsync(byte[] buffer, int offset, int length);
         public abstract Task<int> ReadAsync(byte[] buffer, int offset, int length, CancellationToken token);
+#endif
 
         public int ReadAll(byte[] buffer, int offset, int length)
         {
@@ -31,6 +34,7 @@ namespace Helios.Net.Transports
             return totalRead;
         }
 
+#if !NET35
         public async Task<int> ReadAllAsync(byte[] buffer, int offset, int length)
         {
             return await TaskRunner.Run(() => ReadAll(buffer, offset, length));
@@ -40,24 +44,33 @@ namespace Helios.Net.Transports
         {
             return await TaskRunner.Run(() => ReadAll(buffer, offset, length), token);
         }
+#endif
 
         public virtual void Write(byte[] buffer)
         {
             Write(buffer, 0, buffer.Length);
         }
 
+#if !NET35
         public abstract Task WriteAsync(byte[] buffer);
         public abstract Task WriteAsync(byte[] buffer, CancellationToken token);
-
-        public abstract void Write(byte[] buffer, int offset, int length);
+        
         public abstract Task WriteAsync(byte[] buffer, int offset, int length);
         public abstract Task WriteAsync(byte[] buffer, int offset, int length, CancellationToken token);
+#endif
+
+
+        public abstract void Write(byte[] buffer, int offset, int length);
+
+
 
         public virtual void Flush()
         {
         }
 
+#if !NET35
         public abstract Task FlushAsync();
         public abstract Task FlushAsync(CancellationToken token);
+#endif
     }
 }

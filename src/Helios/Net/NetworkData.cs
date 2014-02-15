@@ -34,6 +34,7 @@ namespace Helios.Net
             };
         }
 
+#if !NET35
         public static NetworkData Create(UdpReceiveResult receiveResult)
         {
             return new NetworkData()
@@ -43,5 +44,6 @@ namespace Helios.Net
                 RemoteHost = receiveResult.RemoteEndPoint.ToNode(TransportType.Udp)
             };
         }
+#endif
     }
 }
