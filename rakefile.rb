@@ -11,6 +11,7 @@ require 'version_bumper'
 #-----------------------
 require File.expand_path(File.dirname(__FILE__)) + '/buildscripts/projects'
 require File.expand_path(File.dirname(__FILE__)) + '/buildscripts/paths'
+require File.expand_path(File.dirname(__FILE__)) + '/buildscripts/nuspec'
 
 #-----------------------
 # Environment variables
@@ -106,6 +107,7 @@ desc "Sets the output / bin folders based on the current build configuration"
 task :set_output_folders do
     #.NET 4.5
     Folders[:bin][:helios_net45] = File.join(Folders[:src], Projects[:helios_net45][:dir],"bin", @env_buildconfigname)
+    Folders[:bin][:helios_net35] = File.join(Folders[:src], Projects[:helios_net35][:dir],"bin", @env_buildconfigname)
     Folders[:bin][:helios_net45_tests] = File.join(Folders[:tests], Projects[:helios_net45][:tests],"bin", @env_buildconfigname)
 end
 
@@ -124,10 +126,12 @@ task :create_output_folders => :clean_output_folders do
     create_dir(Folders[:helios_nuspec][:root])
     create_dir(Folders[:helios_nuspec][:lib])
     create_dir(Folders[:helios_nuspec][:net45])
+    create_dir(Folders[:helios_nuspec][:net35])
 
     create_dir(Folders[:helios_symbol_nuspec][:root])
     create_dir(Folders[:helios_symbol_nuspec][:lib])
     create_dir(Folders[:helios_symbol_nuspec][:src])
+    create_dir(Folders[:helios_symbol_nuspec][:net35])
     create_dir(Folders[:helios_symbol_nuspec][:net45])
 end
 
@@ -145,6 +149,19 @@ output :helios_symbol_nuget_output => [:create_output_folders] do |out|
     out.to Folders[:helios_symbol_nuspec][:net45]
     out.file Files[:helios_net45][:bin]
     out.file Files[:helios_net45][:pdb]
+end
+
+output :helios_net35_nuget_output => [:create_output_folders] do |out|
+    out.from Folders[:bin][:helios_net35]
+    out.to Folders[:helios_nuspec][:net35]
+    out.file Files[:helios_net35][:bin]
+end
+
+output :helios_symbol_net35_nuget_output => [:create_output_folders] do |out|
+    out.from Folders[:bin][:helios_net35]
+    out.to Folders[:helios_symbol_nuspec][:net35]
+    out.file Files[:helios_net35][:bin]
+    out.file Files[:helios_net35][:pdb]
 end
 
 task :helios_symbol_src_nuget_output => [:create_output_folders] do |out|
@@ -165,7 +182,11 @@ task :helios_symbol_src_nuget_output => [:create_output_folders] do |out|
 end
 
 desc "Executes all file/copy tasks"
-task :all_output => [:helios_net45_nuget_output, :helios_symbol_nuget_output, :helios_symbol_src_nuget_output]
+task :all_output => [:helios_net45_nuget_output, 
+    :helios_symbol_nuget_output, 
+    :helios_symbol_src_nuget_output, 
+    :helios_net35_nuget_output,
+    :helios_symbol_net35_nuget_output]
 
 #-----------------------
 # NuSpec
@@ -186,6 +207,7 @@ nuspec :nuspec => [:all_output] do |nuspec|
     nuspec.tags = Projects[:helios_net45][:nuget_tags]
     nuspec.output_file = File.join(Folders[:nuget_out], "#{Projects[:helios_net45][:id]}-v#{env_nuget_version}(#{@env_buildconfigname}).nuspec");
     nuspec.dependency "Newtonsoft.Json", "5.0.8"
+    nuspec.dependency "TaskParallelLibrary", "1.0.2856.0", "net35"
 end
 
 #-----------------------
