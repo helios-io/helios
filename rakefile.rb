@@ -159,6 +159,7 @@ task :helios_symbol_src_nuget_output => [:create_output_folders] do |out|
     FileUtils.cp_r File.join(src, "Ops"), dest
     FileUtils.cp_r File.join(src, "Properties"), dest
     FileUtils.cp_r File.join(src, "Reactor"), dest
+    FileUtils.cp_r File.join(src, "Serialization"), dest
     FileUtils.cp_r File.join(src, "Topology"), dest
     FileUtils.cp_r File.join(src, "Util"), dest
 end
