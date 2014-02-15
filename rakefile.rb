@@ -155,6 +155,7 @@ task :helios_symbol_src_nuget_output => [:create_output_folders] do |out|
     FileUtils.cp_r File.join(src, "Eventing"), dest
     FileUtils.cp_r File.join(src, "Exceptions"), dest
     FileUtils.cp_r File.join(src, "Net"), dest
+    FileUtils.cp_r File.join(src, "Monitoring"), dest
     FileUtils.cp_r File.join(src, "Ops"), dest
     FileUtils.cp_r File.join(src, "Properties"), dest
     FileUtils.cp_r File.join(src, "Reactor"), dest

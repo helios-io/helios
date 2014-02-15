@@ -10,6 +10,8 @@ namespace Helios.Eventing.Brokers
     /// for just firing plain-old events without any fancy
     /// network / concurrency / blah blah
     /// </summary>
+    /// <typeparam name="TTopic">The type used to identify a topic</typeparam>
+    /// <typeparam name="TSubscriber">The type used to identify a subscriber</typeparam>
     public class SimpleEventBroker<TTopic, TSubscriber> : IEventBroker<TTopic, TSubscriber>
     {
         public event EventHandler<EventSubscriptionEventArgs<TTopic, TSubscriber>> SubscriptionAdded = delegate { };

@@ -21,7 +21,7 @@ namespace Helios.Eventing
         void Unsubscribe(TTopic id, TSubscriber subscriber);
 
         /// <summary>
-        /// Fire the event specified by the identifier
+        /// Fire the event with the topic specified by the identifier
         /// with its associated sender and parameters
         /// </summary>
         /// <param name="id">The id of the event to fire</param>
