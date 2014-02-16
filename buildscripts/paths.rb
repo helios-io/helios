@@ -17,8 +17,13 @@ Folders = {
     :helios_nuspec => {
         :root => File.join(root_folder, "build", "nuget", "Helios"),
         :lib => File.join(root_folder, "build", "nuget", "Helios", "lib"),
-        :net35 => File.join(root_folder, "build", "nuget", "Helios", "lib", "net35"),
         :net45 => File.join(root_folder, "build", "nuget", "Helios", "lib", "net45"),
+    },
+
+    :helios_net35_nuspec => {
+        :root => File.join(root_folder, "build", "nuget", "HeliosNET35"),
+        :lib => File.join(root_folder, "build", "nuget", "HeliosNET35", "lib"),
+        :net35 => File.join(root_folder, "build", "nuget", "HeliosNET35", "lib", "net35"),
     },
 
     :helios_symbol_nuspec => {

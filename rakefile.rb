@@ -126,12 +126,14 @@ task :create_output_folders => :clean_output_folders do
     create_dir(Folders[:helios_nuspec][:root])
     create_dir(Folders[:helios_nuspec][:lib])
     create_dir(Folders[:helios_nuspec][:net45])
-    create_dir(Folders[:helios_nuspec][:net35])
+
+    create_dir(Folders[:helios_net35_nuspec][:root])
+    create_dir(Folders[:helios_net35_nuspec][:lib])
+    create_dir(Folders[:helios_net35_nuspec][:net35])
 
     create_dir(Folders[:helios_symbol_nuspec][:root])
     create_dir(Folders[:helios_symbol_nuspec][:lib])
     create_dir(Folders[:helios_symbol_nuspec][:src])
-    create_dir(Folders[:helios_symbol_nuspec][:net35])
     create_dir(Folders[:helios_symbol_nuspec][:net45])
 end
 
@@ -153,15 +155,8 @@ end
 
 output :helios_net35_nuget_output => [:create_output_folders] do |out|
     out.from Folders[:bin][:helios_net35]
-    out.to Folders[:helios_nuspec][:net35]
+    out.to Folders[:helios_net35_nuspec][:net35]
     out.file Files[:helios_net35][:bin]
-end
-
-output :helios_symbol_net35_nuget_output => [:create_output_folders] do |out|
-    out.from Folders[:bin][:helios_net35]
-    out.to Folders[:helios_symbol_nuspec][:net35]
-    out.file Files[:helios_net35][:bin]
-    out.file Files[:helios_net35][:pdb]
 end
 
 task :helios_symbol_src_nuget_output => [:create_output_folders] do |out|
@@ -185,14 +180,13 @@ desc "Executes all file/copy tasks"
 task :all_output => [:helios_net45_nuget_output, 
     :helios_symbol_nuget_output, 
     :helios_symbol_src_nuget_output, 
-    :helios_net35_nuget_output,
-    :helios_symbol_net35_nuget_output]
+    :helios_net35_nuget_output]
 
 #-----------------------
 # NuSpec
 #-----------------------
-desc "Builds a nuspec file for helios"
-nuspec :nuspec => [:all_output] do |nuspec|
+desc "Builds a nuspec file for Helios"
+nuspec :nuspec_net45 => [:all_output] do |nuspec|
     nuspec.id = Projects[:helios_net45][:id]
     nuspec.title = Projects[:helios_net45][:title]
     nuspec.version = env_nuget_version
@@ -207,17 +201,46 @@ nuspec :nuspec => [:all_output] do |nuspec|
     nuspec.tags = Projects[:helios_net45][:nuget_tags]
     nuspec.output_file = File.join(Folders[:nuget_out], "#{Projects[:helios_net45][:id]}-v#{env_nuget_version}(#{@env_buildconfigname}).nuspec");
     nuspec.dependency "Newtonsoft.Json", "5.0.8"
+
+end
+
+desc "Builds a nuspec file for helios"
+nuspec :nuspec_net35 => [:all_output] do |nuspec|
+    nuspec.id = Projects[:helios_net35][:id]
+    nuspec.title = Projects[:helios_net35][:title]
+    nuspec.version = env_nuget_version
+    nuspec.authors = Projects[:helios_net35][:authors]
+    nuspec.owners = Projects[:helios_net35][:company]
+    nuspec.description = Projects[:helios_net35][:description]
+    #nuspec.iconUrl = Projects[:iconUrl]
+    nuspec.projectUrl = Projects[:projectUrl]
+    nuspec.licenseUrl = Projects[:licenseUrl]
+    #nuspec.require_license_acceptance = false #causes an issue with Albacore 0.3.5
+    nuspec.language = Projects[:language]
+    nuspec.tags = Projects[:helios_net35][:nuget_tags]
+    nuspec.output_file = File.join(Folders[:nuget_out], "#{Projects[:helios_net35][:id]}-v#{env_nuget_version}(#{@env_buildconfigname}).nuspec");
+    nuspec.dependency "Newtonsoft.Json", "5.0.8"
     nuspec.dependency "TaskParallelLibrary", "1.0.2856.0", "net35"
 end
+
+task :nuspec => [:nuspec_net45, :nuspec_net35]
 
 #-----------------------
 # NuGet Pack
 #-----------------------
-desc "Packs a build of helios into a NuGet package"
-nugetpack :pack => [:nuspec] do |nuget|
+desc "Packs a build of Helios into a NuGet package"
+nugetpack :pack_net45 => [:nuspec] do |nuget|
     nuget.command = Commands[:nuget]
     nuget.nuspec = File.join(Folders[:nuget_out], "#{Projects[:helios_net45][:id]}-v#{env_nuget_version}(#{@env_buildconfigname}).nuspec")
     nuget.base_folder = Folders[:helios_nuspec][:root]
+    nuget.output = Folders[:nuget_out]
+end
+
+desc "Packs a build of Helios.NET35 into a NuGet package"
+nugetpack :pack_net35 => [:nuspec] do |nuget|
+    nuget.command = Commands[:nuget]
+    nuget.nuspec = File.join(Folders[:nuget_out], "#{Projects[:helios_net35][:id]}-v#{env_nuget_version}(#{@env_buildconfigname}).nuspec")
+    nuget.base_folder = Folders[:helios_net35_nuspec][:root]
     nuget.output = Folders[:nuget_out]
 end
 
@@ -229,6 +252,8 @@ nugetpack :pack_symbol => [:nuspec] do |nuget|
     nuget.output = Folders[:nuget_out]
     nuget.symbols = true
 end
+
+task :pack => [:pack_net45, :pack_net35]
 
 #-----------------------
 # NUnit Tests
