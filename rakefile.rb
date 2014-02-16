@@ -220,7 +220,7 @@ nuspec :nuspec_net35 => [:all_output] do |nuspec|
     nuspec.tags = Projects[:helios_net35][:nuget_tags]
     nuspec.output_file = File.join(Folders[:nuget_out], "#{Projects[:helios_net35][:id]}-v#{env_nuget_version}(#{@env_buildconfigname}).nuspec");
     nuspec.dependency "Newtonsoft.Json", "5.0.8"
-    nuspec.dependency "TaskParallelLibrary", "1.0.2856.0", "net35"
+    nuspec.dependency "TaskParallelLibrary", "1.0.2856.0"
 end
 
 task :nuspec => [:nuspec_net45, :nuspec_net35]
