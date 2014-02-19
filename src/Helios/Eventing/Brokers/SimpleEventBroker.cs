@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using Helios.Concurrency;
 using Helios.Ops;
 using Helios.Ops.Executors;
 
@@ -17,15 +20,15 @@ namespace Helios.Eventing.Brokers
         public event EventHandler<EventSubscriptionEventArgs<TTopic, TSubscriber>> SubscriptionAdded = delegate { };
         public event EventHandler<EventSubscriptionEventArgs<TTopic, TSubscriber>> SubscriptionRemoved = delegate { };
 
-        protected IExecutor Executor;
+        protected IFiber Executor;
         protected IDictionary<TTopic, IDictionary<TSubscriber, ITopicSubscription>> Subscribers;
 
-        public SimpleEventBroker() : this(new BasicExecutor()){}
+        public SimpleEventBroker() : this(FiberFactory.CreateFiber(FiberMode.Synchronous)){}
 
-        public SimpleEventBroker(IExecutor executor)
+        public SimpleEventBroker(IFiber executor)
         {
             Executor = executor;
-            Subscribers = new Dictionary<TTopic, IDictionary<TSubscriber, ITopicSubscription>>();
+            Subscribers = new ConcurrentDictionary<TTopic, IDictionary<TSubscriber, ITopicSubscription>>();
         } 
 
         public void Subscribe(TTopic id, TSubscriber subscriber, ITopicSubscription normalTopicSubscription)
@@ -52,11 +55,12 @@ namespace Helios.Eventing.Brokers
         {
             if (Subscribers.ContainsKey(id))
             {
-                foreach (var subscriber in Subscribers[id].Values)
+                var subscribers = Subscribers[id].Values.ToArray();
+                foreach (var subscriber in subscribers)
                 {
                     var h = subscriber;
                     if (h == null) continue; //shouldn't happen, but in case any delegates have been GC-ed...
-                    Executor.Execute(() => h.Invoke(sender, e));
+                    Executor.Add(() => h.Invoke(sender, e));
                 }
             }
         }
