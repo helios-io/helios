@@ -105,7 +105,7 @@ namespace Helios.Net.Connections
             return NetworkData.Create(remoteHost.ToNode(Transport), bytes, bytes.Length);
         }
 
-#if !NET35
+#if !NET35 && !NET40
         public override async Task<NetworkData> RecieveAsync()
         {
             var bytes = await _client.ReceiveAsync();
@@ -123,7 +123,7 @@ namespace Helios.Net.Connections
             _client.Send(payload.Buffer, payload.Length, payload.RemoteHost.ToEndPoint());
         }
 
-#if !NET35
+#if !NET35 && !NET40
         public override async Task SendAsync(NetworkData payload)
         {
             await _client.SendAsync(payload.Buffer, payload.Length, payload.RemoteHost.ToEndPoint());

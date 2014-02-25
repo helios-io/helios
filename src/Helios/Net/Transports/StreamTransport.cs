@@ -43,7 +43,7 @@ namespace Helios.Net.Transports
             return InputStream.Read(buffer, offset, length);
         }
 
-#if !NET35
+#if !NET35 && !NET40
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int length)
         {
             CheckInputStream();
@@ -61,7 +61,7 @@ namespace Helios.Net.Transports
 
         #region Writes
 
-#if !NET35
+#if !NET35 && !NET40
         public override async Task WriteAsync(byte[] buffer)
         {
             CheckOutputStream();
@@ -81,7 +81,7 @@ namespace Helios.Net.Transports
             OutputStream.Write(buffer, offset, length);
         }
 
-#if !NET35
+#if !NET35 && !NET40
         public override async Task WriteAsync(byte[] buffer, int offset, int length)
         {
             CheckOutputStream();
@@ -103,7 +103,7 @@ namespace Helios.Net.Transports
             OutputStream.Flush();
         }
 
-#if !NET35
+#if !NET35 && !NET40
         public override async Task FlushAsync()
         {
             CheckOutputStream();

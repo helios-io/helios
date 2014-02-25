@@ -20,7 +20,7 @@ namespace Helios.Util.Concurrency
 
         public static Task Run(Action a)
         {
-#if !NET35
+#if !NET35 && !NET40
             return Task.Run(a);
 #else
             return Task.Factory.StartNew(a);
@@ -30,7 +30,7 @@ namespace Helios.Util.Concurrency
 
         public static Task Run(Action a, CancellationToken c)
         {
-#if !NET35
+#if !NET35 && !NET40
             return Task.Run(a, c);
 #else
             return Task.Factory.StartNew(a, c);
@@ -40,7 +40,7 @@ namespace Helios.Util.Concurrency
 
         public static Task<T> Run<T>(Func<T> f)
         {
-#if !NET35
+#if !NET35 && !NET40
             return Task.Run(f);
 #else
             return Task.Factory.StartNew(f);
@@ -50,7 +50,7 @@ namespace Helios.Util.Concurrency
 
         public static Task<T> Run<T>(Func<T> f, CancellationToken c)
         {
-#if !NET35
+#if !NET35 && !NET40
             return Task.Run(f, c);
 #else
             return Task.Factory.StartNew(f,c);

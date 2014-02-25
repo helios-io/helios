@@ -43,7 +43,7 @@ namespace Helios.Topology
             }
         }
 
-#if !NET35
+#if !NET35 && !NET40
         public static INode GetNodeFromUri(Uri uri)
         {
             uri.NotNull();

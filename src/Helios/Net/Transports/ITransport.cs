@@ -13,7 +13,7 @@ namespace Helios.Net.Transports
 
         int Read(byte[] buffer, int offset, int length);
 
-#if !NET35
+#if !NET35 && !NET40
 
         Task<int> ReadAsync(byte[] buffer, int offset, int length);
 
@@ -22,7 +22,7 @@ namespace Helios.Net.Transports
 
         int ReadAll(byte[] buffer, int offset, int length);
 
-#if !NET35
+#if !NET35 && !NET40
         Task<int> ReadAllAsync(byte[] buffer, int offset, int length);
 
         Task<int> ReadAllAsync(byte[] buffer, int offset, int length, CancellationToken token);
@@ -30,7 +30,7 @@ namespace Helios.Net.Transports
 
         void Write(byte[] buffer);
 
-#if !NET35
+#if !NET35 && !NET40
         Task WriteAsync(byte[] buffer);
 
         Task WriteAsync(byte[] buffer, CancellationToken token);
@@ -44,7 +44,7 @@ namespace Helios.Net.Transports
 
         void Flush();
 
-#if !NET35
+#if !NET35 && !NET40
         Task FlushAsync();
 
         Task FlushAsync(CancellationToken token);

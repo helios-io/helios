@@ -81,7 +81,7 @@ namespace Helios.Topology
             return new EmptyNode();
         }
 
-#if !NET35
+#if !NET35 && !NET40
         public static INode FromString(string nodeUri)
         {
             var uri = new Uri(nodeUri);

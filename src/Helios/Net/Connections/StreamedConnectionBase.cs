@@ -50,14 +50,14 @@ namespace Helios.Net.Connections
             return NetworkData.Create(Node, memoryStream.GetBuffer().Take(buffer).ToArray(), buffer);
         }
 
-#if NET35
+#if NET35 || NET40
         public Task<NetworkData> RecieveAsync()
 #else
         public async Task<NetworkData> RecieveAsync()
 #endif
         {
             var memoryStream = new MemoryStream(1024);
-#if NET35
+#if NET35 || NET40
             return TaskRunner.Run(() => Read(memoryStream.GetBuffer(), 0, (int)memoryStream.Capacity)).ContinueWith(count => NetworkData.Create(Node, memoryStream.GetBuffer().Take(count.Result).ToArray(), count.Result));
 #else
             var buffer = await ReadAsync(memoryStream.GetBuffer(), 0, (int)memoryStream.Capacity);
@@ -70,7 +70,7 @@ namespace Helios.Net.Connections
             Write(payload.Buffer, 0, payload.Length);
         }
 
-#if !NET35
+#if !NET35 && !NET40
         public async Task SendAsync(NetworkData payload)
         {
             await WriteAsync(payload.Buffer, 0, payload.Length);

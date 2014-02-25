@@ -34,7 +34,7 @@ namespace Helios.Net
             };
         }
 
-#if !NET35
+#if !NET35 && !NET40 && !NET40
         public static NetworkData Create(UdpReceiveResult receiveResult)
         {
             return new NetworkData()
