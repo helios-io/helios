@@ -190,10 +190,10 @@ end
 
 desc "Executes all file/copy tasks"
 task :all_output => [:helios_net45_nuget_output, 
+    :helios_net40_nuget_output,
     :helios_symbol_nuget_output, 
     :helios_symbol_src_nuget_output, 
-    :helios_net35_nuget_output,
-    :helios_net40_nuget_output]
+    :helios_net35_nuget_output]
 
 #-----------------------
 # NuSpec
