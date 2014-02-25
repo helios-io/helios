@@ -107,6 +107,11 @@ desc "Sets the output / bin folders based on the current build configuration"
 task :set_output_folders do
     #.NET 4.5
     Folders[:bin][:helios_net45] = File.join(Folders[:src], Projects[:helios_net45][:dir],"bin", @env_buildconfigname)
+
+    # .NET 4.0
+    Folders[:bin][:helios_net40] = File.join(Folders[:src], Projects[:helios_net40][:dir],"bin", @env_buildconfigname)
+
+    # .NET 3.5
     Folders[:bin][:helios_net35] = File.join(Folders[:src], Projects[:helios_net35][:dir],"bin", @env_buildconfigname)
     Folders[:bin][:helios_net45_tests] = File.join(Folders[:tests], Projects[:helios_net45][:tests],"bin", @env_buildconfigname)
 end
@@ -125,6 +130,7 @@ task :create_output_folders => :clean_output_folders do
     create_dir(Folders[:nuget_out])
     create_dir(Folders[:helios_nuspec][:root])
     create_dir(Folders[:helios_nuspec][:lib])
+    create_dir(Folders[:helios_nuspec][:net40])
     create_dir(Folders[:helios_nuspec][:net45])
 
     create_dir(Folders[:helios_net35_nuspec][:root])
@@ -144,6 +150,12 @@ output :helios_net45_nuget_output => [:create_output_folders] do |out|
     out.from Folders[:bin][:helios_net45]
     out.to Folders[:helios_nuspec][:net45]
     out.file Files[:helios_net45][:bin]
+end
+
+output :helios_net40_nuget_output => [:create_output_folders] do |out|
+    out.from Folders[:bin][:helios_net40]
+    out.to Folders[:helios_nuspec][:net40]
+    out.file Files[:helios_net40][:bin]
 end
 
 output :helios_symbol_nuget_output => [:create_output_folders] do |out|
@@ -180,7 +192,8 @@ desc "Executes all file/copy tasks"
 task :all_output => [:helios_net45_nuget_output, 
     :helios_symbol_nuget_output, 
     :helios_symbol_src_nuget_output, 
-    :helios_net35_nuget_output]
+    :helios_net35_nuget_output,
+    :helios_net40_nuget_output]
 
 #-----------------------
 # NuSpec

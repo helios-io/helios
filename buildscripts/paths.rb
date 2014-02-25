@@ -17,6 +17,7 @@ Folders = {
     :helios_nuspec => {
         :root => File.join(root_folder, "build", "nuget", "Helios"),
         :lib => File.join(root_folder, "build", "nuget", "Helios", "lib"),
+        :net40 => File.join(root_folder, "build", "nuget", "Helios", "lib", "net40"),
         :net45 => File.join(root_folder, "build", "nuget", "Helios", "lib", "net45"),
     },
 
@@ -37,6 +38,7 @@ Folders = {
     #specifies the locations of the binary DLLs we want to use in NuGet / NUnit
     :bin => {
         :helios_net45 => 'placeholder - specify build environment',
+        :helios_net40 => 'placeholder - specify build environment',
         :helios_net35 => 'placeholder - specify build environment',
         :helios_net45_tests => 'placeholder - specify build environment'
     }
@@ -51,6 +53,11 @@ Files = {
         :bin => "#{Projects[:helios_net45][:id]}.dll",
         :pdb => "#{Projects[:helios_net45][:id]}.pdb",
         :tests => "#{Projects[:helios_net45][:tests]}.dll",
+    },
+
+    :helios_net40 => {
+        :bin => "#{Projects[:helios_net40][:id]}.dll",
+        :pdb => "#{Projects[:helios_net40][:id]}.pdb",
     },
 
     :helios_net35 => {

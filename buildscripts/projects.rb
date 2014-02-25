@@ -18,6 +18,17 @@ Projects = {
         :nuget_tags => "socket sockets udp multicast tcp reactor BSON eventing",
         :tests => "Helios.Tests",
     },
+    :helios_net40 => {
+        :id => "Helios.NET40",
+        :dir => "Helios.NET40",
+        :title => "Helios Networking Middleware for .NET (NET40 Support)",
+        :description => "Networking middleware for .NET - provides wrappers for writing / reading to sockets, connection pooling, lightweight concurrency, routing, binary serialization, and reactive I/O",
+        :copyright => "Copyright Aaron Stannard, MarkedUp, Inc. 2013-2014",
+        :authors => "Aaron Stannard",
+        :company => "MarkedUp, Inc.",
+        :nuget_tags => "socket sockets udp multicast tcp reactor BSON eventing",
+        :tests => "Helios.Tests",
+    },
     :helios_net35 => {
         :id => "Helios.NET35",
         :dir => "Helios.NET35",
