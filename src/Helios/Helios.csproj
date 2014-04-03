@@ -48,6 +48,9 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Channels\IChannel.cs" />
+    <Compile Include="Channels\IChannelContext.cs" />
+    <Compile Include="Channels\IChannelHandler.cs" />
     <Compile Include="Concurrency\FiberFactory.cs" />
     <Compile Include="Concurrency\FiberMode.cs" />
     <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />
@@ -131,6 +134,7 @@
     <Compile Include="Util\TimedOps\ScheduledValue.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Channels\Impl\" />
     <Folder Include="Util\Streams\" />
   </ItemGroup>
   <ItemGroup>

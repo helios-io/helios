@@ -22,10 +22,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Samples.UdpReactorSe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Samples.TcpDownloadServer", "samples\Helios.Samples.TcpDownloadServer\Helios.Samples.TcpDownloadServer.csproj", "{CB0DF6A8-14CE-40A3-B6B5-F061287FF03E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.NET35", "src\Helios.NET35\Helios.NET35.csproj", "{CEFDF028-1EDB-448C-9848-1AB41EC77150}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.NET40", "src\Helios.NET40\Helios.NET40.csproj", "{2075EC17-115D-4599-A60D-13F451006DC2}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,14 +48,6 @@ Global
 		{CB0DF6A8-14CE-40A3-B6B5-F061287FF03E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB0DF6A8-14CE-40A3-B6B5-F061287FF03E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CB0DF6A8-14CE-40A3-B6B5-F061287FF03E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CEFDF028-1EDB-448C-9848-1AB41EC77150}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CEFDF028-1EDB-448C-9848-1AB41EC77150}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CEFDF028-1EDB-448C-9848-1AB41EC77150}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CEFDF028-1EDB-448C-9848-1AB41EC77150}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2075EC17-115D-4599-A60D-13F451006DC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2075EC17-115D-4599-A60D-13F451006DC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2075EC17-115D-4599-A60D-13F451006DC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2075EC17-115D-4599-A60D-13F451006DC2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
