@@ -13,37 +13,31 @@ namespace Helios.Ops.Executors
     {
         public BasicExecutor()
         {
-            AcceptingJobs = true;
-            ScheduledValue.ScheduleFinished += (sender, args) => ScheduledValue.Dispose();
+            Deadline = Util.TimedOps.Deadline.Never;
         }
 
-        protected ScheduledValue<bool> ScheduledValue;
-
+        protected Deadline Deadline;
         public bool AcceptingJobs
         {
             get
             {
-                return ScheduledValue.Value;
-            }
-            protected set
-            {
-                ScheduledValue = value;
+                return Deadline.HasTimeLeft;
             }
         }
 
-        public void Execute(Action op)
+        public virtual void Execute(Action op)
         {
             if (!AcceptingJobs) return;
 
             op();
         }
 
-        public void Execute(IList<Action> op)
+        public virtual void Execute(IList<Action> op)
         {
             Execute(op, null);
         }
 
-        public void Execute(IList<Action> ops, Action<IEnumerable<Action>> remainingOps)
+        public virtual void Execute(IList<Action> ops, Action<IEnumerable<Action>> remainingOps)
         {
             for (var i = 0; i < ops.Count; i++)
             {
@@ -57,21 +51,14 @@ namespace Helios.Ops.Executors
             }
         }
 
-        public void Shutdown()
+        public virtual void Shutdown()
         {
-            AcceptingJobs = false;
-            ScheduledValue.Dispose();
+            Deadline = Deadline.Now;
         }
 
-        public void Shutdown(TimeSpan gracePeriod)
+        public virtual void Shutdown(TimeSpan gracePeriod)
         {
-            ScheduledValue.Schedule(false, gracePeriod);
-        }
-
-        ~BasicExecutor()
-        {
-            if(!ScheduledValue.WasDisposed)
-                ScheduledValue.Dispose();
+            Deadline = Deadline.Now + gracePeriod;
         }
     }
 }

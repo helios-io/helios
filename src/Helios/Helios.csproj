@@ -49,7 +49,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Channels\IChannel.cs" />
-    <Compile Include="Channels\IChannelContext.cs" />
+    <Compile Include="Channels\IChannelHandlerContext.cs" />
     <Compile Include="Channels\IChannelHandler.cs" />
     <Compile Include="Concurrency\FiberFactory.cs" />
     <Compile Include="Concurrency\FiberMode.cs" />
@@ -131,6 +131,7 @@
     <Compile Include="Util\Guard.cs" />
     <Compile Include="Util\NullGuard.cs" />
     <Compile Include="Util\CollectionBuilder.cs" />
+    <Compile Include="Util\TimedOps\Deadline.cs" />
     <Compile Include="Util\TimedOps\ScheduledValue.cs" />
   </ItemGroup>
   <ItemGroup>

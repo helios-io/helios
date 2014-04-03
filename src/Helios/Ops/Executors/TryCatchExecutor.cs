@@ -6,7 +6,7 @@ using Helios.Util.TimedOps;
 
 namespace Helios.Ops.Executors
 {
-    public class TryCatchExecutor : IExecutor
+    public class TryCatchExecutor : BasicExecutor
     {
         public TryCatchExecutor() : this(exception => { })
         {
@@ -15,26 +15,12 @@ namespace Helios.Ops.Executors
         public TryCatchExecutor(Action<Exception> callback)
         {
             _exceptionCallback = callback;
-            AcceptingJobs = true;
-            ScheduledValue.ScheduleFinished += (sender, args) => ScheduledValue.Dispose();
         }
 
         private readonly Action<Exception> _exceptionCallback;
-        protected ScheduledValue<bool> ScheduledValue;
 
-        public bool AcceptingJobs
-        {
-            get
-            {
-                return ScheduledValue.Value;
-            }
-            protected set
-            {
-                ScheduledValue = value;
-            }
-        }
 
-        public void Execute(Action op)
+        public override void Execute(Action op)
         {
             try
             {
@@ -47,12 +33,7 @@ namespace Helios.Ops.Executors
             }
         }
 
-        public void Execute(IList<Action> op)
-        {
-            Execute(op, null);
-        }
-
-        public void Execute(IList<Action> ops, Action<IEnumerable<Action>> remainingOps)
+        public override void Execute(IList<Action> ops, Action<IEnumerable<Action>> remainingOps)
         {
             var i = 0;
             try
@@ -74,23 +55,6 @@ namespace Helios.Ops.Executors
                 remainingOps.NotNull(obj => remainingOps(ops.Skip(i + 1)));
                 _exceptionCallback(ex);
             }
-        }
-
-        public void Shutdown()
-        {
-            AcceptingJobs = false;
-            ScheduledValue.Dispose();
-        }
-
-        public void Shutdown(TimeSpan gracePeriod)
-        {
-            ScheduledValue.Schedule(false, gracePeriod);
-        }
-
-        ~TryCatchExecutor()
-        {
-            if(!ScheduledValue.WasDisposed)
-                ScheduledValue.Dispose();
         }
     }
 }
