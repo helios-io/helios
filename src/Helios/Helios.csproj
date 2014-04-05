@@ -49,6 +49,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Channels\AbstractChannel.cs" />
+    <Compile Include="Channels\Impl\DefaultChannelId.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelHandlerContext.cs" />
     <Compile Include="Channels\IChannelHandler.cs" />
@@ -128,9 +129,12 @@
     <Compile Include="Topology\NodeExtensions.cs" />
     <Compile Include="Topology\NodeUri.cs" />
     <Compile Include="Util\AtomicCounters.cs" />
+    <Compile Include="Util\Collections\CircularBuffer.cs" />
     <Compile Include="Util\Collections\CollectionExtensions.cs" />
+    <Compile Include="Util\Collections\ConcurrentCircularBuffer.cs" />
     <Compile Include="Util\Collections\ConcurrentFixedSizeStack.cs" />
     <Compile Include="Util\Collections\FixedSizeStack.cs" />
+    <Compile Include="Util\Collections\ICircularBuffer.cs" />
     <Compile Include="Util\Collections\IFixedSizeStack.cs" />
     <Compile Include="Util\Concurrency\FixedSizeThreadPoolTaskScheduler.cs" />
     <Compile Include="Util\Concurrency\TaskRunner.cs" />
@@ -143,7 +147,6 @@
     <Compile Include="Util\TimedOps\ScheduledValue.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Channels\Impl\" />
     <Folder Include="Util\Streams\" />
   </ItemGroup>
   <ItemGroup>

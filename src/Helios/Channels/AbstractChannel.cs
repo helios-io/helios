@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using Helios.Channels.Impl;
 using Helios.Ops;
 using Helios.Topology;
 
@@ -9,16 +12,25 @@ namespace Helios.Channels
     /// </summary>
     public abstract class AbstractChannel : IChannel
     {
+        protected AbstractChannel(IChannel parent, IEventLoop loop)
+        {
+            Parent = parent;
+            ValidateEventLoop(loop);
+            EventLoop = loop;
+            Id = DefaultChannelId.NewChannelId();
+        }
+
         public IChannelId Id { get; private set; }
-        public IEventLoop EventLoop { get; private set; }
-        public IChannel Parent { get; private set; }
-        public bool IsOpen { get; private set; }
-        public bool IsActive { get; private set; }
-        public bool IsRegistered { get; private set; }
-        public INode LocalAddress { get; private set; }
-        public INode RemoteAddress { get; private set; }
-        public Task<bool> CloseTask { get; private set; }
-        public bool IsWriteable { get; private set; }
+        public IEventLoop EventLoop { get; protected set; }
+        public IChannel Parent { get; protected set; }
+        public bool IsOpen { get; protected set; }
+        public bool IsActive { get; protected set; }
+        public bool IsRegistered { get; protected set; }
+        public INode LocalAddress { get; protected set; }
+        public INode RemoteAddress { get; protected set; }
+        public Task<bool> CloseTask { get; protected set; }
+        public bool IsWriteable { get; protected set; }
+
         public Task<bool> Bind(INode localAddress)
         {
             throw new System.NotImplementedException();
@@ -93,5 +105,15 @@ namespace Helios.Channels
         {
             throw new System.NotImplementedException();
         }
+
+        #region Internal methods
+
+        internal void ValidateEventLoop(IEventLoop loop)
+        {
+            if(loop == null)
+                throw new InvalidOperationException("Cannot use a null IEventLoop");
+        }
+
+        #endregion
     }
 }

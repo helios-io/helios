@@ -1,4 +1,5 @@
 ﻿using Helios.Channels;
+using Helios.Channels.Impl;
 using NUnit.Framework;
 
 namespace Helios.Tests.Channels
@@ -11,15 +12,15 @@ namespace Helios.Tests.Channels
         [Test]
         public void Should_create_new_ChannelId()
         {
-            var channelId = DefaultChannelId.NewChanneldId();
+            var channelId = DefaultChannelId.NewChannelId();
             Assert.IsNotNull(channelId);
         }
 
         [Test(Description = "We should be able to create two different channels at roughly the same time, despite sharing the same machine / process")]
         public void Should_create_different_ChannelIds_on_same_process_and_machine()
         {
-            var channel1 = DefaultChannelId.NewChanneldId();
-            var channel2 = DefaultChannelId.NewChanneldId();
+            var channel1 = DefaultChannelId.NewChannelId();
+            var channel2 = DefaultChannelId.NewChannelId();
 
             Assert.AreNotEqual(channel1, channel2);
         }
