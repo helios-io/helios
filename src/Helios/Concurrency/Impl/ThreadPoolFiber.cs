@@ -9,7 +9,6 @@ namespace Helios.Concurrency.Impl
 {
     public class ThreadPoolFiber : IFiber
     {
-        protected readonly IExecutor Executor;
         protected readonly TaskFactory TF;
 
         public ThreadPoolFiber(int numThreads) : this((IExecutor) new TryCatchExecutor(), (TaskFactory) TaskRunner.GetTaskFactory(numThreads)) { }
@@ -26,6 +25,7 @@ namespace Helios.Concurrency.Impl
             TF = tf;
         }
 
+        public IExecutor Executor { get; private set; }
         public bool WasDisposed { get; private set; }
 
         public void Add(Action op)
@@ -37,6 +37,12 @@ namespace Helios.Concurrency.Impl
         public void Shutdown(TimeSpan gracePeriod)
         {
             Executor.Shutdown(gracePeriod);
+        }
+
+        public Task GracefulShutdown(TimeSpan gracePeriod)
+        {
+            Shutdown(gracePeriod);
+            return Task.Delay(gracePeriod);
         }
 
         public void Stop()

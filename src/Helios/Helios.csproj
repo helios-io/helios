@@ -51,6 +51,7 @@
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelHandlerContext.cs" />
     <Compile Include="Channels\IChannelHandler.cs" />
+    <Compile Include="Channels\IChannelId.cs" />
     <Compile Include="Concurrency\FiberFactory.cs" />
     <Compile Include="Concurrency\FiberMode.cs" />
     <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />
@@ -98,6 +99,7 @@
     <Compile Include="Net\MulticastHelper.cs" />
     <Compile Include="Ops\Executors\BasicExecutor.cs" />
     <Compile Include="Ops\Executors\TryCatchExecutor.cs" />
+    <Compile Include="Ops\IEventLoop.cs" />
     <Compile Include="Ops\IExecutor.cs" />
     <Compile Include="Ops\IOperationResult.cs" />
     <Compile Include="Ops\OperationResult.cs" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Helios.Ops;
 using Helios.Ops.Executors;
 
@@ -9,8 +10,6 @@ namespace Helios.Concurrency.Impl
     /// </summary>
     public class SynchronousFiber : IFiber
     {
-        protected readonly IExecutor Executor;
-
         public SynchronousFiber() : this(new BasicExecutor()) { }
 
         public SynchronousFiber(IExecutor executor)
@@ -18,6 +17,7 @@ namespace Helios.Concurrency.Impl
             Executor = executor;
         }
 
+        public IExecutor Executor { get; private set; }
         public bool WasDisposed { get; private set; }
 
         public void Add(Action op)
@@ -29,6 +29,11 @@ namespace Helios.Concurrency.Impl
         public void Shutdown(TimeSpan gracePeriod)
         {
             Executor.Shutdown(gracePeriod);
+        }
+
+        public Task GracefulShutdown(TimeSpan gracePeriod)
+        {
+            return Executor.GracefulShutdown(gracePeriod);
         }
 
         public void Stop()

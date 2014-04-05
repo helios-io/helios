@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Helios.Util;
-using Helios.Util.TimedOps;
 
 namespace Helios.Ops.Executors
 {
