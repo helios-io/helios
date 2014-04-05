@@ -48,6 +48,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Channels\AbstractChannel.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelHandlerContext.cs" />
     <Compile Include="Channels\IChannelHandler.cs" />
@@ -88,6 +89,7 @@
     <Compile Include="Net\Clustering\SingleNodeClusterManager.cs" />
     <Compile Include="Net\Providers\KeyedConnectionProviderBase.cs" />
     <Compile Include="Net\Providers\PooledKeyedConnectionProvider.cs" />
+    <Compile Include="Net\SystemAddressHelper.cs" />
     <Compile Include="Net\Transports\IStreamTransport.cs" />
     <Compile Include="Net\Transports\ITransport.cs" />
     <Compile Include="Net\Connections\StreamedConnectionBase.cs" />
@@ -97,7 +99,9 @@
     <Compile Include="Net\Transports\StreamTransport.cs" />
     <Compile Include="Net\Transports\TransportBase.cs" />
     <Compile Include="Net\MulticastHelper.cs" />
+    <Compile Include="Ops\Executors\AbstractEventLoop.cs" />
     <Compile Include="Ops\Executors\BasicExecutor.cs" />
+    <Compile Include="Ops\Executors\ThreadedEventLoop.cs" />
     <Compile Include="Ops\Executors\TryCatchExecutor.cs" />
     <Compile Include="Ops\IEventLoop.cs" />
     <Compile Include="Ops\IExecutor.cs" />
@@ -123,6 +127,7 @@
     <Compile Include="Topology\Cluster.cs" />
     <Compile Include="Topology\NodeExtensions.cs" />
     <Compile Include="Topology\NodeUri.cs" />
+    <Compile Include="Util\AtomicCounters.cs" />
     <Compile Include="Util\Collections\CollectionExtensions.cs" />
     <Compile Include="Util\Collections\ConcurrentFixedSizeStack.cs" />
     <Compile Include="Util\Collections\FixedSizeStack.cs" />
@@ -133,6 +138,7 @@
     <Compile Include="Util\Guard.cs" />
     <Compile Include="Util\NullGuard.cs" />
     <Compile Include="Util\CollectionBuilder.cs" />
+    <Compile Include="Util\ThreadLocalRandom.cs" />
     <Compile Include="Util\TimedOps\Deadline.cs" />
     <Compile Include="Util\TimedOps\ScheduledValue.cs" />
   </ItemGroup>

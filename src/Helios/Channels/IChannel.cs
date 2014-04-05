@@ -17,6 +17,11 @@ namespace Helios.Channels
         IChannelId Id { get; }
 
         /// <summary>
+        /// The eventloop responsible for executing commands on this channel
+        /// </summary>
+        IEventLoop EventLoop { get; }
+
+        /// <summary>
         /// Gets the parent <see cref="IChannel"/> responsible for this channel.
         /// 
         /// For instance, if this connection was created by an inbound TCP connnection, the Server channel
