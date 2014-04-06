@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Helios.Net;
+using Helios.Util;
 using Helios.Util.Collections;
 
 namespace Helios.Channels.Impl
@@ -22,7 +23,27 @@ namespace Helios.Channels.Impl
 
         protected readonly AbstractChannel Channel;
         private bool inFail;
-        private volatile int writable = 1;
+        private AtomicReference<int> writable = 1;
+        private AtomicReference<long> totalPendingSize = 0;
+
+        /// <summary>
+        /// Increment the pending bytes which will be written at some point
+        /// </summary>
+        public void IncrementPendingOutboundBytes(int size)
+        {
+            var channel = this.Channel;
+            if (size == 0 || channel == null) return;
+
+            long oldValue = totalPendingSize;
+            var newWriteBufferSize = oldValue + size;
+            while (!totalPendingSize.CompareAndSet(oldValue, newWriteBufferSize))
+            {
+                oldValue = totalPendingSize;
+                newWriteBufferSize = oldValue + size;
+            }
+
+
+        }
 
         internal ChannelFuture<bool> AddWrite(NetworkData message)
         {

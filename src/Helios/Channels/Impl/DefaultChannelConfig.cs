@@ -13,6 +13,8 @@ namespace Helios.Channels.Impl
             Channel = channel;
             MaxMessagesPerRead = 1;
             ConnectTimeout = DefaultConnectTimeout;
+            WriteBufferHighWaterMark = 64*1024;
+            WriteBufferLowWaterMark = 32*1024;
         }
 
         public int MaxMessagesPerRead { get; private set; }
@@ -34,6 +36,20 @@ namespace Helios.Channels.Impl
         {
             if(timeout.TotalMilliseconds < 0) throw new ArgumentOutOfRangeException("timeout", "Timeout must be greater than zero");
             ConnectTimeout = timeout;
+            return this;
+        }
+
+        public int WriteBufferHighWaterMark { get; private set; }
+        public IChannelConfig SetWriteBufferHighWaterMark(int waterMark)
+        {
+            WriteBufferHighWaterMark = waterMark;
+            return this;
+        }
+
+        public int WriteBufferLowWaterMark { get; private set; }
+        public IChannelConfig SetWriteBufferLowWaterMark(int waterMark)
+        {
+            WriteBufferLowWaterMark = waterMark;
             return this;
         }
     }
