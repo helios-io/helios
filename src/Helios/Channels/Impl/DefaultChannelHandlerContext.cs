@@ -88,137 +88,176 @@ namespace Helios.Channels.Impl
 
         public IChannelHandlerContext FireChannelRegistered()
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextInbound();
+            nextContext.Invoker.InvokeChannelRegistered(nextContext);
+            return this;
         }
 
         public IChannelHandlerContext FireChannelActive()
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextInbound();
+            nextContext.Invoker.InvokeChannelActive(nextContext);
+            return this;
         }
 
         public IChannelHandlerContext FireChannelInactive()
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextInbound();
+            nextContext.Invoker.InvokeChannelInactive(nextContext);
+            return this;
         }
 
         public IChannelHandlerContext FireExceptionCaught(Exception cause)
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextInbound();
+            nextContext.Invoker.InvokeExceptionCaught(nextContext, cause);
+            return this;
         }
 
         public IChannelHandlerContext FireChannelRead(NetworkData message)
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextInbound();
+            nextContext.Invoker.InvokeChannelRead(nextContext, message);
+            return this;
         }
 
         public IChannelHandlerContext FireUserEventTriggered(object evt)
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextInbound();
+            nextContext.Invoker.InvokeUserEventTriggered(nextContext, evt);
+            return this;
         }
 
         public IChannelHandlerContext FireChannelWritabilityChanged()
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextInbound();
+            nextContext.Invoker.InvokeChannelWritabilityChanged(nextContext);
+            return this;
         }
 
         public IChannelHandlerContext FireChannelReadComplete()
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextInbound();
+            nextContext.Invoker.InvokeChannelReadComplete(nextContext);
+            return this;
         }
 
         public Task<bool> Bind(INode localAddress)
         {
-            throw new NotImplementedException();
+            return Bind(localAddress, NewCompletionSource());
         }
 
         public Task<bool> Bind(INode localAddress, TaskCompletionSource<bool> bindCompletionSource)
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextOutbound();
+            nextContext.Invoker.InvokeBind(nextContext, localAddress, bindCompletionSource);
+            return bindCompletionSource.Task;
         }
 
         public Task<bool> Connect(INode remoteAddress)
         {
-            throw new NotImplementedException();
+            return Connect(remoteAddress, NewCompletionSource());
         }
 
         public Task<bool> Connect(INode remoteAddress, TaskCompletionSource<bool> connectionCompletionSource)
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextOutbound();
+            nextContext.Invoker.InvokeConnect(nextContext, remoteAddress, null, connectionCompletionSource);
+            return connectionCompletionSource.Task;
         }
 
         public Task<bool> Connect(INode remoteAddress, INode localAddress)
         {
-            throw new NotImplementedException();
+            return Connect(remoteAddress, localAddress, NewCompletionSource());
         }
 
         public Task<bool> Connect(INode remoteAddress, INode localAddress, TaskCompletionSource<bool> connectCompletionSource)
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextOutbound();
+            nextContext.Invoker.InvokeConnect(nextContext, remoteAddress, localAddress, connectCompletionSource);
+            return connectCompletionSource.Task;
         }
 
         public Task<bool> Disconnect(TaskCompletionSource<bool> disconnectCompletionSource)
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextOutbound();
+            nextContext.Invoker.InvokeDisconnect(nextContext, disconnectCompletionSource);
+            return disconnectCompletionSource.Task;
         }
 
-        public Task<bool> Disconnection(TaskCompletionSource<bool> disconnectCompletionSource)
+        public Task<bool> Disconnect()
         {
-            throw new NotImplementedException();
+            return Disconnect(NewCompletionSource());
         }
 
         public Task<bool> Close()
         {
-            throw new NotImplementedException();
+            return Close(NewCompletionSource());
         }
 
         public Task<bool> Close(TaskCompletionSource<bool> closeCompletionSource)
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextOutbound();
+            nextContext.Invoker.InvokeClose(nextContext, closeCompletionSource);
+            return closeCompletionSource.Task;
         }
 
         public IChannelHandlerContext Read()
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextOutbound();
+            nextContext.Invoker.InvokeRead(nextContext);
+            return this;
         }
 
         public Task<bool> Write(NetworkData message)
         {
-            throw new NotImplementedException();
+            return Write(message, NewCompletionSource());
         }
 
         public Task<bool> Write(NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextOutbound();
+            nextContext.Invoker.InvokeWrite(nextContext, message, writeCompletionSource);
+            return writeCompletionSource.Task;
         }
 
         public IChannelHandlerContext Flush()
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextOutbound();
+            nextContext.Invoker.InvokeFlush(nextContext);
+            return this;
         }
 
         public Task<bool> WriteAndFlush(NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
         {
-            throw new NotImplementedException();
+            var nextContext = FindContextOutbound();
+            nextContext.Invoker.InvokeWrite(nextContext, message, writeCompletionSource);
+            nextContext.Invoker.InvokeFlush(nextContext);
+            return writeCompletionSource.Task;
         }
 
         public Task<bool> WriteAndFlush(NetworkData message)
         {
-            throw new NotImplementedException();
+            return WriteAndFlush(message, NewCompletionSource());
         }
 
         public TaskCompletionSource<bool> NewCompletionSource()
         {
-            throw new NotImplementedException();
+            return new TaskCompletionSource<bool>();
         }
 
         public Task<bool> NewSucceededTask()
         {
-            throw new NotImplementedException();
+            var newSource = NewCompletionSource();
+            newSource.TrySetResult(true);
+            return newSource.Task;
         }
 
         public Task<bool> NewFailedTask()
         {
-            throw new NotImplementedException();
+            var newSource = NewCompletionSource();
+            newSource.TrySetResult(false);
+            return newSource.Task;
         }
 
         #endregion

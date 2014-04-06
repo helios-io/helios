@@ -117,7 +117,7 @@ namespace Helios.Channels
 
         Task<bool> Disconnect(TaskCompletionSource<bool> disconnectCompletionSource);
 
-        Task<bool> Disconnection(TaskCompletionSource<bool> disconnectCompletionSource);
+        Task<bool> Disconnect();
 
         Task<bool> Close();
 

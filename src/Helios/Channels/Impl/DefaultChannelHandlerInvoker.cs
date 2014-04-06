@@ -195,7 +195,13 @@ namespace Helios.Channels.Impl
             }
             else
             {
-                Executor.Execute(() => ChannelHandlerInvokerUtil.InvokeReadNow(handlerContext));
+                var dctx = (DefaultChannelHandlerContext) handlerContext;
+                var task = dctx.invokeReadTask;
+                if (task == null)
+                {
+                    dctx.invokeReadTask = task = new Task(() => ChannelHandlerInvokerUtil.InvokeReadNow(handlerContext));
+                }
+                Executor.Execute(task);
             }
         }
 
