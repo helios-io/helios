@@ -49,6 +49,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Channels\AbstractChannel.cs" />
+    <Compile Include="Channels\AbstractServerChannel.cs" />
     <Compile Include="Channels\ChannelException.cs" />
     <Compile Include="Channels\ChannelFuture.cs" />
     <Compile Include="Channels\ChannelHandlerAdapter.cs" />
@@ -68,7 +69,12 @@
     <Compile Include="Channels\IChannelHandlerContext.cs" />
     <Compile Include="Channels\IChannelHandler.cs" />
     <Compile Include="Channels\IChannelId.cs" />
+    <Compile Include="Channels\Socket\IServerSocketChannel.cs" />
+    <Compile Include="Channels\Socket\ISocketChannel.cs" />
+    <Compile Include="Channels\Socket\ServerSocketChannelConfig.cs" />
+    <Compile Include="Channels\Socket\SocketChannelConfig.cs" />
     <Compile Include="Channels\Impl\Unpooled.cs" />
+    <Compile Include="Channels\IServerChannel.cs" />
     <Compile Include="Channels\VoidChannelPromise.cs" />
     <Compile Include="Concurrency\FiberFactory.cs" />
     <Compile Include="Concurrency\FiberMode.cs" />
