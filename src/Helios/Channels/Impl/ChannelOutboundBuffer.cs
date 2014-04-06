@@ -15,7 +15,16 @@ namespace Helios.Channels.Impl
         public const int INITIAL_OUTBOUND_CAPACITY = 1000;
         private ICircularBuffer<Entry> _messages = new ConcurrentCircularBuffer<Entry>(INITIAL_OUTBOUND_CAPACITY);
 
-        internal TaskCompletionSource<bool> AddWrite(NetworkData message)
+        protected ChannelOutboundBuffer(AbstractChannel channel)
+        {
+            Channel = channel;
+        }
+
+        protected readonly AbstractChannel Channel;
+        private bool inFail;
+        private volatile int writable = 1;
+
+        internal ChannelFuture<bool> AddWrite(NetworkData message)
         {
             var promise = NewPromise();
             if (_messages.Size == _messages.Capacity) //cancel the message at the front of the buffer since we weren't able to deliver it on time
@@ -24,7 +33,7 @@ namespace Helios.Channels.Impl
                 cancelledHead.Cancel();
             }
             _messages.Enqueue(NewEntry(message, promise));
-            return promise;
+            return promise.Task;
         }
 
         /// <summary>
@@ -35,20 +44,32 @@ namespace Helios.Channels.Impl
             return _messages.DequeueAll().ToList();
         }
 
-        internal static TaskCompletionSource<bool> NewPromise()
+        internal ChannelPromise<bool> NewPromise()
         {
-            return new TaskCompletionSource<bool>(TaskCreationOptions.PreferFairness);
+            return new ChannelPromise<bool>(Channel);
         }
 
-        internal static Entry NewEntry(NetworkData message, TaskCompletionSource<bool> flushPromise)
+        internal static Entry NewEntry(NetworkData message, ChannelPromise<bool> flushPromise)
         {
             return new Entry(){ Message = message.Buffer, FlushedCompletionSource = flushPromise, PendingSize = message.Length};
         }
 
+        #region Static methods
+
+        /// <summary>
+        /// Factory method for creating new <see cref="ChannelOutboundBuffer"/> instances
+        /// </summary>
+        internal static ChannelOutboundBuffer NewBuffer(AbstractChannel channel)
+        {
+            return new ChannelOutboundBuffer(channel);
+        }
+
+        #endregion
+
         internal class Entry
         {
             public byte[] Message { get; set; }
-            public TaskCompletionSource<bool> FlushedCompletionSource { get; set; }
+            public ChannelPromise<bool> FlushedCompletionSource { get; set; }
 
             /// <summary>
             /// The size of this message in bytes

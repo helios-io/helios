@@ -1,6 +1,8 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using Helios.Channels.Extensions;
 using Helios.Channels.Impl;
+using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;
 using Helios.Topology;
@@ -12,6 +14,9 @@ namespace Helios.Channels
     /// </summary>
     public abstract class AbstractChannel : IChannel
     {
+        static readonly HeliosConnectionException ClosedChannelException = new HeliosConnectionException(ExceptionType.Closed, "Channel is currently closed");
+        static readonly HeliosConnectionException NotYetConnectedException = new HeliosConnectionException(ExceptionType.NotOpen, "Channel is not yet open");
+
         protected AbstractChannel(IChannel parent, IEventLoop loop)
         {
             Parent = parent;
@@ -21,10 +26,13 @@ namespace Helios.Channels
 // ReSharper disable once DoNotCallOverridableMethodsInConstructor
             Unsafe = NewUnsafe();
             Pipeline = new DefaultChannelPipeline(this);
+            _closeFuture = new CloseFuture(this);
         }
         
         private volatile INode _localAddress;
         private volatile INode _remoteAddress;
+// ReSharper disable once InconsistentNaming
+        internal readonly CloseFuture _closeFuture;
 
         public IChannelId Id { get; private set; }
         public IEventLoop EventLoop { get; protected set; }
@@ -73,7 +81,6 @@ namespace Helios.Channels
                     {
                         _remoteAddress = remote = Unsafe.RemoteAddress;
                     }
-// ReSharper disable once UnusedVariable
                     catch (Exception ex)
                     {
                         return null;
@@ -88,7 +95,7 @@ namespace Helios.Channels
             _remoteAddress = null;
         }
 
-        public Task<bool> CloseTask { get; protected set; }
+        public ChannelFuture CloseTask { get { return _closeFuture.Task; } }
         public bool IsWritable { get; protected set; }
 
         public ChannelFuture<bool> Bind(INode localAddress)
@@ -223,20 +230,93 @@ namespace Helios.Channels
 
         protected abstract class AbstractUnsafe : IUnsafe
         {
-            private ChannelOutboundBuffer _buffer = new ChannelOutboundBuffer();
+            protected AbstractUnsafe(AbstractChannel channel)
+            {
+                Channel = channel;
+                EventLoop = channel.EventLoop;
+                Invoker = EventLoop.AsInvoker();
+            }
+
+            protected AbstractChannel Channel;
+            protected IEventLoop EventLoop;
+
             private bool inFlush;
 
             public IChannelHandlerInvoker Invoker { get; private set; }
-            public INode LocalAddress { get; private set; }
-            public INode RemoteAddress { get; private set; }
+            public INode LocalAddress { get { return LocalAddressInternal(); }  }
+            public INode RemoteAddress { get { return RemoteAddressInternal(); }  }
             public void Register(ChannelPromise<bool> registerPromise)
             {
-                throw new NotImplementedException();
+                if (EventLoop.IsInEventLoop())
+                {
+                    RegisterInternal(registerPromise);
+                }
+                else
+                {
+                    try
+                    {
+                        EventLoop.Execute(() => RegisterInternal(registerPromise));
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.Write(string.Format("Force-closing a channel whose registration task was not accepted by an event loop: {0} {1}", Channel, ex));
+                        CloseForcibly();
+                        Channel._closeFuture.SetClosed();
+                        SafeSetFailure(registerPromise, ex);
+                    }
+                }
+            }
+
+            protected virtual void RegisterInternal(ChannelPromise<bool> registerPromise)
+            {
+                try
+                {
+                    if (registerPromise.Task.IsCanceled || !EnsureOpen(registerPromise))
+                    {
+                        return;
+                    }
+                    DoRegister();
+                    Channel.IsRegistered = true;
+                    SafeSetSuccess(registerPromise);
+                    Channel.Pipeline.FireChannelRegistered();
+                    if (Channel.IsActive)
+                    {
+                        Channel.Pipeline.FireChannelActive();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    CloseForcibly();
+                    Channel._closeFuture.SetClosed();
+                    SafeSetFailure(registerPromise, ex);
+                }
             }
 
             public void Bind(INode localAddress, ChannelPromise<bool> bindCompletionSource)
             {
-                throw new NotImplementedException();
+                if (bindCompletionSource.Task.IsCanceled || !EnsureOpen(bindCompletionSource))
+                {
+                    return;
+                }
+
+                var wasActive = Channel.IsActive;
+
+                try
+                {
+                    DoBind(localAddress);
+                }
+                catch (Exception ex)
+                {
+                    SafeSetFailure(bindCompletionSource, ex);
+                    CloseIfClosed();
+                    return;
+                }
+
+                if (!wasActive && Channel.IsActive)
+                {
+                    EventLoop.Execute(() => Channel.Pipeline.FireChannelActive());
+                }
+                SafeSetSuccess(bindCompletionSource);
             }
 
             public void Connect(INode localAddress, INode remoteAddress, ChannelPromise<bool> connectCompletionSource)
@@ -246,12 +326,62 @@ namespace Helios.Channels
 
             public void Disconnect(ChannelPromise<bool> disconnectCompletionSource)
             {
-                throw new NotImplementedException();
+                if (disconnectCompletionSource.Task.IsCanceled) return;
+
+                var wasActive = Channel.IsActive;
+                try
+                {
+                    DoDisconnect();
+                }
+                catch (Exception ex)
+                {
+                    SafeSetFailure(disconnectCompletionSource, ex);
+                    CloseIfClosed();
+                    return;
+                }
+
+                if (wasActive && !Channel.IsActive)
+                {
+                    EventLoop.Execute(() => Channel.Pipeline.FireChannelInactive());
+                }
+                SafeSetSuccess(disconnectCompletionSource);
+                CloseIfClosed();
             }
 
             public void Close(ChannelPromise<bool> closeCompletionSource)
             {
-                throw new NotImplementedException();
+                if (closeCompletionSource.Task.IsCanceled) return;
+
+                if (inFlush)
+                {
+                    EventLoop.Execute(() => Close(closeCompletionSource));
+                    return;
+                }
+
+                if (Channel.CloseTask.IsCompleted)
+                {
+                    //Closed already
+                    SafeSetSuccess(closeCompletionSource);
+                    return;
+                }
+
+                var wasActive = Channel.IsActive;
+                var outboundBuffer = OutboundBuffer;
+                OutboundBuffer = null; //disallow adding any messages and flushes to outbound buffer
+
+                try
+                {
+                    DoClose();
+                    Channel._closeFuture.SetClosed();
+                    SafeSetSuccess(closeCompletionSource);
+                }
+                catch (Exception ex)
+                {
+                    Channel._closeFuture.SetClosed();
+                    SafeSetFailure(closeCompletionSource, ex);
+                }
+
+                //Fail all the queued messages
             }
 
             public void CloseForcibly()
@@ -279,9 +409,102 @@ namespace Helios.Channels
             {
                 return new VoidChannelPromise(null);
             }
+
+            #region Abstract methods
+
+            protected abstract INode LocalAddressInternal();
+
+            protected abstract INode RemoteAddressInternal();
+
+            protected abstract void DoRegister();
+
+            protected abstract void DoBind(INode localAddress);
+
+            protected abstract void DoDisconnect();
+
+            protected abstract void DoClose();
+
+            #endregion
+
+            #region Internal methods
+
+            protected bool EnsureOpen(ChannelPromise<bool> promise)
+            {
+                if (Channel.IsOpen) return true;
+
+                SafeSetFailure(promise, ClosedChannelException);
+                return false;
+            }
+
+            protected void CloseIfClosed()
+            {
+                if (Channel.IsOpen) return;
+
+                Close(VoidPromise());
+            }
+
+            /// <summary>
+            /// Marks <see cref="promise"/> as success.
+            /// </summary>
+            protected void SafeSetSuccess(ChannelPromise<bool> promise)
+            {
+                if (!(promise is VoidChannelPromise) && !promise.TrySetResult(true))
+                {
+                    //add logging here
+                }
+            }
+
+            /// <summary>
+            /// Marks <see cref="promise"/> as a failure with cause <see cref="cause"/>
+            /// </summary>
+            protected void SafeSetFailure(ChannelPromise<bool> promise, Exception cause)
+            {
+                if (!(promise is VoidChannelPromise) && !promise.TrySetException(cause))
+                {
+                    //add logging here
+                }
+            }
+
+            #endregion
         }
 
         #endregion
+
+        /// <summary>
+        /// Special <see cref="ChannelPromise{T}"/> implementation used for letting listeners know that the linked
+        /// <see cref="IChannel"/> has closed.
+        /// </summary>
+        internal sealed class CloseFuture : ChannelPromise<bool>
+        {
+            public CloseFuture(AbstractChannel channel) : base(channel)
+            {
+            }
+
+            public override void SetResult(bool result)
+            {
+                throw new InvalidOperationException();
+            }
+
+            public override void SetException(Exception ex)
+            {
+                throw new InvalidOperationException();
+            }
+
+            public override bool TrySetException(Exception ex)
+            {
+                throw new InvalidOperationException();
+            }
+
+            public override bool TrySetResult(bool result)
+            {
+                throw new InvalidOperationException();
+            }
+
+            public bool SetClosed()
+            {
+                return base.TrySetResult(true);
+            }
+        }
 
     }
 

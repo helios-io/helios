@@ -52,6 +52,7 @@
     <Compile Include="Channels\ChannelException.cs" />
     <Compile Include="Channels\ChannelFuture.cs" />
     <Compile Include="Channels\ChannelHandlerAdapter.cs" />
+    <Compile Include="Channels\ChannelPromise.cs" />
     <Compile Include="Channels\Impl\DefaultChannelConfig.cs" />
     <Compile Include="Channels\Extensions\ChannelHandlerInvokerUtil.cs" />
     <Compile Include="Channels\IChannelConfig.cs" />
@@ -144,6 +145,7 @@
     <Compile Include="Topology\NodeExtensions.cs" />
     <Compile Include="Topology\NodeUri.cs" />
     <Compile Include="Util\AtomicCounters.cs" />
+    <Compile Include="Util\AtomicReference.cs" />
     <Compile Include="Util\Collections\CircularBuffer.cs" />
     <Compile Include="Util\Collections\CollectionExtensions.cs" />
     <Compile Include="Util\Collections\ConcurrentCircularBuffer.cs" />

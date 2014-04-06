@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using Helios.Channels.Impl;
 using Helios.Ops;
 
 namespace Helios.Channels.Extensions
@@ -11,6 +12,11 @@ namespace Helios.Channels.Extensions
         public static bool IsInEventLoop(this IExecutor executor)
         {
             return executor.InThread(Thread.CurrentThread);
+        }
+
+        public static IChannelHandlerInvoker AsInvoker(this IEventLoop loop)
+        {
+            return new DefaultChannelHandlerInvoker(loop);
         }
     }
 }

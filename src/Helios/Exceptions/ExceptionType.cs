@@ -7,6 +7,7 @@
         AlreadyOpen,
         TimedOut,
         EndOfFile,
-        NotSupported
+        NotSupported,
+        Closed
     }
 }

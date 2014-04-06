@@ -75,7 +75,7 @@ namespace Helios.Channels
         /// Returns the Task which will be completed once this channel is closed. This method
         /// always returns the same Task.
         /// </summary>
-        Task<bool> CloseTask { get; }
+        ChannelFuture CloseTask { get; }
 
         /// <summary>
         /// Returns true if the I/O thread will peform the requested write operation immediately.
