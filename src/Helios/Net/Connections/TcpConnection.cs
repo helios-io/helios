@@ -29,6 +29,42 @@ namespace Helios.Net.Connections
 
         public override TransportType Transport { get { return TransportType.Tcp; } }
 
+        public bool NoDelay
+        {
+            get { return _client.NoDelay; }
+            set { _client.NoDelay = value; }
+        }
+
+        public int Linger
+        {
+            get { return _client.LingerState.Enabled ? _client.LingerState.LingerTime : 0; }
+            set { _client.LingerState = new LingerOption(true, value); }
+        }
+
+        public int SendBufferSize
+        {
+            get { return _client.SendBufferSize; }
+            set { _client.SendBufferSize = value; }
+        }
+
+        public int ReceiveBufferSize
+        {
+            get { return _client.ReceiveBufferSize; }
+            set { _client.ReceiveBufferSize = value; }
+        }
+
+        public bool ReuseAddress
+        {
+            get { return !_client.ExclusiveAddressUse; }
+            set { _client.ExclusiveAddressUse = !value; }
+        }
+
+        public bool KeepAlive
+        {
+            get { return ((int)_client.Client.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive) == 1); }
+            set { _client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, value ? 1 : 0); }
+        }
+
         public override bool IsOpen()
         {
             if (_client == null) return false;
