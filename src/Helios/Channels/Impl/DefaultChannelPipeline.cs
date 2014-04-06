@@ -1,21 +1,76 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using Helios.Channels.Extensions;
 using Helios.Net;
+using Helios.Ops;
 using Helios.Topology;
 
 namespace Helios.Channels.Impl
 {
-    public class DefaultChannelPipeline : IChannelPipeline
+    public sealed class DefaultChannelPipeline : IChannelPipeline
     {
+        private readonly AbstractChannel _channel;
+        private static readonly IDictionary<Type, string> nameCache = new Dictionary<Type, string>();
+        private static readonly object NameCacheLock = new object();
 
+        private object _nameCtxLock = new object();
+        private readonly IDictionary<string, IChannelHandlerContext> _name2Ctx = new Dictionary<string, IChannelHandlerContext>(4);
+        private readonly IDictionary<IEventLoop, IChannelHandlerInvoker> _childInvokers = new Dictionary<IEventLoop, IChannelHandlerInvoker>();
 
+        public DefaultChannelPipeline(AbstractChannel channel)
+        {
+            _channel = channel;
+
+            var tailHandler = new TailHandler();
+            Tail = new DefaultChannelHandlerContext(this, null, GenerateName(tailHandler), tailHandler);
+
+            var headHandler = new HeadHandler(channel.Unsafe);
+            Head = new DefaultChannelHandlerContext(this, null, GenerateName(headHandler), headHandler);
+
+            Head.next = Tail;
+            Tail.prev = Head;
+        }
+
+        internal readonly DefaultChannelHandlerContext Head;
+        internal readonly DefaultChannelHandlerContext Tail;
 
         #region IChannelPipeline manipulation methods
         public IChannelPipeline AddFirst(string name, IChannelHandler handler)
         {
-            throw new NotImplementedException();
+            return AddFirst(default(IChannelHandlerInvoker), name, handler);
+        }
+
+        public IChannelPipeline AddFirst(IEventLoop loop, string name, IChannelHandler handler)
+        {
+            return AddFirst(FindInvoker(loop), name, handler);
+        }
+
+        public IChannelPipeline AddFirst(IChannelHandlerInvoker invoker, string name, IChannelHandler handler)
+        {
+            lock (_nameCtxLock)
+            {
+                CheckDuplicateName(name);
+
+                var newCtx = new DefaultChannelHandlerContext(this, invoker, name, handler);
+                AddFirstInternal(name, newCtx);
+            }
+        }
+
+        private void AddFirstInternal(string name, DefaultChannelHandlerContext newCtx)
+        {
+            CheckMultiplicity(newCtx);
+            var nextCtx = Head.next;
+            newCtx.prev = Head;
+            newCtx.next = nextCtx;
+            Head.next = newCtx;
+            nextCtx.prev = newCtx;
+
+            _name2Ctx.Add(name, newCtx);
+
+            CallHandlerAdded(newCtx);
         }
 
         public IChannelPipeline AddLast(string name, IChannelHandler handler)
@@ -101,7 +156,7 @@ namespace Helios.Channels.Impl
             throw new NotImplementedException();
         }
 
-        public IChannel Channel { get; private set; }
+        public IChannel Channel { get { return _channel; } }
 
         #region IEnumerable<ChannelHandlerAssociation> members
 
@@ -341,6 +396,160 @@ namespace Helios.Channels.Impl
         #endregion
 
         #region Internal methods
+
+        private void CheckDuplicateName(string name)
+        {
+            if(_name2Ctx.ContainsKey(name)) throw new ArgumentException(string.Format("Duplicate handler name {0}.", name),"name");
+        }
+
+        private IChannelHandlerInvoker FindInvoker(IEventLoop loop)
+        {
+            if (loop == null) return null;
+
+            // Pin one of the child executors once and remember it so that the same child executor is used
+            // to fire events for the same channel
+            IChannelHandlerInvoker invoker;
+            if (!_childInvokers.TryGetValue(loop, out invoker))
+            {
+                var executor = loop.Next();
+                invoker = new DefaultChannelHandlerInvoker(executor);
+                _childInvokers.Add(loop, invoker);
+            }
+
+            return invoker;
+        }
+
+        private static void CheckMultiplicity(IChannelHandlerContext ctx)
+        {
+            var handler = ctx.Handler;
+            var adapter = handler as ChannelHandlerAdapter;
+            if (adapter != null)
+            {
+                var h = adapter;
+                if (h.Added) //this adapter has already been added
+                {
+                    throw new HeliosChannelPipelineException(string.Format("Can't add handler {0} to pipeline multiple times", ctx.GetType()));
+                }
+                h.Added = true;
+            }
+        }
+
+        private void CallHandlerAdded(DefaultChannelHandlerContext ctx)
+        {
+            if (ctx.Channel.IsRegistered && !ctx.Executor.IsInEventLoop())
+            {
+                ctx.Executor.Execute(() => CallHandlerAddedInternal(ctx));
+                return;
+            }
+
+            CallHandlerAddedInternal(ctx);
+        }
+
+        private void CallHandlerAddedInternal(IChannelHandlerContext ctx)
+        {
+            try
+            {
+                ctx.Handler.HandlerAdded(ctx);
+            }
+            catch (Exception ex)
+            {
+                var removed = false;
+                try
+                {
+                    Remove(ctx.Handler);
+                    removed = true;
+                }
+                catch (Exception ex2)
+                {
+                    Debug.Write(string.Format("Failed to remove handler {0} {1}", ctx.Name, ex2));
+                }
+
+                if (removed)
+                {
+                    FireExceptionCaught(
+                        new HeliosChannelPipelineException(
+                            string.Format("{0}.HandlerAdded has thrown an exception; removed.", ctx.Handler.GetType()),
+                            ex));
+                }
+                else
+                {
+                    FireExceptionCaught(
+                        new HeliosChannelPipelineException(
+                            string.Format("{0}.HandlerAdded has thrown an exception; also failed to remove.", ctx.Handler.GetType()),
+                            ex));
+                }
+            }
+        }
+
+        private void CallHandlerRemoved(DefaultChannelHandlerContext ctx)
+        {
+            if (ctx.Channel.IsRegistered && !ctx.Executor.IsInEventLoop())
+            {
+                ctx.Executor.Execute(() => CallHandlerRemovedInternal(ctx));
+                return;
+            }
+
+            CallHandlerRemovedInternal(ctx);
+        }
+
+        private void CallHandlerRemovedInternal(DefaultChannelHandlerContext ctx)
+        {
+            try
+            {
+                ctx.Handler.HandlerRemoved(ctx);
+                ctx.SetRemoved();
+            }
+            catch (Exception ex)
+            {
+                FireExceptionCaught(
+                    new HeliosChannelPipelineException(
+                        string.Format("{0}.HandlerRemoved has thrown an exception.", ctx.Handler.GetType()), ex));
+            }
+        }
+
+        internal string GenerateName(IChannelHandler handler)
+        {
+            var handlerType = handler.GetType();
+            string name;
+            if (nameCache.ContainsKey(handlerType)) name = nameCache[handlerType];
+            else
+            {
+                lock (NameCacheLock)
+                {
+                    //double-check the lock
+                    if (nameCache.ContainsKey(handlerType))
+                    {
+                        name = nameCache[handlerType];
+                    }
+                    else
+                    {
+                        name = string.Format("{0}#0", handlerType);
+                        nameCache.Add(handlerType, name);
+                    }
+                }
+            }
+
+            lock (_nameCtxLock)
+            {
+                //It's unlikely for a user to put more than one handler of the same type, but make sure to avoid
+                // any name conflicts.
+                if (_name2Ctx.ContainsKey(name))
+                {
+                    var baseName = name.Substring(0, name.Length - 1); //Strip the trailing '0'
+                    for (var i = 0; ; i++)
+                    {
+                        var newName = baseName + i;
+                        if (!_name2Ctx.ContainsKey(newName))
+                        {
+                            name = newName;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return name;
+        }
 
         internal void RemoveInternal(DefaultChannelHandlerContext defaultChannelHandlerContext)
         {

@@ -49,6 +49,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Channels\AbstractChannel.cs" />
+    <Compile Include="Channels\ChannelException.cs" />
     <Compile Include="Channels\ChannelHandlerAdapter.cs" />
     <Compile Include="Channels\Extensions\ChannelHandlerInvokerUtil.cs" />
     <Compile Include="Channels\Impl\DefaultChannelHandlerInvoker.cs" />

@@ -46,6 +46,11 @@ namespace Helios.Channels.Impl
         public string Name { get { return _name; } }
         public bool IsRemoved { get; protected set; }
 
+        public void SetRemoved()
+        {
+            IsRemoved = true;
+        }
+
         public void Teardown()
         {
             var executor = Executor;

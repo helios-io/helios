@@ -10,6 +10,8 @@ namespace Helios.Channels
     /// </summary>
     public class ChannelHandlerAdapter : IChannelHandler
     {
+        internal bool Added;
+
         public virtual void HandlerAdded(IChannelHandlerContext handlerContext)
         {
             //NO-OP

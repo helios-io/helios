@@ -15,11 +15,27 @@ namespace Helios.Channels
     {
         IChannelPipeline AddFirst(string name, IChannelHandler handler);
 
+        IChannelPipeline AddFirst(IChannelHandlerInvoker invoker, string name, IChannelHandler handler);
+
+        IChannelPipeline AddFirst(IEventLoop loop, string name, IChannelHandler handler);
+
         IChannelPipeline AddLast(string name, IChannelHandler handler);
+
+        IChannelPipeline AddLast(IEventLoop loop, string name, IChannelHandler handler);
+
+        IChannelPipeline AddLast(IChannelHandlerInvoker invoker, string name, IChannelHandler handler);
 
         IChannelPipeline AddBefore(string baseName, string name, IChannelHandler handler);
 
+        IChannelPipeline AddBefore(IEventLoop loop, string baseName, string name, IChannelHandler handler);
+
+        IChannelPipeline AddBefore(IChannelHandlerInvoker invoker, string baseName, string name, IChannelHandler handler);
+
         IChannelPipeline AddAfter(string baseName, string name, IChannelHandler handler);
+
+        IChannelPipeline AddAfter(IEventLoop loop, string baseName, string name, IChannelHandler handler);
+
+        IChannelPipeline AddAfter(IChannelHandlerInvoker invoker, string baseName, string name, IChannelHandler handler);
 
         IChannelHandler Remove(string name);
 
