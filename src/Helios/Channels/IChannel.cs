@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Helios.Channels.Impl;
 using Helios.Net;
 using Helios.Ops;
 using Helios.Topology;
@@ -9,7 +11,7 @@ namespace Helios.Channels
     /// Composable wrapper interface over a <see cref="IConnection"/> - designed to enable
     /// buffering of messages, asynchronous operations, and dispatch available socket data to multiple workers
     /// </summary>
-    public interface IChannel
+    public interface IChannel : IComparable<IChannel>
     {
         /// <summary>
         /// The unique ID for this channel
@@ -33,6 +35,11 @@ namespace Helios.Channels
         /// responsible for creating this client connection is the Parent.
         /// </summary>
         IChannel Parent { get; }
+
+        /// <summary>
+        /// INTERNAL USE ONLY
+        /// </summary>
+        IUnsafe Unsafe { get; }
 
         /// <summary>
         /// If the channel is open and might be <see cref="IsActive"/> later
@@ -70,7 +77,7 @@ namespace Helios.Channels
         /// Any write requests made when this method returns false are queued until the I/O thread
         /// is ready to process the queued write requests.
         /// </summary>
-        bool IsWriteable { get; }
+        bool IsWritable { get; }
 
         Task<bool> Bind(INode localAddress);
 
@@ -101,5 +108,51 @@ namespace Helios.Channels
         Task<bool> WriteAndFlush(NetworkData message, TaskCompletionSource<bool> writeCompletionSource);
 
         Task<bool> WriteAndFlush(NetworkData message);
+
     }
+
+
+    #region Unsafe interface
+
+    /// <summary>
+    /// Unsafe operations that should never be called from user-code. Used to implement the actual underlying transport.
+    /// </summary>
+    public interface IUnsafe
+    {
+        IExecutor Invoker
+        {
+            get;
+        }
+
+        INode LocalAddress { get; }
+
+        INode RemoteAddress { get; }
+
+        /// <summary>
+        /// Register the <see cref="IChannel"/> of the <see cref="TaskCompletionSource{T}"/> and notify
+        /// the <see cref="Task{T}"/> once the registration is complete.
+        /// </summary>
+        /// <param name="registerPromise"></param>
+        void Register(TaskCompletionSource<bool> registerPromise);
+
+        void Bind(INode localAddress, TaskCompletionSource<bool> bindCompletionSource);
+
+        void Connect(INode localAddress, INode remoteAddress, TaskCompletionSource<bool> connectCompletionSource);
+
+        void Disconnect(TaskCompletionSource<bool> disconnectCompletionSource);
+
+        void Close(TaskCompletionSource<bool> closeCompletionSource);
+
+        void CloseForcibly();
+
+        void BeginRead();
+
+        void Write(NetworkData msg, TaskCompletionSource<bool> writeCompletionSource);
+
+        void Flush();
+
+        ChannelOutboundBuffer OutboundBuffer();
+    }
+
+    #endregion
 }

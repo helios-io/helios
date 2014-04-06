@@ -36,6 +36,12 @@ namespace Helios.Channels
         string Name { get; }
 
         /// <summary>
+        /// Returns true if the <see cref="IChannelHandler"/> to which this context belongs was removed from the
+        /// <see cref="ChannelPipeline"/>.
+        /// </summary>
+        bool IsRemoved { get; }
+
+        /// <summary>
         /// A <see cref="IChannel"/> was regiestered to its event loop.
         /// 
         /// This will result in the <see cref="IChannelHandler.ChannelRegistered"/> method being called
@@ -71,10 +77,21 @@ namespace Helios.Channels
         IChannelHandlerContext FireChannelRead(NetworkData message);
 
         /// <summary>
+        /// Fires a user-defined event
+        /// </summary>
+        IChannelHandlerContext FireUserEventTriggered(object evt);
+
+        /// <summary>
         /// Triggers a <see cref="IChannelHandler.ChannelWritabilityChanged"/> event on the <see cref="IChannelHandler"/>.
         /// </summary>
         /// <returns></returns>
         IChannelHandlerContext FireChannelWritabilityChanged();
+
+        /// <summary>
+        /// Triggers a <see cref="IChannelHandler.ChannelWritabilityChanged"/> event on the next <see cref="IChannelHandler"/> in the
+        /// <see cref="ChannelPipeline"/>
+        /// </summary>
+        IChannelHandlerContext FireChannelReadComplete();
 
         /// <summary>
         /// Request to bind to a given <see cref="INode"/> address and notify the <see cref="Task{T}"/> once

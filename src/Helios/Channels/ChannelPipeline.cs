@@ -56,6 +56,10 @@ namespace Helios.Channels
 
         public abstract ChannelPipeline FireChannelRead(NetworkData message);
 
+        public abstract ChannelPipeline FireUserEventTriggered(object evt);
+
+        public abstract ChannelPipeline FireChannelReadComplete();
+
         public abstract ChannelPipeline FireChannelWritabilityChanged();
 
         public abstract Task<bool> Bind(INode localAddress);

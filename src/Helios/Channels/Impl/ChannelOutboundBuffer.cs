@@ -10,12 +10,12 @@ namespace Helios.Channels.Impl
     /// Internal buffer for outbound messages - uses a <see cref="ICircularBuffer{T}"/> collection to store messages that
     /// have yet to be flushed to the outbound network connection
     /// </summary>
-    internal class ChannelOutboundBuffer
+    public class ChannelOutboundBuffer
     {
         public const int INITIAL_OUTBOUND_CAPACITY = 1000;
-        protected ICircularBuffer<Entry> _messages = new ConcurrentCircularBuffer<Entry>(INITIAL_OUTBOUND_CAPACITY);
+        private ICircularBuffer<Entry> _messages = new ConcurrentCircularBuffer<Entry>(INITIAL_OUTBOUND_CAPACITY);
 
-        public TaskCompletionSource<bool> AddWrite(NetworkData message)
+        internal TaskCompletionSource<bool> AddWrite(NetworkData message)
         {
             var promise = NewPromise();
             if (_messages.Size == _messages.Capacity) //cancel the message at the front of the buffer since we weren't able to deliver it on time
@@ -30,7 +30,7 @@ namespace Helios.Channels.Impl
         /// <summary>
         /// Flush all of the messages in this buffer
         /// </summary>
-        public IList<Entry> Flush()
+        internal IList<Entry> Flush()
         {
             return _messages.DequeueAll().ToList();
         }

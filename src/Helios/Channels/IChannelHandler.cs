@@ -56,6 +56,16 @@ namespace Helios.Channels
         void ChannelRead(IChannelHandlerContext handlerContext, NetworkData message);
 
         /// <summary>
+        /// A read operation on the channel completed
+        /// </summary>
+        void ChannelReadComplete(IChannelHandlerContext handlerContext);
+
+        /// <summary>
+        /// A user-defined event occurred on the channel
+        /// </summary>
+        void UserEventTriggered(IChannelHandlerContext handlerContext, object evt);
+
+        /// <summary>
         /// Gets called when the writable state of the underlying <see cref="IChannel"/> has changed. You can get the
         /// state by calling <see cref="IChannel.IsWritable"/>.
         /// </summary>

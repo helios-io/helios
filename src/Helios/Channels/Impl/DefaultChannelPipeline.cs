@@ -32,6 +32,16 @@ namespace Helios.Channels.Impl
             throw new NotImplementedException();
         }
 
+        public override ChannelPipeline FireUserEventTriggered(object evt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ChannelPipeline FireChannelReadComplete()
+        {
+            throw new NotImplementedException();
+        }
+
         public override ChannelPipeline FireChannelWritabilityChanged()
         {
             throw new NotImplementedException();
@@ -116,5 +126,14 @@ namespace Helios.Channels.Impl
         {
             throw new NotImplementedException();
         }
+
+        #region Internal class definitions
+
+        sealed class HeadHandler : ChannelHandlerAdapter
+        {
+            
+        }
+
+        #endregion
     }
 }

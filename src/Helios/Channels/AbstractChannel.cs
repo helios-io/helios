@@ -26,13 +26,14 @@ namespace Helios.Channels
         public IEventLoop EventLoop { get; protected set; }
         public ChannelPipeline Pipeline { get; private set; }
         public IChannel Parent { get; protected set; }
+        public IUnsafe Unsafe { get; private set; }
         public bool IsOpen { get; protected set; }
         public bool IsActive { get; protected set; }
         public bool IsRegistered { get; protected set; }
         public INode LocalAddress { get; protected set; }
         public INode RemoteAddress { get; protected set; }
         public Task<bool> CloseTask { get; protected set; }
-        public bool IsWriteable { get; protected set; }
+        public bool IsWritable { get; protected set; }
 
         public Task<bool> Bind(INode localAddress)
         {
@@ -115,6 +116,15 @@ namespace Helios.Channels
         {
             if(loop == null)
                 throw new InvalidOperationException("Cannot use a null IEventLoop");
+        }
+
+        #endregion
+
+        #region IComparable<IChannel> methods
+
+        public int CompareTo(IChannel other)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

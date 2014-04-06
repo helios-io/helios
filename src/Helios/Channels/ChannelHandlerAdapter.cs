@@ -45,6 +45,16 @@ namespace Helios.Channels
             handlerContext.FireChannelRead(message);
         }
 
+        public virtual void ChannelReadComplete(IChannelHandlerContext handlerContext)
+        {
+            handlerContext.FireChannelReadComplete();
+        }
+
+        public virtual void UserEventTriggered(IChannelHandlerContext handlerContext, object evt)
+        {
+            handlerContext.FireUserEventTriggered(evt);
+        }
+
         public virtual void ChannelWritabilityChanged(IChannelHandlerContext handlerContext)
         {
             handlerContext.FireChannelWritabilityChanged();
