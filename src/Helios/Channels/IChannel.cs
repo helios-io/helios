@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Helios.Channels.Impl;
 using Helios.Net;
 using Helios.Ops;
 using Helios.Topology;

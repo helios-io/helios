@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Helios.Channels.Impl
+namespace Helios.Channels
 {
     public class DefaultChannelConfig : IChannelConfig
     {

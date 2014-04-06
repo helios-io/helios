@@ -10,7 +10,7 @@ using Helios.Ops;
 using Helios.Topology;
 using Helios.Util.Collections;
 
-namespace Helios.Channels.Impl
+namespace Helios.Channels
 {
     public sealed class DefaultChannelPipeline : IChannelPipeline
     {

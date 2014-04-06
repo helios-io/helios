@@ -5,7 +5,7 @@ using Helios.Net;
 using Helios.Ops;
 using Helios.Topology;
 
-namespace Helios.Channels.Impl
+namespace Helios.Channels
 {
     public class DefaultChannelHandlerInvoker : IChannelHandlerInvoker
     {

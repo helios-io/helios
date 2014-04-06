@@ -5,7 +5,7 @@ using System.Text;
 using Helios.Net;
 using Helios.Util;
 
-namespace Helios.Channels.Impl
+namespace Helios.Channels
 {
     /// <summary>
     /// A default ChannelId implementation - uses a combination of the process ID, best MAC address, system time, an atomic counter, and a random integer

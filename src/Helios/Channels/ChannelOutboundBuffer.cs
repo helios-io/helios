@@ -4,7 +4,7 @@ using Helios.Net;
 using Helios.Util;
 using Helios.Util.Collections;
 
-namespace Helios.Channels.Impl
+namespace Helios.Channels
 {
     /// <summary>
     /// Internal buffer for outbound messages - uses a <see cref="ICircularBuffer{T}"/> collection to store messages that

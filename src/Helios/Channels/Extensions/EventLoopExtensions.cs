@@ -1,5 +1,4 @@
 ﻿using System.Threading;
-using Helios.Channels.Impl;
 using Helios.Ops;
 
 namespace Helios.Channels.Extensions

@@ -1,4 +1,4 @@
-﻿namespace Helios.Channels.Impl
+﻿namespace Helios.Channels
 {
     /// <summary>
     /// Helper class used in queueing for outbound writes

@@ -1,5 +1,4 @@
 ﻿using System;
-using Helios.Channels.Impl;
 using Helios.Net;
 using Helios.Ops;
 using Helios.Topology;

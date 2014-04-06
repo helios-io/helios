@@ -1,5 +1,4 @@
 ﻿using Helios.Channels;
-using Helios.Channels.Impl;
 using NUnit.Framework;
 
 namespace Helios.Tests.Channels

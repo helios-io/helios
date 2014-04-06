@@ -2,7 +2,6 @@
 using System.Configuration;
 using System.Diagnostics;
 using Helios.Channels.Extensions;
-using Helios.Channels.Impl;
 using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;
