@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Helios.Net;
 using Helios.Ops;
 using Helios.Topology;
 
@@ -67,7 +68,7 @@ namespace Helios.Channels
         /// 
         /// This will result in having the <see cref="IChannelHandler.ChannelRead"/> method called.
         /// </summary>
-        IChannelHandlerContext FireChannelRead(object message);
+        IChannelHandlerContext FireChannelRead(NetworkData message);
 
         /// <summary>
         /// Triggers a <see cref="IChannelHandler.ChannelWritabilityChanged"/> event on the <see cref="IChannelHandler"/>.
@@ -104,15 +105,15 @@ namespace Helios.Channels
 
         IChannelHandlerContext Read();
 
-        Task<bool> Write(object message);
+        Task<bool> Write(NetworkData message);
 
-        Task<bool> Write(object message, TaskCompletionSource<bool> writeCompletionSource);
+        Task<bool> Write(NetworkData message, TaskCompletionSource<bool> writeCompletionSource);
 
         IChannelHandlerContext Flush();
 
-        Task<bool> WriteAndFlush(object message, TaskCompletionSource<bool> writeCompletionSource);
+        Task<bool> WriteAndFlush(NetworkData message, TaskCompletionSource<bool> writeCompletionSource);
 
-        Task<bool> WriteAndFlush(object message);
+        Task<bool> WriteAndFlush(NetworkData message);
 
         TaskCompletionSource<bool> NewCompletionSource();
 

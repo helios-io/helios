@@ -49,11 +49,14 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Channels\AbstractChannel.cs" />
+    <Compile Include="Channels\Impl\ChannelOutboundBuffer.cs" />
+    <Compile Include="Channels\ChannelPipeline.cs" />
     <Compile Include="Channels\Impl\DefaultChannelId.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelHandlerContext.cs" />
     <Compile Include="Channels\IChannelHandler.cs" />
     <Compile Include="Channels\IChannelId.cs" />
+    <Compile Include="Channels\Impl\Unpooled.cs" />
     <Compile Include="Concurrency\FiberFactory.cs" />
     <Compile Include="Concurrency\FiberMode.cs" />
     <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />

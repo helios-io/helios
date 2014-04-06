@@ -22,6 +22,11 @@ namespace Helios.Channels
         IEventLoop EventLoop { get; }
 
         /// <summary>
+        /// The pipeline of <see cref="IChannelHandler"/> instances responsible for handling this channel
+        /// </summary>
+        ChannelPipeline Pipeline { get; }
+
+        /// <summary>
         /// Gets the parent <see cref="IChannel"/> responsible for this channel.
         /// 
         /// For instance, if this connection was created by an inbound TCP connnection, the Server channel
@@ -87,14 +92,14 @@ namespace Helios.Channels
 
         IChannel Read();
 
-        Task<bool> Write(object message);
+        Task<bool> Write(NetworkData message);
 
-        Task<bool> Write(object message, TaskCompletionSource<bool> writeCompletionSource);
+        Task<bool> Write(NetworkData message, TaskCompletionSource<bool> writeCompletionSource);
 
         IChannel Flush();
 
-        Task<bool> WriteAndFlush(object message, TaskCompletionSource<bool> writeCompletionSource);
+        Task<bool> WriteAndFlush(NetworkData message, TaskCompletionSource<bool> writeCompletionSource);
 
-        Task<bool> WriteAndFlush(object message);
+        Task<bool> WriteAndFlush(NetworkData message);
     }
 }

@@ -53,7 +53,7 @@ namespace Helios.Channels
         /// <summary>
         /// Received inbound data from the channel
         /// </summary>
-        void ChannelRead(IChannelHandlerContext handlerContext, object message);
+        void ChannelRead(IChannelHandlerContext handlerContext, NetworkData message);
 
         /// <summary>
         /// Gets called when the writable state of the underlying <see cref="IChannel"/> has changed. You can get the
@@ -103,7 +103,7 @@ namespace Helios.Channels
         /// <param name="handlerContext">The handlerContext used to make the write operation.</param>
         /// <param name="message">The message being written by the <see cref="IChannelHandlerContext"/> to the <see cref="IChannel"/></param>
         /// <param name="writeCompletionSource">A task completion source to notify once the operation finishes.</param>
-        void Write(IChannelHandlerContext handlerContext, object message, TaskCompletionSource<bool> writeCompletionSource);
+        void Write(IChannelHandlerContext handlerContext, NetworkData message, TaskCompletionSource<bool> writeCompletionSource);
 
         /// <summary>
         /// Called once a flush operation is made to the underlying <see cref="IConnection"/>. This operation tries to push any

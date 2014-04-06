@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Helios.Channels.Impl;
+using Helios.Net;
 using Helios.Ops;
 using Helios.Topology;
 
@@ -20,8 +20,11 @@ namespace Helios.Channels
             Id = DefaultChannelId.NewChannelId();
         }
 
+        private ChannelOutboundBuffer _buffer = new ChannelOutboundBuffer();
+
         public IChannelId Id { get; private set; }
         public IEventLoop EventLoop { get; protected set; }
+        public ChannelPipeline Pipeline { get; private set; }
         public IChannel Parent { get; protected set; }
         public bool IsOpen { get; protected set; }
         public bool IsActive { get; protected set; }
@@ -81,12 +84,12 @@ namespace Helios.Channels
             throw new System.NotImplementedException();
         }
 
-        public Task<bool> Write(object message)
+        public Task<bool> Write(NetworkData message)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<bool> Write(object message, TaskCompletionSource<bool> writeCompletionSource)
+        public Task<bool> Write(NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
         {
             throw new System.NotImplementedException();
         }
@@ -96,12 +99,12 @@ namespace Helios.Channels
             throw new System.NotImplementedException();
         }
 
-        public Task<bool> WriteAndFlush(object message, TaskCompletionSource<bool> writeCompletionSource)
+        public Task<bool> WriteAndFlush(NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<bool> WriteAndFlush(object message)
+        public Task<bool> WriteAndFlush(NetworkData message)
         {
             throw new System.NotImplementedException();
         }
