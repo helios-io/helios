@@ -11,7 +11,15 @@ namespace Helios.Channels.Impl
         public DefaultChannelConfig(IChannel channel)
         {
             Channel = channel;
-            MaxMessagesPerRead = 1;
+            if (channel is IServerChannel)
+            {
+                MaxMessagesPerRead = 16;
+            }
+            else
+            {
+                MaxMessagesPerRead = 1;
+            }
+           
             ConnectTimeout = DefaultConnectTimeout;
             WriteBufferHighWaterMark = 64*1024;
             WriteBufferLowWaterMark = 32*1024;

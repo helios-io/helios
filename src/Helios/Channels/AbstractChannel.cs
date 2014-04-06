@@ -294,7 +294,7 @@ namespace Helios.Channels
                 }
             }
 
-            public void Bind(INode localAddress, ChannelPromise<bool> bindCompletionSource)
+            public virtual void Bind(INode localAddress, ChannelPromise<bool> bindCompletionSource)
             {
                 if (bindCompletionSource.Task.IsCanceled || !EnsureOpen(bindCompletionSource))
                 {
@@ -324,7 +324,7 @@ namespace Helios.Channels
             public abstract void Connect(INode localAddress, INode remoteAddress,
                 ChannelPromise<bool> connectCompletionSource);
 
-            public void Disconnect(ChannelPromise<bool> disconnectCompletionSource)
+            public virtual void Disconnect(ChannelPromise<bool> disconnectCompletionSource)
             {
                 if (disconnectCompletionSource.Task.IsCanceled) return;
 
@@ -348,7 +348,7 @@ namespace Helios.Channels
                 CloseIfClosed();
             }
 
-            public void Close(ChannelPromise<bool> closeCompletionSource)
+            public virtual void Close(ChannelPromise<bool> closeCompletionSource)
             {
                 var channel = Channel;
                 if (closeCompletionSource.Task.IsCanceled) return;
@@ -452,7 +452,7 @@ namespace Helios.Channels
                 }
             }
 
-            public void Write(NetworkData msg, ChannelPromise<bool> writeCompletionSource)
+            public virtual void Write(NetworkData msg, ChannelPromise<bool> writeCompletionSource)
             {
                 var outboundBuffer = OutboundBuffer;
                 if (outboundBuffer == null)
@@ -466,7 +466,7 @@ namespace Helios.Channels
                 outboundBuffer.AddMessage(msg, writeCompletionSource);
             }
 
-            public void Flush()
+            public virtual void Flush()
             {
                 var outboundBuffer = OutboundBuffer;
                 if (outboundBuffer == null)
