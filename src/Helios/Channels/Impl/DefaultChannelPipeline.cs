@@ -538,52 +538,52 @@ namespace Helios.Channels.Impl
             return this;
         }
 
-        public Task<bool> Bind(INode localAddress)
+        public ChannelFuture<bool> Bind(INode localAddress)
         {
             return Tail.Bind(localAddress);
         }
 
-        public Task<bool> Bind(INode localAddress, TaskCompletionSource<bool> bindCompletionSource)
+        public ChannelFuture<bool> Bind(INode localAddress, ChannelPromise<bool> bindCompletionSource)
         {
             return Tail.Bind(localAddress, bindCompletionSource);
         }
 
-        public Task<bool> Connect(INode remoteAddress)
+        public ChannelFuture<bool> Connect(INode remoteAddress)
         {
             return Tail.Connect(remoteAddress);
         }
 
-        public Task<bool> Connect(INode remoteAddress, INode localAddress)
+        public ChannelFuture<bool> Connect(INode remoteAddress, INode localAddress)
         {
             return Tail.Connect(remoteAddress, localAddress);
         }
 
-        public Task<bool> Connect(INode remoteAddress, TaskCompletionSource<bool> connectCompletionSource)
+        public ChannelFuture<bool> Connect(INode remoteAddress, ChannelPromise<bool> connectCompletionSource)
         {
             return Tail.Connect(remoteAddress, connectCompletionSource);
         }
 
-        public Task<bool> Connect(INode remoteAddress, INode localAddress, TaskCompletionSource<bool> connectCompletionSource)
+        public ChannelFuture<bool> Connect(INode remoteAddress, INode localAddress, ChannelPromise<bool> connectCompletionSource)
         {
             return Tail.Connect(remoteAddress, localAddress, connectCompletionSource);
         }
 
-        public Task<bool> Disconnect()
+        public ChannelFuture<bool> Disconnect()
         {
             return Tail.Disconnect();
         }
 
-        public Task<bool> Disconnect(TaskCompletionSource<bool> disconnectCompletionSource)
+        public ChannelFuture<bool> Disconnect(ChannelPromise<bool> disconnectCompletionSource)
         {
             return Tail.Disconnect(disconnectCompletionSource);
         }
 
-        public Task<bool> Close()
+        public ChannelFuture<bool> Close()
         {
             return Tail.Close();
         }
 
-        public Task<bool> Close(TaskCompletionSource<bool> closeCompletionSource)
+        public ChannelFuture<bool> Close(ChannelPromise<bool> closeCompletionSource)
         {
             return Tail.Close(closeCompletionSource);
         }
@@ -594,12 +594,12 @@ namespace Helios.Channels.Impl
             return this;
         }
 
-        public Task<bool> Write(NetworkData message)
+        public ChannelFuture<bool> Write(NetworkData message)
         {
             return Tail.Write(message);
         }
 
-        public Task<bool> Write(NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
+        public ChannelFuture<bool> Write(NetworkData message, ChannelPromise<bool> writeCompletionSource)
         {
             return Tail.Write(message, writeCompletionSource);
         }
@@ -610,12 +610,12 @@ namespace Helios.Channels.Impl
             return this;
         }
 
-        public Task<bool> WriteAndFlush(NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
+        public ChannelFuture<bool> WriteAndFlush(NetworkData message, ChannelPromise<bool> writeCompletionSource)
         {
             return Tail.WriteAndFlush(message, writeCompletionSource);
         }
 
-        public Task<bool> WriteAndFlush(NetworkData message)
+        public ChannelFuture<bool> WriteAndFlush(NetworkData message)
         {
             return Tail.WriteAndFlush(message);
         }
@@ -636,22 +636,22 @@ namespace Helios.Channels.Impl
                 _unsafe = @unsafe;
             }
 
-            public override void Bind(IChannelHandlerContext handlerContext, INode localAddress, TaskCompletionSource<bool> bindCompletionSource)
+            public override void Bind(IChannelHandlerContext handlerContext, INode localAddress, ChannelPromise<bool> bindCompletionSource)
             {
                 _unsafe.Bind(localAddress, bindCompletionSource);
             }
 
-            public override void Connect(IChannelHandlerContext handlerContext, INode remoteAddress, INode localAddress, TaskCompletionSource<bool> connectCompletionSource)
+            public override void Connect(IChannelHandlerContext handlerContext, INode remoteAddress, INode localAddress, ChannelPromise<bool> connectCompletionSource)
             {
                 _unsafe.Connect(remoteAddress, localAddress, connectCompletionSource);
             }
 
-            public override void Disconnect(IChannelHandlerContext handlerContext, TaskCompletionSource<bool> disconnectCompletionSource)
+            public override void Disconnect(IChannelHandlerContext handlerContext, ChannelPromise<bool> disconnectCompletionSource)
             {
                 _unsafe.Disconnect(disconnectCompletionSource);
             }
 
-            public override void Close(IChannelHandlerContext handlerContext, TaskCompletionSource<bool> closeCompletionSource)
+            public override void Close(IChannelHandlerContext handlerContext, ChannelPromise<bool> closeCompletionSource)
             {
                 _unsafe.Close(closeCompletionSource);
             }
@@ -661,7 +661,7 @@ namespace Helios.Channels.Impl
                 _unsafe.BeginRead();
             }
 
-            public override void Write(IChannelHandlerContext handlerContext, NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
+            public override void Write(IChannelHandlerContext handlerContext, NetworkData message, ChannelPromise<bool> writeCompletionSource)
             {
                 _unsafe.Write(message, writeCompletionSource);
             }

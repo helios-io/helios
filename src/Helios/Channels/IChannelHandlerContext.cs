@@ -103,42 +103,44 @@ namespace Helios.Channels
         /// This will result in having the <see cref="IChannelHandler.Bind"/> method called.
         /// </remarks>
         /// </summary>
-        Task<bool> Bind(INode localAddress);
+        ChannelFuture<bool> Bind(INode localAddress);
 
-        Task<bool> Bind(INode localAddress, TaskCompletionSource<bool> bindCompletionSource);
+        ChannelFuture<bool> Bind(INode localAddress, ChannelPromise<bool> bindCompletionSource);
 
-        Task<bool> Connect(INode remoteAddress);
+        ChannelFuture<bool> Connect(INode remoteAddress);
 
-        Task<bool> Connect(INode remoteAddress, TaskCompletionSource<bool> connectionCompletionSource);
+        ChannelFuture<bool> Connect(INode remoteAddress, ChannelPromise<bool> connectionCompletionSource);
 
-        Task<bool> Connect(INode remoteAddress, INode localAddress);
+        ChannelFuture<bool> Connect(INode remoteAddress, INode localAddress);
 
-        Task<bool> Connect(INode remoteAddress, INode localAddress, TaskCompletionSource<bool> connectCompletionSource);
+        ChannelFuture<bool> Connect(INode remoteAddress, INode localAddress, ChannelPromise<bool> connectCompletionSource);
 
-        Task<bool> Disconnect(TaskCompletionSource<bool> disconnectCompletionSource);
+        ChannelFuture<bool> Disconnect(ChannelPromise<bool> disconnectCompletionSource);
 
-        Task<bool> Disconnect();
+        ChannelFuture<bool> Disconnect();
 
-        Task<bool> Close();
+        ChannelFuture<bool> Close();
 
-        Task<bool> Close(TaskCompletionSource<bool> closeCompletionSource);
+        ChannelFuture<bool> Close(ChannelPromise<bool> closeCompletionSource);
 
         IChannelHandlerContext Read();
 
-        Task<bool> Write(NetworkData message);
+        ChannelFuture<bool> Write(NetworkData message);
 
-        Task<bool> Write(NetworkData message, TaskCompletionSource<bool> writeCompletionSource);
+        ChannelFuture<bool> Write(NetworkData message, ChannelPromise<bool> writeCompletionSource);
 
         IChannelHandlerContext Flush();
 
-        Task<bool> WriteAndFlush(NetworkData message, TaskCompletionSource<bool> writeCompletionSource);
+        ChannelFuture<bool> WriteAndFlush(NetworkData message, ChannelPromise<bool> writeCompletionSource);
 
-        Task<bool> WriteAndFlush(NetworkData message);
+        ChannelFuture<bool> WriteAndFlush(NetworkData message);
 
-        TaskCompletionSource<bool> NewCompletionSource();
+        ChannelPromise<bool> NewPromise();
 
-        Task<bool> NewSucceededTask();
+        ChannelFuture<bool> NewSucceededFuture();
 
-        Task<bool> NewFailedTask();
+        ChannelFuture<bool> NewFailedFuture(Exception cause);
+
+        VoidChannelPromise VoidPromise();
     }
 }

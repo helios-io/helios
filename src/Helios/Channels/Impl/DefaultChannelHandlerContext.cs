@@ -147,60 +147,60 @@ namespace Helios.Channels.Impl
             return this;
         }
 
-        public Task<bool> Bind(INode localAddress)
+        public ChannelFuture<bool> Bind(INode localAddress)
         {
-            return Bind(localAddress, NewCompletionSource());
+            return Bind(localAddress, NewPromise());
         }
 
-        public Task<bool> Bind(INode localAddress, TaskCompletionSource<bool> bindCompletionSource)
+        public ChannelFuture<bool> Bind(INode localAddress, ChannelPromise<bool> bindCompletionSource)
         {
             var nextContext = FindContextOutbound();
             nextContext.Invoker.InvokeBind(nextContext, localAddress, bindCompletionSource);
             return bindCompletionSource.Task;
         }
 
-        public Task<bool> Connect(INode remoteAddress)
+        public ChannelFuture<bool> Connect(INode remoteAddress)
         {
-            return Connect(remoteAddress, NewCompletionSource());
+            return Connect(remoteAddress, NewPromise());
         }
 
-        public Task<bool> Connect(INode remoteAddress, TaskCompletionSource<bool> connectionCompletionSource)
+        public ChannelFuture<bool> Connect(INode remoteAddress, ChannelPromise<bool> connectionCompletionSource)
         {
             var nextContext = FindContextOutbound();
             nextContext.Invoker.InvokeConnect(nextContext, remoteAddress, null, connectionCompletionSource);
             return connectionCompletionSource.Task;
         }
 
-        public Task<bool> Connect(INode remoteAddress, INode localAddress)
+        public ChannelFuture<bool> Connect(INode remoteAddress, INode localAddress)
         {
-            return Connect(remoteAddress, localAddress, NewCompletionSource());
+            return Connect(remoteAddress, localAddress, NewPromise());
         }
 
-        public Task<bool> Connect(INode remoteAddress, INode localAddress, TaskCompletionSource<bool> connectCompletionSource)
+        public ChannelFuture<bool> Connect(INode remoteAddress, INode localAddress, ChannelPromise<bool> connectCompletionSource)
         {
             var nextContext = FindContextOutbound();
             nextContext.Invoker.InvokeConnect(nextContext, remoteAddress, localAddress, connectCompletionSource);
             return connectCompletionSource.Task;
         }
 
-        public Task<bool> Disconnect(TaskCompletionSource<bool> disconnectCompletionSource)
+        public ChannelFuture<bool> Disconnect(ChannelPromise<bool> disconnectCompletionSource)
         {
             var nextContext = FindContextOutbound();
             nextContext.Invoker.InvokeDisconnect(nextContext, disconnectCompletionSource);
             return disconnectCompletionSource.Task;
         }
 
-        public Task<bool> Disconnect()
+        public ChannelFuture<bool> Disconnect()
         {
-            return Disconnect(NewCompletionSource());
+            return Disconnect(NewPromise());
         }
 
-        public Task<bool> Close()
+        public ChannelFuture<bool> Close()
         {
-            return Close(NewCompletionSource());
+            return Close(NewPromise());
         }
 
-        public Task<bool> Close(TaskCompletionSource<bool> closeCompletionSource)
+        public ChannelFuture<bool> Close(ChannelPromise<bool> closeCompletionSource)
         {
             var nextContext = FindContextOutbound();
             nextContext.Invoker.InvokeClose(nextContext, closeCompletionSource);
@@ -214,12 +214,12 @@ namespace Helios.Channels.Impl
             return this;
         }
 
-        public Task<bool> Write(NetworkData message)
+        public ChannelFuture<bool> Write(NetworkData message)
         {
-            return Write(message, NewCompletionSource());
+            return Write(message, NewPromise());
         }
 
-        public Task<bool> Write(NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
+        public ChannelFuture<bool> Write(NetworkData message, ChannelPromise<bool> writeCompletionSource)
         {
             var nextContext = FindContextOutbound();
             nextContext.Invoker.InvokeWrite(nextContext, message, writeCompletionSource);
@@ -233,7 +233,7 @@ namespace Helios.Channels.Impl
             return this;
         }
 
-        public Task<bool> WriteAndFlush(NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
+        public ChannelFuture<bool> WriteAndFlush(NetworkData message, ChannelPromise<bool> writeCompletionSource)
         {
             var nextContext = FindContextOutbound();
             nextContext.Invoker.InvokeWrite(nextContext, message, writeCompletionSource);
@@ -241,28 +241,33 @@ namespace Helios.Channels.Impl
             return writeCompletionSource.Task;
         }
 
-        public Task<bool> WriteAndFlush(NetworkData message)
+        public ChannelFuture<bool> WriteAndFlush(NetworkData message)
         {
-            return WriteAndFlush(message, NewCompletionSource());
+            return WriteAndFlush(message, NewPromise());
         }
 
-        public TaskCompletionSource<bool> NewCompletionSource()
+        public ChannelPromise<bool> NewPromise()
         {
-            return new TaskCompletionSource<bool>();
+            return new ChannelPromise<bool>(Channel);
         }
 
-        public Task<bool> NewSucceededTask()
+        public ChannelFuture<bool> NewSucceededFuture()
         {
-            var newSource = NewCompletionSource();
+            var newSource = NewPromise();
             newSource.TrySetResult(true);
             return newSource.Task;
         }
 
-        public Task<bool> NewFailedTask()
+        public ChannelFuture<bool> NewFailedFuture(Exception ex)
         {
-            var newSource = NewCompletionSource();
-            newSource.TrySetResult(false);
+            var newSource = NewPromise();
+            newSource.TrySetException(ex);
             return newSource.Task;
+        }
+
+        public VoidChannelPromise VoidPromise()
+        {
+            return new VoidChannelPromise(Channel);
         }
 
         #endregion

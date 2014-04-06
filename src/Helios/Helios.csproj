@@ -50,6 +50,7 @@
     </Compile>
     <Compile Include="Channels\AbstractChannel.cs" />
     <Compile Include="Channels\ChannelException.cs" />
+    <Compile Include="Channels\ChannelFuture.cs" />
     <Compile Include="Channels\ChannelHandlerAdapter.cs" />
     <Compile Include="Channels\Impl\DefaultChannelConfig.cs" />
     <Compile Include="Channels\Extensions\ChannelHandlerInvokerUtil.cs" />

@@ -37,20 +37,20 @@ namespace Helios.Channels
         void InvokeChannelWritabilityChanged(IChannelHandlerContext handlerContext);
 
         void InvokeBind(IChannelHandlerContext handlerContext, INode localAddress,
-            TaskCompletionSource<bool> bindCompletionSource);
+            ChannelPromise<bool> bindCompletionSource);
 
         void InvokeConnect(IChannelHandlerContext handlerContext, INode remoteAddress, INode localAddress,
-            TaskCompletionSource<bool> connectCompletionSource);
+            ChannelPromise<bool> connectCompletionSource);
 
         void InvokeDisconnect(IChannelHandlerContext handlerContext,
-            TaskCompletionSource<bool> disconnectCompletionSource);
+            ChannelPromise<bool> disconnectCompletionSource);
 
-        void InvokeClose(IChannelHandlerContext handlerContext, TaskCompletionSource<bool> closeCompletionSource);
+        void InvokeClose(IChannelHandlerContext handlerContext, ChannelPromise<bool> closeCompletionSource);
 
         void InvokeRead(IChannelHandlerContext handlerContext);
 
         void InvokeWrite(IChannelHandlerContext handlerContext, NetworkData message,
-            TaskCompletionSource<bool> writeCompletionSource);
+            ChannelPromise<bool> writeCompletionSource);
 
         void InvokeFlush(IChannelHandlerContext handlerContext);
     }

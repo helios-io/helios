@@ -81,7 +81,7 @@ namespace Helios.Channels
         /// <param name="handlerContext">The handlerContext used to make the binding operation</param>
         /// <param name="localAddress">The local address to bind on</param>
         /// <param name="bindCompletionSource">A task completion source to notify once the operation finishes</param>
-        void Bind(IChannelHandlerContext handlerContext, INode localAddress, TaskCompletionSource<bool> bindCompletionSource);
+        void Bind(IChannelHandlerContext handlerContext, INode localAddress, ChannelPromise<bool> bindCompletionSource);
 
         /// <summary>
         /// Called once a connect operation is made from a local address to a remote one. Typically used in combination with TCP.
@@ -90,21 +90,21 @@ namespace Helios.Channels
         /// <param name="remoteAddress">The remote address to connect to.</param>
         /// <param name="localAddress">The local address to connect with.</param>
         /// <param name="connectCompletionSource">A task completion source to notify once the operation finishes.</param>
-        void Connect(IChannelHandlerContext handlerContext, INode remoteAddress, INode localAddress, TaskCompletionSource<bool> connectCompletionSource);
+        void Connect(IChannelHandlerContext handlerContext, INode remoteAddress, INode localAddress, ChannelPromise<bool> connectCompletionSource);
 
         /// <summary>
         /// Called once a disconnect operation is made. Typically used in combination with TCP.
         /// </summary>
         /// <param name="handlerContext">The handlerContext used to make the disconnect operation.</param>
         /// <param name="disconnectCompletionSource">A task completion source to notify once the operation finishes.</param>
-        void Disconnect(IChannelHandlerContext handlerContext, TaskCompletionSource<bool> disconnectCompletionSource);
+        void Disconnect(IChannelHandlerContext handlerContext, ChannelPromise<bool> disconnectCompletionSource);
 
         /// <summary>
         /// Called once a close operation is made.
         /// </summary>
         /// <param name="handlerContext">The handlerContext used to make the close operation.</param>
         /// <param name="closeCompletionSource">A task completion source to notify once the operation finishes.</param>
-        void Close(IChannelHandlerContext handlerContext, TaskCompletionSource<bool> closeCompletionSource);
+        void Close(IChannelHandlerContext handlerContext, ChannelPromise<bool> closeCompletionSource);
 
         /// <summary>
         /// Called once a write operation is made. The write operation will write all messages directly onto the underlying
@@ -113,7 +113,7 @@ namespace Helios.Channels
         /// <param name="handlerContext">The handlerContext used to make the write operation.</param>
         /// <param name="message">The message being written by the <see cref="IChannelHandlerContext"/> to the <see cref="IChannel"/></param>
         /// <param name="writeCompletionSource">A task completion source to notify once the operation finishes.</param>
-        void Write(IChannelHandlerContext handlerContext, NetworkData message, TaskCompletionSource<bool> writeCompletionSource);
+        void Write(IChannelHandlerContext handlerContext, NetworkData message, ChannelPromise<bool> writeCompletionSource);
 
         /// <summary>
         /// Called once a flush operation is made to the underlying <see cref="IConnection"/>. This operation tries to push any

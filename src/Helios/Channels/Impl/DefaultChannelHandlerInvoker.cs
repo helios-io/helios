@@ -130,7 +130,7 @@ namespace Helios.Channels.Impl
             }
         }
 
-        public void InvokeBind(IChannelHandlerContext handlerContext, INode localAddress, TaskCompletionSource<bool> bindCompletionSource)
+        public void InvokeBind(IChannelHandlerContext handlerContext, INode localAddress, ChannelPromise<bool> bindCompletionSource)
         {
             if(localAddress == null) throw new ArgumentNullException("localAddress");
 
@@ -147,7 +147,7 @@ namespace Helios.Channels.Impl
         }
 
         public void InvokeConnect(IChannelHandlerContext handlerContext, INode remoteAddress, INode localAddress,
-            TaskCompletionSource<bool> connectCompletionSource)
+            ChannelPromise<bool> connectCompletionSource)
         {
             if (Executor.IsInEventLoop())
             {
@@ -159,7 +159,7 @@ namespace Helios.Channels.Impl
             }
         }
 
-        public void InvokeDisconnect(IChannelHandlerContext handlerContext, TaskCompletionSource<bool> disconnectCompletionSource)
+        public void InvokeDisconnect(IChannelHandlerContext handlerContext, ChannelPromise<bool> disconnectCompletionSource)
         {
             if(!ValidatePromise(handlerContext, disconnectCompletionSource, false)) return; //promise cancelled
 
@@ -173,7 +173,7 @@ namespace Helios.Channels.Impl
             }
         }
 
-        public void InvokeClose(IChannelHandlerContext handlerContext, TaskCompletionSource<bool> closeCompletionSource)
+        public void InvokeClose(IChannelHandlerContext handlerContext, ChannelPromise<bool> closeCompletionSource)
         {
             if (!ValidatePromise(handlerContext, closeCompletionSource, false)) return; // promise cancelled
 
@@ -205,7 +205,7 @@ namespace Helios.Channels.Impl
             }
         }
 
-        public void InvokeWrite(IChannelHandlerContext handlerContext, NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
+        public void InvokeWrite(IChannelHandlerContext handlerContext, NetworkData message, ChannelPromise<bool> writeCompletionSource)
         {
             if(message == null) throw new ArgumentNullException("message");
             if (!ValidatePromise(handlerContext, writeCompletionSource, true)) return; //promise cancelled
@@ -241,7 +241,7 @@ namespace Helios.Channels.Impl
 
         #region Internal methods
 
-        private static bool ValidatePromise(IChannelHandlerContext context, TaskCompletionSource<bool> promise,
+        private static bool ValidatePromise(IChannelHandlerContext context, ChannelPromise<bool> promise,
             bool allowVoidPromise)
         {
             if(context == null) throw new ArgumentNullException("context");

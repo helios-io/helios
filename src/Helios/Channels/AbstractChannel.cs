@@ -18,9 +18,13 @@ namespace Helios.Channels
             ValidateEventLoop(loop);
             EventLoop = loop;
             Id = DefaultChannelId.NewChannelId();
+// ReSharper disable once DoNotCallOverridableMethodsInConstructor
+            Unsafe = NewUnsafe();
+            Pipeline = new DefaultChannelPipeline(this);
         }
-
-        private ChannelOutboundBuffer _buffer = new ChannelOutboundBuffer();
+        
+        private volatile INode _localAddress;
+        private volatile INode _remoteAddress;
 
         public IChannelId Id { get; private set; }
         public IEventLoop EventLoop { get; protected set; }
@@ -31,87 +35,167 @@ namespace Helios.Channels
         public bool IsOpen { get; protected set; }
         public bool IsActive { get; protected set; }
         public bool IsRegistered { get; protected set; }
-        public INode LocalAddress { get; protected set; }
-        public INode RemoteAddress { get; protected set; }
+
+        public INode LocalAddress
+        {
+            get
+            {
+                var local = _localAddress;
+                if (_localAddress == null)
+                {
+                    try
+                    {
+                        _localAddress = local = Unsafe.LocalAddress;
+                    }
+                    catch (Exception ex)
+                    {
+                        return null;
+                    }
+                }
+
+                return local;
+            }
+        }
+
+        protected void InvalidateLocalAddress()
+        {
+            _localAddress = null;
+        }
+
+        public INode RemoteAddress
+        {
+            get
+            {
+                var remote = _remoteAddress;
+                if (remote == null)
+                {
+                    try
+                    {
+                        _remoteAddress = remote = Unsafe.RemoteAddress;
+                    }
+// ReSharper disable once UnusedVariable
+                    catch (Exception ex)
+                    {
+                        return null;
+                    }
+                }
+                return remote;
+            }
+        }
+
+        protected void InvalidateRemoteAddress()
+        {
+            _remoteAddress = null;
+        }
+
         public Task<bool> CloseTask { get; protected set; }
         public bool IsWritable { get; protected set; }
 
-        public Task<bool> Bind(INode localAddress)
+        public ChannelFuture<bool> Bind(INode localAddress)
         {
-            throw new System.NotImplementedException();
+            return Pipeline.Bind(localAddress);
         }
 
-        public Task<bool> Bind(INode localAddress, TaskCompletionSource<bool> bindCompletionSource)
+        public ChannelFuture<bool> Bind(INode localAddress, ChannelPromise<bool> bindCompletionSource)
         {
-            throw new System.NotImplementedException();
+            return Pipeline.Bind(localAddress, bindCompletionSource);
         }
 
-        public Task<bool> Connect(INode remoteAddress)
+        public ChannelFuture<bool> Connect(INode remoteAddress)
         {
-            throw new System.NotImplementedException();
+            return Pipeline.Connect(remoteAddress);
         }
 
-        public Task<bool> Connect(INode remoteAddress, TaskCompletionSource<bool> connectCompletionSource)
+        public ChannelFuture<bool> Connect(INode remoteAddress, ChannelPromise<bool> connectCompletionSource)
         {
-            throw new System.NotImplementedException();
+            return Pipeline.Connect(remoteAddress, connectCompletionSource);
         }
 
-        public Task<bool> Connect(INode remoteAddress, INode localAddress)
+        public ChannelFuture<bool> Connect(INode remoteAddress, INode localAddress)
         {
-            throw new System.NotImplementedException();
+            return Pipeline.Connect(remoteAddress, localAddress);
         }
 
-        public Task<bool> Connect(INode remoteAddress, INode localAddress, TaskCompletionSource<bool> connectCompletionSource)
+        public ChannelFuture<bool> Connect(INode remoteAddress, INode localAddress, ChannelPromise<bool> connectCompletionSource)
         {
-            throw new System.NotImplementedException();
+            return Pipeline.Connect(remoteAddress, localAddress, connectCompletionSource);
         }
 
-        public Task<bool> Disconnect()
+        public ChannelFuture<bool> Disconnect()
         {
-            throw new System.NotImplementedException();
+            return Pipeline.Disconnect();
         }
 
-        public Task<bool> Disconnect(TaskCompletionSource<bool> disconnectCompletionSource)
+        public ChannelFuture<bool> Disconnect(ChannelPromise<bool> disconnectCompletionSource)
         {
-            throw new System.NotImplementedException();
+            return Pipeline.Disconnect(disconnectCompletionSource);
         }
 
-        public Task<bool> Close(TaskCompletionSource<bool> closeCompletionSource)
+        public ChannelFuture<bool> Close(ChannelPromise<bool> closeCompletionSource)
         {
-            throw new System.NotImplementedException();
+            return Pipeline.Close(closeCompletionSource);
         }
 
         public IChannel Read()
         {
-            throw new System.NotImplementedException();
+            Pipeline.Read();
+            return this;
         }
 
-        public Task<bool> Write(NetworkData message)
+        public ChannelFuture<bool> Write(NetworkData message)
         {
-            throw new System.NotImplementedException();
+            return Pipeline.Write(message);
         }
 
-        public Task<bool> Write(NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
+        public ChannelFuture<bool> Write(NetworkData message, ChannelPromise<bool> writeCompletionSource)
         {
-            throw new System.NotImplementedException();
+            return Pipeline.Write(message, writeCompletionSource);
         }
 
         public IChannel Flush()
         {
-            throw new System.NotImplementedException();
+            Pipeline.Flush();
+            return this;
         }
 
-        public Task<bool> WriteAndFlush(NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
+        public ChannelFuture<bool> WriteAndFlush(NetworkData message, ChannelPromise<bool> writeCompletionSource)
         {
-            throw new System.NotImplementedException();
+            return Pipeline.WriteAndFlush(message, writeCompletionSource);
         }
 
-        public Task<bool> WriteAndFlush(NetworkData message)
+        public ChannelFuture<bool> WriteAndFlush(NetworkData message)
         {
-            throw new System.NotImplementedException();
+            return Pipeline.WriteAndFlush(message);
         }
 
-        public VoidChannelPromise VoidPromise { get; private set; }
+        public ChannelPromise<bool> NewPromise()
+        {
+            return new ChannelPromise<bool>(this);
+        }
+
+        public ChannelFuture<bool> NewFailedFuture(Exception cause)
+        {
+            var promise = NewPromise();
+            promise.TrySetException(cause);
+            return promise.Task;
+        }
+
+        public ChannelFuture<bool> NewSucceededFuture()
+        {
+            var promise = NewPromise();
+            promise.TrySetResult(true);
+            return promise.Task;
+        }
+
+        public VoidChannelPromise VoidPromise()
+        {
+            return new VoidChannelPromise(this);
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
 
         #region Internal methods
 
@@ -127,9 +211,78 @@ namespace Helios.Channels
 
         public int CompareTo(IChannel other)
         {
-            throw new NotImplementedException();
+            return Id.CompareTo(other.Id);
         }
 
         #endregion
+
+
+        #region AbstractUnsafe implementation
+
+        protected abstract AbstractUnsafe NewUnsafe();
+
+        protected abstract class AbstractUnsafe : IUnsafe
+        {
+            private ChannelOutboundBuffer _buffer = new ChannelOutboundBuffer();
+            private bool inFlush;
+
+            public IChannelHandlerInvoker Invoker { get; private set; }
+            public INode LocalAddress { get; private set; }
+            public INode RemoteAddress { get; private set; }
+            public void Register(ChannelPromise<bool> registerPromise)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Bind(INode localAddress, ChannelPromise<bool> bindCompletionSource)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Connect(INode localAddress, INode remoteAddress, ChannelPromise<bool> connectCompletionSource)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Disconnect(ChannelPromise<bool> disconnectCompletionSource)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Close(ChannelPromise<bool> closeCompletionSource)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void CloseForcibly()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void BeginRead()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Write(NetworkData msg, ChannelPromise<bool> writeCompletionSource)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Flush()
+            {
+                throw new NotImplementedException();
+            }
+
+            public ChannelOutboundBuffer OutboundBuffer { get; private set; }
+            public VoidChannelPromise VoidPromise()
+            {
+                return new VoidChannelPromise(null);
+            }
+        }
+
+        #endregion
+
     }
+
 }

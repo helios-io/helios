@@ -62,28 +62,28 @@ namespace Helios.Channels
             handlerContext.FireChannelWritabilityChanged();
         }
 
-        public virtual void Bind(IChannelHandlerContext handlerContext, INode localAddress, TaskCompletionSource<bool> bindCompletionSource)
+        public virtual void Bind(IChannelHandlerContext handlerContext, INode localAddress, ChannelPromise<bool> bindCompletionSource)
         {
             handlerContext.Bind(localAddress, bindCompletionSource);
         }
 
         public virtual void Connect(IChannelHandlerContext handlerContext, INode remoteAddress, INode localAddress,
-            TaskCompletionSource<bool> connectCompletionSource)
+            ChannelPromise<bool> connectCompletionSource)
         {
             handlerContext.Connect(remoteAddress, localAddress, connectCompletionSource);
         }
 
-        public virtual void Disconnect(IChannelHandlerContext handlerContext, TaskCompletionSource<bool> disconnectCompletionSource)
+        public virtual void Disconnect(IChannelHandlerContext handlerContext, ChannelPromise<bool> disconnectCompletionSource)
         {
             handlerContext.Disconnect(disconnectCompletionSource);
         }
 
-        public virtual void Close(IChannelHandlerContext handlerContext, TaskCompletionSource<bool> closeCompletionSource)
+        public virtual void Close(IChannelHandlerContext handlerContext, ChannelPromise<bool> closeCompletionSource)
         {
             handlerContext.Close(closeCompletionSource);
         }
 
-        public virtual void Write(IChannelHandlerContext handlerContext, NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
+        public virtual void Write(IChannelHandlerContext handlerContext, NetworkData message, ChannelPromise<bool> writeCompletionSource)
         {
             handlerContext.Write(message, writeCompletionSource);
         }

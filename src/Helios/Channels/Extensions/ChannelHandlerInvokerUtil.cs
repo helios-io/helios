@@ -1,9 +1,7 @@
 using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Helios.Net;
 using Helios.Topology;
-using Newtonsoft.Json.Bson;
 
 namespace Helios.Channels.Extensions
 {
@@ -124,7 +122,7 @@ namespace Helios.Channels.Extensions
         }
 
         public static void InvokeBindNow(IChannelHandlerContext context, INode localAddress,
-            TaskCompletionSource<bool> bindCompletionSource)
+            ChannelPromise<bool> bindCompletionSource)
         {
             try
             {
@@ -137,7 +135,7 @@ namespace Helios.Channels.Extensions
         }
 
         public static void InvokeConnectNow(IChannelHandlerContext context, INode remoteAddress, INode localAddress,
-            TaskCompletionSource<bool> connectCompletionSource)
+            ChannelPromise<bool> connectCompletionSource)
         {
             try
             {
@@ -150,7 +148,7 @@ namespace Helios.Channels.Extensions
         }
 
         public static void InvokeDisconnectNow(IChannelHandlerContext context,
-            TaskCompletionSource<bool> disconnectCompletionSource)
+            ChannelPromise<bool> disconnectCompletionSource)
         {
             try
             {
@@ -163,7 +161,7 @@ namespace Helios.Channels.Extensions
         }
 
         public static void InvokeCloseNow(IChannelHandlerContext context,
-            TaskCompletionSource<bool> closeCompletionSource)
+            ChannelPromise<bool> closeCompletionSource)
         {
             try
             {
@@ -188,7 +186,7 @@ namespace Helios.Channels.Extensions
         }
 
         public static void InvokeWriteNow(IChannelHandlerContext context, NetworkData message,
-            TaskCompletionSource<bool> writeCompletionSource)
+            ChannelPromise<bool> writeCompletionSource)
         {
             try
             {
@@ -213,7 +211,7 @@ namespace Helios.Channels.Extensions
         }
 
         public static void InvokeWriteAndFlushNow(IChannelHandlerContext context, NetworkData message,
-            TaskCompletionSource<bool> writeCompletionSource)
+            ChannelPromise<bool> writeCompletionSource)
         {
             try
             {
@@ -233,7 +231,7 @@ namespace Helios.Channels.Extensions
             InvokeExceptionCaughtNow(context, ex);
         }
 
-        private static void NotifyOutboundHandlerException(Exception cause, TaskCompletionSource<bool> completionSource)
+        private static void NotifyOutboundHandlerException(Exception cause, ChannelPromise<bool> completionSource)
         {
             if (completionSource is VoidChannelPromise) return; //do nothing - don't propogate the error further
 
