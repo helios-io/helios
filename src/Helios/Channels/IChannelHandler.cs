@@ -112,6 +112,11 @@ namespace Helios.Channels
         /// <param name="handlerContext">The contect used to make the flush operation.</param>
         void Flush(IChannelHandlerContext handlerContext);
 
+        /// <summary>
+        /// Intercepts a <see cref="IChannelHandlerContext.Read"/>
+        /// </summary>
+        void Read(IChannelHandlerContext handlerContext);
+
         #endregion
     }
 }

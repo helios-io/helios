@@ -95,7 +95,7 @@ namespace Helios.Channels
 
         Task<bool> Connect(INode remoteAddress, INode localAddress, TaskCompletionSource<bool> connectCompletionSource);
 
-        Task<bool> Disconnect();
+        Task<bool> Disconnect(TaskCompletionSource<bool> disconnectCompletionSource);
 
         Task<bool> Disconnection(TaskCompletionSource<bool> disconnectCompletionSource);
 

@@ -26,6 +26,8 @@ namespace Helios.Channels
             return this.ToDictionary(x => x.Name, y => y.Handler);
         }
 
+        public IChannel Channel { get; protected set; }
+
         /// <summary>
         /// A <see cref="IChannel"/> was registered to its <see cref="IEventLoop"/>
         /// 
