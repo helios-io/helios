@@ -1,8 +1,8 @@
 using System;
-using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Helios.Channels.Extensions;
 using Helios.Net;
@@ -355,52 +355,113 @@ namespace Helios.Channels.Impl
 
         public IChannelHandler First()
         {
-            throw new NotImplementedException();
+            var first = FirstContext();
+            return first == null ? null : first.Handler;
         }
 
         public IChannelHandlerContext FirstContext()
         {
-            throw new NotImplementedException();
+            var first = Head.next;
+            return first == Tail ? null : Head.next;
         }
 
         public IChannelHandler Last()
         {
-            throw new NotImplementedException();
+            var last = LastContext();
+            return last == null ? null : last.Handler;
         }
 
         public IChannelHandlerContext LastContext()
         {
-            throw new NotImplementedException();
+            var last = Tail.prev;
+            return last == Head ? null : last;
         }
 
         public IChannelHandler Get(string name)
         {
-            throw new NotImplementedException();
+            var ctx = Context(name);
+            return ctx == null ? null : ctx.Handler;
+        }
+
+        public IChannelHandler Get<T>() where T : IChannelHandler
+        {
+            var ctx = Context<T>();
+            return ctx == null ? null : ctx.Handler;
         }
 
         public IChannelHandlerContext Context(IChannelHandler handler)
         {
-            throw new NotImplementedException();
+            if(handler == null) throw new ArgumentNullException("handler");
+
+            var ctx = Head.next;
+            for (;;)
+            {
+                if (ctx == null) return null;
+
+                if (ctx.Handler == handler) return ctx;
+
+                ctx = ctx.next;
+            }
         }
 
         public IChannelHandlerContext Context(string name)
         {
-            throw new NotImplementedException();
+            if(string.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+            lock (_nameCtxLock)
+            {
+                IChannelHandlerContext context = null;
+                _name2Ctx.TryGetValue(name, out context);
+                return context;
+            }
         }
 
         public IChannelHandlerContext Context<T>() where T : IChannelHandler
         {
-            throw new NotImplementedException();
+            var handlerType = typeof (T);
+            var ctx = Head.next;
+            for (;;)
+            {
+                if (ctx == null) return null;
+
+                if (handlerType.IsInstanceOfType(ctx.Handler))
+                {
+                    return ctx;
+                }
+
+                ctx = ctx.next;
+            }
         }
 
 
 
         #endregion
 
-        public List<string> Names { get; private set; }
+        public List<string> Names
+        {
+            get
+            {
+                var list = new List<string>();
+                var ctx = Head.next;
+                for (;;)
+                {
+                    if (ctx == null)
+                        return list;
+                    list.Add(ctx.Name);
+                    ctx = ctx.next;
+                }
+            }
+        }
+
         public Dictionary<string, IChannelHandler> ToDictionary()
         {
-            throw new NotImplementedException();
+            var dict = new Dictionary<string, IChannelHandler>();
+            var ctx = Head.next;
+            for (;;)
+            {
+                if (ctx == Tail) return dict;
+                dict.Add(ctx.Name, ctx.Handler);
+                ctx = ctx.next;
+            }
         }
 
         public IChannel Channel { get { return _channel; } }
@@ -409,7 +470,7 @@ namespace Helios.Channels.Impl
 
         public IEnumerator<ChannelHandlerAssociation> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return ToDictionary().Select(x => new ChannelHandlerAssociation(x.Key, x.Value)).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -424,122 +485,139 @@ namespace Helios.Channels.Impl
 
         public IChannelPipeline FireChannelRegistered()
         {
-            throw new NotImplementedException();
+            Head.FireChannelRegistered();
+            return this;
         }
 
         public IChannelPipeline FireChannelActive()
         {
-            throw new NotImplementedException();
+            Head.FireChannelActive();
+
+            if (Channel.Config.IsAutoRead)
+            {
+                Channel.Read();
+            }
+            return this;
         }
 
         public IChannelPipeline FireChannelInactive()
         {
-            throw new NotImplementedException();
+            Head.FireChannelInactive();
+            TeardownAll();
+            return this;
         }
 
         public IChannelPipeline FireExceptionCaught(Exception ex)
         {
-            throw new NotImplementedException();
+            Head.FireExceptionCaught(ex);
+            return this;
         }
 
         public IChannelPipeline FireChannelRead(NetworkData message)
         {
-            throw new NotImplementedException();
+            Head.FireChannelRead(message);
+            return this;
         }
 
         public IChannelPipeline FireUserEventTriggered(object evt)
         {
-            throw new NotImplementedException();
+            Head.FireUserEventTriggered(evt);
+            return this;
         }
 
         public IChannelPipeline FireChannelReadComplete()
         {
-            throw new NotImplementedException();
+            Head.FireChannelReadComplete();
+            if (Channel.Config.IsAutoRead) { Read(); }
+            return this;
         }
 
         public IChannelPipeline FireChannelWritabilityChanged()
         {
-            throw new NotImplementedException();
+            Head.FireChannelWritabilityChanged();
+            return this;
         }
 
         public Task<bool> Bind(INode localAddress)
         {
-            throw new NotImplementedException();
+            return Tail.Bind(localAddress);
         }
 
         public Task<bool> Bind(INode localAddress, TaskCompletionSource<bool> bindCompletionSource)
         {
-            throw new NotImplementedException();
+            return Tail.Bind(localAddress, bindCompletionSource);
         }
 
         public Task<bool> Connect(INode remoteAddress)
         {
-            throw new NotImplementedException();
+            return Tail.Connect(remoteAddress);
         }
 
         public Task<bool> Connect(INode remoteAddress, INode localAddress)
         {
-            throw new NotImplementedException();
+            return Tail.Connect(remoteAddress, localAddress);
         }
 
         public Task<bool> Connect(INode remoteAddress, TaskCompletionSource<bool> connectCompletionSource)
         {
-            throw new NotImplementedException();
+            return Tail.Connect(remoteAddress, connectCompletionSource);
         }
 
         public Task<bool> Connect(INode remoteAddress, INode localAddress, TaskCompletionSource<bool> connectCompletionSource)
         {
-            throw new NotImplementedException();
+            return Tail.Connect(remoteAddress, localAddress, connectCompletionSource);
         }
 
         public Task<bool> Disconnect()
         {
-            throw new NotImplementedException();
+            return Tail.Disconnect();
         }
 
         public Task<bool> Disconnect(TaskCompletionSource<bool> disconnectCompletionSource)
         {
-            throw new NotImplementedException();
+            return Tail.Disconnect(disconnectCompletionSource);
         }
 
         public Task<bool> Close()
         {
-            throw new NotImplementedException();
+            return Tail.Close();
         }
 
         public Task<bool> Close(TaskCompletionSource<bool> closeCompletionSource)
         {
-            throw new NotImplementedException();
+            return Tail.Close(closeCompletionSource);
         }
 
         public IChannelPipeline Read()
         {
-            throw new NotImplementedException();
+            Tail.Read();
+            return this;
         }
 
         public Task<bool> Write(NetworkData message)
         {
-            throw new NotImplementedException();
+            return Tail.Write(message);
         }
 
         public Task<bool> Write(NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
         {
-            throw new NotImplementedException();
+            return Tail.Write(message, writeCompletionSource);
         }
 
         public IChannelPipeline Flush()
         {
-            throw new NotImplementedException();
+            Tail.Flush();
+            return this;
         }
 
         public Task<bool> WriteAndFlush(NetworkData message, TaskCompletionSource<bool> writeCompletionSource)
         {
-            throw new NotImplementedException();
+            return Tail.WriteAndFlush(message, writeCompletionSource);
         }
 
         public Task<bool> WriteAndFlush(NetworkData message)
         {
-            throw new NotImplementedException();
+            return Tail.WriteAndFlush(message);
         }
 
         #endregion
@@ -643,6 +721,14 @@ namespace Helios.Channels.Impl
         #endregion
 
         #region Internal methods
+
+        /// <summary>
+        /// Removes all handlers from the pipeline one by one from tail to head to trigger <see cref="IChannelHandler.HandlerRemoved"/>.
+        /// </summary>
+        private void TeardownAll()
+        {
+            Tail.prev.Teardown();
+        }
 
         private DefaultChannelHandlerContext GetContextOrDie(string name)
         {

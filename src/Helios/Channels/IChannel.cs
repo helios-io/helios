@@ -24,6 +24,11 @@ namespace Helios.Channels
         IEventLoop EventLoop { get; }
 
         /// <summary>
+        /// The configuration for this channel
+        /// </summary>
+        IChannelConfig Config { get; }
+
+        /// <summary>
         /// The pipeline of <see cref="IChannelHandler"/> instances responsible for handling this channel
         /// </summary>
         IChannelPipeline Pipeline { get; }

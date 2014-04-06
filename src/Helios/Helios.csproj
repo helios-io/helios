@@ -51,7 +51,9 @@
     <Compile Include="Channels\AbstractChannel.cs" />
     <Compile Include="Channels\ChannelException.cs" />
     <Compile Include="Channels\ChannelHandlerAdapter.cs" />
+    <Compile Include="Channels\Impl\DefaultChannelConfig.cs" />
     <Compile Include="Channels\Extensions\ChannelHandlerInvokerUtil.cs" />
+    <Compile Include="Channels\IChannelConfig.cs" />
     <Compile Include="Channels\Impl\DefaultChannelHandlerInvoker.cs" />
     <Compile Include="Channels\Extensions\EventLoopExtensions.cs" />
     <Compile Include="Channels\IChannelHandlerInvoker.cs" />
@@ -145,6 +147,7 @@
     <Compile Include="Util\Collections\CollectionExtensions.cs" />
     <Compile Include="Util\Collections\ConcurrentCircularBuffer.cs" />
     <Compile Include="Util\Collections\ConcurrentFixedSizeStack.cs" />
+    <Compile Include="Util\Collections\DictionaryExtensions.cs" />
     <Compile Include="Util\Collections\FixedSizeStack.cs" />
     <Compile Include="Util\Collections\ICircularBuffer.cs" />
     <Compile Include="Util\Collections\IFixedSizeStack.cs" />

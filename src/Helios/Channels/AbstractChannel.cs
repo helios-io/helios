@@ -24,6 +24,7 @@ namespace Helios.Channels
 
         public IChannelId Id { get; private set; }
         public IEventLoop EventLoop { get; protected set; }
+        public IChannelConfig Config { get; private set; }
         public IChannelPipeline Pipeline { get; private set; }
         public IChannel Parent { get; protected set; }
         public IUnsafe Unsafe { get; private set; }

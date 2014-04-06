@@ -63,6 +63,8 @@ namespace Helios.Channels
 
         IChannelHandler Get(string name);
 
+        IChannelHandler Get<T>() where T : IChannelHandler;
+
         IChannelHandlerContext Context(IChannelHandler handler);
 
         IChannelHandlerContext Context(string name);
