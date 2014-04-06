@@ -34,10 +34,10 @@ namespace Helios.Channels.Impl
             _invoker = invoker ?? _channel.Unsafe.Invoker;
         }
 
-        internal volatile Task<bool> invokeChannelReadCompleteTask;
-        internal volatile Task<bool> invokeReadTask;
-        internal volatile Task<bool> invokeFlushTask;
-        internal volatile Task<bool> invokeChannelWritableStateChangedTask;
+        internal volatile Task invokeChannelReadCompleteTask;
+        internal volatile Task invokeReadTask;
+        internal volatile Task invokeFlushTask;
+        internal volatile Task invokeChannelWritableStateChangedTask;
 
         public IChannel Channel { get { return _channel; } }
         public IExecutor Executor { get { return _invoker.Executor; } }
