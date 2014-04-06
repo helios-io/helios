@@ -58,7 +58,7 @@
     <Compile Include="Channels\Impl\DefaultChannelHandlerContext.cs" />
     <Compile Include="Channels\Impl\DefaultChannelPipeline.cs" />
     <Compile Include="Channels\Impl\ChannelOutboundBuffer.cs" />
-    <Compile Include="Channels\ChannelPipeline.cs" />
+    <Compile Include="Channels\IChannelPipeline.cs" />
     <Compile Include="Channels\Impl\DefaultChannelId.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelHandlerContext.cs" />

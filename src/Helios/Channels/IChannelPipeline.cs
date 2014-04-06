@@ -41,13 +41,17 @@ namespace Helios.Channels
 
         IChannelPipeline Remove(IChannelHandler handler);
 
+        IChannelPipeline Remove<T>() where T : IChannelHandler;
+
         IChannelHandler RemoveFirst();
 
         IChannelHandler RemoveLast();
 
         IChannelPipeline Replace(IChannelHandler oldHandler, string newName, IChannelHandler newHandler);
 
-        IChannelHandler Replace(string oldName, string newName, IChannelHandler handler);
+        IChannelHandler Replace(string oldName, string newName, IChannelHandler newHandler);
+
+        IChannelHandler Replace<T>(string newName, IChannelHandler newHandler) where T : IChannelHandler;
 
         IChannelHandler First();
 
@@ -60,6 +64,10 @@ namespace Helios.Channels
         IChannelHandler Get(string name);
 
         IChannelHandlerContext Context(IChannelHandler handler);
+
+        IChannelHandlerContext Context(string name);
+
+        IChannelHandlerContext Context<T>() where T : IChannelHandler;
 
         /// <summary>
         /// Returns all of the names associated with this <see cref="IChannelPipeline"/>

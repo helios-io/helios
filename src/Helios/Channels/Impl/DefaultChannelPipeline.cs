@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,6 +8,7 @@ using Helios.Channels.Extensions;
 using Helios.Net;
 using Helios.Ops;
 using Helios.Topology;
+using Helios.Util.Collections;
 
 namespace Helios.Channels.Impl
 {
@@ -57,6 +59,8 @@ namespace Helios.Channels.Impl
                 var newCtx = new DefaultChannelHandlerContext(this, invoker, name, handler);
                 AddFirstInternal(name, newCtx);
             }
+
+            return this;
         }
 
         private void AddFirstInternal(string name, DefaultChannelHandlerContext newCtx)
@@ -75,47 +79,278 @@ namespace Helios.Channels.Impl
 
         public IChannelPipeline AddLast(string name, IChannelHandler handler)
         {
-            throw new NotImplementedException();
+            return AddLast(default(IChannelHandlerInvoker), name, handler);
+        }
+
+        public IChannelPipeline AddLast(IEventLoop loop, string name, IChannelHandler handler)
+        {
+            return AddLast(FindInvoker(loop), name, handler);
+        }
+
+        public IChannelPipeline AddLast(IChannelHandlerInvoker invoker, string name, IChannelHandler handler)
+        {
+            lock (_nameCtxLock)
+            {
+                CheckDuplicateName(name);
+
+                var newCtx = new DefaultChannelHandlerContext(this, invoker, name, handler);
+                AddLastInternal(name, newCtx);
+            }
+
+            return this;
+        }
+
+        private void AddLastInternal(string name, DefaultChannelHandlerContext newCtx)
+        {
+            CheckMultiplicity(newCtx);
+            var prev = Tail.prev;
+            newCtx.prev = prev;
+            newCtx.next = Tail;
+            prev.next = newCtx;
+            Tail.prev = newCtx;
+
+            _name2Ctx.Add(name, newCtx);
+
+            CallHandlerAdded(newCtx);
         }
 
         public IChannelPipeline AddBefore(string baseName, string name, IChannelHandler handler)
         {
-            throw new NotImplementedException();
+            return AddBefore(default(IChannelHandlerInvoker), baseName, name, handler);
+        }
+
+        public IChannelPipeline AddBefore(IEventLoop loop, string baseName, string name, IChannelHandler handler)
+        {
+            return AddBefore(FindInvoker(loop), baseName, name, handler);
+        }
+
+        public IChannelPipeline AddBefore(IChannelHandlerInvoker invoker, string baseName, string name, IChannelHandler handler)
+        {
+            lock (_nameCtxLock)
+            {
+                var ctx = GetContextOrDie(baseName);
+
+                CheckDuplicateName(name);
+
+                var newCtx = new DefaultChannelHandlerContext(this, invoker, name, handler);
+                AddBeforeInternal(name, ctx, newCtx);
+            }
+
+            return this;
+        }
+
+        private void AddBeforeInternal(string name, DefaultChannelHandlerContext original,
+            DefaultChannelHandlerContext newCtx)
+        {
+            CheckMultiplicity(newCtx);
+            newCtx.prev = original.prev;
+            newCtx.next = original;
+            original.prev.next = newCtx;
+            original.prev = newCtx;
+
+            _name2Ctx.Add(name, newCtx);
+
+            CallHandlerAdded(newCtx);
         }
 
         public IChannelPipeline AddAfter(string baseName, string name, IChannelHandler handler)
         {
-            throw new NotImplementedException();
+            return AddAfter(default(IChannelHandlerInvoker), baseName, name, handler);
+        }
+
+        public IChannelPipeline AddAfter(IEventLoop loop, string baseName, string name, IChannelHandler handler)
+        {
+            return AddAfter(FindInvoker(loop), baseName, name, handler);
+        }
+
+        public IChannelPipeline AddAfter(IChannelHandlerInvoker invoker, string baseName, string name, IChannelHandler handler)
+        {
+            lock (_nameCtxLock)
+            {
+                var ctx = GetContextOrDie(baseName);
+
+                CheckDuplicateName(name);
+
+                var newCtx = new DefaultChannelHandlerContext(this, invoker, name, handler);
+                AddAfterInternal(name, ctx, newCtx);
+            }
+
+            return this;
+        }
+
+        private void AddAfterInternal(string name, DefaultChannelHandlerContext ctx, DefaultChannelHandlerContext newCtx)
+        {
+            CheckMultiplicity(newCtx);
+
+            newCtx.prev = ctx;
+            newCtx.next = ctx.next;
+            ctx.next.prev = newCtx;
+            ctx.next = newCtx;
+
+            _name2Ctx.Add(name, newCtx);
+
+            CallHandlerAdded(newCtx);
         }
 
         public IChannelHandler Remove(string name)
         {
-            throw new NotImplementedException();
+            return Remove(GetContextOrDie(name)).Handler;
         }
 
         public IChannelPipeline Remove(IChannelHandler handler)
         {
-            throw new NotImplementedException();
+            Remove(GetContextOrDie(handler));
+            return this;
+        }
+
+        public IChannelPipeline Remove<T>() where T : IChannelHandler
+        {
+            Remove(GetContextOrDie<T>());
+            return this;
+        }
+
+        internal DefaultChannelHandlerContext Remove(DefaultChannelHandlerContext ctx)
+        {
+            Debug.Assert(ctx != Head && ctx != Tail);
+
+            DefaultChannelHandlerContext context;
+            Task waitable;
+
+            lock (_nameCtxLock)
+            {
+                if (!ctx.Channel.IsRegistered || ctx.Executor.IsInEventLoop())
+                {
+                    RemoveInternal(ctx);
+                    return ctx;
+                }
+                else
+                {
+                    waitable = new Task(() =>
+                    {
+                        lock (_nameCtxLock)
+                        {
+                            RemoveInternal(ctx);
+                        }
+                    });
+                    
+                    context = ctx;
+                }
+            }
+
+            ctx.Executor.Execute(waitable);
+            //Wait outside the lock in order to avoid deadlock
+            waitable.Wait();
+
+            return context;
+        }
+
+        private void RemoveInternal(DefaultChannelHandlerContext ctx)
+        {
+            var prev = ctx.prev;
+            var next = ctx.next;
+            prev.next = next;
+            next.prev = prev;
+            _name2Ctx.Remove(ctx.Name);
+            CallHandlerRemoved(ctx);
         }
 
         public IChannelHandler RemoveFirst()
         {
-            throw new NotImplementedException();
+            if(Head.next == Tail) throw new KeyNotFoundException("Cannot remove head or tail from pipeline");
+
+            return Remove(Head.next).Handler;
         }
 
         public IChannelHandler RemoveLast()
         {
-            throw new NotImplementedException();
+            if (Head.next == Tail) throw new KeyNotFoundException("Cannot remove head or tail from pipeline");
+
+            return Remove(Tail.prev).Handler;
         }
 
         public IChannelPipeline Replace(IChannelHandler oldHandler, string newName, IChannelHandler newHandler)
         {
-            throw new NotImplementedException();
+            Replace(GetContextOrDie(oldHandler), newName, newHandler);
+            return this;
         }
 
-        public IChannelHandler Replace(string oldName, string newName, IChannelHandler handler)
+        public IChannelHandler Replace(string oldName, string newName, IChannelHandler newHandler)
         {
-            throw new NotImplementedException();
+            return Replace(GetContextOrDie(oldName), newName, newHandler);
+        }
+
+        public IChannelHandler Replace<T>(string newName, IChannelHandler newHandler) where T : IChannelHandler
+        {
+            return Replace(GetContextOrDie<T>(), newName, newHandler);
+        }
+
+        private IChannelHandler Replace(DefaultChannelHandlerContext ctx, string newName, IChannelHandler newHandler)
+        {
+            Debug.Assert(ctx != Head && ctx != Tail);
+
+            Task waitable;
+            lock (_nameCtxLock)
+            {
+                var sameName = ctx.Name.Equals(newName);
+                if (!sameName)
+                {
+                    CheckDuplicateName(newName);
+                }
+
+                var newCtx = new DefaultChannelHandlerContext(this, ctx.Invoker, newName, newHandler);
+                if (!newCtx.Channel.IsRegistered || newCtx.Executor.IsInEventLoop())
+                {
+                    ReplaceInternal(ctx, newName, newCtx);
+                    return ctx.Handler;
+                }
+                else
+                {
+                    waitable = new Task(() =>
+                    {
+                        lock (_nameCtxLock)
+                        {
+                            ReplaceInternal(ctx, newName, newCtx);
+                        }
+                    });
+                    
+                }
+
+            }
+
+            ctx.Executor.Execute(waitable);
+            //Wait outside the lock in order to avoid deadlock
+            waitable.Wait();
+
+            return ctx.Handler;
+        }
+
+        private void ReplaceInternal(DefaultChannelHandlerContext oldCtx, string newName,
+            DefaultChannelHandlerContext newCtx)
+        {
+            CheckMultiplicity(newCtx);
+
+            var prev = oldCtx.prev;
+            var next = oldCtx.next;
+            newCtx.prev = prev;
+            newCtx.next = next;
+
+            //Finish the replacement of oldCtx with newCtx in the linked list
+            prev.next = newCtx;
+            next.prev = newCtx;
+
+            if (!oldCtx.Name.Equals(newName))
+            {
+                _name2Ctx.Remove(oldCtx.Name);
+            }
+            _name2Ctx.AddOrSet(newName, newCtx);
+
+            //update the reference to the replacement so forward of buffered content will work correctly
+            oldCtx.prev = newCtx;
+            oldCtx.next = newCtx;
+
+            //Invoke newHandler.HandlerAdded first
+            CallHandlerAdded(newCtx);
+            CallHandlerRemoved(oldCtx);
         }
 
         public IChannelHandler First()
@@ -147,6 +382,18 @@ namespace Helios.Channels.Impl
         {
             throw new NotImplementedException();
         }
+
+        public IChannelHandlerContext Context(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IChannelHandlerContext Context<T>() where T : IChannelHandler
+        {
+            throw new NotImplementedException();
+        }
+
+
 
         #endregion
 
@@ -397,6 +644,30 @@ namespace Helios.Channels.Impl
 
         #region Internal methods
 
+        private DefaultChannelHandlerContext GetContextOrDie(string name)
+        {
+            var ctx = (DefaultChannelHandlerContext) Context(name);
+            if(ctx == null)
+                throw new KeyNotFoundException(name);
+            return ctx;
+        }
+
+        private DefaultChannelHandlerContext GetContextOrDie(IChannelHandler handler)
+        {
+            var ctx = (DefaultChannelHandlerContext) Context(handler);
+            if (ctx == null)
+                throw new KeyNotFoundException(handler.GetType().FullName);
+            return ctx;
+        }
+
+        private DefaultChannelHandlerContext GetContextOrDie<T>() where T : IChannelHandler
+        {
+            var ctx = (DefaultChannelHandlerContext)Context<T>();
+            if (ctx == null)
+                throw new KeyNotFoundException(typeof(T).FullName);
+            return ctx;
+        }
+
         private void CheckDuplicateName(string name)
         {
             if(_name2Ctx.ContainsKey(name)) throw new ArgumentException(string.Format("Duplicate handler name {0}.", name),"name");
@@ -549,11 +820,6 @@ namespace Helios.Channels.Impl
             }
 
             return name;
-        }
-
-        internal void RemoveInternal(DefaultChannelHandlerContext defaultChannelHandlerContext)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion

@@ -71,7 +71,7 @@ namespace Helios.Channels.Impl
             {
                 lock (m_lock)
                 {
-                    _channelPipeline.RemoveInternal(this);
+                    _channelPipeline.Remove(this);
                 }
                 nextPrev.Teardown();
             }
