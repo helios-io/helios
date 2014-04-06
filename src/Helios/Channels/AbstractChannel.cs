@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Diagnostics;
 using Helios.Channels.Extensions;
 using Helios.Channels.Impl;
@@ -235,6 +236,7 @@ namespace Helios.Channels
                 Channel = channel;
                 EventLoop = channel.EventLoop;
                 Invoker = EventLoop.AsInvoker();
+                OutboundBuffer = NewOutboundBuffer();
             }
 
             protected AbstractChannel Channel;
@@ -319,10 +321,8 @@ namespace Helios.Channels
                 SafeSetSuccess(bindCompletionSource);
             }
 
-            public void Connect(INode localAddress, INode remoteAddress, ChannelPromise<bool> connectCompletionSource)
-            {
-                throw new NotImplementedException();
-            }
+            public abstract void Connect(INode localAddress, INode remoteAddress,
+                ChannelPromise<bool> connectCompletionSource);
 
             public void Disconnect(ChannelPromise<bool> disconnectCompletionSource)
             {
@@ -350,6 +350,7 @@ namespace Helios.Channels
 
             public void Close(ChannelPromise<bool> closeCompletionSource)
             {
+                var channel = Channel;
                 if (closeCompletionSource.Task.IsCanceled) return;
 
                 if (inFlush)
@@ -382,26 +383,146 @@ namespace Helios.Channels
                 }
 
                 //Fail all the queued messages
+                try
+                {
+                    outboundBuffer.FailFlushed(ClosedChannelException);
+                    outboundBuffer.Close(ClosedChannelException);
+                }
+                finally
+                {
+                    if (wasActive && !channel.IsActive)
+                    {
+                        EventLoop.Execute(() => channel.Pipeline.FireChannelInactive());
+                    }
+                    Deregister();
+                }
             }
 
             public void CloseForcibly()
             {
-                throw new NotImplementedException();
+                try
+                {
+                    DoClose();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(String.Format("Failed to close a channel.", ex));
+                }
+            }
+
+            private void Deregister()
+            {
+                if (!Channel.IsRegistered)
+                {
+                    return;
+                }
+
+                try
+                {
+                    DoRegister();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(String.Format("Unexpected exception while deregistering a channel.", ex));
+                }
+                finally
+                {
+                    if (Channel.IsRegistered)
+                    {
+                        Channel.IsRegistered = false;
+                    }
+                }
             }
 
             public void BeginRead()
             {
-                throw new NotImplementedException();
+                if (!Channel.IsActive)
+                {
+                    return;
+                }
+
+                try
+                {
+                    DoBeginRead();
+                }
+                catch (Exception ex)
+                {
+                    EventLoop.Execute(() => Channel.Pipeline.FireExceptionCaught(ex));
+                    Close(VoidPromise());
+                }
             }
 
             public void Write(NetworkData msg, ChannelPromise<bool> writeCompletionSource)
             {
-                throw new NotImplementedException();
+                var outboundBuffer = OutboundBuffer;
+                if (outboundBuffer == null)
+                {
+                    //If the outboundbuffer is closed, we know hte channel was closed so
+                    //we need to fail the future right away. If it is not null, handling of the
+                    //rest will be done in FlushInternal
+                    SafeSetFailure(writeCompletionSource, ClosedChannelException);
+                    return;
+                }
+                outboundBuffer.AddMessage(msg, writeCompletionSource);
             }
 
             public void Flush()
             {
-                throw new NotImplementedException();
+                var outboundBuffer = OutboundBuffer;
+                if (outboundBuffer == null)
+                {
+                    return;
+                }
+                outboundBuffer.AddFlush();
+                FlushInternal();
+            }
+
+            protected void FlushInternal()
+            {
+                if (inFlush)
+                {
+                    //Avoid re-entrance
+                    return;
+                }
+
+                var outboundBuffer = OutboundBuffer;
+                if (outboundBuffer == null || outboundBuffer.IsEmpty) return;
+
+                inFlush = true;
+
+                //Mark all pending write requests as failure if the channel is inactive
+                if (!Channel.IsActive)
+                {
+                    try
+                    {
+                        if (Channel.IsOpen)
+                        {
+                            outboundBuffer.FailFlushed(NotYetConnectedException);
+                        }
+                        else
+                        {
+                            outboundBuffer.FailFlushed(ClosedChannelException);
+                        }
+                    }
+                    finally
+                    {
+                        inFlush = false;
+                    }
+                    return;
+                }
+
+                try
+                {
+                    DoWrite(outboundBuffer);
+                }
+                catch (Exception ex)
+                {
+                    outboundBuffer.FailFlushed(ex);
+                }
+                finally
+                {
+                    inFlush = false;
+                }
             }
 
             public ChannelOutboundBuffer OutboundBuffer { get; private set; }
@@ -424,9 +545,23 @@ namespace Helios.Channels
 
             protected abstract void DoClose();
 
+            protected abstract void DoDeregister();
+
+            protected abstract void DoBeginRead();
+
+            /// <summary>
+            /// Flush the content of the given buffer to the remote peer
+            /// </summary>
+            protected abstract void DoWrite(ChannelOutboundBuffer buff);
+
             #endregion
 
             #region Internal methods
+
+            protected ChannelOutboundBuffer NewOutboundBuffer()
+            {
+                return ChannelOutboundBuffer.NewBuffer(Channel);
+            }
 
             protected bool EnsureOpen(ChannelPromise<bool> promise)
             {
