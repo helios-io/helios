@@ -26,7 +26,7 @@ namespace Helios.Channels
         /// <summary>
         /// The pipeline of <see cref="IChannelHandler"/> instances responsible for handling this channel
         /// </summary>
-        ChannelPipeline Pipeline { get; }
+        IChannelPipeline Pipeline { get; }
 
         /// <summary>
         /// Gets the parent <see cref="IChannel"/> responsible for this channel.
@@ -109,6 +109,8 @@ namespace Helios.Channels
 
         Task<bool> WriteAndFlush(NetworkData message);
 
+        VoidChannelPromise VoidPromise { get; }
+
     }
 
 
@@ -119,7 +121,7 @@ namespace Helios.Channels
     /// </summary>
     public interface IUnsafe
     {
-        IExecutor Invoker
+        IChannelHandlerInvoker Invoker
         {
             get;
         }
@@ -151,7 +153,9 @@ namespace Helios.Channels
 
         void Flush();
 
-        ChannelOutboundBuffer OutboundBuffer();
+        ChannelOutboundBuffer OutboundBuffer { get; }
+
+        VoidChannelPromise VoidPromise { get; }
     }
 
     #endregion

@@ -24,7 +24,7 @@ namespace Helios.Channels
 
         public IChannelId Id { get; private set; }
         public IEventLoop EventLoop { get; protected set; }
-        public ChannelPipeline Pipeline { get; private set; }
+        public IChannelPipeline Pipeline { get; private set; }
         public IChannel Parent { get; protected set; }
         public IUnsafe Unsafe { get; private set; }
         public bool IsOpen { get; protected set; }
@@ -109,6 +109,8 @@ namespace Helios.Channels
         {
             throw new System.NotImplementedException();
         }
+
+        public VoidChannelPromise VoidPromise { get; private set; }
 
         #region Internal methods
 

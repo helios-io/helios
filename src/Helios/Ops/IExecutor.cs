@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Helios.Ops
@@ -17,6 +18,8 @@ namespace Helios.Ops
         Task ExecuteAsync(Action op);
 
         void Execute(IList<Action> op);
+
+        void Execute(Task task);
 
         Task ExecuteAsync(IList<Action> op);
 
@@ -49,5 +52,10 @@ namespace Helios.Ops
         /// <param name="gracePeriod">The amount of time <see cref="IExecutor"/> is given to execute any remaining tasks</param>
         /// <returns>A task with a status result of "success" as long as no unhandled exceptions are thrown by the time the executor is terminated</returns>
         Task GracefulShutdown(TimeSpan gracePeriod);
+
+        /// <summary>
+        /// Checks to see if this <see cref="IExecutor"/> is executing inside the given thread
+        /// </summary>
+        bool InThread(Thread thread);
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Helios.Channels;
 using Helios.Concurrency;
@@ -38,6 +39,11 @@ namespace Helios.Ops.Executors
             }
         }
 
+        public void Execute(Task task)
+        {
+            Scheduler.Add(task.RunSynchronously);
+        }
+
         public Task ExecuteAsync(IList<Action> op)
         {
             return Scheduler.Executor.ExecuteAsync(op);
@@ -66,6 +72,11 @@ namespace Helios.Ops.Executors
         public Task GracefulShutdown(TimeSpan gracePeriod)
         {
             return Scheduler.GracefulShutdown(gracePeriod);
+        }
+
+        public bool InThread(Thread thread)
+        {
+            return (Thread.CurrentThread.ManagedThreadId == thread.ManagedThreadId);
         }
 
         public bool WasDisposed { get; private set; }

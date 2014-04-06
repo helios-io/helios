@@ -23,7 +23,10 @@ namespace Helios.Channels
         /// We strongly don't recommend calling this method unless you know what you're doing.
         /// </remarks>
         /// </summary>
-        IExecutor Invoker { get; }
+        IExecutor Executor { get; }
+
+
+        IChannelHandlerInvoker Invoker { get; }
 
         /// <summary>
         /// Provides a link to the underlying <see cref="IChannelHandler"/> that is bound to this <see cref="IChannelHandlerContext"/>.
@@ -37,7 +40,7 @@ namespace Helios.Channels
 
         /// <summary>
         /// Returns true if the <see cref="IChannelHandler"/> to which this context belongs was removed from the
-        /// <see cref="ChannelPipeline"/>.
+        /// <see cref="IChannelPipeline"/>.
         /// </summary>
         bool IsRemoved { get; }
 
@@ -89,7 +92,7 @@ namespace Helios.Channels
 
         /// <summary>
         /// Triggers a <see cref="IChannelHandler.ChannelWritabilityChanged"/> event on the next <see cref="IChannelHandler"/> in the
-        /// <see cref="ChannelPipeline"/>
+        /// <see cref="IChannelPipeline"/>
         /// </summary>
         IChannelHandlerContext FireChannelReadComplete();
 

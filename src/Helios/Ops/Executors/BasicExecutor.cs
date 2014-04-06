@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Helios.Util;
 using Helios.Util.TimedOps;
@@ -41,6 +42,13 @@ namespace Helios.Ops.Executors
         public virtual void Execute(IList<Action> op)
         {
             Execute(op, null);
+        }
+
+        public void Execute(Task task)
+        {
+            if (!AcceptingJobs) return;
+
+            task.RunSynchronously();
         }
 
         public Task ExecuteAsync(IList<Action> op)
@@ -93,6 +101,11 @@ namespace Helios.Ops.Executors
         {
             Shutdown(gracePeriod);
             return Task.Delay(gracePeriod);
+        }
+
+        public bool InThread(Thread thread)
+        {
+            return (Thread.CurrentThread.ManagedThreadId == thread.ManagedThreadId);
         }
     }
 }

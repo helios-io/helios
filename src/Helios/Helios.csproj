@@ -50,6 +50,11 @@
     </Compile>
     <Compile Include="Channels\AbstractChannel.cs" />
     <Compile Include="Channels\ChannelHandlerAdapter.cs" />
+    <Compile Include="Channels\Extensions\ChannelHandlerInvokerUtil.cs" />
+    <Compile Include="Channels\Impl\DefaultChannelHandlerInvoker.cs" />
+    <Compile Include="Channels\Extensions\EventLoopExtensions.cs" />
+    <Compile Include="Channels\IChannelHandlerInvoker.cs" />
+    <Compile Include="Channels\Impl\DefaultChannelHandlerContext.cs" />
     <Compile Include="Channels\Impl\DefaultChannelPipeline.cs" />
     <Compile Include="Channels\Impl\ChannelOutboundBuffer.cs" />
     <Compile Include="Channels\ChannelPipeline.cs" />
@@ -59,6 +64,7 @@
     <Compile Include="Channels\IChannelHandler.cs" />
     <Compile Include="Channels\IChannelId.cs" />
     <Compile Include="Channels\Impl\Unpooled.cs" />
+    <Compile Include="Channels\VoidChannelPromise.cs" />
     <Compile Include="Concurrency\FiberFactory.cs" />
     <Compile Include="Concurrency\FiberMode.cs" />
     <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />

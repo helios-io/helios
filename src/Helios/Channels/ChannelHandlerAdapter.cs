@@ -91,7 +91,7 @@ namespace Helios.Channels
             handlerContext.Flush();
         }
 
-        public void Read(IChannelHandlerContext handlerContext)
+        public virtual void Read(IChannelHandlerContext handlerContext)
         {
             handlerContext.Read();
         }

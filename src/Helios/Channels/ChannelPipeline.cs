@@ -11,89 +11,115 @@ namespace Helios.Channels
     /// <summary>
     /// Defines a chained, ordered pipeline for being able to process messages
     /// </summary>
-    public abstract class ChannelPipeline : LinkedList<ChannelHandlerAssociation>
+    public interface IChannelPipeline : IEnumerable<ChannelHandlerAssociation>
     {
+        IChannelPipeline AddFirst(string name, IChannelHandler handler);
+
+        IChannelPipeline AddLast(string name, IChannelHandler handler);
+
+        IChannelPipeline AddBefore(string baseName, string name, IChannelHandler handler);
+
+        IChannelPipeline AddAfter(string baseName, string name, IChannelHandler handler);
+
+        IChannelHandler Remove(string name);
+
+        IChannelPipeline Remove(IChannelHandler handler);
+
+        IChannelHandler RemoveFirst();
+
+        IChannelHandler RemoveLast();
+
+        IChannelPipeline Replace(IChannelHandler oldHandler, string newName, IChannelHandler newHandler);
+
+        IChannelHandler Replace(string oldName, string newName, IChannelHandler handler);
+
+        IChannelHandler First();
+
+        IChannelHandlerContext FirstContext();
+
+        IChannelHandler Last();
+
+        IChannelHandlerContext LastContext();
+
+        IChannelHandler Get(string name);
+
+        IChannelHandlerContext Context(IChannelHandler handler);
+
         /// <summary>
-        /// Returns all of the names associated with this <see cref="ChannelPipeline"/>
+        /// Returns all of the names associated with this <see cref="IChannelPipeline"/>
         /// </summary>
-        public List<string> Names
-        {
-            get { return this.Select(x => x.Name).ToList(); }
-        }
+        List<string> Names { get; }
 
-        public Dictionary<string, IChannelHandler> ToDictionary()
-        {
-            return this.ToDictionary(x => x.Name, y => y.Handler);
-        }
+        Dictionary<string, IChannelHandler> ToDictionary();
 
-        public IChannel Channel { get; protected set; }
+        IChannel Channel { get; }
 
         /// <summary>
         /// A <see cref="IChannel"/> was registered to its <see cref="IEventLoop"/>
         /// 
         /// This will result in having the <see cref="IChannelHandler.ChannelRegistered"/> method called of the next
-        /// <see cref="IChannelHandler"/> contained in the <see cref="ChannelPipeline"/> of the <see cref="IChannel"/>
+        /// <see cref="IChannelHandler"/> contained in the <see cref="IChannelPipeline"/> of the <see cref="IChannel"/>
         /// </summary>
-        public abstract ChannelPipeline FireChannelRegistered();
+        IChannelPipeline FireChannelRegistered();
 
         /// <summary>
         /// A <see cref="IChannel"/> is active now, which means there's a connection available for reads / writes.
         /// 
         /// This will result in having the <see cref="IChannelHandler.ChannelActive"/> method called of the next
-        /// <see cref="IChannelHandler"/> contained in the <see cref="ChannelPipeline"/> of the <see cref="IChannel"/>
+        /// <see cref="IChannelHandler"/> contained in the <see cref="IChannelPipeline"/> of the <see cref="IChannel"/>
         /// </summary>
-        public abstract ChannelPipeline FireChannelActive();
+       IChannelPipeline FireChannelActive();
 
         /// <summary>
         /// A <see cref="IChannel"/> is inactive now, which means it's closed.
         /// 
         /// This will result in having the <see cref="IChannelHandler.ChannelInactive"/> method called of the next
-        /// <see cref="IChannelHandler"/> contained in the <see cref="ChannelPipeline"/> of the <see cref="IChannel"/>
+        /// <see cref="IChannelHandler"/> contained in the <see cref="IChannelPipeline"/> of the <see cref="IChannel"/>
         /// </summary>
-        public abstract ChannelPipeline FireChannelInactive();
+        IChannelPipeline FireChannelInactive();
 
-        public abstract ChannelPipeline FireExceptionCaught(Exception ex);
+        IChannelPipeline FireExceptionCaught(Exception ex);
 
-        public abstract ChannelPipeline FireChannelRead(NetworkData message);
+        IChannelPipeline FireChannelRead(NetworkData message);
 
-        public abstract ChannelPipeline FireUserEventTriggered(object evt);
+        IChannelPipeline FireUserEventTriggered(object evt);
 
-        public abstract ChannelPipeline FireChannelReadComplete();
+        IChannelPipeline FireChannelReadComplete();
 
-        public abstract ChannelPipeline FireChannelWritabilityChanged();
+        IChannelPipeline FireChannelWritabilityChanged();
 
-        public abstract Task<bool> Bind(INode localAddress);
+        Task<bool> Bind(INode localAddress);
 
-        public abstract Task<bool> Bind(INode localAddress, TaskCompletionSource<bool> bindCompletionSource);
+        Task<bool> Bind(INode localAddress, TaskCompletionSource<bool> bindCompletionSource);
 
-        public abstract Task<bool> Connect(INode remoteAddress);
+        Task<bool> Connect(INode remoteAddress);
 
-        public abstract Task<bool> Connect(INode remoteAddress, INode localAddress);
+        Task<bool> Connect(INode remoteAddress, INode localAddress);
 
-        public abstract Task<bool> Connect(INode remoteAddress, TaskCompletionSource<bool> connectCompletionSource);
+        Task<bool> Connect(INode remoteAddress, TaskCompletionSource<bool> connectCompletionSource);
 
-        public abstract Task<bool> Connect(INode remoteAddress, INode localAddress,
+        Task<bool> Connect(INode remoteAddress, INode localAddress,
             TaskCompletionSource<bool> connectCompletionSource);
 
-        public abstract Task<bool> Disconnect();
+        Task<bool> Disconnect();
 
-        public abstract Task<bool> Disconnect(TaskCompletionSource<bool> disconnectCompletionSource);
+        Task<bool> Disconnect(TaskCompletionSource<bool> disconnectCompletionSource);
 
-        public abstract Task<bool> Close();
+        Task<bool> Close();
 
-        public abstract Task<bool> Close(TaskCompletionSource<bool> closeCompletionSource);
+        Task<bool> Close(TaskCompletionSource<bool> closeCompletionSource);
 
-        public abstract ChannelPipeline Read();
+        IChannelPipeline Read();
 
-        public abstract Task<bool> Write(NetworkData message);
+        Task<bool> Write(NetworkData message);
 
-        public abstract Task<bool> Write(NetworkData message, TaskCompletionSource<bool> writeCompletionSource);
+        Task<bool> Write(NetworkData message, TaskCompletionSource<bool> writeCompletionSource);
 
-        public abstract ChannelPipeline Flush();
+        IChannelPipeline Flush();
 
-        public abstract Task<bool> WriteAndFlush(NetworkData message, TaskCompletionSource<bool> writeCompletionSource);
+        Task<bool> WriteAndFlush(NetworkData message, TaskCompletionSource<bool> writeCompletionSource);
 
-        public abstract Task<bool> WriteAndFlush(NetworkData message);
+        Task<bool> WriteAndFlush(NetworkData message);
     }
 
     /// <summary>
