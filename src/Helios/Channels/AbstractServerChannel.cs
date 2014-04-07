@@ -45,7 +45,7 @@ namespace Helios.Channels
             {
             }
 
-            public override void Connect(INode localAddress, INode remoteAddress, ChannelPromise<bool> connectCompletionSource)
+            public override void Connect(INode remoteAddress, INode localAddress, ChannelPromise<bool> connectCompletionSource)
             {
                 Reject(connectCompletionSource);
             }

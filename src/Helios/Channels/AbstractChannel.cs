@@ -40,9 +40,9 @@ namespace Helios.Channels
         public IChannelPipeline Pipeline { get; private set; }
         public IChannel Parent { get; protected set; }
         public IUnsafe Unsafe { get; private set; }
-        public bool IsOpen { get; protected set; }
-        public bool IsActive { get; protected set; }
-        public bool IsRegistered { get; protected set; }
+        public virtual bool IsOpen { get; protected set; }
+        public virtual bool IsActive { get; protected set; }
+        public virtual bool IsRegistered { get; protected set; }
 
         public INode LocalAddress
         {
@@ -234,6 +234,7 @@ namespace Helios.Channels
             {
                 Channel = channel;
                 EventLoop = channel.EventLoop;
+                ValidateEventLoop(EventLoop);
                 Invoker = EventLoop.AsInvoker();
                 OutboundBuffer = NewOutboundBuffer();
             }
@@ -320,7 +321,7 @@ namespace Helios.Channels
                 SafeSetSuccess(bindCompletionSource);
             }
 
-            public abstract void Connect(INode localAddress, INode remoteAddress,
+            public abstract void Connect(INode remoteAddress, INode localAddress,
                 ChannelPromise<bool> connectCompletionSource);
 
             public virtual void Disconnect(ChannelPromise<bool> disconnectCompletionSource)
@@ -418,7 +419,7 @@ namespace Helios.Channels
 
                 try
                 {
-                    DoRegister();
+                    DoDeregister();
                 }
                 catch (Exception ex)
                 {
@@ -529,6 +530,15 @@ namespace Helios.Channels
             {
                 return new VoidChannelPromise(null);
             }
+
+            protected void ValidateEventLoop(IEventLoop loop)
+            {
+                if(loop == null) throw new ArgumentNullException("loop");
+
+                if(!IsCompatible(loop)) throw new ArgumentException("EventLoop implementation was not of the expected type.");
+            }
+
+            protected abstract bool IsCompatible(IEventLoop loop);
 
             #region Abstract methods
 

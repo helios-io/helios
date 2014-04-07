@@ -149,7 +149,7 @@ namespace Helios.Channels
 
         void Bind(INode localAddress, ChannelPromise<bool> bindCompletionSource);
 
-        void Connect(INode localAddress, INode remoteAddress, ChannelPromise<bool> connectCompletionSource);
+        void Connect(INode remoteAddress, INode localAddress, ChannelPromise<bool> connectCompletionSource);
 
         void Disconnect(ChannelPromise<bool> disconnectCompletionSource);
 
