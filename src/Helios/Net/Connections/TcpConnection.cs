@@ -7,23 +7,23 @@ using Helios.Topology;
 
 namespace Helios.Net.Connections
 {
-    public class TcpConnection : StreamedConnectionBase
+    public class TcpConnection : UnstreamedConnectionBase
     {
         protected TcpClient _client;
 
-        public TcpConnection(INode node, TimeSpan timeout)
-            : base(node, timeout)
+        public TcpConnection(INode node, TimeSpan timeout, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : base(node, timeout, bufferSize)
         {
             InitClient();
         }
 
-        public TcpConnection(INode node)
-            : base(node)
+        public TcpConnection(INode node, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : base(node, bufferSize)
         {
             InitClient();
         }
 
-        public TcpConnection(TcpClient client)
+        public TcpConnection(TcpClient client, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
         {
             InitClient(client);
         }
@@ -141,8 +141,11 @@ namespace Helios.Net.Connections
                 _client.Close();
                 throw new HeliosConnectionException(ExceptionType.TimedOut, "Timed out on connect");
             }
+        }
 
-            InitStream();
+        protected override void BeginReceiveInternal()
+        {
+            _client.Client.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, _client.Client);
         }
 
         public override void Close()
@@ -154,6 +157,16 @@ namespace Helios.Net.Connections
 
             _client.Close();
             _client = null;
+        }
+
+        public override void Send(NetworkData payload)
+        {
+            _client.Client.Send(payload.Buffer, payload.Length, SocketFlags.None);
+        }
+
+        public override async Task SendAsync(NetworkData payload)
+        {
+            await Task.Run(() => Send(payload));
         }
 
         #region IDisposable Members
@@ -178,9 +191,12 @@ namespace Helios.Net.Connections
         private void InitClient(TcpClient client)
         {
             _client = client;
+            _client.NoDelay = true;
+            _client.ReceiveTimeout = Timeout.Seconds;
+            _client.SendTimeout = Timeout.Seconds;
+            _client.ReceiveBufferSize = Buffer.Length;
             var ipAddress = (IPEndPoint)_client.Client.RemoteEndPoint;
-            Node = NodeBuilder.FromEndpoint(ipAddress);
-            InitStream();
+            Binding = NodeBuilder.FromEndpoint(ipAddress);
         }
 
         private void InitClient()
@@ -189,14 +205,9 @@ namespace Helios.Net.Connections
             {
                 ReceiveTimeout = Timeout.Seconds,
                 SendTimeout = Timeout.Seconds,
-                Client = {NoDelay = true}
+                Client = {NoDelay = true},
+                ReceiveBufferSize = Buffer.Length
             };
-        }
-
-        private void InitStream()
-        {
-            InputStream = _client.GetStream();
-            OutputStream = _client.GetStream();
         }
     }
 }

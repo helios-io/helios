@@ -117,7 +117,6 @@
     <Compile Include="Net\SystemAddressHelper.cs" />
     <Compile Include="Net\Transports\IStreamTransport.cs" />
     <Compile Include="Net\Transports\ITransport.cs" />
-    <Compile Include="Net\Connections\StreamedConnectionBase.cs" />
     <Compile Include="Net\Connections\TcpConnection.cs" />
     <Compile Include="Net\NetworkConstants.cs" />
     <Compile Include="Monitoring\ClusterHeartBeat.cs" />
@@ -135,12 +134,9 @@
     <Compile Include="Monitoring\Timeouts\INodeHealthPolicy.cs" />
     <Compile Include="Monitoring\ConnectivityCheck.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Reactor\IConnectedReactor.cs" />
-    <Compile Include="Reactor\IConnectionlessReactor.cs" />
+    <Compile Include="Reactor\IMultiPlexedReactor.cs" />
     <Compile Include="Reactor\IReactor.cs" />
     <Compile Include="Reactor\ReactorBase.cs" />
-    <Compile Include="Reactor\ReactorAcceptedConnectionEventArgs.cs" />
-    <Compile Include="Reactor\ReactorReceivedDataEventArgs.cs" />
     <Compile Include="Reactor\Tcp\HighPerformanceTcpReactor.cs" />
     <Compile Include="Reactor\Tcp\SimpleTcpReactor.cs" />
     <Compile Include="Reactor\Udp\SimpleUdpReactor.cs" />

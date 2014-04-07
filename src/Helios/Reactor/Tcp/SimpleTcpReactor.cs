@@ -7,7 +7,7 @@ using Helios.Exceptions;
 
 namespace Helios.Reactor.Tcp
 {
-    public class SimpleTcpReactor : ReactorBase, IConnectedReactor
+    public class SimpleTcpReactor : ReactorBase
     {
         protected TcpListener Listener;
         protected ManualResetEventSlim ResetEvent;

@@ -6,10 +6,34 @@ using Helios.Topology;
 namespace Helios.Net
 {
     /// <summary>
+    /// Typed delegate used for handling received data
+    /// </summary>
+    /// <param name="incomingData">a <see cref="NetworkData"/> instance that contains information that's arrived over the network</param>
+    public delegate void ReceivedDataCallback(NetworkData incomingData, IConnection responseChannel);
+
+    /// <summary>
+    /// Delegate used when a new connection is successfully established
+    /// </summary>
+    /// <param name="remoteAddress">The remote endpoint on the other end of this connection</param>
+    public delegate void ConnectionEstablishedCallback(INode remoteAddress);
+
+    /// <summary>
+    /// Delegate used when a connection is closed
+    /// </summary>
+    /// <param name="remoteAddress">The remote endpoint that terminated the connection</param>
+    public delegate void ConnectionTerminatedCallback(INode remoteAddress, HeliosException reason);
+
+    /// <summary>
     /// Interface used to describe an open connection to a client node / capability
     /// </summary>
     public interface IConnection : IDisposable
     {
+        ReceivedDataCallback Receive { get; }
+
+        event ConnectionEstablishedCallback OnConnection;
+
+        event ConnectionTerminatedCallback OnDisconnection;
+
         DateTimeOffset Created { get; }
 
         INode Node { get; }
@@ -20,8 +44,9 @@ namespace Helios.Net
 
         bool WasDisposed { get; }
 
-        bool IsOpen();
+        bool Receiving { get; }
 
+        bool IsOpen();
 
         /// <summary>
         /// The total number of bytes written the network that are available to be read
@@ -33,15 +58,18 @@ namespace Helios.Net
 
         void Open();
 
-        void Close();
+        /// <summary>
+        /// Call this method to begin receiving data on this connection
+        /// </summary>
+        /// <param name="callback">A callback for when data is received</param>
+        void BeginReceive(ReceivedDataCallback callback);
 
         /// <summary>
-        /// Recieve data from a remote host
+        /// Stop receiving messages, but keep the connection open
         /// </summary>
-        /// <returns>A NetworkData payload</returns>
-        NetworkData Receive();
+        void StopReceive();
 
-        Task<NetworkData> RecieveAsync();
+        void Close();
 
         /// <summary>
         /// Send data to a remote host

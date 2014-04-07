@@ -2,7 +2,7 @@
 
 namespace Helios.Exceptions
 {
-    public class HeliosConnectionException : Exception
+    public class HeliosConnectionException : HeliosException
     {
         private readonly ExceptionType _type;
 

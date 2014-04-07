@@ -13,7 +13,7 @@ namespace TimeServiceServer
     {
         private readonly IEventLoop _eventLoop;
 
-        public TimeServer(IPAddress localAddress, int localPort, IEventLoop eventLoop, int bufferSize = DEFAULT_BUFFER_SIZE) : base(localAddress, localPort, bufferSize)
+        public TimeServer(IPAddress localAddress, int localPort, IEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : base(localAddress, localPort, bufferSize)
         {
             _eventLoop = eventLoop;
         }

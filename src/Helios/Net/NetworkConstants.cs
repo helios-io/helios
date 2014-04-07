@@ -7,6 +7,13 @@ namespace Helios.Net
     /// </summary>
     public static class NetworkConstants
     {
+        public const int DEFAULT_BUFFER_SIZE = 1024 * 32; //32k
+
+        /// <summary>
+        /// The default backlog value for all socket connection types
+        /// </summary>
+        public const int DefaultBacklog = 5;
+
         /// <summary>
         /// The default interval used to check-in on blacked out nodes, when not using exponential backoff
         /// </summary>

@@ -93,6 +93,11 @@ namespace Helios.Net.Connections
             }
         }
 
+        protected override void BeginReceiveInternal()
+        {
+            _client.Client.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, _client.Client);
+        }
+
         public override void Close()
         {
             CheckWasDisposed();
@@ -103,26 +108,6 @@ namespace Helios.Net.Connections
             _client.Close();
             _client = null;
         }
-
-        public override NetworkData Receive()
-        {
-            var remoteHost = Binding.ToEndPoint();
-            var bytes = _client.Receive(ref remoteHost);
-            return NetworkData.Create(remoteHost.ToNode(Transport), bytes, bytes.Length);
-        }
-
-#if !NET35 && !NET40
-        public override async Task<NetworkData> RecieveAsync()
-        {
-            var bytes = await _client.ReceiveAsync();
-            return NetworkData.Create(bytes);
-        }
-#else
-        public override Task<NetworkData> RecieveAsync()
-        {
-            return TaskRunner.Run(() => Receive());
-        }
-#endif
 
         public override void Send(NetworkData payload)
         {
