@@ -48,8 +48,14 @@ namespace Helios.Topology
 
         public override int GetHashCode()
         {
-            var hashCode = Host.GetHashCode();
-            return hashCode;
+            unchecked
+            {
+                var hashCode = 17;
+                hashCode += 23 * Host.GetHashCode();
+                hashCode += 23* Port.GetHashCode();
+                return hashCode;
+            }
+           
         }
 
         public object Clone()

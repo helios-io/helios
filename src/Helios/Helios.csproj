@@ -134,11 +134,10 @@
     <Compile Include="Monitoring\Timeouts\INodeHealthPolicy.cs" />
     <Compile Include="Monitoring\ConnectivityCheck.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Reactor\IMultiPlexedReactor.cs" />
     <Compile Include="Reactor\IReactor.cs" />
     <Compile Include="Reactor\ReactorBase.cs" />
+    <Compile Include="Reactor\ReactorConnectionAdapter.cs" />
     <Compile Include="Reactor\Tcp\HighPerformanceTcpReactor.cs" />
-    <Compile Include="Reactor\Tcp\SimpleTcpReactor.cs" />
     <Compile Include="Reactor\Udp\SimpleUdpReactor.cs" />
     <Compile Include="Serialization\Bson\BsonTransportSerializer.cs" />
     <Compile Include="Serialization\ITransportSerializer.cs" />

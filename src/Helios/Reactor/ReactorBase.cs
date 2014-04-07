@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using Helios.Exceptions;
@@ -86,15 +85,24 @@ namespace Helios.Reactor
         /// network is injected into this method via the <see cref="NetworkData"/> data type.
         /// </summary>
         /// <param name="availableData">Data available from the network, including a response address</param>
-        protected void ReceivedData(NetworkData availableData)
+        /// <param name="responseChannel">Available channel for handling network respones</param>
+        protected void ReceivedData(NetworkData availableData, IConnection responseChannel)
         {
             if (OnReceive != null)
             {
-                OnReceive(availableData)
+                OnReceive(availableData, responseChannel);
             }
         }
 
         public abstract void Send(byte[] message, INode responseAddress);
+
+        /// <summary>
+        /// Closes a connection to a remote host (without shutting down the server.)
+        /// </summary>
+        /// <param name="remoteHost">The remote host to terminate</param>
+        internal abstract void CloseConnection(INode remoteHost);
+
+        internal abstract void CloseConnection(INode remoteHost, Exception reason);
 
         public int Backlog { get; set; }
 

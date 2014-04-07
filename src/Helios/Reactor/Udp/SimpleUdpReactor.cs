@@ -1,101 +1,120 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
-using Helios.Concurrency;
 using Helios.Exceptions;
 using Helios.Net;
-using Helios.Net.Connections;
 using Helios.Topology;
+
 
 namespace Helios.Reactor.Udp
 {
-    public class SimpleUdpReactor : ReactorBase, IConnectionlessReactor
+    public class SimpleUdpReactor : ReactorBase
     {
-        protected ManualResetEventSlim ResetEvent;
-        protected IFiber Fiber;
-        protected IConnection Connection;
+        protected Dictionary<IPEndPoint, INode> NodeMap = new Dictionary<IPEndPoint, INode>();
+        protected Dictionary<INode, ReactorConnectionAdapter> SocketMap = new Dictionary<INode, ReactorConnectionAdapter>();
 
-        public SimpleUdpReactor(IPAddress localAddress, int localPort) : 
-            this(
-            new UdpConnection(new Node() { Host = localAddress, Port = localPort, TransportType = TransportType.Udp}), 
-            FiberFactory.CreateFiber(FiberMode.MaximumConcurrency)) { }
-
-        public SimpleUdpReactor(IPAddress localAddress, int localPort, IFiber fiber) :
-            this(new UdpConnection(new Node() { Host = localAddress, Port = localPort, TransportType = TransportType.Udp }), fiber)
+        public SimpleUdpReactor(IPAddress localAddress, int localPort, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
+            : base(localAddress, localPort, SocketType.Dgram, ProtocolType.Udp, bufferSize)
         {
-            
         }
 
-        public SimpleUdpReactor(IConnection udpConnection, IFiber fiber)
-        {
-            ResetEvent = new ManualResetEventSlim();
-            Connection = udpConnection;
-            this.LocalEndpoint = udpConnection.Node.ToEndPoint();
-            Fiber = fiber;
-        }
         public override bool IsActive { get; protected set; }
-        public override void Start()
-        {
-            //Don't restart
-            if (IsActive) return;
 
-            CheckWasDisposed();
+        protected override void StartInternal()
+        {
             IsActive = true;
-            Connection.Open();
-            EventLoop();
+            Listener.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, Listener);
         }
 
-        public override void Stop()
+        private void ReceiveCallback(IAsyncResult ar)
         {
-            Connection.Close();
-        }
-
-        public virtual void EventLoop()
-        {
+            var socket = (Socket) ar.AsyncState;
             try
             {
-                while (!ResetEvent.IsSet)
-                {
-                    var data = Connection.Receive();
-                    Fiber.Add(() => InvokeDataAvailable(data));
-                }
-            }
-            catch (SocketException)
-            {
+                var received = socket.EndReceive(ar);
+                var dataBuff = new byte[received];
+                Array.Copy(Buffer, dataBuff, received);
 
+                var remoteAddress = (IPEndPoint)socket.RemoteEndPoint;
+                ReactorConnectionAdapter adapter;
+                if (NodeMap.ContainsKey(remoteAddress))
+                {
+                    adapter = SocketMap[NodeMap[remoteAddress]];
+                }
+                else
+                {
+                    adapter = new ReactorConnectionAdapter(this, socket, remoteAddress);
+                    NodeMap.Add(remoteAddress, adapter.Node);
+                    SocketMap.Add(adapter.Node, adapter);
+                    NodeConnected(adapter.Node);
+                }
+
+                var networkData = new NetworkData() { Buffer = dataBuff, Length = received, RemoteHost = adapter.Node };
+                socket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, socket); //receive more messages
+                ReceivedData(networkData, adapter);
+            }
+            catch (SocketException ex)
+            {
+                var node =  NodeBuilder.FromEndpoint((IPEndPoint)socket.RemoteEndPoint);
+                CloseConnection(node, ex);
             }
         }
 
-        public event EventHandler<ReactorReceivedDataEventArgs> DataAvailable = delegate { };
-
-        protected virtual void InvokeDataAvailable(NetworkData data)
+        public override void Send(byte[] message, INode responseAddress)
         {
-            var h = DataAvailable;
-            if (h == null) return;
-            h(this, ReactorReceivedDataEventArgs.Create(data, Connection));
+            Listener.BeginSendTo(message, 0, message.Length, SocketFlags.None, responseAddress.ToEndPoint(), SendCallback, Listener);
+        }
+
+        private void SendCallback(IAsyncResult ar)
+        {
+            var socket = (Socket)ar.AsyncState;
+            try
+            {
+                socket.EndSendTo(ar);
+            }
+            catch (SocketException ex) //node disconnected
+            {
+                var node = NodeMap[(IPEndPoint)socket.RemoteEndPoint];
+                CloseConnection(node, ex);
+            }
+        }
+
+        internal override void CloseConnection(INode remoteHost)
+        {
+            CloseConnection(remoteHost, null);
+        }
+
+        internal override void CloseConnection(INode remoteHost, Exception reason)
+        {
+            //NO-OP (no connections in UDP)
+            try
+            {
+                NodeDisconnected(remoteHost, new HeliosConnectionException(ExceptionType.Closed, reason));
+            }
+            finally
+            {
+                NodeMap.Remove(remoteHost.ToEndPoint());
+                SocketMap.Remove(remoteHost);
+            }
+        }
+
+        protected override void StopInternal()
+        {
+            //NO-OP
         }
 
         #region IDisposable Members
 
         public override void Dispose(bool disposing)
         {
-            if (!WasDisposed && disposing && Connection != null)
+            if (!WasDisposed && disposing && Listener != null)
             {
-                Connection.Dispose();
-                DataAvailable = delegate { };
-                Fiber.Dispose();
+                Stop();
+                Listener.Dispose();
             }
             IsActive = false;
             WasDisposed = true;
-        }
-
-        public void CheckWasDisposed()
-        {
-            if (WasDisposed)
-            {
-                throw new HeliosConnectionException(ExceptionType.NotOpen, "Already disposed this Reactor");
-            }
         }
 
         #endregion

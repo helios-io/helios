@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
+using Helios.Exceptions;
 using Helios.Topology;
 
 namespace Helios.Net
@@ -21,7 +22,7 @@ namespace Helios.Net
     /// Delegate used when a connection is closed
     /// </summary>
     /// <param name="remoteAddress">The remote endpoint that terminated the connection</param>
-    public delegate void ConnectionTerminatedCallback(INode remoteAddress, HeliosException reason);
+    public delegate void ConnectionTerminatedCallback(INode remoteAddress, HeliosConnectionException reason);
 
     /// <summary>
     /// Interface used to describe an open connection to a client node / capability

@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Exceptions;
 using Helios.Topology;
-using Helios.Util.Concurrency;
 
 namespace Helios.Net.Connections
 {

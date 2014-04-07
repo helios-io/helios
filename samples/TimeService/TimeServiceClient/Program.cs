@@ -4,10 +4,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using Helios.Exceptions;
-using Helios.Net;
-using Helios.Net.Connections;
-using Helios.Topology;
 
 namespace TimeServiceClient
 {
