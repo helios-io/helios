@@ -56,6 +56,7 @@
     <Compile Include="Channels\ChannelPromise.cs" />
     <Compile Include="Channels\DefaultChannelConfig.cs" />
     <Compile Include="Channels\Extensions\ChannelHandlerInvokerUtil.cs" />
+    <Compile Include="Channels\FixedRecvByteBufAllocator.cs" />
     <Compile Include="Channels\IChannelConfig.cs" />
     <Compile Include="Channels\DefaultChannelHandlerInvoker.cs" />
     <Compile Include="Channels\Extensions\EventLoopExtensions.cs" />
@@ -69,7 +70,10 @@
     <Compile Include="Channels\IChannelHandlerContext.cs" />
     <Compile Include="Channels\IChannelHandler.cs" />
     <Compile Include="Channels\IChannelId.cs" />
+    <Compile Include="Channels\IRecvByteBufAllocator.cs" />
+    <Compile Include="Channels\NIO\AbstractNIOByteChannel.cs" />
     <Compile Include="Channels\NIO\AbstractNioChannel.cs" />
+    <Compile Include="Channels\NIO\NioEventLoop.cs" />
     <Compile Include="Channels\Socket\IServerSocketChannel.cs" />
     <Compile Include="Channels\Socket\ISocketChannel.cs" />
     <Compile Include="Channels\Socket\ServerSocketChannelConfig.cs" />

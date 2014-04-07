@@ -50,6 +50,11 @@ namespace Helios.Channels
                 Reject(connectCompletionSource);
             }
 
+            protected override bool IsCompatible(IEventLoop loop)
+            {
+                return true;
+            }
+
             protected override INode LocalAddressInternal()
             {
                 return null;

@@ -42,13 +42,15 @@ namespace Helios.Channels.Socket
         new ISocketChannelConfig SetWriteBufferLowWaterMark(int waterMark);
 
         new ISocketChannelConfig SetMaxMessagesPerRead(int maxMessagesPerRead);
+
+        new ISocketChannelConfig SetRecvAllocator(IRecvByteBufAllocator recvByteBufAllocator);
     }
 
     public class DefaultSocketChannelConfig : DefaultChannelConfig, ISocketChannelConfig
     {
         protected readonly TcpConnection Connection;
 
-        public DefaultSocketChannelConfig(ISocketChannel channel, TcpConnection connection) : base(channel)
+        public DefaultSocketChannelConfig(AbstractChannel channel, TcpConnection connection) : base(channel)
         {
             if(connection == null) throw new ArgumentNullException("connection");
             Connection = connection;
@@ -178,6 +180,12 @@ namespace Helios.Channels.Socket
         public new ISocketChannelConfig SetMaxMessagesPerRead(int maxMessagesPerRead)
         {
             base.SetMaxMessagesPerRead(maxMessagesPerRead);
+            return this;
+        }
+
+        public new ISocketChannelConfig SetRecvAllocator(IRecvByteBufAllocator recvByteBufAllocator)
+        {
+            base.SetRecvAllocator(recvByteBufAllocator);
             return this;
         }
     }

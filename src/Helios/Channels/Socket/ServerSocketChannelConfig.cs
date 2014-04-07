@@ -29,5 +29,7 @@ namespace Helios.Channels.Socket
         new IServerSocketChannelConfig SetWriteBufferLowWaterMark(int waterMark);
 
         new IServerSocketChannelConfig SetMaxMessagesPerRead(int maxMessagesPerRead);
+
+        new ISocketChannelConfig SetRecvAllocator(IRecvByteBufAllocator recvByteBufAllocator);
     }
 }

@@ -6,9 +6,11 @@ namespace Helios.Channels
     {
         private static readonly TimeSpan DefaultConnectTimeout = TimeSpan.FromMilliseconds(30000);
 
+        public static IRecvByteBufAllocator DefaultAllocator = new FixedRecvByteBufAllocator(1024*4);
+
         protected readonly IChannel Channel;
 
-        public DefaultChannelConfig(IChannel channel)
+        public DefaultChannelConfig(AbstractChannel channel)
         {
             Channel = channel;
             if (channel is IServerChannel)
@@ -19,6 +21,7 @@ namespace Helios.Channels
             {
                 MaxMessagesPerRead = 1;
             }
+            channel.Config = this;
            
             ConnectTimeout = DefaultConnectTimeout;
             WriteBufferHighWaterMark = 64*1024;
@@ -58,6 +61,13 @@ namespace Helios.Channels
         public IChannelConfig SetWriteBufferLowWaterMark(int waterMark)
         {
             WriteBufferLowWaterMark = waterMark;
+            return this;
+        }
+
+        public IRecvByteBufAllocator RecvAllocator { get; private set; }
+        public IChannelConfig SetRecvAllocator(IRecvByteBufAllocator recvByteBufAllocator)
+        {
+            RecvAllocator = recvByteBufAllocator;
             return this;
         }
     }
