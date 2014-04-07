@@ -67,7 +67,7 @@ namespace Helios.Reactor.Tcp
         public override void Send(byte[] message, INode responseAddress)
         {
             var clientSocket = SocketMap[responseAddress];
-            clientSocket.Socket.BeginSend(message, 0, message.Length, SocketFlags.None, SendCallback, clientSocket);
+            clientSocket.Socket.BeginSend(message, 0, message.Length, SocketFlags.None, SendCallback, clientSocket.Socket);
         }
 
         internal override void CloseConnection(INode remoteHost, Exception ex)

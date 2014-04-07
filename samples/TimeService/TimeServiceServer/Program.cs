@@ -22,16 +22,18 @@ namespace TimeServiceServer
             server.OnReceive += (data, channel) => eventLoop.Execute(() =>
             {
                 var command = Encoding.UTF8.GetString(data.Buffer);
-                Console.WriteLine("Received: {0}", command);
+                //Console.WriteLine("Received: {0}", command);
                 if (command.ToLowerInvariant() == "gettime")
                 {
                     var time = Encoding.UTF8.GetBytes(DateTime.Now.ToLongTimeString());
                     channel.Send(new NetworkData(){Buffer= time, Length = time.Length, RemoteHost = channel.Node});
-                    Console.WriteLine("Sent time to {0}", channel.Node);
+                    //Console.WriteLine("Sent time to {0}", channel.Node);
                 }
                 else
                 {
-                    Console.WriteLine("Invalid command");
+                    Console.WriteLine("Invalid command: {0}", command);
+                    var invalid = Encoding.UTF8.GetBytes("Unrecognized command");
+                    channel.Send(new NetworkData() { Buffer = invalid, Length = invalid.Length, RemoteHost = channel.Node });
                 }
             });
             server.Start();

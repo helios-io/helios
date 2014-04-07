@@ -101,7 +101,15 @@ namespace Helios.Net.Connections
                 InitClient();
 
             return await _client.ConnectAsync(Node.Host, Node.Port)
-                .ContinueWith(x => x.IsCompleted && !x.IsFaulted && !x.IsCanceled,
+                .ContinueWith(x =>
+                {
+                    var result = x.IsCompleted && !x.IsFaulted && !x.IsCanceled;
+                    if (result)
+                    {
+                        InvokeConnectIfNotNull(Node);
+                    }
+                    return result;
+                },
                     TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously);
         }
 
@@ -141,6 +149,7 @@ namespace Helios.Net.Connections
                 _client.Close();
                 throw new HeliosConnectionException(ExceptionType.TimedOut, "Timed out on connect");
             }
+            InvokeConnectIfNotNull(Node);
         }
 
         protected override void BeginReceiveInternal()
@@ -156,12 +165,20 @@ namespace Helios.Net.Connections
                 return;
 
             _client.Close();
+            InvokeDisconnectIfNotNull(Node, new HeliosConnectionException(ExceptionType.Closed));
             _client = null;
         }
 
         public override void Send(NetworkData payload)
         {
-            _client.Client.Send(payload.Buffer, payload.Length, SocketFlags.None);
+            try
+            {
+                _client.Client.Send(payload.Buffer, payload.Length, SocketFlags.None);
+            }
+            catch (SocketException ex) //socket probably closed
+            {
+                Close();
+            }
         }
 
         public override async Task SendAsync(NetworkData payload)

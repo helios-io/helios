@@ -51,6 +51,7 @@
     <Compile Include="Channels\DefaultChannelIdTests.cs" />
     <Compile Include="Eventing\SimpleEventBrokerTests.cs" />
     <Compile Include="Net\MulticastHelperTests.cs" />
+    <Compile Include="Net\NodeUniquenessTests.cs" />
     <Compile Include="Net\TcpConnectionTests.cs" />
     <Compile Include="Ops\BasicExecutorTests.cs" />
     <Compile Include="Ops\TryCatchExecutorTests.cs" />
