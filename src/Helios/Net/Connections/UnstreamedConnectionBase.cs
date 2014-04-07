@@ -28,6 +28,7 @@ namespace Helios.Net.Connections
 
         public abstract bool IsOpen();
         public abstract int Available { get; }
+        public abstract Task<bool> OpenAsync();
         public abstract void Open();
 
         public abstract void Close();

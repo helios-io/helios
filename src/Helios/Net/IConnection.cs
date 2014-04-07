@@ -29,6 +29,8 @@ namespace Helios.Net
         /// <returns>the number of bytes received from the network that are available to be read</returns>
         int Available { get; }
 
+        Task<bool> OpenAsync();
+
         void Open();
 
         void Close();

@@ -92,6 +92,7 @@
     <Compile Include="Exceptions\ExceptionType.cs" />
     <Compile Include="Exceptions\HeliosConnectionException.cs" />
     <Compile Include="Exceptions\HeliosNodeException.cs" />
+    <Compile Include="HeliosException.cs" />
     <Compile Include="Net\Clustering\ClusterManagerFactory.cs" />
     <Compile Include="Net\Connections\MulticastUdpConnection.cs" />
     <Compile Include="Net\Connections\UdpConnection.cs" />
@@ -171,6 +172,7 @@
     <Compile Include="Util\TimedOps\ScheduledValue.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Channels\NIO\" />
     <Folder Include="Util\Streams\" />
   </ItemGroup>
   <ItemGroup>

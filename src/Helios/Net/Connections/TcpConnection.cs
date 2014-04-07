@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Helios.Exceptions;
 using Helios.Topology;
 
@@ -80,6 +81,30 @@ namespace Helios.Net.Connections
             }
         }
 
+        public override async Task<bool> OpenAsync()
+        {
+            CheckWasDisposed();
+
+            if (IsOpen()) return await Task.Run(() => true);
+
+            if (Node == null || Node.Host == null)
+            {
+                throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to a null Node or null Node.Host");
+            }
+
+            if (Node.Port <= 0)
+            {
+                throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to an invalid port");
+            }
+
+            if (_client == null)
+                InitClient();
+
+            return await _client.ConnectAsync(Node.Host, Node.Port)
+                .ContinueWith(x => x.IsCompleted && !x.IsFaulted && !x.IsCanceled,
+                    TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously);
+        }
+
         public override void Open()
         {
             CheckWasDisposed();
@@ -98,8 +123,6 @@ namespace Helios.Net.Connections
 
             if (_client == null)
                 InitClient();
-
-           
 
             var ar = _client.BeginConnect(Node.Host, Node.Port, null, null);
             if (ar.AsyncWaitHandle.WaitOne(Timeout))

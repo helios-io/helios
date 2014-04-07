@@ -40,9 +40,11 @@ namespace Helios.Net.Connections
             return IsOpen();
         }
 
+        public abstract Task<bool> OpenAsync();
         public abstract void Open();
 
         public abstract void Close();
+
         public NetworkData Receive()
         {
             var memoryStream = new MemoryStream(1024);

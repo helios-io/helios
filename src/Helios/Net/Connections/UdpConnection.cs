@@ -57,6 +57,12 @@ namespace Helios.Net.Connections
             }
         }
 
+        public override async Task<bool> OpenAsync()
+        {
+            Open();
+            return await Task.Run(() => true);
+        }
+
         public override void Open()
         {
             CheckWasDisposed();
