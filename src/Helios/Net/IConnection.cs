@@ -43,6 +43,11 @@ namespace Helios.Net
 
         TransportType Transport { get; }
 
+        /// <summary>
+        /// Determines if the underlying connection uses a blocking transport or not
+        /// </summary>
+        bool Blocking { get; set; }
+
         bool WasDisposed { get; }
 
         bool Receiving { get; }

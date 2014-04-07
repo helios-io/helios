@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Net;
 using Helios.Topology;
@@ -8,82 +7,108 @@ using Helios.Topology;
 namespace Helios.Reactor
 {
     /// <summary>
-    /// Wraps a <see cref="IReactor"/> instance inside a <see cref="IConnection"/> object
+    /// Wraps the <see cref="IReactor"/> itself inside a <see cref="IConnection"/> object and makes it callable
+    /// directly to end users
     /// </summary>
     public class ReactorConnectionAdapter : IConnection
     {
-        private readonly ReactorBase _reactor;
-        internal readonly Socket Socket;
+        private ReactorBase _reactor;
 
-        public ReactorConnectionAdapter(ReactorBase reactor, Socket outboundSocket) : this(reactor, outboundSocket, (IPEndPoint)outboundSocket.RemoteEndPoint)
-        {
-            
-        }
-
-        public ReactorConnectionAdapter(ReactorBase reactor, Socket outboundSocket, IPEndPoint endPoint)
+        public ReactorConnectionAdapter(ReactorBase reactor)
         {
             _reactor = reactor;
-            Socket = outboundSocket;
-            Node = NodeBuilder.FromEndpoint(endPoint);
+            Node = _reactor.LocalEndpoint.ToNode(_reactor.Transport);
         }
 
         public ReceivedDataCallback Receive { get; private set; }
 
-        public event ConnectionEstablishedCallback OnConnection;
-        public event ConnectionTerminatedCallback OnDisconnection;
+        public event ConnectionEstablishedCallback OnConnection
+        {
+            add { _reactor.OnConnection += value; } 
+            remove { _reactor.OnConnection -= value; }
+        }
 
+        public event ConnectionTerminatedCallback OnDisconnection
+        {
+            add { _reactor.OnDisconnection += value; }
+            remove { _reactor.OnDisconnection -= value; }
+        }
         public DateTimeOffset Created { get; private set; }
         public INode Node { get; private set; }
-        public TimeSpan Timeout { get { return TimeSpan.FromSeconds(Socket.ReceiveTimeout); } }
-        public TransportType Transport { get{ if(Socket.ProtocolType == ProtocolType.Tcp){ return TransportType.Tcp; } return TransportType.Udp; } }
-        public bool WasDisposed { get { return _reactor.WasDisposed; } }
+        public TimeSpan Timeout { get; private set; }
+        public TransportType Transport { get { return _reactor.Transport; } }
+        public bool Blocking { get { return _reactor.Blocking; } set { _reactor.Blocking = value; } }
+        public bool WasDisposed { get; private set; }
         public bool Receiving { get { return _reactor.IsActive; } }
         public bool IsOpen()
         {
-            return Socket.Connected;
+            return _reactor.IsActive;
         }
 
-        public int Available { get { return Socket.Available; } }
-        public Task<bool> OpenAsync()
+        public int Available { get{ throw new NotImplementedException("[Available] is not supported on ReactorConnectionAdapter"); } }
+
+        public async Task<bool> OpenAsync()
         {
-            return Task.Run(() => true);
+            await Task.Run(() => _reactor.Start());
+            return true;
         }
 
         public void Open()
         {
-            //NO-OP
+            if (_reactor.IsActive) return;
+            _reactor.Start();
         }
 
         public void BeginReceive(ReceivedDataCallback callback)
         {
-            //NO-OP
+            Receive = callback;
+            _reactor.OnReceive += Receive;
         }
 
         public void StopReceive()
         {
-            //NO-OP
+            _reactor.OnReceive -= Receive;
         }
 
         public void Close()
         {
-            _reactor.CloseConnection(Node);
+            _reactor.Stop();
         }
 
         public void Send(NetworkData payload)
         {
-            _reactor.Send(payload.Buffer, Node);
+            _reactor.Send(payload.Buffer, payload.RemoteHost);
         }
 
         public async Task SendAsync(NetworkData payload)
         {
-            await Task.Run(() => _reactor.Send(payload.Buffer, Node));
+            await Task.Run(() => Send(payload));
         }
 
-        #region IDisposable members
+        #region IDisposable methods
 
         public void Dispose()
         {
-            Close();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (!WasDisposed)
+            {
+
+                if (disposing)
+                {
+                    Close();
+                    if (_reactor != null)
+                    {
+                        ((IDisposable)_reactor).Dispose();
+                        _reactor = null;
+                    }
+                }
+            }
+            WasDisposed = true;
         }
 
         #endregion

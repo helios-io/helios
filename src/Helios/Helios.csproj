@@ -137,6 +137,7 @@
     <Compile Include="Reactor\IReactor.cs" />
     <Compile Include="Reactor\ReactorBase.cs" />
     <Compile Include="Reactor\ReactorConnectionAdapter.cs" />
+    <Compile Include="Reactor\ReactorRemotePeerConnectionAdapter.cs" />
     <Compile Include="Reactor\Tcp\HighPerformanceTcpReactor.cs" />
     <Compile Include="Reactor\Udp\SimpleUdpReactor.cs" />
     <Compile Include="Serialization\Bson\BsonTransportSerializer.cs" />

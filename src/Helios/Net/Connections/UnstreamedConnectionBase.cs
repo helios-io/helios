@@ -34,6 +34,7 @@ namespace Helios.Net.Connections
         public INode Binding { get; protected set; }
         public TimeSpan Timeout { get; private set; }
         public abstract TransportType Transport { get; }
+        public abstract bool Blocking { get; set; }
         public bool WasDisposed { get; protected set; }
         public bool Receiving { get; private set; }
 
@@ -109,6 +110,8 @@ namespace Helios.Net.Connections
         {
             Receiving = false;
         }
+
+        public abstract void Close(Exception reason);
 
         public abstract void Close();
 

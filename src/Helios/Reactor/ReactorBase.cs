@@ -20,6 +20,7 @@ namespace Helios.Reactor
         {
             LocalEndpoint = new IPEndPoint(localAddress, localPort);
             Listener = new Socket(AddressFamily.InterNetwork, socketType, protocol);
+            if (protocol == ProtocolType.Tcp) { Transport = TransportType.Tcp; } else if (protocol == ProtocolType.Udp) {  Transport = TransportType.Udp; }
             Buffer = new byte[bufferSize];
             Backlog = NetworkConstants.DefaultBacklog;
         }
@@ -107,7 +108,8 @@ namespace Helios.Reactor
         public int Backlog { get; set; }
 
         public IPEndPoint LocalEndpoint { get; protected set; }
-       
+        public TransportType Transport { get; private set; }
+        public bool Blocking { get { return Listener.Blocking; } set { Listener.Blocking = value; } }
 
         #region IDisposable Members
 

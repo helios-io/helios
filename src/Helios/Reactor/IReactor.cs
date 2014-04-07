@@ -34,6 +34,8 @@ namespace Helios.Reactor
 
         IPEndPoint LocalEndpoint { get; }
 
+        TransportType Transport { get; }
+
         void Dispose(bool disposing);
     }
 }

@@ -41,6 +41,12 @@ namespace Helios.Net.Connections
             get { return TransportType.Udp; }
         }
 
+        public override bool Blocking
+        {
+            get { return _client.Client.Blocking; }
+            set { _client.Client.Blocking = value; }
+        }
+
         public override bool IsOpen()
         {
             if (_client == null) return false;
@@ -97,7 +103,7 @@ namespace Helios.Net.Connections
             _client.Client.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, _client.Client);
         }
 
-        public override void Close()
+        public override void Close(Exception reason)
         {
             CheckWasDisposed();
 
@@ -106,11 +112,24 @@ namespace Helios.Net.Connections
 
             _client.Close();
             _client = null;
+            InvokeDisconnectIfNotNull(Node, new HeliosConnectionException(ExceptionType.Closed, reason));
+        }
+
+        public override void Close()
+        {
+           Close(null);
         }
 
         public override void Send(NetworkData payload)
         {
-            _client.Send(payload.Buffer, payload.Length, payload.RemoteHost.ToEndPoint());
+            try
+            {
+                _client.Send(payload.Buffer, payload.Length, payload.RemoteHost.ToEndPoint());
+            }
+            catch (SocketException ex) //socket probably closed
+            {
+                Close(ex);
+            }
         }
 
 #if !NET35 && !NET40

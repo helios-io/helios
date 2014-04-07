@@ -11,7 +11,7 @@ namespace Helios.Reactor.Tcp
     public class HighPerformanceTcpReactor : ReactorBase
     {
         protected Dictionary<Socket, INode> NodeMap = new Dictionary<Socket, INode>();
-        protected Dictionary<INode, ReactorConnectionAdapter> SocketMap = new Dictionary<INode, ReactorConnectionAdapter>();
+        protected Dictionary<INode, ReactorRemotePeerConnectionAdapter> SocketMap = new Dictionary<INode, ReactorRemotePeerConnectionAdapter>();
 
         public HighPerformanceTcpReactor(IPAddress localAddress, int localPort, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
             : base(localAddress, localPort, SocketType.Stream, ProtocolType.Tcp, bufferSize)
@@ -34,7 +34,7 @@ namespace Helios.Reactor.Tcp
             var newSocket = Listener.EndAccept(ar);
             var node = NodeBuilder.FromEndpoint((IPEndPoint) newSocket.RemoteEndPoint);
             NodeMap.Add(newSocket, node);
-            SocketMap.Add(node, new ReactorConnectionAdapter(this,newSocket));
+            SocketMap.Add(node, new ReactorRemotePeerConnectionAdapter(this,newSocket));
             NodeConnected(node);
             newSocket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, newSocket);
             Listener.BeginAccept(AcceptCallback, null); //accept more connections
@@ -86,6 +86,7 @@ namespace Helios.Reactor.Tcp
             {
                 NodeMap.Remove(clientSocket.Socket);
                 SocketMap.Remove(remoteHost);
+                clientSocket.Dispose();
             }
         }
 

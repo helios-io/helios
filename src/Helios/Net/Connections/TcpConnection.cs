@@ -30,6 +30,12 @@ namespace Helios.Net.Connections
 
         public override TransportType Transport { get { return TransportType.Tcp; } }
 
+        public override bool Blocking
+        {
+            get { return _client.Client.Blocking; }
+            set { _client.Client.Blocking = value; }
+        }
+
         public bool NoDelay
         {
             get { return _client.NoDelay; }
@@ -157,7 +163,8 @@ namespace Helios.Net.Connections
             _client.Client.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, _client.Client);
         }
 
-        public override void Close()
+
+        public override void Close(Exception reason)
         {
             CheckWasDisposed();
 
@@ -165,8 +172,13 @@ namespace Helios.Net.Connections
                 return;
 
             _client.Close();
-            InvokeDisconnectIfNotNull(Node, new HeliosConnectionException(ExceptionType.Closed));
+            InvokeDisconnectIfNotNull(Node, new HeliosConnectionException(ExceptionType.Closed, reason));
             _client = null;
+        }
+
+        public override void Close()
+        {
+            Close(null);
         }
 
         public override void Send(NetworkData payload)
@@ -177,7 +189,7 @@ namespace Helios.Net.Connections
             }
             catch (SocketException ex) //socket probably closed
             {
-                Close();
+                Close(ex);
             }
         }
 

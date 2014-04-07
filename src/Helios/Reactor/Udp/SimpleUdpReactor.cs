@@ -12,7 +12,7 @@ namespace Helios.Reactor.Udp
     public class SimpleUdpReactor : ReactorBase
     {
         protected Dictionary<IPEndPoint, INode> NodeMap = new Dictionary<IPEndPoint, INode>();
-        protected Dictionary<INode, ReactorConnectionAdapter> SocketMap = new Dictionary<INode, ReactorConnectionAdapter>();
+        protected Dictionary<INode, ReactorRemotePeerConnectionAdapter> SocketMap = new Dictionary<INode, ReactorRemotePeerConnectionAdapter>();
 
         public SimpleUdpReactor(IPAddress localAddress, int localPort, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
             : base(localAddress, localPort, SocketType.Dgram, ProtocolType.Udp, bufferSize)
@@ -37,14 +37,14 @@ namespace Helios.Reactor.Udp
                 Array.Copy(Buffer, dataBuff, received);
 
                 var remoteAddress = (IPEndPoint)socket.RemoteEndPoint;
-                ReactorConnectionAdapter adapter;
+                ReactorRemotePeerConnectionAdapter adapter;
                 if (NodeMap.ContainsKey(remoteAddress))
                 {
                     adapter = SocketMap[NodeMap[remoteAddress]];
                 }
                 else
                 {
-                    adapter = new ReactorConnectionAdapter(this, socket, remoteAddress);
+                    adapter = new ReactorRemotePeerConnectionAdapter(this, socket, remoteAddress);
                     NodeMap.Add(remoteAddress, adapter.Node);
                     SocketMap.Add(adapter.Node, adapter);
                     NodeConnected(adapter.Node);
