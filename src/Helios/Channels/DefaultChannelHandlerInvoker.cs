@@ -82,7 +82,7 @@ namespace Helios.Channels
 
         public void InvokeChannelRead(IChannelHandlerContext handlerContext, NetworkData message)
         {
-            if(message == null) throw new ArgumentNullException("message");
+            //if(message == null) throw new ArgumentNullException("message");
 
             if (Executor.IsInEventLoop())
             {
@@ -207,7 +207,7 @@ namespace Helios.Channels
 
         public void InvokeWrite(IChannelHandlerContext handlerContext, NetworkData message, ChannelPromise<bool> writeCompletionSource)
         {
-            if(message == null) throw new ArgumentNullException("message");
+            //if(message == null) throw new ArgumentNullException("message");
             if (!ValidatePromise(handlerContext, writeCompletionSource, true)) return; //promise cancelled
 
             if (Executor.IsInEventLoop())

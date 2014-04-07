@@ -69,6 +69,7 @@
     <Compile Include="Channels\IChannelHandlerContext.cs" />
     <Compile Include="Channels\IChannelHandler.cs" />
     <Compile Include="Channels\IChannelId.cs" />
+    <Compile Include="Channels\NIO\AbstractNioChannel.cs" />
     <Compile Include="Channels\Socket\IServerSocketChannel.cs" />
     <Compile Include="Channels\Socket\ISocketChannel.cs" />
     <Compile Include="Channels\Socket\ServerSocketChannelConfig.cs" />
@@ -140,6 +141,7 @@
     <Compile Include="Reactor\ReactorBase.cs" />
     <Compile Include="Reactor\ReactorAcceptedConnectionEventArgs.cs" />
     <Compile Include="Reactor\ReactorReceivedDataEventArgs.cs" />
+    <Compile Include="Reactor\Tcp\HighPerformanceTcpReactor.cs" />
     <Compile Include="Reactor\Tcp\SimpleTcpReactor.cs" />
     <Compile Include="Reactor\Udp\SimpleUdpReactor.cs" />
     <Compile Include="Serialization\Bson\BsonTransportSerializer.cs" />
@@ -172,7 +174,6 @@
     <Compile Include="Util\TimedOps\ScheduledValue.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Channels\NIO\" />
     <Folder Include="Util\Streams\" />
   </ItemGroup>
   <ItemGroup>

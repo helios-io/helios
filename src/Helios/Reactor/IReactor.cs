@@ -9,6 +9,8 @@ namespace Helios.Reactor
     /// </summary>
     public interface IReactor : IDisposable
     {
+        
+
         bool IsActive { get; }
 
         bool WasDisposed { get; }

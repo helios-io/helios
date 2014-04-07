@@ -48,7 +48,7 @@ namespace Helios.Net.Connections
         public NetworkData Receive()
         {
             var memoryStream = new MemoryStream(1024);
-            var buffer = Read(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
+            var buffer = Read(memoryStream.GetBuffer(), 0, 1024);
             return NetworkData.Create(Node, memoryStream.GetBuffer().Take(buffer).ToArray(), buffer);
         }
 

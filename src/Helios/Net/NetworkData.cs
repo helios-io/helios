@@ -9,20 +9,17 @@ namespace Helios.Net
     /// Data arrived via a remote host - used to help provide a common interface
     /// on our IConnection members
     /// </summary>
-    public class NetworkData
+    public struct NetworkData
     {
         public INode RemoteHost { get; set; }
 
-        public DateTime Recieved { get; protected set; }
+        public DateTime Recieved { get; set; }
 
         public byte[] Buffer { get;  set; }
 
         public int Length { get; set; }
 
-        public NetworkData()
-        {
-            Recieved = DateTime.UtcNow;
-        }
+   
 
         public static NetworkData Create(INode node, byte[] data, int bytes)
         {

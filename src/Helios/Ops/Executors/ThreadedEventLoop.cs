@@ -11,6 +11,11 @@ namespace Helios.Ops.Executors
         {
         }
 
+        public ThreadedEventLoop(IExecutor internalExecutor, int workerThreads)
+            : base(FiberFactory.CreateFiber(internalExecutor, workerThreads))
+        {
+        }
+
         public ThreadedEventLoop(IFiber scheduler) : base(scheduler) { }
 
         public override IExecutor Next()
