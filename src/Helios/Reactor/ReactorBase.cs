@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using Helios.Exceptions;
 using Helios.Net;
+using Helios.Ops;
 using Helios.Topology;
 
 namespace Helios.Reactor
@@ -16,19 +17,21 @@ namespace Helios.Reactor
         /// </summary>
         protected byte[] Buffer;
 
-        protected ReactorBase(IPAddress localAddress, int localPort, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        protected ReactorBase(IPAddress localAddress, int localPort, IEventLoop eventLoop, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
         {
             LocalEndpoint = new IPEndPoint(localAddress, localPort);
             Listener = new Socket(AddressFamily.InterNetwork, socketType, protocol);
             if (protocol == ProtocolType.Tcp) { Transport = TransportType.Tcp; } else if (protocol == ProtocolType.Udp) {  Transport = TransportType.Udp; }
             Buffer = new byte[bufferSize];
             Backlog = NetworkConstants.DefaultBacklog;
+            EventLoop = eventLoop;
         }
 
         public event ConnectionEstablishedCallback OnConnection;
         public event ReceivedDataCallback OnReceive;
         public event ConnectionTerminatedCallback OnDisconnection;
-        
+
+        protected IEventLoop EventLoop { get; private set; }
 
         public abstract bool IsActive { get; protected set; }
         public bool WasDisposed { get; protected set; }
@@ -64,7 +67,7 @@ namespace Helios.Reactor
         {
             if (OnConnection != null)
             {
-                OnConnection(node);
+                EventLoop.Execute(() => OnConnection(node));
             }
         }
 
@@ -77,7 +80,7 @@ namespace Helios.Reactor
         {
             if (OnDisconnection != null)
             {
-                OnDisconnection(node, reason);
+                EventLoop.Execute(() => OnDisconnection(node, reason));
             }
         }
 
@@ -91,7 +94,7 @@ namespace Helios.Reactor
         {
             if (OnReceive != null)
             {
-                OnReceive(availableData, responseChannel);
+                EventLoop.Execute(() => OnReceive(availableData, responseChannel));
             }
         }
 

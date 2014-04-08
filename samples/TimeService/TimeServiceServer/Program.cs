@@ -3,7 +3,8 @@ using System.Net;
 using System.Text;
 using Helios.Net;
 using Helios.Ops.Executors;
-using Helios.Reactor.Tcp;
+using Helios.Reactor;
+using Helios.Topology;
 
 namespace TimeServiceServer
 {   
@@ -13,11 +14,11 @@ namespace TimeServiceServer
         {
             Console.Title = "Server";
             Console.WriteLine("Starting server on {0}:{1}", IPAddress.Any, 1337);
-            var eventLoop = new ThreadedEventLoop(new TryCatchExecutor(exception => Console.WriteLine("Unhandled exception: {0}", exception)),2);
-            var server = new HighPerformanceTcpReactor(IPAddress.Any, 1337);
-            server.OnConnection += address => eventLoop.Execute(() => Console.WriteLine("Connected: {0}", address));
-            server.OnDisconnection += (address, reason) => eventLoop.Execute(() => Console.WriteLine("Disconnected: {0}; Reason: {1}", address, reason.Type));
-            server.OnReceive += (data, channel) => eventLoop.Execute(() =>
+            var executor = new TryCatchExecutor(exception => Console.WriteLine("Unhandled exception: {0}", exception));
+            var server = ReactorFactory.ConfigureTcpReactor(NodeBuilder.BuildNode().Host(IPAddress.Any).WithPort(1337), executor);
+            server.OnConnection += address => Console.WriteLine("Connected: {0}", address);
+            server.OnDisconnection += (address, reason) => Console.WriteLine("Disconnected: {0}; Reason: {1}", address, reason.Type);
+            server.OnReceive += ((data, channel) =>
             {
                 var command = Encoding.UTF8.GetString(data.Buffer);
                 //Console.WriteLine("Received: {0}", command);

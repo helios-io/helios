@@ -21,7 +21,7 @@ namespace Helios.Concurrency.Impl
 
         public ThreadPoolFiber(IExecutor executor, TaskFactory tf)
         {
-            Executor = executor;
+            Executor = executor ?? new BasicExecutor();
             TF = tf;
         }
 

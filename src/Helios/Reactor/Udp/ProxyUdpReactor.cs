@@ -4,18 +4,20 @@ using System.Net;
 using System.Net.Sockets;
 using Helios.Exceptions;
 using Helios.Net;
+using Helios.Ops;
+using Helios.Reactor.Response;
 using Helios.Topology;
 
 
 namespace Helios.Reactor.Udp
 {
-    public class SimpleUdpReactor : ReactorBase
+    public class ProxyUdpReactor : ReactorBase
     {
         protected Dictionary<IPEndPoint, INode> NodeMap = new Dictionary<IPEndPoint, INode>();
-        protected Dictionary<INode, ReactorRemotePeerConnectionAdapter> SocketMap = new Dictionary<INode, ReactorRemotePeerConnectionAdapter>();
+        protected Dictionary<INode, ReactorResponseChannel> SocketMap = new Dictionary<INode, ReactorResponseChannel>();
 
-        public SimpleUdpReactor(IPAddress localAddress, int localPort, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
-            : base(localAddress, localPort, SocketType.Dgram, ProtocolType.Udp, bufferSize)
+        public ProxyUdpReactor(IPAddress localAddress, int localPort, IEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
+            : base(localAddress, localPort, eventLoop, SocketType.Dgram, ProtocolType.Udp, bufferSize)
         {
         }
 
@@ -37,14 +39,14 @@ namespace Helios.Reactor.Udp
                 Array.Copy(Buffer, dataBuff, received);
 
                 var remoteAddress = (IPEndPoint)socket.RemoteEndPoint;
-                ReactorRemotePeerConnectionAdapter adapter;
+                ReactorResponseChannel adapter;
                 if (NodeMap.ContainsKey(remoteAddress))
                 {
                     adapter = SocketMap[NodeMap[remoteAddress]];
                 }
                 else
                 {
-                    adapter = new ReactorRemotePeerConnectionAdapter(this, socket, remoteAddress);
+                    adapter = new ReactorProxyResponseChannel(this, socket, remoteAddress, EventLoop);
                     NodeMap.Add(remoteAddress, adapter.RemoteHost);
                     SocketMap.Add(adapter.RemoteHost, adapter);
                     NodeConnected(adapter.RemoteHost);

@@ -4,17 +4,24 @@ using System.Net;
 using System.Net.Sockets;
 using Helios.Exceptions;
 using Helios.Net;
+using Helios.Ops;
+using Helios.Reactor.Response;
 using Helios.Topology;
 
 namespace Helios.Reactor.Tcp
 {
-    public class HighPerformanceTcpReactor : ReactorBase
+    /// <summary>
+    /// High-performance TCP reactor that uses a single buffer and manages all client connections internally.
+    /// 
+    /// Passes <see cref="ReactorProxyResponseChannel"/> instances to connected clients and handles all I/O itself.
+    /// </summary>
+    public class TcpProxyReactor : ReactorBase
     {
         protected Dictionary<Socket, INode> NodeMap = new Dictionary<Socket, INode>();
-        protected Dictionary<INode, ReactorRemotePeerConnectionAdapter> SocketMap = new Dictionary<INode, ReactorRemotePeerConnectionAdapter>();
+        protected Dictionary<INode, ReactorResponseChannel> SocketMap = new Dictionary<INode, ReactorResponseChannel>();
 
-        public HighPerformanceTcpReactor(IPAddress localAddress, int localPort, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
-            : base(localAddress, localPort, SocketType.Stream, ProtocolType.Tcp, bufferSize)
+        public TcpProxyReactor(IPAddress localAddress, int localPort, IEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
+            : base(localAddress, localPort, eventLoop, SocketType.Stream, ProtocolType.Tcp, bufferSize)
         {
             LocalEndpoint = new IPEndPoint(localAddress, localPort);
             Listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -34,7 +41,7 @@ namespace Helios.Reactor.Tcp
             var newSocket = Listener.EndAccept(ar);
             var node = NodeBuilder.FromEndpoint((IPEndPoint) newSocket.RemoteEndPoint);
             NodeMap.Add(newSocket, node);
-            SocketMap.Add(node, new ReactorRemotePeerConnectionAdapter(this,newSocket));
+            SocketMap.Add(node, new ReactorProxyResponseChannel(this,newSocket, EventLoop));
             NodeConnected(node);
             newSocket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, newSocket);
             Listener.BeginAccept(AcceptCallback, null); //accept more connections

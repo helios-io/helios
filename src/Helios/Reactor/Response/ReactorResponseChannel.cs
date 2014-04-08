@@ -3,30 +3,34 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Net;
+using Helios.Ops;
 using Helios.Topology;
 
-namespace Helios.Reactor
+namespace Helios.Reactor.Response
 {
     /// <summary>
     /// Wraps a remote endpoint which connected <see cref="IReactor"/> instance inside a <see cref="IConnection"/> object
     /// </summary>
-    public class ReactorRemotePeerConnectionAdapter : IConnection
+    public abstract class ReactorResponseChannel : IConnection
     {
         private readonly ReactorBase _reactor;
         internal readonly Socket Socket;
 
-        public ReactorRemotePeerConnectionAdapter(ReactorBase reactor, Socket outboundSocket) : this(reactor, outboundSocket, (IPEndPoint)outboundSocket.RemoteEndPoint)
+        protected ReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, IEventLoop eventLoop) : this(reactor, outboundSocket, (IPEndPoint)outboundSocket.RemoteEndPoint, eventLoop)
         {
             
         }
 
-        public ReactorRemotePeerConnectionAdapter(ReactorBase reactor, Socket outboundSocket, IPEndPoint endPoint)
+        protected ReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, IPEndPoint endPoint, IEventLoop eventLoop)
         {
             _reactor = reactor;
             Socket = outboundSocket;
             Local = reactor.LocalEndpoint.ToNode(reactor.Transport);
             RemoteHost = NodeBuilder.FromEndpoint(endPoint);
+            EventLoop = eventLoop;
         }
+
+        protected IEventLoop EventLoop;
 
         public ReceivedDataCallback Receive { get; private set; }
 
@@ -59,25 +63,43 @@ namespace Helios.Reactor
 
         public void BeginReceive(ReceivedDataCallback callback)
         {
-            //NO-OP
+            Receive = callback;
+            BeginReceiveInternal();
+        }
+
+        protected abstract void BeginReceiveInternal();
+
+        /// <summary>
+        /// Received data from the network
+        /// </summary>
+        protected void OnReceive(NetworkData data)
+        {
+            if (Receive != null)
+            {
+                EventLoop.Execute(() => Receive(data, this));
+            }
         }
 
         public void StopReceive()
         {
-            //NO-OP
+            StopReceiveInternal();
+            Receive = null;
         }
+
+
+        protected abstract void StopReceiveInternal();
 
         public void Close()
         {
             _reactor.CloseConnection(RemoteHost);
         }
 
-        public void Send(NetworkData payload)
+        public virtual void Send(NetworkData payload)
         {
             _reactor.Send(payload.Buffer, RemoteHost);
         }
 
-        public async Task SendAsync(NetworkData payload)
+        public virtual async Task SendAsync(NetworkData payload)
         {
             await Task.Run(() => _reactor.Send(payload.Buffer, RemoteHost));
         }
@@ -108,5 +130,42 @@ namespace Helios.Reactor
         }
 
         #endregion
+    }
+
+    public class TcpReactorResponseChannel : ReactorResponseChannel
+    {
+        /// <summary>
+        /// shared buffer used by all incoming connections
+        /// </summary>
+        protected byte[] Buffer;
+
+        public TcpReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, IEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(reactor, outboundSocket, (IPEndPoint)outboundSocket.RemoteEndPoint, eventLoop, bufferSize)
+        {
+        }
+
+        public TcpReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, IPEndPoint endPoint, IEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : base(reactor, outboundSocket, endPoint, eventLoop)
+        {
+        }
+
+        protected override void BeginReceiveInternal()
+        {
+            //Socket.BeginReceive()
+        }
+
+        protected override void StopReceiveInternal()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Send(NetworkData payload)
+        {
+            base.Send(payload);
+        }
+
+        public override Task SendAsync(NetworkData payload)
+        {
+            return base.SendAsync(payload);
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace Helios.Concurrency.Impl
 
         public SynchronousFiber(IExecutor executor)
         {
-            Executor = executor;
+            Executor = executor ?? new BasicExecutor();
         }
 
         public IExecutor Executor { get; private set; }

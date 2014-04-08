@@ -13,7 +13,7 @@ namespace Helios.Channels.Socket.NIO
     public class NioServerSocketChannel : AbstractNioByteServerChannel, IServerSocketChannel
     {
         public NioServerSocketChannel(IChannel parent, IEventLoop loop, IEventLoop childGroup, INode localAddress) 
-            : base(parent, loop, childGroup, ReactorFactory.ConfigureTcpReactor(localAddress))
+            : base(parent, loop, childGroup, new ReactorConnectionAdapter(ReactorFactory.ConfigureTcpReactor(localAddress)))
         {
         }
 

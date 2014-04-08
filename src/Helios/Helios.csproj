@@ -79,6 +79,7 @@
     <Compile Include="Channels\Socket\IServerSocketChannel.cs" />
     <Compile Include="Channels\Socket\ISocketChannel.cs" />
     <Compile Include="Channels\Socket\NIO\NioServerSocketChannel.cs" />
+    <Compile Include="Channels\Socket\NIO\NioSocketChannel.cs" />
     <Compile Include="Channels\Socket\ServerSocketChannelConfig.cs" />
     <Compile Include="Channels\Socket\SocketChannelConfig.cs" />
     <Compile Include="Channels\Unpooled.cs" />
@@ -130,6 +131,7 @@
     <Compile Include="Net\Transports\StreamTransport.cs" />
     <Compile Include="Net\Transports\TransportBase.cs" />
     <Compile Include="Net\MulticastHelper.cs" />
+    <Compile Include="Ops\EventLoopFactory.cs" />
     <Compile Include="Ops\Executors\AbstractEventLoop.cs" />
     <Compile Include="Ops\Executors\BasicExecutor.cs" />
     <Compile Include="Ops\Executors\ThreadedEventLoop.cs" />
@@ -145,9 +147,10 @@
     <Compile Include="Reactor\ReactorBase.cs" />
     <Compile Include="Reactor\ReactorConnectionAdapter.cs" />
     <Compile Include="Reactor\ReactorFactory.cs" />
-    <Compile Include="Reactor\ReactorRemotePeerConnectionAdapter.cs" />
-    <Compile Include="Reactor\Tcp\HighPerformanceTcpReactor.cs" />
-    <Compile Include="Reactor\Udp\SimpleUdpReactor.cs" />
+    <Compile Include="Reactor\Response\ReactorProxyResponseChannel.cs" />
+    <Compile Include="Reactor\Response\ReactorResponseChannel.cs" />
+    <Compile Include="Reactor\Tcp\TcpProxyReactor.cs" />
+    <Compile Include="Reactor\Udp\ProxyUdpReactor.cs" />
     <Compile Include="Serialization\Bson\BsonTransportSerializer.cs" />
     <Compile Include="Serialization\ITransportSerializer.cs" />
     <Compile Include="Topology\EmptyNode.cs" />
