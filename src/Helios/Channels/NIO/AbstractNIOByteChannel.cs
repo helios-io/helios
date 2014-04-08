@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.IO;
 using Helios.Channels.Socket;
 using Helios.Net;
@@ -20,7 +19,10 @@ namespace Helios.Channels.NIO
 
         protected abstract int DoWriteBytes(byte[] buff);
 
-
+        protected override AbstractUnsafe NewUnsafe()
+        {
+            return new NioByteUnsafe(this);
+        }
 
         #region NioByteUnsafe implementation
 
