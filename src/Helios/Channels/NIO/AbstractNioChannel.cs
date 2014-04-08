@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;
 using Helios.Topology;
@@ -14,13 +13,13 @@ namespace Helios.Channels.NIO
     /// </summary>
     public abstract class AbstractNioChannel : AbstractChannel
     {
-        private volatile bool inputShutdown;
+        private volatile bool _inputShutdown;
 
-        protected CancellationTokenSource _ConnectTimeoutCancellationTokenSource;
+        protected CancellationTokenSource ConnectTimeoutCancellationTokenSource;
         protected readonly IConnection Connection;
-        protected ChannelPromise<bool> connectPromise;
-        private Task connectTimeoutTask;
-        private INode requestedRemoteAddress;
+        protected ChannelPromise<bool> ConnectPromise;
+        private Task _connectTimeoutTask;
+        private INode _requestedRemoteAddress;
 
         protected AbstractNioChannel(IChannel parent, IEventLoop loop, IConnection connection)
             : base(parent, loop)
@@ -35,8 +34,8 @@ namespace Helios.Channels.NIO
 
         public bool IsInputShutdown
         {
-            get { return inputShutdown; }
-            set { inputShutdown = value; }
+            get { return _inputShutdown; }
+            set { _inputShutdown = value; }
         }
 
         /// <summary>
@@ -60,12 +59,11 @@ namespace Helios.Channels.NIO
             protected AbstractNioUnsafe(AbstractNioChannel channel)
                 : base(channel)
             {
-                Channel = channel;
                 Connection = channel.Connection;
                 ReadCallback = ((NioEventLoop) EventLoop).Receive;
             }
 
-            public new AbstractNioChannel Channel { get; private set; }
+            public new AbstractNioChannel Channel { get { return (AbstractNioChannel) base.Channel; } }
 
             public IConnection Connection { get; private set; }
             public ReceivedDataCallback ReadCallback { get; protected set; }
@@ -85,7 +83,7 @@ namespace Helios.Channels.NIO
 
                 try
                 {
-                    if (Channel.connectPromise != null)
+                    if (Channel.ConnectPromise != null)
                     {
                         throw new InvalidOperationException("connection attempt was already made.");
                     }
@@ -97,32 +95,32 @@ namespace Helios.Channels.NIO
                     }
                     else
                     {
-                        Channel.connectPromise = connectCompletionSource;
-                        Channel.requestedRemoteAddress = remoteAddress;
+                        Channel.ConnectPromise = connectCompletionSource;
+                        Channel._requestedRemoteAddress = remoteAddress;
 
                         //Schedule connect timeout
                         var connectTimeout = Channel.Config.ConnectTimeout;
-                        Channel._ConnectTimeoutCancellationTokenSource = new CancellationTokenSource();
+                        Channel.ConnectTimeoutCancellationTokenSource = new CancellationTokenSource();
                         if (connectTimeout > TimeSpan.Zero)
                         {
-                            Channel._ConnectTimeoutCancellationTokenSource.CancelAfter(connectTimeout);
-                            Channel.connectTimeoutTask = new Task(() =>
+                            Channel.ConnectTimeoutCancellationTokenSource.CancelAfter(connectTimeout);
+                            Channel._connectTimeoutTask = new Task(() =>
                             {
-                                var promise = Channel.connectPromise;
+                                var promise = Channel.ConnectPromise;
                                 var cause = new TimeoutException("connection timed out: " + remoteAddress);
                                 if (promise != null && !promise.TrySetException(cause))
                                 {
                                     Close(VoidPromise());
                                 }
-                            }, Channel._ConnectTimeoutCancellationTokenSource.Token);
-                            EventLoop.Execute(Channel.connectTimeoutTask);
+                            }, Channel.ConnectTimeoutCancellationTokenSource.Token);
+                            EventLoop.Execute(Channel._connectTimeoutTask);
                         }
 
                         connectCompletionSource.Task.Task.ContinueWith(x =>
                         {
                             if (!x.IsCanceled) return;
-                            Channel.connectTimeoutTask = null;
-                            Channel.connectPromise = null;
+                            Channel._connectTimeoutTask = null;
+                            Channel.ConnectPromise = null;
                             Close(VoidPromise());
                         });
                     }

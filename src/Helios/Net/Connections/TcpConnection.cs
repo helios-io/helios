@@ -93,12 +93,12 @@ namespace Helios.Net.Connections
 
             if (IsOpen()) return await Task.Run(() => true);
 
-            if (Node == null || Node.Host == null)
+            if (RemoteHost == null || RemoteHost.Host == null)
             {
                 throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to a null Node or null Node.Host");
             }
 
-            if (Node.Port <= 0)
+            if (RemoteHost.Port <= 0)
             {
                 throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to an invalid port");
             }
@@ -106,13 +106,13 @@ namespace Helios.Net.Connections
             if (_client == null)
                 InitClient();
 
-            return await _client.ConnectAsync(Node.Host, Node.Port)
+            return await _client.ConnectAsync(RemoteHost.Host, RemoteHost.Port)
                 .ContinueWith(x =>
                 {
                     var result = x.IsCompleted && !x.IsFaulted && !x.IsCanceled;
                     if (result)
                     {
-                        InvokeConnectIfNotNull(Node);
+                        InvokeConnectIfNotNull(RemoteHost);
                     }
                     return result;
                 },
@@ -125,12 +125,12 @@ namespace Helios.Net.Connections
 
             if (IsOpen()) return;
 
-            if (Node == null || Node.Host == null)
+            if (RemoteHost == null || RemoteHost.Host == null)
             {
                 throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to a null Node or null Node.Host");
             }
 
-            if (Node.Port <= 0)
+            if (RemoteHost.Port <= 0)
             {
                 throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to an invalid port");
             }
@@ -138,7 +138,7 @@ namespace Helios.Net.Connections
             if (_client == null)
                 InitClient();
 
-            var ar = _client.BeginConnect(Node.Host, Node.Port, null, null);
+            var ar = _client.BeginConnect(RemoteHost.Host, RemoteHost.Port, null, null);
             if (ar.AsyncWaitHandle.WaitOne(Timeout))
             {
                 try
@@ -155,7 +155,7 @@ namespace Helios.Net.Connections
                 _client.Close();
                 throw new HeliosConnectionException(ExceptionType.TimedOut, "Timed out on connect");
             }
-            InvokeConnectIfNotNull(Node);
+            InvokeConnectIfNotNull(RemoteHost);
         }
 
         protected override void BeginReceiveInternal()
@@ -172,7 +172,7 @@ namespace Helios.Net.Connections
                 return;
 
             _client.Close();
-            InvokeDisconnectIfNotNull(Node, new HeliosConnectionException(ExceptionType.Closed, reason));
+            InvokeDisconnectIfNotNull(RemoteHost, new HeliosConnectionException(ExceptionType.Closed, reason));
             _client = null;
         }
 
@@ -225,7 +225,8 @@ namespace Helios.Net.Connections
             _client.SendTimeout = Timeout.Seconds;
             _client.ReceiveBufferSize = Buffer.Length;
             var ipAddress = (IPEndPoint)_client.Client.RemoteEndPoint;
-            Binding = NodeBuilder.FromEndpoint(ipAddress);
+            RemoteHost = Binding = NodeBuilder.FromEndpoint(ipAddress);
+            Local = NodeBuilder.FromEndpoint((IPEndPoint) _client.Client.LocalEndPoint);
         }
 
         private void InitClient()

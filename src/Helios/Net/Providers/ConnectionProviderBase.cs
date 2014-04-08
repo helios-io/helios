@@ -32,12 +32,12 @@ namespace Helios.Net.Providers
         public void AddConnection(IConnection connection)
         {
             //Add this node to the cluster, in case it doesn't exist already
-            ClusterManager.Add(connection.Node);
+            ClusterManager.Add(connection.RemoteHost);
             AddConnectionInternal(connection);
         }
         public virtual void MarkConnectionAsUnhealthy(IConnection connection, Exception exc = null)
         {
-            Cluster.ErrorOccurred(connection.Node, exc);
+            Cluster.ErrorOccurred(connection.RemoteHost, exc);
         }
 
         #endregion

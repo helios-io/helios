@@ -34,17 +34,17 @@ namespace Helios.Samples.TcpReactorServer
             reactor.OnReceive += (data, eventArgs) =>
             {
                 var connection = eventArgs;
-                var node = connection.Node;
+                var node = connection.RemoteHost;
                 
-                ServerPrint(connection.Node, string.Format("recieved {0} bytes", data.Length));
+                ServerPrint(connection.RemoteHost, string.Format("recieved {0} bytes", data.Length));
                 var str = Encoding.UTF8.GetString(data.Buffer).Trim();
                 if (str.Trim().Equals("close"))
                 {
                     connection.Close();
                     return;
                 }
-                ServerPrint(connection.Node, string.Format("recieved \"{0}\"", str));
-                ServerPrint(connection.Node,
+                ServerPrint(connection.RemoteHost, string.Format("recieved \"{0}\"", str));
+                ServerPrint(connection.RemoteHost,
                     string.Format("sending \"{0}\" back to {1}:{2}", str, node.Host, node.Port));
                 var sendBytes = Encoding.UTF8.GetBytes(str + Environment.NewLine);
                 connection.Send(new NetworkData(){ Buffer = sendBytes, Length = sendBytes.Length, RemoteHost = node});

@@ -71,9 +71,10 @@
     <Compile Include="Channels\IChannelHandler.cs" />
     <Compile Include="Channels\IChannelId.cs" />
     <Compile Include="Channels\IRecvByteBufAllocator.cs" />
-    <Compile Include="Channels\NIO\AbstractNIOByteChannel.cs" />
+    <Compile Include="Channels\NIO\AbstractNioByteChannel.cs" />
     <Compile Include="Channels\NIO\AbstractNioChannel.cs" />
     <Compile Include="Channels\NIO\NioEventLoop.cs" />
+    <Compile Include="Channels\Socket\ChannelInputShutdownEvent.cs" />
     <Compile Include="Channels\Socket\IServerSocketChannel.cs" />
     <Compile Include="Channels\Socket\ISocketChannel.cs" />
     <Compile Include="Channels\Socket\ServerSocketChannelConfig.cs" />

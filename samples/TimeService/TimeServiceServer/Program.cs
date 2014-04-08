@@ -24,14 +24,14 @@ namespace TimeServiceServer
                 if (command.ToLowerInvariant() == "gettime")
                 {
                     var time = Encoding.UTF8.GetBytes(DateTime.Now.ToLongTimeString());
-                    channel.Send(new NetworkData(){Buffer= time, Length = time.Length, RemoteHost = channel.Node});
+                    channel.Send(new NetworkData(){Buffer= time, Length = time.Length, RemoteHost = channel.RemoteHost});
                     //Console.WriteLine("Sent time to {0}", channel.Node);
                 }
                 else
                 {
                     Console.WriteLine("Invalid command: {0}", command);
                     var invalid = Encoding.UTF8.GetBytes("Unrecognized command");
-                    channel.Send(new NetworkData() { Buffer = invalid, Length = invalid.Length, RemoteHost = channel.Node });
+                    channel.Send(new NetworkData() { Buffer = invalid, Length = invalid.Length, RemoteHost = channel.RemoteHost });
                 }
             });
             server.Start();

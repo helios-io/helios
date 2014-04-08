@@ -39,7 +39,12 @@ namespace Helios.Channels
         IChannelConfig SetWriteBufferLowWaterMark(int waterMark);
 
         IRecvByteBufAllocator RecvAllocator { get; }
+       
 
         IChannelConfig SetRecvAllocator(IRecvByteBufAllocator recvByteBufAllocator);
+
+        int WriteSpinCount { get; }
+
+        IChannelConfig SetWriteSpinCount(int spinCount);
     }
 }

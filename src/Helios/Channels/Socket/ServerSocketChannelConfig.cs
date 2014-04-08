@@ -30,6 +30,8 @@ namespace Helios.Channels.Socket
 
         new IServerSocketChannelConfig SetMaxMessagesPerRead(int maxMessagesPerRead);
 
-        new ISocketChannelConfig SetRecvAllocator(IRecvByteBufAllocator recvByteBufAllocator);
+        new IServerSocketChannelConfig SetRecvAllocator(IRecvByteBufAllocator recvByteBufAllocator);
+
+        new IServerSocketChannelConfig SetWriteSpinCount(int spinCount);
     }
 }

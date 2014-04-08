@@ -30,7 +30,8 @@ namespace Helios.Net.Connections
         public event ConnectionTerminatedCallback OnDisconnection;
 
         public DateTimeOffset Created { get; private set; }
-        public INode Node { get { return Binding; } }
+        public INode RemoteHost { get; protected set; }
+        public INode Local { get; protected set; }
         public INode Binding { get; protected set; }
         public TimeSpan Timeout { get; private set; }
         public abstract TransportType Transport { get; }
@@ -64,6 +65,7 @@ namespace Helios.Net.Connections
 
                 var networkData = NetworkData.Create(NodeBuilder.FromEndpoint((IPEndPoint) socket.RemoteEndPoint),
                     receivedData, buffSize);
+                RemoteHost = networkData.RemoteHost;
 
                 //continue receiving in a loop
                 if (Receiving)

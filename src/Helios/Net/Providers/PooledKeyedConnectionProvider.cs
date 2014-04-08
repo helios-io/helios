@@ -28,7 +28,7 @@ namespace Helios.Net.Providers
 
         protected override void AddConnectionInternal(IConnection connection)
         {
-            AddConnection(connection.Node, connection);
+            AddConnection(connection.RemoteHost, connection);
         }
     }
 }

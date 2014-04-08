@@ -112,7 +112,7 @@ namespace Helios.Net.Connections
 
             _client.Close();
             _client = null;
-            InvokeDisconnectIfNotNull(Node, new HeliosConnectionException(ExceptionType.Closed, reason));
+            InvokeDisconnectIfNotNull(RemoteHost, new HeliosConnectionException(ExceptionType.Closed, reason));
         }
 
         public override void Close()
@@ -158,7 +158,7 @@ namespace Helios.Net.Connections
         {
             _client = client;
             var ipAddress = (IPEndPoint)_client.Client.RemoteEndPoint;
-            Binding = NodeBuilder.FromEndpoint(ipAddress);
+            Local = Binding = NodeBuilder.FromEndpoint(ipAddress);
         }
 
         #endregion

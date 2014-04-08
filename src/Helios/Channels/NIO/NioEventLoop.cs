@@ -27,6 +27,6 @@ namespace Helios.Channels.NIO
             Receive = receive;
         }
 
-        public ReceivedDataCallback Receive { get; private set; }
+        public ReceivedDataCallback Receive { get; set; }
     }
 }

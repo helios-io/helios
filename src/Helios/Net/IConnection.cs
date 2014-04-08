@@ -37,7 +37,9 @@ namespace Helios.Net
 
         DateTimeOffset Created { get; }
 
-        INode Node { get; }
+        INode RemoteHost { get; }
+
+        INode Local { get; }
 
         TimeSpan Timeout { get; }
 

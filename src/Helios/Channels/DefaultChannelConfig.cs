@@ -26,6 +26,7 @@ namespace Helios.Channels
             ConnectTimeout = DefaultConnectTimeout;
             WriteBufferHighWaterMark = 64*1024;
             WriteBufferLowWaterMark = 32*1024;
+            WriteSpinCount = 16;
         }
 
         public int MaxMessagesPerRead { get; private set; }
@@ -68,6 +69,13 @@ namespace Helios.Channels
         public IChannelConfig SetRecvAllocator(IRecvByteBufAllocator recvByteBufAllocator)
         {
             RecvAllocator = recvByteBufAllocator;
+            return this;
+        }
+
+        public int WriteSpinCount { get; private set; }
+        public IChannelConfig SetWriteSpinCount(int spinCount)
+        {
+            WriteSpinCount = spinCount;
             return this;
         }
     }

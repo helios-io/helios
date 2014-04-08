@@ -24,7 +24,8 @@ namespace Helios.Reactor
         {
             _reactor = reactor;
             Socket = outboundSocket;
-            Node = NodeBuilder.FromEndpoint(endPoint);
+            Local = reactor.LocalEndpoint.ToNode(reactor.Transport);
+            RemoteHost = NodeBuilder.FromEndpoint(endPoint);
         }
 
         public ReceivedDataCallback Receive { get; private set; }
@@ -33,7 +34,8 @@ namespace Helios.Reactor
         public event ConnectionTerminatedCallback OnDisconnection;
 
         public DateTimeOffset Created { get; private set; }
-        public INode Node { get; private set; }
+        public INode RemoteHost { get; private set; }
+        public INode Local { get; private set; }
         public TimeSpan Timeout { get { return TimeSpan.FromSeconds(Socket.ReceiveTimeout); } }
         public TransportType Transport { get{ if(Socket.ProtocolType == ProtocolType.Tcp){ return TransportType.Tcp; } return TransportType.Udp; } }
         public bool Blocking { get { return Socket.Blocking; } set { Socket.Blocking = value; } }
@@ -67,17 +69,17 @@ namespace Helios.Reactor
 
         public void Close()
         {
-            _reactor.CloseConnection(Node);
+            _reactor.CloseConnection(RemoteHost);
         }
 
         public void Send(NetworkData payload)
         {
-            _reactor.Send(payload.Buffer, Node);
+            _reactor.Send(payload.Buffer, RemoteHost);
         }
 
         public async Task SendAsync(NetworkData payload)
         {
-            await Task.Run(() => _reactor.Send(payload.Buffer, Node));
+            await Task.Run(() => _reactor.Send(payload.Buffer, RemoteHost));
         }
 
         #region IDisposable members

@@ -44,6 +44,8 @@ namespace Helios.Channels.Socket
         new ISocketChannelConfig SetMaxMessagesPerRead(int maxMessagesPerRead);
 
         new ISocketChannelConfig SetRecvAllocator(IRecvByteBufAllocator recvByteBufAllocator);
+
+        new ISocketChannelConfig SetWriteSpinCount(int spinCount);
     }
 
     public class DefaultSocketChannelConfig : DefaultChannelConfig, ISocketChannelConfig
@@ -186,6 +188,12 @@ namespace Helios.Channels.Socket
         public new ISocketChannelConfig SetRecvAllocator(IRecvByteBufAllocator recvByteBufAllocator)
         {
             base.SetRecvAllocator(recvByteBufAllocator);
+            return this;
+        }
+
+        public new ISocketChannelConfig SetWriteSpinCount(int spinCount)
+        {
+            base.SetWriteSpinCount(spinCount);
             return this;
         }
     }

@@ -45,12 +45,12 @@ namespace Helios.Reactor.Udp
                 else
                 {
                     adapter = new ReactorRemotePeerConnectionAdapter(this, socket, remoteAddress);
-                    NodeMap.Add(remoteAddress, adapter.Node);
-                    SocketMap.Add(adapter.Node, adapter);
-                    NodeConnected(adapter.Node);
+                    NodeMap.Add(remoteAddress, adapter.RemoteHost);
+                    SocketMap.Add(adapter.RemoteHost, adapter);
+                    NodeConnected(adapter.RemoteHost);
                 }
 
-                var networkData = new NetworkData() { Buffer = dataBuff, Length = received, RemoteHost = adapter.Node };
+                var networkData = new NetworkData() { Buffer = dataBuff, Length = received, RemoteHost = adapter.RemoteHost };
                 socket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, socket); //receive more messages
                 ReceivedData(networkData, adapter);
             }

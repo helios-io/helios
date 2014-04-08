@@ -17,7 +17,7 @@ namespace Helios.Reactor
         public ReactorConnectionAdapter(ReactorBase reactor)
         {
             _reactor = reactor;
-            Node = _reactor.LocalEndpoint.ToNode(_reactor.Transport);
+            Local = _reactor.LocalEndpoint.ToNode(_reactor.Transport);
         }
 
         public ReceivedDataCallback Receive { get; private set; }
@@ -34,7 +34,8 @@ namespace Helios.Reactor
             remove { _reactor.OnDisconnection -= value; }
         }
         public DateTimeOffset Created { get; private set; }
-        public INode Node { get; private set; }
+        public INode RemoteHost { get; private set; }
+        public INode Local { get; private set; }
         public TimeSpan Timeout { get; private set; }
         public TransportType Transport { get { return _reactor.Transport; } }
         public bool Blocking { get { return _reactor.Blocking; } set { _reactor.Blocking = value; } }
