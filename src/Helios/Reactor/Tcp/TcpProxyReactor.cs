@@ -79,6 +79,8 @@ namespace Helios.Reactor.Tcp
 
         internal override void CloseConnection(INode remoteHost, Exception ex)
         {
+            if (!SocketMap.ContainsKey(remoteHost)) return; //already been removed
+
             var clientSocket = SocketMap[remoteHost];
 
             try

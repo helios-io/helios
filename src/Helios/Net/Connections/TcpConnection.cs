@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Helios.Exceptions;
 using Helios.Topology;
@@ -112,6 +113,7 @@ namespace Helios.Net.Connections
                     var result = x.IsCompleted && !x.IsFaulted && !x.IsCanceled;
                     if (result)
                     {
+                        SetLocal(_client);
                         InvokeConnectIfNotNull(RemoteHost);
                     }
                     return result;
@@ -155,6 +157,7 @@ namespace Helios.Net.Connections
                 _client.Close();
                 throw new HeliosConnectionException(ExceptionType.TimedOut, "Timed out on connect");
             }
+            SetLocal(_client);
             InvokeConnectIfNotNull(RemoteHost);
         }
 
@@ -238,6 +241,17 @@ namespace Helios.Net.Connections
                 Client = {NoDelay = true},
                 ReceiveBufferSize = Buffer.Length
             };
+            RemoteHost = Binding;
+        }
+
+        /// <summary>
+        /// After a TCP connection is successfully established, set the value of the local node
+        /// to whatever port / IP was assigned.
+        /// </summary>
+        protected void SetLocal(TcpClient client)
+        {
+            var localEndpoint = (IPEndPoint)client.Client.LocalEndPoint;
+            Local = NodeBuilder.FromEndpoint(localEndpoint);
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;
 using Helios.Topology;
@@ -53,12 +54,16 @@ namespace Helios.Reactor.Response
         public int Available { get { return Socket.Available; } }
         public Task<bool> OpenAsync()
         {
+            Open();
             return Task.Run(() => true);
         }
 
         public void Open()
         {
-            //NO-OP
+            if (OnConnection != null)
+            {
+                OnConnection(RemoteHost);
+            }
         }
 
         public void BeginReceive(ReceivedDataCallback callback)
@@ -92,6 +97,11 @@ namespace Helios.Reactor.Response
         public void Close()
         {
             _reactor.CloseConnection(RemoteHost);
+
+            if (OnDisconnection != null)
+            {
+                OnDisconnection(RemoteHost, new HeliosConnectionException(ExceptionType.Closed));
+            }
         }
 
         public virtual void Send(NetworkData payload)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Text;
 using Helios.Net;
@@ -20,19 +21,23 @@ namespace TimeServiceServer
             server.OnDisconnection += (address, reason) => Console.WriteLine("Disconnected: {0}; Reason: {1}", address, reason.Type);
             server.OnReceive += ((data, channel) =>
             {
-                var command = Encoding.UTF8.GetString(data.Buffer);
-                //Console.WriteLine("Received: {0}", command);
-                if (command.ToLowerInvariant() == "gettime")
+                var rawCommand = Encoding.UTF8.GetString(data.Buffer);
+                var commands = rawCommand.Split('|').Where(x => !string.IsNullOrWhiteSpace(x)); //we use the pipe to separate commands
+                foreach (var command in commands)
                 {
-                    var time = Encoding.UTF8.GetBytes(DateTime.Now.ToLongTimeString());
-                    channel.Send(new NetworkData(){Buffer= time, Length = time.Length, RemoteHost = channel.RemoteHost});
-                    //Console.WriteLine("Sent time to {0}", channel.Node);
-                }
-                else
-                {
-                    Console.WriteLine("Invalid command: {0}", command);
-                    var invalid = Encoding.UTF8.GetBytes("Unrecognized command");
-                    channel.Send(new NetworkData() { Buffer = invalid, Length = invalid.Length, RemoteHost = channel.RemoteHost });
+                    //Console.WriteLine("Received: {0}", command);
+                    if (command.ToLowerInvariant() == "gettime")
+                    {
+                        var time = Encoding.UTF8.GetBytes(DateTime.Now.ToLongTimeString());
+                        channel.Send(new NetworkData() { Buffer = time, Length = time.Length, RemoteHost = channel.RemoteHost });
+                        //Console.WriteLine("Sent time to {0}", channel.Node);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid command: {0}", command);
+                        var invalid = Encoding.UTF8.GetBytes("Unrecognized command");
+                        channel.Send(new NetworkData() { Buffer = invalid, Length = invalid.Length, RemoteHost = channel.RemoteHost });
+                    }
                 }
             });
             server.Start();
