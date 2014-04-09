@@ -16,7 +16,7 @@ namespace Helios.Net
     /// Delegate used when a new connection is successfully established
     /// </summary>
     /// <param name="remoteAddress">The remote endpoint on the other end of this connection</param>
-    public delegate void ConnectionEstablishedCallback(INode remoteAddress);
+    public delegate void ConnectionEstablishedCallback(INode remoteAddress, IConnection responseChannel);
 
     /// <summary>
     /// Delegate used when a connection is closed

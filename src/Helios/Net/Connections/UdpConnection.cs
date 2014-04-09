@@ -15,7 +15,8 @@ namespace Helios.Net.Connections
     /// </summary>
     public class UdpConnection : UnstreamedConnectionBase
     {
-        protected UdpClient _client;
+        protected UdpClient Client;
+        protected EndPoint RemoteEndpoint;
 
         public UdpConnection(INode binding, TimeSpan timeout)
             : base(binding, timeout)
@@ -43,14 +44,14 @@ namespace Helios.Net.Connections
 
         public override bool Blocking
         {
-            get { return _client.Client.Blocking; }
-            set { _client.Client.Blocking = value; }
+            get { return Client.Client.Blocking; }
+            set { Client.Client.Blocking = value; }
         }
 
         public override bool IsOpen()
         {
-            if (_client == null) return false;
-            return _client.Client.Connected;
+            if (Client == null) return false;
+            return Client.Client.Connected;
         }
 
         public override int Available
@@ -58,7 +59,7 @@ namespace Helios.Net.Connections
             get
             {
                 if (!IsOpen()) return 0;
-                return _client.Available;
+                return Client.Available;
             }
         }
 
@@ -84,13 +85,13 @@ namespace Helios.Net.Connections
                 throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to an invalid port");
             }
 
-            if (_client == null)
+            if (Client == null)
                 InitClient();
 
             try
             {
                 // ReSharper disable once PossibleNullReferenceException
-                _client.Client.Bind(Binding.ToEndPoint());
+                Client.Client.Bind(Binding.ToEndPoint());
             }
             catch (SocketException ex)
             {
@@ -100,7 +101,35 @@ namespace Helios.Net.Connections
 
         protected override void BeginReceiveInternal()
         {
-            _client.Client.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, _client.Client);
+            Client.Client.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, Client.Client);
+        }
+
+        protected override void ReceiveCallback(IAsyncResult ar)
+        {
+            var socket = (Socket)ar.AsyncState;
+            try
+            {
+                var buffSize = socket.EndReceiveFrom(ar, ref RemoteEndpoint);
+                var receivedData = new byte[buffSize];
+                Array.Copy(Buffer, receivedData, buffSize);
+
+                var networkData = NetworkData.Create(NodeBuilder.FromEndpoint((IPEndPoint)RemoteEndpoint),
+                    receivedData, buffSize);
+                RemoteHost = networkData.RemoteHost;
+
+                //continue receiving in a loop
+                if (Receiving)
+                {
+                    socket.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, socket);
+                }
+                InvokeReceiveIfNotNull(networkData);
+            }
+            catch (SocketException ex) //typically means that the socket is now closed
+            {
+                Receiving = false;
+                InvokeDisconnectIfNotNull(NodeBuilder.FromEndpoint((IPEndPoint)RemoteEndpoint), new HeliosConnectionException(ExceptionType.Closed, ex));
+                Dispose();
+            }
         }
 
         public override void Close(Exception reason)
@@ -110,8 +139,8 @@ namespace Helios.Net.Connections
             if (!IsOpen())
                 return;
 
-            _client.Close();
-            _client = null;
+            Client.Close();
+            Client = null;
             InvokeDisconnectIfNotNull(RemoteHost, new HeliosConnectionException(ExceptionType.Closed, reason));
         }
 
@@ -124,7 +153,7 @@ namespace Helios.Net.Connections
         {
             try
             {
-                _client.Send(payload.Buffer, payload.Length, payload.RemoteHost.ToEndPoint());
+                Client.Send(payload.Buffer, payload.Length, payload.RemoteHost.ToEndPoint());
             }
             catch (SocketException ex) //socket probably closed
             {
@@ -135,7 +164,7 @@ namespace Helios.Net.Connections
 #if !NET35 && !NET40
         public override async Task SendAsync(NetworkData payload)
         {
-            await _client.SendAsync(payload.Buffer, payload.Length, payload.RemoteHost.ToEndPoint());
+            await Client.SendAsync(payload.Buffer, payload.Length, payload.RemoteHost.ToEndPoint());
         }
 #else
         public override Task SendAsync(NetworkData payload)
@@ -151,14 +180,15 @@ namespace Helios.Net.Connections
 
         protected void InitClient()
         {
-            _client = new UdpClient(){ MulticastLoopback = false };
+            Client = new UdpClient(){ MulticastLoopback = false };
         }
 
         protected void InitClient(UdpClient client)
         {
-            _client = client;
-            var ipAddress = (IPEndPoint)_client.Client.RemoteEndPoint;
+            Client = client;
+            var ipAddress = (IPEndPoint)Client.Client.RemoteEndPoint;
             Local = Binding = NodeBuilder.FromEndpoint(ipAddress);
+            RemoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
         }
 
         #endregion
@@ -171,10 +201,10 @@ namespace Helios.Net.Connections
             {
                 if (disposing)
                 {
-                    if (_client != null)
+                    if (Client != null)
                     {
                         Close();
-                        ((IDisposable)_client).Dispose();
+                        ((IDisposable)Client).Dispose();
                     }
                 }
             }

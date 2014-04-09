@@ -28,10 +28,10 @@ namespace Helios.Net.Connections
 
         protected void InitMulticastClient()
         {
-            if(_client == null)
+            if(Client == null)
                 InitClient();
 // ReSharper disable once PossibleNullReferenceException
-            _client.JoinMulticastGroup(MulticastAddress.Host);
+            Client.JoinMulticastGroup(MulticastAddress.Host);
         }
     }
 }

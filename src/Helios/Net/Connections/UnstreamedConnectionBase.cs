@@ -37,7 +37,7 @@ namespace Helios.Net.Connections
         public abstract TransportType Transport { get; }
         public abstract bool Blocking { get; set; }
         public bool WasDisposed { get; protected set; }
-        public bool Receiving { get; private set; }
+        public bool Receiving { get; protected set; }
 
         public abstract bool IsOpen();
         public abstract int Available { get; }
@@ -54,7 +54,7 @@ namespace Helios.Net.Connections
             BeginReceiveInternal();
         }
 
-        protected void ReceiveCallback(IAsyncResult ar)
+        protected virtual void ReceiveCallback(IAsyncResult ar)
         {
             var socket = (Socket) ar.AsyncState;
             try
@@ -94,7 +94,7 @@ namespace Helios.Net.Connections
         {
             if (OnConnection != null)
             {
-                OnConnection(remoteHost);
+                OnConnection(remoteHost, this);
             }
         }
 

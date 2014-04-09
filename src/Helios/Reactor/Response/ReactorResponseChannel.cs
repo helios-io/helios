@@ -6,6 +6,7 @@ using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;
 using Helios.Topology;
+using Helios.Util.Collections;
 
 namespace Helios.Reactor.Response
 {
@@ -14,6 +15,7 @@ namespace Helios.Reactor.Response
     /// </summary>
     public abstract class ReactorResponseChannel : IConnection
     {
+        protected ICircularBuffer<NetworkData> UnreadMessages = new ConcurrentCircularBuffer<NetworkData>(100);
         private readonly ReactorBase _reactor;
         internal readonly Socket Socket;
 
@@ -62,26 +64,41 @@ namespace Helios.Reactor.Response
         {
             if (OnConnection != null)
             {
-                OnConnection(RemoteHost);
+                OnConnection(RemoteHost, this);
             }
         }
 
         public void BeginReceive(ReceivedDataCallback callback)
         {
             Receive = callback;
+            foreach (var msg in UnreadMessages.DequeueAll())
+            {
+                var msg1 = msg;
+                EventLoop.Execute(() => Receive(msg1, this));
+            }
+
             BeginReceiveInternal();
         }
 
         protected abstract void BeginReceiveInternal();
 
+
         /// <summary>
-        /// Received data from the network
+        /// Method is called directly by the <see cref="ReactorBase"/> implementation to send data to this <see cref="IConnection"/>.
+        /// 
+        /// Can also be called by the socket itself if this reactor doesn't use <see cref="ReactorProxyResponseChannel"/>.
         /// </summary>
-        protected void OnReceive(NetworkData data)
+        /// <param name="data">The data to pass directly to the recipient</param>
+
+        internal virtual void OnReceive(NetworkData data)
         {
             if (Receive != null)
             {
                 EventLoop.Execute(() => Receive(data, this));
+            }
+            else
+            {
+               UnreadMessages.Enqueue(data);
             }
         }
 
@@ -140,42 +157,5 @@ namespace Helios.Reactor.Response
         }
 
         #endregion
-    }
-
-    public class TcpReactorResponseChannel : ReactorResponseChannel
-    {
-        /// <summary>
-        /// shared buffer used by all incoming connections
-        /// </summary>
-        protected byte[] Buffer;
-
-        public TcpReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, IEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(reactor, outboundSocket, (IPEndPoint)outboundSocket.RemoteEndPoint, eventLoop, bufferSize)
-        {
-        }
-
-        public TcpReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, IPEndPoint endPoint, IEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
-            : base(reactor, outboundSocket, endPoint, eventLoop)
-        {
-        }
-
-        protected override void BeginReceiveInternal()
-        {
-            //Socket.BeginReceive()
-        }
-
-        protected override void StopReceiveInternal()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Send(NetworkData payload)
-        {
-            base.Send(payload);
-        }
-
-        public override Task SendAsync(NetworkData payload)
-        {
-            return base.SendAsync(payload);
-        }
     }
 }

@@ -11,14 +11,14 @@ using Helios.Topology;
 
 namespace Helios.Reactor.Udp
 {
-    public class ProxyUdpReactor : ReactorBase
+    public class UdpProxyReactor : ProxyReactorBase<IPEndPoint>
     {
-        protected Dictionary<IPEndPoint, INode> NodeMap = new Dictionary<IPEndPoint, INode>();
-        protected Dictionary<INode, ReactorResponseChannel> SocketMap = new Dictionary<INode, ReactorResponseChannel>();
+        protected EndPoint RemoteEndPoint;
 
-        public ProxyUdpReactor(IPAddress localAddress, int localPort, IEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
+        public UdpProxyReactor(IPAddress localAddress, int localPort, IEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
             : base(localAddress, localPort, eventLoop, SocketType.Dgram, ProtocolType.Udp, bufferSize)
         {
+            RemoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
         }
 
         public override bool IsActive { get; protected set; }
@@ -26,7 +26,7 @@ namespace Helios.Reactor.Udp
         protected override void StartInternal()
         {
             IsActive = true;
-            Listener.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, Listener);
+            Listener.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndPoint, ReceiveCallback, Listener);
         }
 
         private void ReceiveCallback(IAsyncResult ar)
@@ -34,11 +34,11 @@ namespace Helios.Reactor.Udp
             var socket = (Socket) ar.AsyncState;
             try
             {
-                var received = socket.EndReceive(ar);
+                var received = socket.EndReceiveFrom(ar, ref RemoteEndPoint);
                 var dataBuff = new byte[received];
                 Array.Copy(Buffer, dataBuff, received);
 
-                var remoteAddress = (IPEndPoint)socket.RemoteEndPoint;
+                var remoteAddress = (IPEndPoint)RemoteEndPoint;
                 ReactorResponseChannel adapter;
                 if (NodeMap.ContainsKey(remoteAddress))
                 {
@@ -49,16 +49,16 @@ namespace Helios.Reactor.Udp
                     adapter = new ReactorProxyResponseChannel(this, socket, remoteAddress, EventLoop);
                     NodeMap.Add(remoteAddress, adapter.RemoteHost);
                     SocketMap.Add(adapter.RemoteHost, adapter);
-                    NodeConnected(adapter.RemoteHost);
+                    NodeConnected(adapter.RemoteHost, adapter);
                 }
 
                 var networkData = new NetworkData() { Buffer = dataBuff, Length = received, RemoteHost = adapter.RemoteHost };
-                socket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, socket); //receive more messages
+                socket.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndPoint, ReceiveCallback, socket); //receive more messages
                 ReceivedData(networkData, adapter);
             }
             catch (SocketException ex)
             {
-                var node =  NodeBuilder.FromEndpoint((IPEndPoint)socket.RemoteEndPoint);
+                var node =  NodeBuilder.FromEndpoint((IPEndPoint)RemoteEndPoint);
                 CloseConnection(node, ex);
             }
         }

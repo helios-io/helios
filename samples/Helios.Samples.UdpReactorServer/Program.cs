@@ -27,31 +27,35 @@ namespace Helios.Samples.UdpReactorServer
             Console.WriteLine("Starting echo server...");
             Console.WriteLine("Will begin listening for requests on {0}:{1}", ip, Port);
             IReactor reactor = ReactorFactory.ConfigureUdpReactor(NodeBuilder.BuildNode().Host(ip).WithPort(Port));
-            reactor.OnConnection += node => ServerPrint(node,
-                string.Format("Accepting connection from... {0}:{1}", node.Host, node.Port));
+            reactor.OnConnection += (node,connection) =>
+            {
+                ServerPrint(node,
+                    string.Format("Accepting connection from... {0}:{1}", node.Host, node.Port));
+                connection.BeginReceive(Receive);
+            };
             reactor.OnDisconnection += (address, reason) => ServerPrint(address,
                 string.Format("Closed connection to... {0}:{1} [Reason:{2}]", address.Host, address.Port, reason.Type));
-            reactor.OnReceive += (data, eventArgs) =>
-            {
-                var connection = eventArgs;
-                var node = connection.RemoteHost;
-
-                ServerPrint(connection.RemoteHost, string.Format("recieved {0} bytes", data.Length));
-                var str = Encoding.UTF8.GetString(data.Buffer).Trim();
-                if (str.Trim().Equals("close"))
-                {
-                    connection.Close();
-                    return;
-                }
-                ServerPrint(connection.RemoteHost, string.Format("recieved \"{0}\"", str));
-                ServerPrint(connection.RemoteHost,
-                    string.Format("sending \"{0}\" back to {1}:{2}", str, node.Host, node.Port));
-                var sendBytes = Encoding.UTF8.GetBytes(str + Environment.NewLine);
-                connection.Send(new NetworkData() { Buffer = sendBytes, Length = sendBytes.Length, RemoteHost = node });
-            };
 
             reactor.Start();
             Console.ReadKey();
+        }
+
+        public static void Receive(NetworkData data, IConnection connection)
+        {
+            var node = connection.RemoteHost;
+
+            ServerPrint(connection.RemoteHost, string.Format("recieved {0} bytes", data.Length));
+            var str = Encoding.UTF8.GetString(data.Buffer).Trim();
+            if (str.Trim().Equals("close"))
+            {
+                connection.Close();
+                return;
+            }
+            ServerPrint(connection.RemoteHost, string.Format("recieved \"{0}\"", str));
+            ServerPrint(connection.RemoteHost,
+                string.Format("sending \"{0}\" back to {1}:{2}", str, node.Host, node.Port));
+            var sendBytes = Encoding.UTF8.GetBytes(str + Environment.NewLine);
+            connection.Send(new NetworkData() { Buffer = sendBytes, Length = sendBytes.Length, RemoteHost = node });
         }
     }
 }

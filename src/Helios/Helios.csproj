@@ -144,13 +144,15 @@
     <Compile Include="Monitoring\ConnectivityCheck.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reactor\IReactor.cs" />
+    <Compile Include="Reactor\ProxyReactorBase.cs" />
     <Compile Include="Reactor\ReactorBase.cs" />
     <Compile Include="Reactor\ReactorConnectionAdapter.cs" />
     <Compile Include="Reactor\ReactorFactory.cs" />
     <Compile Include="Reactor\Response\ReactorProxyResponseChannel.cs" />
     <Compile Include="Reactor\Response\ReactorResponseChannel.cs" />
+    <Compile Include="Reactor\Response\TcpReactorResponseChannel.cs" />
     <Compile Include="Reactor\Tcp\TcpProxyReactor.cs" />
-    <Compile Include="Reactor\Udp\ProxyUdpReactor.cs" />
+    <Compile Include="Reactor\Udp\UdpProxyReactor.cs" />
     <Compile Include="Serialization\Bson\BsonTransportSerializer.cs" />
     <Compile Include="Serialization\ITransportSerializer.cs" />
     <Compile Include="Topology\EmptyNode.cs" />

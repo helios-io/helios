@@ -9,7 +9,7 @@ namespace Helios.Util.Collections
     /// Base class for working with circular buffers
     /// </summary>
     /// <typeparam name="T">The type being stored in the circular buffer</typeparam>
-    public class CircularBuffer<T> : ICircularBuffer<T> where T : class
+    public class CircularBuffer<T> : ICircularBuffer<T>
     {
         protected internal CircularBuffer(int capacity)
         {

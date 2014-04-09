@@ -26,7 +26,7 @@ namespace Helios.Reactor
             int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE, int workerThreads = 2)
         {
             if (clientConnectionsAreProxies)
-                return new ProxyUdpReactor(localAddress.Host, localAddress.Port, EventLoopFactory.CreateThreadedEventLoop(workerThreads, internalExecutor));
+                return new UdpProxyReactor(localAddress.Host, localAddress.Port, EventLoopFactory.CreateThreadedEventLoop(workerThreads, internalExecutor));
             throw new NotImplementedException();
         }
     }

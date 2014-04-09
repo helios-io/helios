@@ -19,15 +19,6 @@ namespace Helios.Reactor.Response
         {
         }
 
-        /// <summary>
-        /// Method is called directly by the <see cref="ReactorBase"/> implementation to send data to this <see cref="IConnection"/>
-        /// </summary>
-        /// <param name="data"></param>
-        internal void ReactorReceive(NetworkData data)
-        {
-            OnReceive(data);
-        }
-
         protected override void BeginReceiveInternal()
         {
             

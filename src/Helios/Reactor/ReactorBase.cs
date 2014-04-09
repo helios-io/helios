@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;
+using Helios.Reactor.Response;
 using Helios.Topology;
 
 namespace Helios.Reactor
@@ -12,17 +13,11 @@ namespace Helios.Reactor
     {
         protected Socket Listener;
 
-        /// <summary>
-        /// shared buffer used by all incoming connections
-        /// </summary>
-        protected byte[] Buffer;
-
         protected ReactorBase(IPAddress localAddress, int localPort, IEventLoop eventLoop, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
         {
             LocalEndpoint = new IPEndPoint(localAddress, localPort);
             Listener = new Socket(AddressFamily.InterNetwork, socketType, protocol);
             if (protocol == ProtocolType.Tcp) { Transport = TransportType.Tcp; } else if (protocol == ProtocolType.Udp) {  Transport = TransportType.Udp; }
-            Buffer = new byte[bufferSize];
             Backlog = NetworkConstants.DefaultBacklog;
             EventLoop = eventLoop;
         }
@@ -63,11 +58,12 @@ namespace Helios.Reactor
         /// Invoked when a new node has connected to this server
         /// </summary>
         /// <param name="node">The <see cref="INode"/> instance that just connected</param>
-        protected void NodeConnected(INode node)
+        /// <param name="responseChannel">The channel that the server can respond to</param>
+        protected void NodeConnected(INode node, IConnection responseChannel)
         {
             if (OnConnection != null)
             {
-                EventLoop.Execute(() => OnConnection(node));
+                EventLoop.Execute(() => OnConnection(node, responseChannel));
             }
         }
 
@@ -90,7 +86,7 @@ namespace Helios.Reactor
         /// </summary>
         /// <param name="availableData">Data available from the network, including a response address</param>
         /// <param name="responseChannel">Available channel for handling network respones</param>
-        protected void ReceivedData(NetworkData availableData, IConnection responseChannel)
+        protected virtual void ReceivedData(NetworkData availableData, ReactorResponseChannel responseChannel)
         {
             if (OnReceive != null)
             {

@@ -9,7 +9,7 @@ namespace Helios.Util.Collections
     /// Concurrent circular buffer implementation, synchronized using a monitor
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ConcurrentCircularBuffer<T> : ICircularBuffer<T> where T : class
+    public class ConcurrentCircularBuffer<T> : ICircularBuffer<T>
     {
         public ConcurrentCircularBuffer(int capacity)
         {
@@ -75,7 +75,7 @@ namespace Helios.Util.Collections
         public T Dequeue()
         {
 
-            T item = null;
+            T item;
 
             lock (m_lockObject)
             {

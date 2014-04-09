@@ -17,10 +17,10 @@ namespace TimeServiceClient
         static void Main(string[] args)
         {
             TimeServer = new TcpConnection(NodeBuilder.BuildNode().Host(IPAddress.Loopback).WithPort(1337));
-            TimeServer.OnConnection += address =>
+            TimeServer.OnConnection += (address, connection) =>
             {
                 Console.WriteLine("Confirmed connection with host.");
-                TimeServer.BeginReceive(ReceivedCallback);
+                connection.BeginReceive(ReceivedCallback);
             };
             TimeServer.OnDisconnection += (address, reason) => Console.WriteLine("Disconnected.");
 
