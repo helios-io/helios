@@ -108,6 +108,7 @@
     <Compile Include="Net\Bootstrap\IConnectionFactory.cs" />
     <Compile Include="Net\Bootstrap\TcpConnectionFactory.cs" />
     <Compile Include="Net\Bootstrap\UdpConnectionFactory.cs" />
+    <Compile Include="Net\NetworkEventLoop.cs" />
     <Compile Include="Reactor\Bootstrap\IServerFactory.cs" />
     <Compile Include="Reactor\Bootstrap\ServerBootstrap.cs" />
     <Compile Include="Net\Clustering\ClusterManagerFactory.cs" />

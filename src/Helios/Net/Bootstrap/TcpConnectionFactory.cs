@@ -13,7 +13,7 @@ namespace Helios.Net.Bootstrap
 
         protected override IConnection CreateConnection()
         {
-            return new TcpConnection(LocalNode);
+            return new TcpConnection(EventLoop, TargetNode);
         }
     }
 }

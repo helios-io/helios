@@ -2,6 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using Helios.Exceptions;
+using Helios.Ops;
 using Helios.Topology;
 
 namespace Helios.Net
@@ -29,11 +30,13 @@ namespace Helios.Net
     /// </summary>
     public interface IConnection : IDisposable
     {
-        ReceivedDataCallback Receive { get; set; }
+        event ReceivedDataCallback Receive;
 
         event ConnectionEstablishedCallback OnConnection;
 
         event ConnectionTerminatedCallback OnDisconnection;
+
+        IEventLoop EventLoop { get; }
 
         DateTimeOffset Created { get; }
 

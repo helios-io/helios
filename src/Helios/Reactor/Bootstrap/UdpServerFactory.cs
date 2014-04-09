@@ -13,7 +13,7 @@ namespace Helios.Reactor.Bootstrap
 
         protected override ReactorBase NewReactorInternal()
         {
-            return new UdpProxyReactor(LocalNode.Host, LocalNode.Port, EventLoop, BufferBytes);
+            return new UdpProxyReactor(TargetNode.Host, TargetNode.Port, EventLoop, BufferBytes);
         }
     }
 }

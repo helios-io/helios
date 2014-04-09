@@ -1,4 +1,5 @@
-﻿using Helios.Ops.Executors;
+﻿using Helios.Net;
+using Helios.Ops.Executors;
 
 namespace Helios.Ops
 {
@@ -10,6 +11,11 @@ namespace Helios.Ops
         public static IEventLoop CreateThreadedEventLoop(int defaultSize = 2, IExecutor internalExecutor = null)
         {
             return new ThreadedEventLoop(internalExecutor, defaultSize);
+        }
+
+        public static NetworkEventLoop CreateNetworkEventLoop(int defaultSize = 2, IExecutor internalExecutor = null)
+        {
+            return new NetworkEventLoop(internalExecutor, defaultSize);
         }
     }
 }

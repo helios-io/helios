@@ -14,7 +14,7 @@ namespace Helios.Net.Bootstrap
 
         protected AbstractBootstrap(AbstractBootstrap other) : this()
         {
-            LocalNode = (INode)other.LocalNode.Clone();
+            TargetNode = (INode)other.TargetNode.Clone();
             ReceivedData = other.ReceivedData != null ? (ReceivedDataCallback) other.ReceivedData.Clone() : null;
             ConnectionEstablishedCallback = other.ConnectionEstablishedCallback != null
                 ? (ConnectionEstablishedCallback) other.ConnectionEstablishedCallback.Clone()
@@ -37,7 +37,7 @@ namespace Helios.Net.Bootstrap
         /// <summary>
         /// The locally-bound address
         /// </summary>
-        protected INode LocalNode { get; set; }
+        protected INode TargetNode { get; set; }
 
         protected ReceivedDataCallback ReceivedData { get; set; }
 
@@ -48,12 +48,6 @@ namespace Helios.Net.Bootstrap
         public virtual AbstractBootstrap SetOption(string optionKey, object optionValue)
         {
             Config = Config.SetOption(optionKey, optionValue);
-            return this;
-        }
-
-        public virtual AbstractBootstrap LocalAddress(INode node)
-        {
-            LocalNode = node;
             return this;
         }
 

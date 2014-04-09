@@ -1,7 +1,6 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Helios.Exceptions;
 using Helios.Topology;
@@ -12,19 +11,19 @@ namespace Helios.Net.Connections
     {
         protected TcpClient _client;
 
-        public TcpConnection(INode node, TimeSpan timeout, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
-            : base(node, timeout, bufferSize)
+        public TcpConnection(NetworkEventLoop eventLoop, INode node, TimeSpan timeout, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : base(eventLoop, node, timeout, bufferSize)
         {
             InitClient();
         }
 
-        public TcpConnection(INode node, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
-            : base(node, bufferSize)
+        public TcpConnection(NetworkEventLoop eventLoop, INode node, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : base(eventLoop, node, bufferSize)
         {
             InitClient();
         }
 
-        public TcpConnection(TcpClient client, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        public TcpConnection(TcpClient client, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : base(bufferSize)
         {
             InitClient(client);
         }
@@ -46,7 +45,7 @@ namespace Helios.Net.Connections
         public int Linger
         {
             get { return _client.LingerState.Enabled ? _client.LingerState.LingerTime : 0; }
-            set { _client.LingerState = new LingerOption(true, value); }
+            set { _client.LingerState = new LingerOption(value > 0, value); }
         }
 
         public int SendBufferSize
@@ -123,7 +122,20 @@ namespace Helios.Net.Connections
 
         public override void Configure(IConnectionConfig config)
         {
-            throw new NotImplementedException();
+            if (config.HasOption<int>("receiveBufferSize"))
+                ReceiveBufferSize = config.GetOption<int>("receiveBufferSize");
+            if (config.HasOption<int>("sendBufferSize"))
+                SendBufferSize = config.GetOption<int>("sendBufferSize");
+            if (config.HasOption<bool>("reuseAddress"))
+                ReuseAddress = config.GetOption<bool>("reuseAddress");
+            if (config.HasOption<bool>("tcpNoDelay"))
+                NoDelay = config.GetOption<bool>("tcpNoDelay");
+            if (config.HasOption<bool>("keepAlive"))
+                KeepAlive = config.GetOption<bool>("keepAlive");
+            if (config.HasOption<bool>("linger") && config.GetOption<bool>("linger"))
+                Linger = 10;
+            else
+                Linger = 0;
         }
 
         public override void Open()

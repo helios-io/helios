@@ -9,13 +9,13 @@ namespace Helios.Net.Connections
     /// </summary>
     public class MulticastUdpConnection : UdpConnection
     {
-        public MulticastUdpConnection(INode binding, INode multicastAddress, TimeSpan timeout) : base(binding, timeout)
+        public MulticastUdpConnection(NetworkEventLoop eventLoop, INode binding, INode multicastAddress, TimeSpan timeout) : base(eventLoop, binding, timeout)
         {
             MulticastAddress = multicastAddress;
             InitMulticastClient();
         }
 
-        public MulticastUdpConnection(INode binding, INode multicastAddress) : this(binding, multicastAddress, NetworkConstants.DefaultConnectivityTimeout)
+        public MulticastUdpConnection(NetworkEventLoop eventLoop, INode binding, INode multicastAddress) : this(eventLoop, binding, multicastAddress, NetworkConstants.DefaultConnectivityTimeout)
         {
         }
 

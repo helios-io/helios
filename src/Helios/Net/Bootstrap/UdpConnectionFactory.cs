@@ -13,7 +13,7 @@ namespace Helios.Net.Bootstrap
 
         protected override IConnection CreateConnection()
         {
-            return new UdpConnection(LocalNode);
+            return new UdpConnection(EventLoop, TargetNode);
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using Helios.Net;
+using Helios.Net.Bootstrap;
 using Helios.Net.Connections;
 using Helios.Topology;
 
@@ -16,7 +17,11 @@ namespace TimeServiceClient
 
         static void Main(string[] args)
         {
-            TimeServer = new TcpConnection(NodeBuilder.BuildNode().Host(IPAddress.Loopback).WithPort(1337));
+            var bootstrapper =
+                new ClientBootstrap().RemoteAddress(NodeBuilder.BuildNode().Host(IPAddress.Loopback).WithPort(1337))
+                    .SetTransport(TransportType.Tcp).Build();
+
+            TimeServer = bootstrapper.NewConnection();
             TimeServer.OnConnection += (address, connection) =>
             {
                 Console.WriteLine("Confirmed connection with host.");

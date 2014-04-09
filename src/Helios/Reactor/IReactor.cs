@@ -17,6 +17,8 @@ namespace Helios.Reactor
 
         event ConnectionTerminatedCallback OnDisconnection;
 
+        NetworkEventLoop EventLoop { get; }
+
         void Send(byte[] message, INode responseAddress);
 
         /// <summary>

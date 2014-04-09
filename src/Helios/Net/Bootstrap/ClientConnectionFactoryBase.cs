@@ -15,7 +15,7 @@
             connection.Configure(Config);
 
             if (ReceivedData != null)
-                connection.Receive = (ReceivedDataCallback)ReceivedData.Clone();
+                connection.Receive += (ReceivedDataCallback)ReceivedData.Clone();
             if (ConnectionEstablishedCallback != null)
                 connection.OnConnection += (ConnectionEstablishedCallback)ConnectionEstablishedCallback.Clone();
             if (ConnectionTerminatedCallback != null)

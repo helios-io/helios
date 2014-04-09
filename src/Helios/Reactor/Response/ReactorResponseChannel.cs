@@ -19,26 +19,44 @@ namespace Helios.Reactor.Response
         private readonly ReactorBase _reactor;
         internal readonly Socket Socket;
 
-        protected ReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, IEventLoop eventLoop) : this(reactor, outboundSocket, (IPEndPoint)outboundSocket.RemoteEndPoint, eventLoop)
+        protected ReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, NetworkEventLoop eventLoop) : this(reactor, outboundSocket, (IPEndPoint)outboundSocket.RemoteEndPoint, eventLoop)
         {
             
         }
 
-        protected ReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, IPEndPoint endPoint, IEventLoop eventLoop)
+        protected ReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, IPEndPoint endPoint, NetworkEventLoop eventLoop)
         {
             _reactor = reactor;
             Socket = outboundSocket;
             Local = reactor.LocalEndpoint.ToNode(reactor.Transport);
             RemoteHost = NodeBuilder.FromEndpoint(endPoint);
-            EventLoop = eventLoop;
+            NetworkEventLoop = eventLoop;
         }
 
-        protected IEventLoop EventLoop;
 
-        public ReceivedDataCallback Receive { get; set; }
+        public event ReceivedDataCallback Receive
+        {
+            add { NetworkEventLoop.Receive = value; }
+            // ReSharper disable once ValueParameterNotUsed
+            remove { NetworkEventLoop.Receive = null; }
+        }
 
-        public event ConnectionEstablishedCallback OnConnection;
-        public event ConnectionTerminatedCallback OnDisconnection;
+        public event ConnectionEstablishedCallback OnConnection
+        {
+            add { NetworkEventLoop.Connection = value; }
+            // ReSharper disable once ValueParameterNotUsed
+            remove { NetworkEventLoop.Connection = null; }
+        }
+        public event ConnectionTerminatedCallback OnDisconnection
+        {
+            add { NetworkEventLoop.Disconnection = value; }
+            // ReSharper disable once ValueParameterNotUsed
+            remove { NetworkEventLoop.Disconnection = null; }
+        }
+
+        public IEventLoop EventLoop { get { return NetworkEventLoop; } }
+
+        public NetworkEventLoop NetworkEventLoop { get; private set; }
 
         public DateTimeOffset Created { get; private set; }
         public INode RemoteHost { get; private set; }
@@ -64,26 +82,26 @@ namespace Helios.Reactor.Response
 
         public void Open()
         {
-            if (OnConnection != null)
+            if (NetworkEventLoop.Connection != null)
             {
-                OnConnection(RemoteHost, this);
+                NetworkEventLoop.Connection(RemoteHost, this);
             }
         }
 
         public void BeginReceive()
         {
-            if (Receive == null) throw new NullReferenceException("Receive cannot be null");
+            if (NetworkEventLoop.Receive == null) throw new NullReferenceException("Receive cannot be null");
 
             BeginReceiveInternal();
         }
 
         public void BeginReceive(ReceivedDataCallback callback)
         {
-            Receive = callback;
+            Receive += callback;
             foreach (var msg in UnreadMessages.DequeueAll())
             {
                 var msg1 = msg;
-                EventLoop.Execute(() => Receive(msg1, this));
+                NetworkEventLoop.Receive(msg1, this);
             }
 
             BeginReceiveInternal();
@@ -101,9 +119,9 @@ namespace Helios.Reactor.Response
 
         internal virtual void OnReceive(NetworkData data)
         {
-            if (Receive != null)
+            if (NetworkEventLoop.Receive != null)
             {
-                EventLoop.Execute(() => Receive(data, this));
+                NetworkEventLoop.Receive(data, this);
             }
             else
             {
@@ -114,7 +132,7 @@ namespace Helios.Reactor.Response
         public void StopReceive()
         {
             StopReceiveInternal();
-            Receive = null;
+            NetworkEventLoop.Receive = null;
         }
 
 
@@ -124,9 +142,9 @@ namespace Helios.Reactor.Response
         {
             _reactor.CloseConnection(RemoteHost);
 
-            if (OnDisconnection != null)
+            if (NetworkEventLoop.Disconnection != null)
             {
-                OnDisconnection(RemoteHost, new HeliosConnectionException(ExceptionType.Closed));
+                NetworkEventLoop.Disconnection(RemoteHost, new HeliosConnectionException(ExceptionType.Closed));
             }
         }
 

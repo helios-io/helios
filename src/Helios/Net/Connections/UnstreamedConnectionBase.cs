@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Exceptions;
+using Helios.Ops;
 using Helios.Topology;
 
 namespace Helios.Net.Connections
@@ -11,23 +12,45 @@ namespace Helios.Net.Connections
     {
         protected byte[] Buffer;
 
-        protected UnstreamedConnectionBase(int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(null, bufferSize) { }
+        protected UnstreamedConnectionBase(int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(EventLoopFactory.CreateNetworkEventLoop(), null, bufferSize) { }
 
-        protected UnstreamedConnectionBase(INode binding, TimeSpan timeout, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        protected UnstreamedConnectionBase(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base()
         {
             Created = DateTimeOffset.UtcNow;
             Binding = binding;
             Timeout = timeout;
             Buffer = new byte[bufferSize];
+            NetworkEventLoop = eventLoop;
         }
 
-        protected UnstreamedConnectionBase(INode binding, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(binding, NetworkConstants.DefaultConnectivityTimeout, bufferSize) { }
+        protected UnstreamedConnectionBase(NetworkEventLoop eventLoop, INode binding, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(eventLoop, binding, NetworkConstants.DefaultConnectivityTimeout, bufferSize) { }
 
-        public ReceivedDataCallback Receive { get; set; }
 
-        public event ConnectionEstablishedCallback OnConnection;
-        public event ConnectionTerminatedCallback OnDisconnection;
+
+        public event ReceivedDataCallback Receive
+        {
+            add { NetworkEventLoop.Receive = value; }
+// ReSharper disable once ValueParameterNotUsed
+            remove { NetworkEventLoop.Receive = null; }
+        }
+
+        public event ConnectionEstablishedCallback OnConnection
+        {
+            add { NetworkEventLoop.Connection = value; }
+// ReSharper disable once ValueParameterNotUsed
+            remove { NetworkEventLoop.Connection = null; }
+        }
+        public event ConnectionTerminatedCallback OnDisconnection
+        {
+            add { NetworkEventLoop.Disconnection = value; }
+// ReSharper disable once ValueParameterNotUsed
+            remove { NetworkEventLoop.Disconnection = null; }
+        }
+
+        public IEventLoop EventLoop { get { return NetworkEventLoop; } }
+
+        protected NetworkEventLoop NetworkEventLoop { get; set; }
 
         public DateTimeOffset Created { get; private set; }
         public INode RemoteHost { get; protected set; }
@@ -47,7 +70,7 @@ namespace Helios.Net.Connections
         public abstract void Open();
         public void BeginReceive()
         {
-            if (Receive == null) throw new NullReferenceException("Receive cannot be null");
+            if (NetworkEventLoop.Receive == null) throw new NullReferenceException("Receive cannot be null");
             if (Receiving) return;
 
             Receiving = true;
@@ -59,7 +82,7 @@ namespace Helios.Net.Connections
             if (callback == null) throw new ArgumentNullException("callback");
             if(Receiving) return;
 
-            Receive = callback;
+            Receive += callback;
             Receiving = true;
             BeginReceiveInternal();
         }
@@ -94,25 +117,25 @@ namespace Helios.Net.Connections
 
         protected void InvokeReceiveIfNotNull(NetworkData data)
         {
-            if (Receive != null)
+            if (NetworkEventLoop.Receive != null)
             {
-                Receive(data, this);
+                NetworkEventLoop.Receive(data, this);
             }
         }
 
         protected void InvokeConnectIfNotNull(INode remoteHost)
         {
-            if (OnConnection != null)
+            if (NetworkEventLoop.Connection != null)
             {
-                OnConnection(remoteHost, this);
+                NetworkEventLoop.Connection(remoteHost, this);
             }
         }
 
         protected void InvokeDisconnectIfNotNull(INode remoteHost, HeliosConnectionException ex)
         {
-            if (OnDisconnection != null)
+            if (NetworkEventLoop.Disconnection != null)
             {
-                OnDisconnection(remoteHost, ex);
+                NetworkEventLoop.Disconnection(remoteHost, ex);
             }
         }
 

@@ -15,7 +15,7 @@ namespace Helios.Reactor.Bootstrap
         protected override ReactorBase NewReactorInternal()
         {
             if (UseProxies)
-                return new TcpProxyReactor(LocalNode.Host, LocalNode.Port, EventLoop, BufferBytes);
+                return new TcpProxyReactor(TargetNode.Host, TargetNode.Port, EventLoop, BufferBytes);
             else
                 throw new NotImplementedException("Have not implemented non-TCP proxies");
         }

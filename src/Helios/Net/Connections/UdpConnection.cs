@@ -18,14 +18,14 @@ namespace Helios.Net.Connections
         protected UdpClient Client;
         protected EndPoint RemoteEndpoint;
 
-        public UdpConnection(INode binding, TimeSpan timeout)
-            : base(binding, timeout)
+        public UdpConnection(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout)
+            : base(eventLoop, binding, timeout)
         {
             InitClient();
         }
 
-        public UdpConnection(INode binding)
-            : base(binding)
+        public UdpConnection(NetworkEventLoop eventLoop, INode binding)
+            : base(eventLoop, binding)
         {
             InitClient();
         }
@@ -71,7 +71,14 @@ namespace Helios.Net.Connections
 
         public override void Configure(IConnectionConfig config)
         {
-            throw new NotImplementedException();
+            if (config.HasOption<int>("receiveBufferSize"))
+                Client.Client.ReceiveBufferSize = config.GetOption<int>("receiveBufferSize");
+            if (config.HasOption<int>("sendBufferSize"))
+                Client.Client.SendBufferSize = config.GetOption<int>("sendBufferSize");
+            if (config.HasOption<bool>("reuseAddress"))
+                Client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, config.GetOption<bool>("reuseAddress"));
+            if (config.HasOption<bool>("keepAlive"))
+                Client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, config.GetOption<bool>("keepAlive"));
         }
 
         public override void Open()

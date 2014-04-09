@@ -11,11 +11,12 @@ namespace Helios.Reactor.Response
     /// </summary>
     public class ReactorProxyResponseChannel : ReactorResponseChannel
     {
-        public ReactorProxyResponseChannel(ReactorBase reactor, Socket outboundSocket, IEventLoop eventLoop) : base(reactor, outboundSocket, eventLoop)
+        public ReactorProxyResponseChannel(ReactorBase reactor, Socket outboundSocket, NetworkEventLoop eventLoop) : base(reactor, outboundSocket, eventLoop)
         {
         }
 
-        public ReactorProxyResponseChannel(ReactorBase reactor, Socket outboundSocket, IPEndPoint endPoint, IEventLoop eventLoop) : base(reactor, outboundSocket, endPoint, eventLoop)
+        public ReactorProxyResponseChannel(ReactorBase reactor, Socket outboundSocket, IPEndPoint endPoint, NetworkEventLoop eventLoop)
+            : base(reactor, outboundSocket, endPoint, eventLoop)
         {
         }
 

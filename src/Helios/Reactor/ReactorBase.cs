@@ -13,7 +13,7 @@ namespace Helios.Reactor
     {
         protected Socket Listener;
 
-        protected ReactorBase(IPAddress localAddress, int localPort, IEventLoop eventLoop, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        protected ReactorBase(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
         {
             LocalEndpoint = new IPEndPoint(localAddress, localPort);
             Listener = new Socket(AddressFamily.InterNetwork, socketType, protocol);
@@ -22,11 +22,28 @@ namespace Helios.Reactor
             EventLoop = eventLoop;
         }
 
-        public event ConnectionEstablishedCallback OnConnection;
-        public event ReceivedDataCallback OnReceive;
-        public event ConnectionTerminatedCallback OnDisconnection;
+        public event ReceivedDataCallback OnReceive
+        {
+            add { EventLoop.Receive = value; }
+            // ReSharper disable once ValueParameterNotUsed
+            remove { EventLoop.Receive = null; }
+        }
 
-        protected IEventLoop EventLoop { get; private set; }
+        public event ConnectionEstablishedCallback OnConnection
+        {
+            add { EventLoop.Connection = value; }
+            // ReSharper disable once ValueParameterNotUsed
+            remove { EventLoop.Connection = null; }
+        }
+
+        public event ConnectionTerminatedCallback OnDisconnection
+        {
+            add { EventLoop.Disconnection = value; }
+            // ReSharper disable once ValueParameterNotUsed
+            remove { EventLoop.Disconnection = null; }
+        }
+
+        public NetworkEventLoop EventLoop { get; private set; }
 
         public abstract bool IsActive { get; protected set; }
         public bool WasDisposed { get; protected set; }
@@ -63,9 +80,9 @@ namespace Helios.Reactor
         /// <param name="responseChannel">The channel that the server can respond to</param>
         protected void NodeConnected(INode node, IConnection responseChannel)
         {
-            if (OnConnection != null)
+            if (EventLoop.Connection != null)
             {
-                EventLoop.Execute(() => OnConnection(node, responseChannel));
+                EventLoop.Connection(node, responseChannel);
             }
         }
 
@@ -76,9 +93,9 @@ namespace Helios.Reactor
         /// <param name="reason">The reason why this node disconnected</param>
         protected void NodeDisconnected(INode node, HeliosConnectionException reason)
         {
-            if (OnDisconnection != null)
+            if (EventLoop.Disconnection != null)
             {
-                EventLoop.Execute(() => OnDisconnection(node, reason));
+               EventLoop.Disconnection(node, reason);
             }
         }
 
@@ -90,9 +107,9 @@ namespace Helios.Reactor
         /// <param name="responseChannel">Available channel for handling network respones</param>
         protected virtual void ReceivedData(NetworkData availableData, ReactorResponseChannel responseChannel)
         {
-            if (OnReceive != null)
+            if (EventLoop.Receive != null)
             {
-                EventLoop.Execute(() => OnReceive(availableData, responseChannel));
+                EventLoop.Receive(availableData, responseChannel);
             }
         }
 

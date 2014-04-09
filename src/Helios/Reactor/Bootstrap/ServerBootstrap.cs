@@ -30,11 +30,11 @@ namespace Helios.Reactor.Bootstrap
 
         protected IExecutor InternalExecutor { get; set; }
 
-        protected IEventLoop EventLoop
+        protected NetworkEventLoop EventLoop
         {
             get
             {
-                return EventLoopFactory.CreateThreadedEventLoop(Workers, InternalExecutor);
+                return EventLoopFactory.CreateNetworkEventLoop(Workers, InternalExecutor);
             }
         }
 
@@ -79,9 +79,9 @@ namespace Helios.Reactor.Bootstrap
             return this;
         }
 
-        public new ServerBootstrap LocalAddress(INode node)
+        public ServerBootstrap LocalAddress(INode node)
         {
-            base.LocalAddress(node);
+            TargetNode = node;
             return this;
         }
 
@@ -111,7 +111,7 @@ namespace Helios.Reactor.Bootstrap
 
         public override void Validate()
         {
-            if (LocalNode == null) throw new NullReferenceException("LocalNode must be set");
+            if (TargetNode == null) throw new NullReferenceException("TargetNode must be set");
             if (Type == TransportType.All) throw new ArgumentException("Type must be set");
             if (Workers < 1) throw new ArgumentException("Workers must be at least 1");
             if (BufferBytes < 1024) throw new ArgumentException("BufferSize must be at least 1024");

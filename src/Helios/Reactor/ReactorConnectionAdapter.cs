@@ -2,6 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using Helios.Net;
+using Helios.Ops;
 using Helios.Topology;
 
 namespace Helios.Reactor
@@ -20,7 +21,11 @@ namespace Helios.Reactor
             Local = _reactor.LocalEndpoint.ToNode(_reactor.Transport);
         }
 
-        public ReceivedDataCallback Receive { get; set; }
+        public event ReceivedDataCallback Receive
+        {
+            add { _reactor.OnReceive += value; }
+            remove { _reactor.OnReceive -= value; }
+        }
 
         public event ConnectionEstablishedCallback OnConnection
         {
@@ -33,6 +38,8 @@ namespace Helios.Reactor
             add { _reactor.OnDisconnection += value; }
             remove { _reactor.OnDisconnection -= value; }
         }
+
+        public IEventLoop EventLoop { get { return _reactor.EventLoop; } }
         public DateTimeOffset Created { get; private set; }
         public INode RemoteHost { get; private set; }
         public INode Local { get; private set; }
@@ -72,13 +79,12 @@ namespace Helios.Reactor
 
         public void BeginReceive(ReceivedDataCallback callback)
         {
-            Receive = callback;
-            _reactor.OnReceive += Receive;
+            Receive += callback;
         }
 
         public void StopReceive()
         {
-            _reactor.OnReceive -= Receive;
+            Receive += (data, channel) => { };
         }
 
         public void Close()

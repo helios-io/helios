@@ -14,7 +14,7 @@ namespace Helios.Reactor.Udp
     {
         protected EndPoint RemoteEndPoint;
 
-        public UdpProxyReactor(IPAddress localAddress, int localPort, IEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
+        public UdpProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
             : base(localAddress, localPort, eventLoop, SocketType.Dgram, ProtocolType.Udp, bufferSize)
         {
             RemoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
@@ -24,7 +24,14 @@ namespace Helios.Reactor.Udp
 
         public override void Configure(IConnectionConfig config)
         {
-            throw new NotImplementedException();
+            if (config.HasOption<int>("receiveBufferSize"))
+                Listener.ReceiveBufferSize = config.GetOption<int>("receiveBufferSize");
+            if (config.HasOption<int>("sendBufferSize"))
+                Listener.SendBufferSize = config.GetOption<int>("sendBufferSize");
+            if(config.HasOption<bool>("reuseAddress"))
+                Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, config.GetOption<bool>("reuseAddress"));
+            if (config.HasOption<bool>("keepAlive"))
+                Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, config.GetOption<bool>("keepAlive"));
         }
 
         protected override void StartInternal()
