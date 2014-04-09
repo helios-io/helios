@@ -28,11 +28,11 @@ namespace Helios.Samples.TcpReactorServer
             Console.WriteLine("Starting echo server...");
             Console.WriteLine("Will begin listening for requests on {0}:{1}", ip, Port);
             var bootstrapper =
-                new ServerBootstrap().LocalAddress(NodeBuilder.BuildNode().Host(ip).WithPort(Port))
+                new ServerBootstrap()
                     .WorkerThreads(2)
                     .SetTransport(TransportType.Tcp)
                     .Build();
-            var reactor = bootstrapper.NewReactor();
+            var reactor = bootstrapper.NewReactor(NodeBuilder.BuildNode().Host(ip).WithPort(Port));
             reactor.OnConnection += (node, channel) =>
             {
                 ServerPrint(node,

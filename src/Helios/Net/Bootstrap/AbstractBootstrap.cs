@@ -14,7 +14,6 @@ namespace Helios.Net.Bootstrap
 
         protected AbstractBootstrap(AbstractBootstrap other) : this()
         {
-            TargetNode = (INode)other.TargetNode.Clone();
             ReceivedData = other.ReceivedData != null ? (ReceivedDataCallback) other.ReceivedData.Clone() : null;
             ConnectionEstablishedCallback = other.ConnectionEstablishedCallback != null
                 ? (ConnectionEstablishedCallback) other.ConnectionEstablishedCallback.Clone()
@@ -33,11 +32,6 @@ namespace Helios.Net.Bootstrap
         /// Configuration to be used with the
         /// </summary>
         protected IConnectionConfig Config { get; set; }
-
-        /// <summary>
-        /// The locally-bound address
-        /// </summary>
-        protected INode TargetNode { get; set; }
 
         protected ReceivedDataCallback ReceivedData { get; set; }
 

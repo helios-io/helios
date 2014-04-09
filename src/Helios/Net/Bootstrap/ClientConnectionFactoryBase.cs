@@ -1,4 +1,6 @@
-﻿namespace Helios.Net.Bootstrap
+﻿using Helios.Topology;
+
+namespace Helios.Net.Bootstrap
 {
     public abstract class ClientConnectionFactoryBase : ClientBootstrap, IConnectionFactory
     {
@@ -7,11 +9,11 @@
         /// <summary>
         /// Spawns an <see cref="IConnection"/> object internally
         /// </summary>
-        protected abstract IConnection CreateConnection();
+        protected abstract IConnection CreateConnection(INode localEndpoint, INode remoteEndpoint);
 
-        public IConnection NewConnection()
+        public IConnection NewConnection(INode localEndpoint, INode remoteEndpoint)
         {
-            var connection = CreateConnection();
+            var connection = CreateConnection(localEndpoint, remoteEndpoint);
             connection.Configure(Config);
 
             if (ReceivedData != null)

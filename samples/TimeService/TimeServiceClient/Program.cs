@@ -18,10 +18,10 @@ namespace TimeServiceClient
         static void Main(string[] args)
         {
             var bootstrapper =
-                new ClientBootstrap().RemoteAddress(NodeBuilder.BuildNode().Host(IPAddress.Loopback).WithPort(1337))
+                new ClientBootstrap()
                     .SetTransport(TransportType.Tcp).Build();
 
-            TimeServer = bootstrapper.NewConnection();
+            TimeServer = bootstrapper.NewConnection(Node.Empty(), NodeBuilder.BuildNode().Host(IPAddress.Loopback).WithPort(1337));
             TimeServer.OnConnection += (address, connection) =>
             {
                 Console.WriteLine("Confirmed connection with host.");

@@ -1,4 +1,5 @@
 ﻿using Helios.Net.Connections;
+using Helios.Topology;
 
 namespace Helios.Net.Bootstrap
 {
@@ -11,9 +12,9 @@ namespace Helios.Net.Bootstrap
         {
         }
 
-        protected override IConnection CreateConnection()
+        protected override IConnection CreateConnection(INode localEndpoint, INode remoteEndpoint)
         {
-            return new TcpConnection(EventLoop, TargetNode);
+            return new TcpConnection(EventLoop, remoteEndpoint);
         }
     }
 }

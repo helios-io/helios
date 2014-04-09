@@ -1,5 +1,6 @@
 using System;
 using Helios.Reactor.Tcp;
+using Helios.Topology;
 
 namespace Helios.Reactor.Bootstrap
 {
@@ -12,10 +13,10 @@ namespace Helios.Reactor.Bootstrap
         {
         }
 
-        protected override ReactorBase NewReactorInternal()
+        protected override ReactorBase NewReactorInternal(INode listenAddress)
         {
             if (UseProxies)
-                return new TcpProxyReactor(TargetNode.Host, TargetNode.Port, EventLoop, BufferBytes);
+                return new TcpProxyReactor(listenAddress.Host, listenAddress.Port, EventLoop, BufferBytes);
             else
                 throw new NotImplementedException("Have not implemented non-TCP proxies");
         }

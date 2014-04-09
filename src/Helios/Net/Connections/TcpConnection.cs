@@ -136,6 +136,8 @@ namespace Helios.Net.Connections
                 Linger = 10;
             else
                 Linger = 0;
+            if (config.HasOption<TimeSpan>("connectTimeout"))
+                Timeout = config.GetOption<TimeSpan>("connectTimeout");
         }
 
         public override void Open()

@@ -56,7 +56,7 @@ namespace Helios.Net.Connections
         public INode RemoteHost { get; protected set; }
         public INode Local { get; protected set; }
         public INode Binding { get; protected set; }
-        public TimeSpan Timeout { get; private set; }
+        public TimeSpan Timeout { get; protected set; }
         public abstract TransportType Transport { get; }
         public abstract bool Blocking { get; set; }
         public bool WasDisposed { get; protected set; }

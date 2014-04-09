@@ -1,23 +1,23 @@
 using Helios.Net;
-using Helios.Net.Bootstrap;
+using Helios.Topology;
 
 namespace Helios.Reactor.Bootstrap
 {
     /// <summary>
     /// A <see cref="IServerFactory"/> instance that spawns <see cref="IReactor"/> instances with UDP transport enabled
     /// </summary>
-    public abstract class ServerFactoryBase : ServerBootstrap, IServerFactory, IConnectionFactory
+    public abstract class ServerFactoryBase : ServerBootstrap, IServerFactory
     {
         protected ServerFactoryBase(ServerBootstrap other)
             : base(other)
         {
         }
 
-        protected abstract ReactorBase NewReactorInternal();
+        protected abstract ReactorBase NewReactorInternal(INode listenAddress);
 
-        public IReactor NewReactor()
+        public IReactor NewReactor(INode listenAddress)
         {
-            var reactor = NewReactorInternal();
+            var reactor = NewReactorInternal(listenAddress);
             reactor.Configure(Config);
 
             if (ReceivedData != null)
@@ -30,9 +30,9 @@ namespace Helios.Reactor.Bootstrap
             return reactor;
         }
 
-        public IConnection NewConnection()
+        public IConnection NewConnection(INode localEndpoint, INode remoteEndpoint)
         {
-            var reactor = (ReactorBase)NewReactor();
+            var reactor = (ReactorBase)NewReactor(localEndpoint);
             return new ReactorConnectionAdapter(reactor);
         }
     }

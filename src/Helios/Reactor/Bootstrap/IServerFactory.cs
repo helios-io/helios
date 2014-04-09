@@ -1,4 +1,5 @@
 using Helios.Net.Bootstrap;
+using Helios.Topology;
 
 namespace Helios.Reactor.Bootstrap
 {
@@ -7,6 +8,6 @@ namespace Helios.Reactor.Bootstrap
     /// </summary>
     public interface IServerFactory : IConnectionFactory
     {
-        IReactor NewReactor();
+        IReactor NewReactor(INode listenAddress);
     }
 }

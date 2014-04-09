@@ -19,12 +19,12 @@ namespace TimeServiceServer
             var executor = new TryCatchExecutor(exception => Console.WriteLine("Unhandled exception: {0}", exception));
 
             var bootstrapper =
-                new ServerBootstrap().LocalAddress(NodeBuilder.BuildNode().Host(IPAddress.Any).WithPort(1337))
+                new ServerBootstrap()
                     .WorkerThreads(2)
                     .Executor(executor)
                     .SetTransport(TransportType.Tcp)
                     .Build();
-            var server = bootstrapper.NewReactor();
+            var server = bootstrapper.NewReactor(NodeBuilder.BuildNode().Host(IPAddress.Any).WithPort(1337));
             server.OnConnection += (address, connection) =>
             {
                 Console.WriteLine("Connected: {0}", address);

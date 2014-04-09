@@ -1,4 +1,5 @@
 using Helios.Reactor.Udp;
+using Helios.Topology;
 
 namespace Helios.Reactor.Bootstrap
 {
@@ -11,9 +12,9 @@ namespace Helios.Reactor.Bootstrap
         {
         }
 
-        protected override ReactorBase NewReactorInternal()
+        protected override ReactorBase NewReactorInternal(INode listenAddress)
         {
-            return new UdpProxyReactor(TargetNode.Host, TargetNode.Port, EventLoop, BufferBytes);
+            return new UdpProxyReactor(listenAddress.Host, listenAddress.Port, EventLoop, BufferBytes);
         }
     }
 }

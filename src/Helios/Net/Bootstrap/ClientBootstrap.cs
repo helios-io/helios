@@ -59,7 +59,6 @@ namespace Helios.Net.Bootstrap
 
         public ClientBootstrap RemoteAddress(INode node)
         {
-            TargetNode = node;
             return this;
         }
 
@@ -89,7 +88,6 @@ namespace Helios.Net.Bootstrap
 
         public override void Validate()
         {
-            if(TargetNode == null) throw new NullReferenceException("TargetNode must be set");
             if(Type == TransportType.All) throw new ArgumentException("Type must be set");
             if (Workers < 1) throw new ArgumentException("Workers must be at least 1");
         }

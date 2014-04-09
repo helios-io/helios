@@ -79,12 +79,6 @@ namespace Helios.Reactor.Bootstrap
             return this;
         }
 
-        public ServerBootstrap LocalAddress(INode node)
-        {
-            TargetNode = node;
-            return this;
-        }
-
         public new ServerBootstrap OnConnect(ConnectionEstablishedCallback connectionEstablishedCallback)
         {
             base.OnConnect(connectionEstablishedCallback);
@@ -111,7 +105,6 @@ namespace Helios.Reactor.Bootstrap
 
         public override void Validate()
         {
-            if (TargetNode == null) throw new NullReferenceException("TargetNode must be set");
             if (Type == TransportType.All) throw new ArgumentException("Type must be set");
             if (Workers < 1) throw new ArgumentException("Workers must be at least 1");
             if (BufferBytes < 1024) throw new ArgumentException("BufferSize must be at least 1024");
