@@ -75,24 +75,15 @@ namespace Helios.Net.Bootstrap
             return this;
         }
 
-        /// <summary>
-        /// Spawns an <see cref="IConnection"/> object internally
-        /// </summary>
-        protected abstract IConnection CreateConnection();
+        public abstract void Validate();
 
-        public IConnection NewConnection()
+        protected abstract IConnectionFactory BuildInternal();
+
+        public IConnectionFactory Build()
         {
-            var connection = CreateConnection();
-            connection.Configure(Config);
-
-            if(ReceivedData != null)
-                connection.Receive = (ReceivedDataCallback)ReceivedData.Clone();
-            if(ConnectionEstablishedCallback != null)
-                connection.OnConnection += (ConnectionEstablishedCallback)ConnectionEstablishedCallback.Clone();
-            if (ConnectionTerminatedCallback != null)
-                connection.OnDisconnection += (ConnectionTerminatedCallback)ConnectionTerminatedCallback.Clone();
-
-            return connection;
+            Validate();
+            return BuildInternal();
         }
+
     }
 }

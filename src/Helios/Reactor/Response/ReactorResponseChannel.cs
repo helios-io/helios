@@ -60,10 +60,7 @@ namespace Helios.Reactor.Response
             return Task.Run(() => true);
         }
 
-        public void Configure(IConnectionConfig config)
-        {
-            throw new NotImplementedException();
-        }
+        public abstract void Configure(IConnectionConfig config);
 
         public void Open()
         {

@@ -30,6 +30,11 @@ namespace Helios.Reactor.Response
             Buffer = new byte[bufferSize];
         }
 
+        public override void Configure(IConnectionConfig config)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override void BeginReceiveInternal()
         {
             //Socket.BeginReceive()

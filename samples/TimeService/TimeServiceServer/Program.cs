@@ -5,6 +5,7 @@ using System.Text;
 using Helios.Net;
 using Helios.Ops.Executors;
 using Helios.Reactor;
+using Helios.Reactor.Bootstrap;
 using Helios.Topology;
 
 namespace TimeServiceServer
@@ -16,7 +17,14 @@ namespace TimeServiceServer
             Console.Title = "Server";
             Console.WriteLine("Starting server on {0}:{1}", IPAddress.Any, 1337);
             var executor = new TryCatchExecutor(exception => Console.WriteLine("Unhandled exception: {0}", exception));
-            var server = ReactorFactory.ConfigureTcpReactor(NodeBuilder.BuildNode().Host(IPAddress.Any).WithPort(1337), executor);
+
+            var bootstrapper =
+                new ServerBootstrap().LocalAddress(NodeBuilder.BuildNode().Host(IPAddress.Any).WithPort(1337))
+                    .WorkerThreads(2)
+                    .Executor(executor)
+                    .SetTransport(TransportType.Tcp)
+                    .Build();
+            var server = bootstrapper.NewReactor();
             server.OnConnection += (address, connection) =>
             {
                 Console.WriteLine("Connected: {0}", address);

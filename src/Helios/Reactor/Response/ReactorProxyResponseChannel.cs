@@ -19,6 +19,11 @@ namespace Helios.Reactor.Response
         {
         }
 
+        public override void Configure(IConnectionConfig config)
+        {
+            
+        }
+
         protected override void BeginReceiveInternal()
         {
             

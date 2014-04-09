@@ -3,6 +3,7 @@ using System.Net;
 using System.Text;
 using Helios.Net;
 using Helios.Reactor;
+using Helios.Reactor.Bootstrap;
 using Helios.Reactor.Tcp;
 using Helios.Topology;
 
@@ -26,7 +27,12 @@ namespace Helios.Samples.TcpReactorServer
 
             Console.WriteLine("Starting echo server...");
             Console.WriteLine("Will begin listening for requests on {0}:{1}", ip, Port);
-            IReactor reactor = ReactorFactory.ConfigureTcpReactor(NodeBuilder.BuildNode().Host(ip).WithPort(Port));
+            var bootstrapper =
+                new ServerBootstrap().LocalAddress(NodeBuilder.BuildNode().Host(ip).WithPort(Port))
+                    .WorkerThreads(2)
+                    .SetTransport(TransportType.Tcp)
+                    .Build();
+            var reactor = bootstrapper.NewReactor();
             reactor.OnConnection += (node, channel) =>
             {
                 ServerPrint(node,
