@@ -9,9 +9,9 @@ namespace Helios.Net
     /// <summary>
     /// INTERNAL API
     /// 
-    /// Used to resolve the local,
+    /// Used to resolve the local MAC and IP addresses
     /// </summary>
-    internal static class SystemAddressHelper
+    public static class SystemAddressHelper
     {
         public static IPAddress ConnectedIp
         {

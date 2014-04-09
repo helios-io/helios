@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using Helios.Exceptions;
@@ -22,6 +21,11 @@ namespace Helios.Reactor.Udp
         }
 
         public override bool IsActive { get; protected set; }
+
+        public override void Configure(IConnectionConfig config)
+        {
+            throw new NotImplementedException();
+        }
 
         protected override void StartInternal()
         {

@@ -35,7 +35,7 @@ namespace Helios.Reactor.Response
 
         protected IEventLoop EventLoop;
 
-        public ReceivedDataCallback Receive { get; private set; }
+        public ReceivedDataCallback Receive { get; set; }
 
         public event ConnectionEstablishedCallback OnConnection;
         public event ConnectionTerminatedCallback OnDisconnection;
@@ -60,12 +60,24 @@ namespace Helios.Reactor.Response
             return Task.Run(() => true);
         }
 
+        public void Configure(IConnectionConfig config)
+        {
+            throw new NotImplementedException();
+        }
+
         public void Open()
         {
             if (OnConnection != null)
             {
                 OnConnection(RemoteHost, this);
             }
+        }
+
+        public void BeginReceive()
+        {
+            if (Receive == null) throw new NullReferenceException("Receive cannot be null");
+
+            BeginReceiveInternal();
         }
 
         public void BeginReceive(ReceivedDataCallback callback)

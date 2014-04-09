@@ -69,6 +69,11 @@ namespace Helios.Net.Connections
             return await Task.Run(() => true);
         }
 
+        public override void Configure(IConnectionConfig config)
+        {
+            throw new NotImplementedException();
+        }
+
         public override void Open()
         {
             CheckWasDisposed();

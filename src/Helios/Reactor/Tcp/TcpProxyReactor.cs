@@ -25,6 +25,11 @@ namespace Helios.Reactor.Tcp
         }
 
         public override bool IsActive { get; protected set; }
+        public override void Configure(IConnectionConfig config)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override void StartInternal()
         {
             IsActive = true;

@@ -121,6 +121,11 @@ namespace Helios.Net.Connections
                     TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously);
         }
 
+        public override void Configure(IConnectionConfig config)
+        {
+            throw new NotImplementedException();
+        }
+
         public override void Open()
         {
             CheckWasDisposed();

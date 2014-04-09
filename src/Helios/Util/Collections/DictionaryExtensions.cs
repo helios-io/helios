@@ -19,5 +19,16 @@ namespace Helios.Util.Collections
             else
                 hash.Add(key, value);
         }
+
+        public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> hash, TKey key)
+        {
+            return hash.ContainsKey(key) ? hash[key] : default(TValue);
+        }
+
+        public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, object> hash,
+            TKey key)
+        {
+            return hash.ContainsKey(key) && hash[key] is TValue ? (TValue)hash[key] : default(TValue);
+        }
     }
 }

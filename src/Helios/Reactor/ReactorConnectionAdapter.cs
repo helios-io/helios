@@ -20,7 +20,7 @@ namespace Helios.Reactor
             Local = _reactor.LocalEndpoint.ToNode(_reactor.Transport);
         }
 
-        public ReceivedDataCallback Receive { get; private set; }
+        public ReceivedDataCallback Receive { get; set; }
 
         public event ConnectionEstablishedCallback OnConnection
         {
@@ -54,10 +54,20 @@ namespace Helios.Reactor
             return true;
         }
 
+        public void Configure(IConnectionConfig config)
+        {
+            _reactor.Configure(config);
+        }
+
         public void Open()
         {
             if (_reactor.IsActive) return;
             _reactor.Start();
+        }
+
+        public void BeginReceive()
+        {
+            Open();
         }
 
         public void BeginReceive(ReceivedDataCallback callback)

@@ -29,7 +29,7 @@ namespace Helios.Net
     /// </summary>
     public interface IConnection : IDisposable
     {
-        ReceivedDataCallback Receive { get; }
+        ReceivedDataCallback Receive { get; set; }
 
         event ConnectionEstablishedCallback OnConnection;
 
@@ -64,7 +64,20 @@ namespace Helios.Net
 
         Task<bool> OpenAsync();
 
+        /// <summary>
+        /// Configures this transport using the provided option
+        /// </summary>
+        /// <param name="config">a <see cref="IConnectionConfig"/> instance with the appropriate configuration options</param>
+        void Configure(IConnectionConfig config);
+
         void Open();
+
+        /// <summary>
+        /// Call this method to begin receiving data on this connection.
+        /// 
+        /// Assumes that <see cref="Receive"/> has already been set.
+        /// </summary>
+        void BeginReceive();
 
         /// <summary>
         /// Call this method to begin receiving data on this connection

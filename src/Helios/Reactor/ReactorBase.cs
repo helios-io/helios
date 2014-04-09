@@ -31,6 +31,8 @@ namespace Helios.Reactor
         public abstract bool IsActive { get; protected set; }
         public bool WasDisposed { get; protected set; }
 
+        public abstract void Configure(IConnectionConfig config);
+
         public void Start()
         {
             //Don't restart

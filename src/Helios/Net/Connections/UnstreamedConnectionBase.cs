@@ -24,7 +24,7 @@ namespace Helios.Net.Connections
 
         protected UnstreamedConnectionBase(INode binding, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(binding, NetworkConstants.DefaultConnectivityTimeout, bufferSize) { }
 
-        public ReceivedDataCallback Receive { get; private set; }
+        public ReceivedDataCallback Receive { get; set; }
 
         public event ConnectionEstablishedCallback OnConnection;
         public event ConnectionTerminatedCallback OnDisconnection;
@@ -42,7 +42,17 @@ namespace Helios.Net.Connections
         public abstract bool IsOpen();
         public abstract int Available { get; }
         public abstract Task<bool> OpenAsync();
+        public abstract void Configure(IConnectionConfig config);
+
         public abstract void Open();
+        public void BeginReceive()
+        {
+            if (Receive == null) throw new NullReferenceException("Receive cannot be null");
+            if (Receiving) return;
+
+            Receiving = true;
+            BeginReceiveInternal();
+        }
 
         public void BeginReceive(ReceivedDataCallback callback)
         {
