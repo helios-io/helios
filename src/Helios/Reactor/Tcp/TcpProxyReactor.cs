@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Sockets;
 using Helios.Exceptions;
 using Helios.Net;
-using Helios.Ops;
 using Helios.Reactor.Response;
 using Helios.Topology;
 
@@ -12,7 +11,9 @@ namespace Helios.Reactor.Tcp
     /// <summary>
     /// High-performance TCP reactor that uses a single buffer and manages all client connections internally.
     /// 
-    /// Passes <see cref="ReactorProxyResponseChannel"/> instances to connected clients and handles all I/O itself.
+    /// Passes <see cref="ReactorProxyResponseChannel"/> instances to connected clients and allows them to set up their own event loop behavior.
+    /// 
+    /// All I/O is still handled internally through the proxy reactor.
     /// </summary>
     public class TcpProxyReactor : ProxyReactorBase<Socket>
     {
@@ -106,8 +107,8 @@ namespace Helios.Reactor.Tcp
                 if (clientSocket.Socket.Connected)
                 {
                     clientSocket.Socket.Close();
+                    NodeDisconnected(remoteHost, new HeliosConnectionException(ExceptionType.Closed, ex));
                 }
-                NodeDisconnected(remoteHost, new HeliosConnectionException(ExceptionType.Closed, ex));
             }
             finally
             {
@@ -150,5 +151,20 @@ namespace Helios.Reactor.Tcp
         }
 
         #endregion
+    }
+
+    public class TcpSingleEventLoopProxyReactor : TcpProxyReactor
+    {
+        public TcpSingleEventLoopProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : base(localAddress, localPort, eventLoop, bufferSize)
+        {
+        }
+
+        protected override void ReceivedData(NetworkData availableData, ReactorResponseChannel responseChannel)
+        {
+            if (EventLoop.Receive != null)
+            {
+                EventLoop.Receive(availableData, responseChannel);
+            }
+        }
     }
 }

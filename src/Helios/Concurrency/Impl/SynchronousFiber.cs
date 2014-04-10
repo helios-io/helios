@@ -26,6 +26,13 @@ namespace Helios.Concurrency.Impl
                 Executor.Execute(op);
         }
 
+        public void SwapExecutor(IExecutor executor)
+        {
+            //Shut down the previous executor
+            Executor.GracefulShutdown(TimeSpan.FromSeconds(3));
+            Executor = executor;
+        }
+
         public void Shutdown(TimeSpan gracePeriod)
         {
             Executor.Shutdown(gracePeriod);

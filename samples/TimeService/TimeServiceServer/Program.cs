@@ -4,7 +4,6 @@ using System.Net;
 using System.Text;
 using Helios.Net;
 using Helios.Ops.Executors;
-using Helios.Reactor;
 using Helios.Reactor.Bootstrap;
 using Helios.Topology;
 
@@ -30,7 +29,8 @@ namespace TimeServiceServer
                 Console.WriteLine("Connected: {0}", address);
                 connection.BeginReceive(Receive);
             };
-            server.OnDisconnection += (address, reason) => Console.WriteLine("Disconnected: {0}; Reason: {1}", address, reason.Type);
+            server.OnDisconnection += (address, reason) => 
+                Console.WriteLine("Disconnected: {0}; Reason: {1}", address, reason.Type);
             server.Start();
             Console.WriteLine("Running, press any key to exit");
             Console.ReadKey();

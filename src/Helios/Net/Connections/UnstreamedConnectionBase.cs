@@ -48,6 +48,13 @@ namespace Helios.Net.Connections
             remove { NetworkEventLoop.Disconnection = null; }
         }
 
+        public event ExceptionCallback OnError
+        {
+            add{ NetworkEventLoop.SetExceptionHandler(value, this); }
+// ReSharper disable once ValueParameterNotUsed
+            remove { NetworkEventLoop.SetExceptionHandler(null, this); }
+        }
+
         public IEventLoop EventLoop { get { return NetworkEventLoop; } }
 
         protected NetworkEventLoop NetworkEventLoop { get; set; }
@@ -136,6 +143,18 @@ namespace Helios.Net.Connections
             if (NetworkEventLoop.Disconnection != null)
             {
                 NetworkEventLoop.Disconnection(remoteHost, ex);
+            }
+        }
+
+        protected void InvokeErrorIfNotNull(Exception ex)
+        {
+            if (NetworkEventLoop.Exception != null)
+            {
+                NetworkEventLoop.Exception(this, ex);
+            }
+            else
+            {
+                throw new HeliosException("Unhandled exception on a connection with no error handler", ex);
             }
         }
 

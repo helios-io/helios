@@ -1,4 +1,6 @@
-﻿using Helios.Concurrency;
+﻿using System;
+using System.Runtime.Serialization;
+using Helios.Concurrency;
 using Helios.Ops;
 using Helios.Ops.Executors;
 
@@ -71,6 +73,20 @@ namespace Helios.Net
             }
         }
 
+        public ExceptionCallback Exception { get { return _internalExceptionCallback; } }
+
+        public void SetExceptionHandler(ExceptionCallback callback, IConnection connection)
+        {
+            _owner = connection;
+            _internalExceptionCallback = callback;
+            _heliosException = exception =>
+            {
+                if (_internalExceptionCallback != null)
+                    _internalExceptionCallback(_owner, exception);
+            };
+            Scheduler.SwapExecutor(new TryCatchExecutor(_heliosException)); //pipes errors back to the connection object
+        }
+
         #region Internal callbacks used by IConnection and IReactor
 
         /*
@@ -79,12 +95,14 @@ namespace Helios.Net
         private ReceivedDataCallback _internalReceive;
         private ConnectionEstablishedCallback _internalConnectionEstablished;
         private ConnectionTerminatedCallback _internalConnectionTerminated;
+        private ExceptionCallback _internalExceptionCallback;
 
         private ReceivedDataCallback _heliosReceive;
-
         private ConnectionEstablishedCallback _heliosConnection;
-
         private ConnectionTerminatedCallback _heliosDisconnection;
+        private Action<Exception> _heliosException;
+
+        private IConnection _owner;
 
         #endregion
     }

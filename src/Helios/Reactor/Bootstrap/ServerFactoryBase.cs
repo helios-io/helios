@@ -33,7 +33,7 @@ namespace Helios.Reactor.Bootstrap
         public IConnection NewConnection(INode localEndpoint, INode remoteEndpoint)
         {
             var reactor = (ReactorBase)NewReactor(localEndpoint);
-            return new ReactorConnectionAdapter(reactor);
+            return reactor.ConnectionAdapter;
         }
     }
 }

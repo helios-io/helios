@@ -31,7 +31,14 @@ namespace Helios.Concurrency.Impl
         public void Add(Action op)
         {
             if (Executor.AcceptingJobs)
-                TF.StartNew(op);
+                TF.StartNew(() => Executor.Execute(op));
+        }
+
+        public void SwapExecutor(IExecutor executor)
+        {
+            //Shut down the previous executor gracefully (in case there's thread-contention)
+            Executor.GracefulShutdown(TimeSpan.FromSeconds(3));
+            Executor = executor;
         }
 
         public void Shutdown(TimeSpan gracePeriod)

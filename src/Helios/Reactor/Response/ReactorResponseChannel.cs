@@ -54,6 +54,13 @@ namespace Helios.Reactor.Response
             remove { NetworkEventLoop.Disconnection = null; }
         }
 
+        public event ExceptionCallback OnError
+        {
+            add { NetworkEventLoop.SetExceptionHandler(value, this); }
+            // ReSharper disable once ValueParameterNotUsed
+            remove { NetworkEventLoop.SetExceptionHandler(null, this); }
+        }
+
         public IEventLoop EventLoop { get { return NetworkEventLoop; } }
 
         public NetworkEventLoop NetworkEventLoop { get; private set; }

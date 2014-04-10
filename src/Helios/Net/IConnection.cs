@@ -26,6 +26,13 @@ namespace Helios.Net
     public delegate void ConnectionTerminatedCallback(INode remoteAddress, HeliosConnectionException reason);
 
     /// <summary>
+    /// Delegate used when an unexpected error occurs
+    /// </summary>
+    /// <param name="connection">The connection object responsible for propagating this error</param>
+    /// <param name="ex">The exception that occurred</param>
+    public delegate void ExceptionCallback(IConnection connection, Exception ex);
+
+    /// <summary>
     /// Interface used to describe an open connection to a client node / capability
     /// </summary>
     public interface IConnection : IDisposable
@@ -35,6 +42,8 @@ namespace Helios.Net
         event ConnectionEstablishedCallback OnConnection;
 
         event ConnectionTerminatedCallback OnDisconnection;
+
+        event ExceptionCallback OnError;
 
         IEventLoop EventLoop { get; }
 
