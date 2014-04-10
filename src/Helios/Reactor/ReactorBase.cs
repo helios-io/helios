@@ -99,13 +99,13 @@ namespace Helios.Reactor
         /// <summary>
         /// Invoked when a node's connection to this server has been disconnected
         /// </summary>
-        /// <param name="node">The <see cref="INode"/> instance that just disconnected</param>
+        /// <param name="closedChannel">The <see cref="IConnection"/> instance that just closed</param>
         /// <param name="reason">The reason why this node disconnected</param>
-        protected void NodeDisconnected(INode node, HeliosConnectionException reason)
+        protected void NodeDisconnected(HeliosConnectionException reason, IConnection closedChannel)
         {
             if (EventLoop.Disconnection != null)
             {
-               EventLoop.Disconnection(node, reason);
+               EventLoop.Disconnection(reason, closedChannel);
             }
         }
 
@@ -125,7 +125,10 @@ namespace Helios.Reactor
 
         protected void OnErrorIfNotNull(Exception reason, IConnection connection)
         {
-            
+            if (EventLoop.Exception != null)
+            {
+                EventLoop.Exception(reason, connection);
+            }
         }
 
         public abstract void Send(byte[] message, INode responseAddress);
@@ -134,9 +137,9 @@ namespace Helios.Reactor
         /// Closes a connection to a remote host (without shutting down the server.)
         /// </summary>
         /// <param name="remoteHost">The remote host to terminate</param>
-        internal abstract void CloseConnection(INode remoteHost);
+        internal abstract void CloseConnection(IConnection remoteHost);
 
-        internal abstract void CloseConnection(INode remoteHost, Exception reason);
+        internal abstract void CloseConnection(Exception reason, IConnection remoteHost);
 
         public int Backlog { get; set; }
 

@@ -39,8 +39,8 @@ namespace Helios.Samples.TcpReactorServer
                     string.Format("Accepting connection from... {0}:{1}", node.Host, node.Port));
                 channel.BeginReceive(ReceiveData);
             };
-            reactor.OnDisconnection += (address, reason) => ServerPrint(address,
-                string.Format("Closed connection to... {0}:{1} [Reason:{2}]", address.Host, address.Port, reason.Type));
+            reactor.OnDisconnection += (reason, address) => ServerPrint(address.RemoteHost,
+                string.Format("Closed connection to... {0}:{1} [Reason:{2}]", address.RemoteHost.Host, address.RemoteHost.Port, reason.Type));
             reactor.Start();
             Console.ReadKey();
         }

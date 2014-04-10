@@ -142,7 +142,7 @@ namespace Helios.Net.Connections
         {
             if (NetworkEventLoop.Disconnection != null)
             {
-                NetworkEventLoop.Disconnection(remoteHost, ex);
+                NetworkEventLoop.Disconnection(ex, this);
             }
         }
 
@@ -150,7 +150,7 @@ namespace Helios.Net.Connections
         {
             if (NetworkEventLoop.Exception != null)
             {
-                NetworkEventLoop.Exception(this, ex);
+                NetworkEventLoop.Exception(ex, this);
             }
             else
             {

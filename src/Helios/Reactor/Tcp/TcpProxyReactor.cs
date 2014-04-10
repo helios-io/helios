@@ -74,15 +74,23 @@ namespace Helios.Reactor.Tcp
                 var received = socket.EndReceive(ar);
                 var dataBuff = new byte[received];
                 Array.Copy(Buffer, dataBuff, received);
-                var networkData = new NetworkData() { Buffer = dataBuff, Length = received, RemoteHost = NodeMap[socket] };
-                socket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, socket); //receive more messages
+                var networkData = new NetworkData() {Buffer = dataBuff, Length = received, RemoteHost = NodeMap[socket]};
+                socket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, socket);
+                    //receive more messages
                 var adapter = SocketMap[NodeMap[socket]];
                 ReceivedData(networkData, adapter);
             }
             catch (SocketException ex) //node disconnected
             {
                 var node = NodeMap[socket];
-                CloseConnection(node, ex);
+                var connection = SocketMap[node];
+                CloseConnection(ex, connection);
+            }
+            catch (Exception ex)
+            {
+                 var node = NodeMap[socket];
+                var connection = SocketMap[node];
+                OnErrorIfNotNull(ex, connection);
             }
         }
 
@@ -96,31 +104,31 @@ namespace Helios.Reactor.Tcp
             clientSocket.Socket.BeginSend(message, 0, message.Length, SocketFlags.None, SendCallback, clientSocket.Socket);
         }
 
-        internal override void CloseConnection(INode remoteHost, Exception ex)
+        internal override void CloseConnection(Exception ex, IConnection remoteHost)
         {
-            if (!SocketMap.ContainsKey(remoteHost)) return; //already been removed
+            if (!SocketMap.ContainsKey(remoteHost.RemoteHost)) return; //already been removed
 
-            var clientSocket = SocketMap[remoteHost];
+            var clientSocket = SocketMap[remoteHost.RemoteHost];
 
             try
             {
                 if (clientSocket.Socket.Connected)
                 {
                     clientSocket.Socket.Close();
-                    NodeDisconnected(remoteHost, new HeliosConnectionException(ExceptionType.Closed, ex));
+                    NodeDisconnected(new HeliosConnectionException(ExceptionType.Closed, ex), remoteHost);
                 }
             }
             finally
             {
                 NodeMap.Remove(clientSocket.Socket);
-                SocketMap.Remove(remoteHost);
+                SocketMap.Remove(remoteHost.RemoteHost);
                 clientSocket.Dispose();
             }
         }
 
-        internal override void CloseConnection(INode remoteHost)
+        internal override void CloseConnection(IConnection remoteHost)
         {
-           CloseConnection(remoteHost, null);
+           CloseConnection(null, remoteHost);
         }
 
         private void SendCallback(IAsyncResult ar)
@@ -133,7 +141,14 @@ namespace Helios.Reactor.Tcp
             catch (SocketException ex) //node disconnected
             {
                 var node = NodeMap[socket];
-                CloseConnection(node, ex);
+                var connection = SocketMap[node];
+                CloseConnection(ex, connection);
+            }
+            catch (Exception ex)
+            {
+                var node = NodeMap[socket];
+                var connection = SocketMap[node];
+                OnErrorIfNotNull(ex, connection);
             }
         }
 

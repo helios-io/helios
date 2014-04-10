@@ -67,10 +67,17 @@ namespace Helios.Reactor.Udp
                 socket.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndPoint, ReceiveCallback, socket); //receive more messages
                 ReceivedData(networkData, adapter);
             }
-            catch (SocketException ex)
+            catch (SocketException ex) //node disconnected
             {
-                var node =  NodeBuilder.FromEndpoint((IPEndPoint)RemoteEndPoint);
-                CloseConnection(node, ex);
+                var node = NodeMap[(IPEndPoint)socket.RemoteEndPoint];
+                var connection = SocketMap[node];
+                CloseConnection(ex, connection);
+            }
+            catch (Exception ex)
+            {
+                var node = NodeMap[(IPEndPoint)socket.RemoteEndPoint];
+                var connection = SocketMap[node];
+                OnErrorIfNotNull(ex, connection);
             }
         }
 
@@ -88,27 +95,34 @@ namespace Helios.Reactor.Udp
             }
             catch (SocketException ex) //node disconnected
             {
+                var node = NodeMap[(IPEndPoint) socket.RemoteEndPoint];
+                var connection = SocketMap[node];
+                CloseConnection(ex, connection);
+            }
+            catch (Exception ex)
+            {
                 var node = NodeMap[(IPEndPoint)socket.RemoteEndPoint];
-                CloseConnection(node, ex);
+                var connection = SocketMap[node];
+                OnErrorIfNotNull(ex, connection);
             }
         }
 
-        internal override void CloseConnection(INode remoteHost)
+        internal override void CloseConnection(IConnection remoteHost)
         {
-            CloseConnection(remoteHost, null);
+            CloseConnection(null, remoteHost);
         }
 
-        internal override void CloseConnection(INode remoteHost, Exception reason)
+        internal override void CloseConnection(Exception reason, IConnection remoteConnection)
         {
             //NO-OP (no connections in UDP)
             try
             {
-                NodeDisconnected(remoteHost, new HeliosConnectionException(ExceptionType.Closed, reason));
+                NodeDisconnected(new HeliosConnectionException(ExceptionType.Closed, reason), remoteConnection);
             }
             finally
             {
-                NodeMap.Remove(remoteHost.ToEndPoint());
-                SocketMap.Remove(remoteHost);
+                NodeMap.Remove(remoteConnection.RemoteHost.ToEndPoint());
+                SocketMap.Remove(remoteConnection.RemoteHost);
             }
         }
 

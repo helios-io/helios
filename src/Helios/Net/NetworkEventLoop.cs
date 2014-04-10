@@ -82,7 +82,7 @@ namespace Helios.Net
             _heliosException = exception =>
             {
                 if (_internalExceptionCallback != null)
-                    _internalExceptionCallback(_owner, exception);
+                    _internalExceptionCallback(exception, _owner);
             };
             Scheduler.SwapExecutor(new TryCatchExecutor(_heliosException)); //pipes errors back to the connection object
         }

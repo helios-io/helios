@@ -22,15 +22,15 @@ namespace Helios.Net
     /// <summary>
     /// Delegate used when a connection is closed
     /// </summary>
-    /// <param name="remoteAddress">The remote endpoint that terminated the connection</param>
-    public delegate void ConnectionTerminatedCallback(INode remoteAddress, HeliosConnectionException reason);
+    /// <param name="closedChannel">The channel that is now closed</param>
+    public delegate void ConnectionTerminatedCallback(HeliosConnectionException reason, IConnection closedChannel);
 
     /// <summary>
     /// Delegate used when an unexpected error occurs
     /// </summary>
     /// <param name="connection">The connection object responsible for propagating this error</param>
     /// <param name="ex">The exception that occurred</param>
-    public delegate void ExceptionCallback(IConnection connection, Exception ex);
+    public delegate void ExceptionCallback(Exception ex, IConnection connection);
 
     /// <summary>
     /// Interface used to describe an open connection to a client node / capability

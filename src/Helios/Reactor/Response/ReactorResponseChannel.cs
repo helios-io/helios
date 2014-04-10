@@ -147,11 +147,11 @@ namespace Helios.Reactor.Response
 
         public void Close()
         {
-            _reactor.CloseConnection(RemoteHost);
+            _reactor.CloseConnection(this);
 
             if (NetworkEventLoop.Disconnection != null)
             {
-                NetworkEventLoop.Disconnection(RemoteHost, new HeliosConnectionException(ExceptionType.Closed));
+                NetworkEventLoop.Disconnection(new HeliosConnectionException(ExceptionType.Closed), this);
             }
         }
 
