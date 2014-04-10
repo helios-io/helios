@@ -161,6 +161,7 @@
     <Compile Include="Reactor\Response\ReactorProxyResponseChannel.cs" />
     <Compile Include="Reactor\Response\ReactorResponseChannel.cs" />
     <Compile Include="Reactor\Response\TcpReactorResponseChannel.cs" />
+    <Compile Include="Reactor\SingleReceiveLoopProxyReactor.cs" />
     <Compile Include="Reactor\Tcp\TcpProxyReactor.cs" />
     <Compile Include="Reactor\Udp\UdpProxyReactor.cs" />
     <Compile Include="Serialization\Bson\BsonTransportSerializer.cs" />
