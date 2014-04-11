@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using Newtonsoft.Json;
 
 namespace Helios.Topology
@@ -39,7 +41,8 @@ namespace Helios.Topology
         /// <returns>A valid INode instance with the host set</returns>
         public static INode Host(this INode n, string host)
         {
-            var ip = IPAddress.Parse(host);
+            var hostentry = Dns.GetHostEntry(host);
+            var ip = hostentry.AddressList.First(x => x.AddressFamily == AddressFamily.InterNetwork); //first IPv4 address
             return Host(n, ip);
         }
 

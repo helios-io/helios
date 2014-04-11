@@ -66,6 +66,7 @@ namespace Helios.Tests.Topology
             Assert.AreEqual("udp", nodeUri.Scheme);
             Assert.IsTrue(nodeUri.IsLoopback);
         }
+        
 
         [Test]
         public void Should_convert_valid_UDP_NodeUri_to_INode()
