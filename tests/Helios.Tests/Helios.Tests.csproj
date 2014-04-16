@@ -48,7 +48,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Channels\DefaultChannelIdTests.cs" />
     <Compile Include="Eventing\SimpleEventBrokerTests.cs" />
     <Compile Include="Net\MulticastHelperTests.cs" />
     <Compile Include="Net\NodeUniquenessTests.cs" />
