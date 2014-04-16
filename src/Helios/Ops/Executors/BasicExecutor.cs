@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Helios.Util;
+using Helios.Util.Concurrency;
 using Helios.Util.TimedOps;
 
 namespace Helios.Ops.Executors
@@ -36,7 +37,7 @@ namespace Helios.Ops.Executors
 
         public Task ExecuteAsync(Action op)
         {
-            return Task.Run(op);
+            return TaskRunner.Run(op);
         }
 
         public virtual void Execute(IList<Action> op)
@@ -72,7 +73,7 @@ namespace Helios.Ops.Executors
 
         public Task ExecuteAsync(IList<Action> ops, Action<IEnumerable<Action>> remainingOps)
         {
-            return Task.Run(() =>
+            return TaskRunner.Run(() =>
             {
                 for (var i = 0; i < ops.Count; i++)
                 {
@@ -100,7 +101,7 @@ namespace Helios.Ops.Executors
         public Task GracefulShutdown(TimeSpan gracePeriod)
         {
             Shutdown(gracePeriod);
-            return Task.Delay(gracePeriod);
+            return TaskRunner.Delay(gracePeriod);
         }
 
         public bool InThread(Thread thread)

@@ -57,5 +57,14 @@ namespace Helios.Util.Concurrency
 #endif
 
         }
+
+        public static Task Delay(TimeSpan gracePeriod)
+        {
+#if !NET35 && !NET40
+            return Task.Delay(gracePeriod);
+#else
+            return Task.Factory.StartNew(() => Thread.Sleep(gracePeriod));
+#endif
+        }
     }
 }

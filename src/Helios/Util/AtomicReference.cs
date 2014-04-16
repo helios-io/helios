@@ -37,14 +37,14 @@ namespace Helios.Util
         {
             get
             {
-                Interlocked.MemoryBarrier();
+                Thread.MemoryBarrier();
                 return atomicValue;
             }
             set
             {
-                Interlocked.MemoryBarrier();
+                Thread.MemoryBarrier();
                 atomicValue = value;
-                Interlocked.MemoryBarrier();
+                Thread.MemoryBarrier();
             }
         }
 

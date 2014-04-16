@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Exceptions;
 using Helios.Topology;
+using Helios.Util.Concurrency;
 
 namespace Helios.Net.Connections
 {
@@ -63,11 +64,19 @@ namespace Helios.Net.Connections
             }
         }
 
+#if NET35 || NET40
+        public override Task<bool> OpenAsync()
+        {
+            Open();
+            return TaskRunner.Run(() => true);
+        }
+#else
         public override async Task<bool> OpenAsync()
         {
             Open();
             return await Task.Run(() => true);
         }
+#endif
 
         public override void Configure(IConnectionConfig config)
         {

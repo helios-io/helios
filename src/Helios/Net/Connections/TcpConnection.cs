@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Exceptions;
 using Helios.Topology;
+using Helios.Util.Concurrency;
 
 namespace Helios.Net.Connections
 {
@@ -23,7 +24,8 @@ namespace Helios.Net.Connections
             InitClient();
         }
 
-        public TcpConnection(TcpClient client, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : base(bufferSize)
+        public TcpConnection(TcpClient client, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : base(bufferSize)
         {
             InitClient(client);
         }
@@ -87,6 +89,19 @@ namespace Helios.Net.Connections
             }
         }
 
+#if NET35 || NET40
+        public override Task<bool> OpenAsync()
+        {
+            CheckWasDisposed();
+
+            return TaskRunner.Run<bool>(() =>
+            {
+                Open();
+                return true;
+            });
+        }
+
+#else
         public override async Task<bool> OpenAsync()
         {
             CheckWasDisposed();
@@ -120,6 +135,7 @@ namespace Helios.Net.Connections
                 },
                     TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously);
         }
+#endif
 
         public override void Configure(IConnectionConfig config)
         {
@@ -216,10 +232,17 @@ namespace Helios.Net.Connections
             }
         }
 
+#if NET35 || NET40
+        public override Task SendAsync(NetworkData payload)
+        {
+            return TaskRunner.Run(() => Send(payload));
+        }
+#else
         public override async Task SendAsync(NetworkData payload)
         {
             await Task.Run(() => Send(payload));
         }
+#endif
 
         #region IDisposable Members
 
@@ -249,7 +272,7 @@ namespace Helios.Net.Connections
             _client.ReceiveBufferSize = Buffer.Length;
             var ipAddress = (IPEndPoint)_client.Client.RemoteEndPoint;
             RemoteHost = Binding = NodeBuilder.FromEndpoint(ipAddress);
-            Local = NodeBuilder.FromEndpoint((IPEndPoint) _client.Client.LocalEndPoint);
+            Local = NodeBuilder.FromEndpoint((IPEndPoint)_client.Client.LocalEndPoint);
         }
 
         private void InitClient()
@@ -258,7 +281,7 @@ namespace Helios.Net.Connections
             {
                 ReceiveTimeout = Timeout.Seconds,
                 SendTimeout = Timeout.Seconds,
-                Client = {NoDelay = true},
+                Client = { NoDelay = true },
                 ReceiveBufferSize = Buffer.Length
             };
             RemoteHost = Binding;

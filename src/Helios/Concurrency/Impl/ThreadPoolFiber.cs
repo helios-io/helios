@@ -49,7 +49,7 @@ namespace Helios.Concurrency.Impl
         public Task GracefulShutdown(TimeSpan gracePeriod)
         {
             Shutdown(gracePeriod);
-            return Task.Delay(gracePeriod);
+            return TaskRunner.Delay(gracePeriod);
         }
 
         public void Stop()
