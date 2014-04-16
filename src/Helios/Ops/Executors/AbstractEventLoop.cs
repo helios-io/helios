@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Helios.Channels;
 using Helios.Concurrency;
+using Helios.Net;
 
 namespace Helios.Ops.Executors
 {
     /// <summary>
-    /// Abstract base class for working with <see cref="IEventLoop"/> instances inside a <see cref="IChannel"/>
+    /// Abstract base class for working with <see cref="IEventLoop"/> instances inside a <see cref="IConnection"/>
     /// </summary>
     public abstract class AbstractEventLoop : IEventLoop
     {
