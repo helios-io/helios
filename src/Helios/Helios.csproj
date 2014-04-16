@@ -156,9 +156,7 @@
     <Compile Include="Util\TimedOps\Deadline.cs" />
     <Compile Include="Util\TimedOps\ScheduledValue.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Util\Streams\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>

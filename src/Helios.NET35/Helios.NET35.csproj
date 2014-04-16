@@ -95,8 +95,29 @@
     <Compile Include="..\Helios\Exceptions\HeliosNodeException.cs">
       <Link>Exceptions\HeliosNodeException.cs</Link>
     </Compile>
-    <Compile Include="..\Helios\Net\Builders\NormalConnectionBuilder.cs">
-      <Link>Net\Builders\NormalConnectionBuilder.cs</Link>
+    <Compile Include="..\Helios\HeliosException.cs">
+      <Link>HeliosException.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Bootstrap\AbstractBootstrap.cs">
+      <Link>Net\Bootstrap\AbstractBootstrap.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Bootstrap\ClientBootstrap.cs">
+      <Link>Net\Bootstrap\ClientBootstrap.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Bootstrap\ClientConnectionFactoryBase.cs">
+      <Link>Net\Bootstrap\ClientConnectionFactoryBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Bootstrap\IConnectionFactory.cs">
+      <Link>Net\Bootstrap\IConnectionFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Bootstrap\NormalConnectionBuilder.cs">
+      <Link>Net\Bootstrap\NormalConnectionBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Bootstrap\TcpConnectionFactory.cs">
+      <Link>Net\Bootstrap\TcpConnectionFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Net\Bootstrap\UdpConnectionFactory.cs">
+      <Link>Net\Bootstrap\UdpConnectionFactory.cs</Link>
     </Compile>
     <Compile Include="..\Helios\Net\Clustering\ClusterManagerFactory.cs">
       <Link>Net\Clustering\ClusterManagerFactory.cs</Link>
@@ -107,11 +128,11 @@
     <Compile Include="..\Helios\Net\Clustering\SingleNodeClusterManager.cs">
       <Link>Net\Clustering\SingleNodeClusterManager.cs</Link>
     </Compile>
+    <Compile Include="..\Helios\Net\ConnectionConfig.cs">
+      <Link>Net\ConnectionConfig.cs</Link>
+    </Compile>
     <Compile Include="..\Helios\Net\Connections\MulticastUdpConnection.cs">
       <Link>Net\Connections\MulticastUdpConnection.cs</Link>
-    </Compile>
-    <Compile Include="..\Helios\Net\Connections\StreamedConnectionBase.cs">
-      <Link>Net\Connections\StreamedConnectionBase.cs</Link>
     </Compile>
     <Compile Include="..\Helios\Net\Connections\TcpConnection.cs">
       <Link>Net\Connections\TcpConnection.cs</Link>
@@ -152,6 +173,9 @@
     <Compile Include="..\Helios\Net\NetworkDataExtensions.cs">
       <Link>Net\NetworkDataExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Helios\Net\NetworkEventLoop.cs">
+      <Link>Net\NetworkEventLoop.cs</Link>
+    </Compile>
     <Compile Include="..\Helios\Net\Providers\ConnectionProviderBase.cs">
       <Link>Net\Providers\ConnectionProviderBase.cs</Link>
     </Compile>
@@ -167,23 +191,32 @@
     <Compile Include="..\Helios\Net\Providers\PooledKeyedConnectionProvider.cs">
       <Link>Net\Providers\PooledKeyedConnectionProvider.cs</Link>
     </Compile>
-    <Compile Include="..\Helios\Net\Transports\IStreamTransport.cs">
-      <Link>Net\Transports\IStreamTransport.cs</Link>
+    <Compile Include="..\Helios\Net\SystemAddressHelper.cs">
+      <Link>Net\SystemAddressHelper.cs</Link>
     </Compile>
     <Compile Include="..\Helios\Net\Transports\ITransport.cs">
       <Link>Net\Transports\ITransport.cs</Link>
     </Compile>
-    <Compile Include="..\Helios\Net\Transports\StreamTransport.cs">
-      <Link>Net\Transports\StreamTransport.cs</Link>
-    </Compile>
     <Compile Include="..\Helios\Net\Transports\TransportBase.cs">
       <Link>Net\Transports\TransportBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Ops\EventLoopFactory.cs">
+      <Link>Ops\EventLoopFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Ops\Executors\AbstractEventLoop.cs">
+      <Link>Ops\Impl\AbstractEventLoop.cs</Link>
     </Compile>
     <Compile Include="..\Helios\Ops\Executors\BasicExecutor.cs">
       <Link>Ops\Impl\BasicExecutor.cs</Link>
     </Compile>
+    <Compile Include="..\Helios\Ops\Executors\ThreadedEventLoop.cs">
+      <Link>Ops\Impl\ThreadedEventLoop.cs</Link>
+    </Compile>
     <Compile Include="..\Helios\Ops\Executors\TryCatchExecutor.cs">
       <Link>Ops\Impl\TryCatchExecutor.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Ops\IEventLoop.cs">
+      <Link>Ops\IEventLoop.cs</Link>
     </Compile>
     <Compile Include="..\Helios\Ops\IExecutor.cs">
       <Link>Ops\IExecutor.cs</Link>
@@ -221,17 +254,35 @@
     <Compile Include="..\Helios\Topology\NodeUri.cs">
       <Link>Topology\NodeUri.cs</Link>
     </Compile>
+    <Compile Include="..\Helios\Util\AtomicCounters.cs">
+      <Link>Util\AtomicCounters.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\AtomicReference.cs">
+      <Link>Util\AtomicReference.cs</Link>
+    </Compile>
     <Compile Include="..\Helios\Util\CollectionBuilder.cs">
       <Link>Util\CollectionBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\Collections\CircularBuffer.cs">
+      <Link>Util\Collections\CircularBuffer.cs</Link>
     </Compile>
     <Compile Include="..\Helios\Util\Collections\CollectionExtensions.cs">
       <Link>Util\Collections\CollectionExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Helios\Util\Collections\ConcurrentCircularBuffer.cs">
+      <Link>Util\Collections\ConcurrentCircularBuffer.cs</Link>
+    </Compile>
     <Compile Include="..\Helios\Util\Collections\ConcurrentFixedSizeStack.cs">
       <Link>Util\Collections\ConcurrentFixedSizeStack.cs</Link>
     </Compile>
+    <Compile Include="..\Helios\Util\Collections\DictionaryExtensions.cs">
+      <Link>Util\Collections\DictionaryExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\Helios\Util\Collections\FixedSizeStack.cs">
       <Link>Util\Collections\FixedSizeStack.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\Collections\ICircularBuffer.cs">
+      <Link>Util\Collections\ICircularBuffer.cs</Link>
     </Compile>
     <Compile Include="..\Helios\Util\Collections\IFixedSizeStack.cs">
       <Link>Util\Collections\IFixedSizeStack.cs</Link>
@@ -250,6 +301,12 @@
     </Compile>
     <Compile Include="..\Helios\Util\NullGuard.cs">
       <Link>Util\NullGuard.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\ThreadLocalRandom.cs">
+      <Link>Util\ThreadLocalRandom.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\TimedOps\Deadline.cs">
+      <Link>Util\TimedOps\Deadline.cs</Link>
     </Compile>
     <Compile Include="..\Helios\Util\TimedOps\ScheduledValue.cs">
       <Link>Util\TimedOps\ScheduledValue.cs</Link>

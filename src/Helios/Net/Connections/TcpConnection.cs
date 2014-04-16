@@ -106,6 +106,7 @@ namespace Helios.Net.Connections
             if (_client == null)
                 InitClient();
 
+
             return await _client.ConnectAsync(RemoteHost.Host, RemoteHost.Port)
                 .ContinueWith(x =>
                 {
