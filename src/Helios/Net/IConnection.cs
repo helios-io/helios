@@ -111,5 +111,10 @@ namespace Helios.Net
         void Send(NetworkData payload);
 
         Task SendAsync(NetworkData payload);
+
+        /// <summary>
+        /// INTERNAL API. Used by encoders.
+        /// </summary>
+        void InvokeReceiveIfNotNull(NetworkData data);
     }
 }

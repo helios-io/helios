@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Concurrency;
 using Helios.Net;
-using Helios.Ops;
 
 namespace Helios.Reactor.Response
 {

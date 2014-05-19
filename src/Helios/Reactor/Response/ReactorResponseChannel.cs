@@ -13,8 +13,8 @@ namespace Helios.Reactor.Response
     /// <summary>
     /// Wraps a remote endpoint which connected <see cref="IReactor"/> instance inside a <see cref="IConnection"/> object
     /// </summary>
-    public abstract class ReactorResponseChannel : IConnection
-    {
+    public abstract class ReactorResponseChannel : IConnection{
+
         protected ICircularBuffer<NetworkData> UnreadMessages = new ConcurrentCircularBuffer<NetworkData>(100);
         private readonly ReactorBase _reactor;
         internal readonly Socket Socket;
@@ -191,5 +191,10 @@ namespace Helios.Reactor.Response
         }
 
         #endregion
+
+        public void InvokeReceiveIfNotNull(NetworkData data)
+        {
+            OnReceive(data);
+        }
     }
 }

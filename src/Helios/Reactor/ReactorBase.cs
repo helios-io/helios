@@ -270,6 +270,11 @@ namespace Helios.Reactor
                 await Task.Run(() => Send(payload));
             }
 
+            public void InvokeReceiveIfNotNull(NetworkData data)
+            {
+                throw new NotImplementedException();
+            }
+
             #region IDisposable methods
 
             public void Dispose()

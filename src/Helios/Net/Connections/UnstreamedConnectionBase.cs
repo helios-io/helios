@@ -122,7 +122,7 @@ namespace Helios.Net.Connections
             }
         }
 
-        protected void InvokeReceiveIfNotNull(NetworkData data)
+        public void InvokeReceiveIfNotNull(NetworkData data)
         {
             if (NetworkEventLoop.Receive != null)
             {
