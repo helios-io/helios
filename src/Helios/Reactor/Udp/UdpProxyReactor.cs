@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using Helios.Exceptions;
@@ -15,7 +16,7 @@ namespace Helios.Reactor.Udp
     {
         protected EndPoint RemoteEndPoint;
 
-        public UdpProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
+        public UdpProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base(localAddress, localPort, eventLoop, encoder, decoder, SocketType.Dgram, ProtocolType.Udp, bufferSize)
         {
             RemoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
@@ -29,7 +30,7 @@ namespace Helios.Reactor.Udp
                 Listener.ReceiveBufferSize = config.GetOption<int>("receiveBufferSize");
             if (config.HasOption<int>("sendBufferSize"))
                 Listener.SendBufferSize = config.GetOption<int>("sendBufferSize");
-            if(config.HasOption<bool>("reuseAddress"))
+            if (config.HasOption<bool>("reuseAddress"))
                 Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, config.GetOption<bool>("reuseAddress"));
             if (config.HasOption<bool>("keepAlive"))
                 Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, config.GetOption<bool>("keepAlive"));
@@ -43,7 +44,7 @@ namespace Helios.Reactor.Udp
 
         private void ReceiveCallback(IAsyncResult ar)
         {
-            var socket = (Socket) ar.AsyncState;
+            var socket = (Socket)ar.AsyncState;
             try
             {
                 var received = socket.EndReceiveFrom(ar, ref RemoteEndPoint);
@@ -84,7 +85,10 @@ namespace Helios.Reactor.Udp
 
         public override void Send(NetworkData data)
         {
-            Listener.BeginSendTo(data.Buffer, 0, data.Length, SocketFlags.None, data.RemoteHost.ToEndPoint(), SendCallback, Listener);
+            List<NetworkData> encoded;
+            Encoder.Encode(ConnectionAdapter, data, out encoded);
+            foreach (var message in encoded)
+                Listener.BeginSendTo(message.Buffer, 0, message.Length, SocketFlags.None, data.RemoteHost.ToEndPoint(), SendCallback, Listener);
         }
 
         private void SendCallback(IAsyncResult ar)
@@ -96,7 +100,7 @@ namespace Helios.Reactor.Udp
             }
             catch (SocketException ex) //node disconnected
             {
-                var node = NodeMap[(IPEndPoint) socket.RemoteEndPoint];
+                var node = NodeMap[(IPEndPoint)socket.RemoteEndPoint];
                 var connection = SocketMap[node];
                 CloseConnection(ex, connection);
             }
@@ -147,6 +151,6 @@ namespace Helios.Reactor.Udp
 
         #endregion
 
-        
+
     }
 }

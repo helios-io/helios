@@ -116,7 +116,10 @@ namespace Helios.Reactor.Response
             foreach (var msg in UnreadMessages.DequeueAll())
             {
                 var msg1 = msg;
-                NetworkEventLoop.Receive(msg1, this);
+                List<NetworkData> decoded;
+                Decoder.Decode(this, msg1, out decoded);
+                foreach(var message in decoded)
+                    NetworkEventLoop.Receive(message, this);
             }
 
             BeginReceiveInternal();

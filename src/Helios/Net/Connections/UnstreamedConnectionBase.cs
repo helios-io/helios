@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -131,7 +132,10 @@ namespace Helios.Net.Connections
         {
             if (NetworkEventLoop.Receive != null)
             {
-                NetworkEventLoop.Receive(data, this);
+                List<NetworkData> decoded;
+                Decoder.Decode(this, data, out decoded);
+                foreach(var message in decoded)
+                    NetworkEventLoop.Receive(message, this);
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using Helios.Net;
@@ -25,7 +26,10 @@ namespace Helios.Reactor
         {
             if (EventLoop.Receive != null)
             {
-                EventLoop.Receive(availableData, responseChannel);
+                List<NetworkData> decoded;
+                Decoder.Decode(ConnectionAdapter, availableData, out decoded);
+                foreach(var message in decoded)
+                    EventLoop.Receive(message, responseChannel);
             }
         }
     }

@@ -45,7 +45,7 @@ namespace TimeServiceClient
 
         static void LoopWrite()
         {
-            var command = Encoding.UTF8.GetBytes("gettime|");
+            var command = Encoding.UTF8.GetBytes("gettime");
 
             while (TimeServer.IsOpen())
             {
