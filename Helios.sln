@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30324.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1AB2FECB-55DF-40C9-980C-A2648FBC2F9E}"
 	ProjectSection(SolutionItems) = preProject
@@ -31,6 +31,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.NET35", "src\Helios.NET35\Helios.NET35.csproj", "{CEFDF028-1EDB-448C-9848-1AB41EC77150}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.NET40", "src\Helios.NET40\Helios.NET40.csproj", "{2075EC17-115D-4599-A60D-13F451006DC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.RawSocket", "samples\Helios.RawSocket\Helios.RawSocket.csproj", "{6B38304A-9DBD-4761-9C6D-2ADD9755B5C6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,6 +76,10 @@ Global
 		{2075EC17-115D-4599-A60D-13F451006DC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2075EC17-115D-4599-A60D-13F451006DC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2075EC17-115D-4599-A60D-13F451006DC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B38304A-9DBD-4761-9C6D-2ADD9755B5C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B38304A-9DBD-4761-9C6D-2ADD9755B5C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B38304A-9DBD-4761-9C6D-2ADD9755B5C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B38304A-9DBD-4761-9C6D-2ADD9755B5C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -85,5 +91,6 @@ Global
 		{E5ECC7CF-3DE5-4507-9F2F-91EC0E928742} = {CDCC7F36-83CF-430B-86CF-46CDF610301F}
 		{1BECF167-1425-4DB6-85E0-E6FEF730E791} = {E5ECC7CF-3DE5-4507-9F2F-91EC0E928742}
 		{7E169CAF-9D9E-4D1F-9627-FD9D1ACEC8B1} = {E5ECC7CF-3DE5-4507-9F2F-91EC0E928742}
+		{6B38304A-9DBD-4761-9C6D-2ADD9755B5C6} = {CDCC7F36-83CF-430B-86CF-46CDF610301F}
 	EndGlobalSection
 EndGlobal

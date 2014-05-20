@@ -18,7 +18,7 @@ namespace Helios.Exceptions
         }
 
         public HeliosConnectionException(ExceptionType type, Exception innerException)
-            : this(type, innerException.Message, innerException)
+            : this(type, innerException == null ? string.Empty : innerException.Message, innerException)
         {
         }
 
