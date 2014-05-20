@@ -38,4 +38,15 @@ namespace Helios.Serialization
 
         public abstract void Decode(IConnection connection, NetworkData data, out List<NetworkData> decoded);
     }
+
+    /// <summary>
+    /// Dummy decoder that doesn't actually do anything
+    /// </summary>
+    public class NoOpDecoder : MessageDecoderBase
+    {
+        public override void Decode(IConnection connection, NetworkData data, out List<NetworkData> decoded)
+        {
+            decoded = new List<NetworkData>() {data};
+        }
+    }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using Helios.Net;
+using Helios.Serialization;
 using Helios.Topology;
 
 namespace Helios.Reactor
@@ -19,11 +20,14 @@ namespace Helios.Reactor
 
         event ExceptionCallback OnError;
 
+        IMessageEncoder Encoder { get; }
+        IMessageDecoder Decoder { get; }
+
         IConnection ConnectionAdapter { get; }
 
         NetworkEventLoop EventLoop { get; }
 
-        void Send(byte[] message, INode responseAddress);
+        void Send(NetworkData data);
 
         /// <summary>
         /// The backlog of pending connections allowed for the underlying transport

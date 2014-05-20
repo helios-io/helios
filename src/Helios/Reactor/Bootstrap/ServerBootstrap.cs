@@ -4,7 +4,7 @@ using Helios.Net;
 using Helios.Net.Bootstrap;
 using Helios.Ops;
 using Helios.Ops.Executors;
-using Helios.Topology;
+using Helios.Serialization;
 
 namespace Helios.Reactor.Bootstrap
 {
@@ -76,6 +76,18 @@ namespace Helios.Reactor.Bootstrap
         {
             if (executor == null) throw new ArgumentNullException("executor");
             InternalExecutor = executor;
+            return this;
+        }
+
+        public new ServerBootstrap SetDecoder(IMessageDecoder decoder)
+        {
+            base.SetDecoder(decoder);
+            return this;
+        }
+
+        public new ServerBootstrap SetEncoder(IMessageEncoder encoder)
+        {
+            base.SetEncoder(encoder);
             return this;
         }
 

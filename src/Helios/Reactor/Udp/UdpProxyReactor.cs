@@ -5,6 +5,7 @@ using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;
 using Helios.Reactor.Response;
+using Helios.Serialization;
 using Helios.Topology;
 
 
@@ -14,8 +15,8 @@ namespace Helios.Reactor.Udp
     {
         protected EndPoint RemoteEndPoint;
 
-        public UdpProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
-            : base(localAddress, localPort, eventLoop, SocketType.Dgram, ProtocolType.Udp, bufferSize)
+        public UdpProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
+            : base(localAddress, localPort, eventLoop, encoder, decoder, SocketType.Dgram, ProtocolType.Udp, bufferSize)
         {
             RemoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
         }
@@ -81,9 +82,9 @@ namespace Helios.Reactor.Udp
             }
         }
 
-        public override void Send(byte[] message, INode responseAddress)
+        public override void Send(NetworkData data)
         {
-            Listener.BeginSendTo(message, 0, message.Length, SocketFlags.None, responseAddress.ToEndPoint(), SendCallback, Listener);
+            Listener.BeginSendTo(data.Buffer, 0, data.Length, SocketFlags.None, data.RemoteHost.ToEndPoint(), SendCallback, Listener);
         }
 
         private void SendCallback(IAsyncResult ar)

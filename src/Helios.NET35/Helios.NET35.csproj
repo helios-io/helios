@@ -230,8 +230,23 @@
     <Compile Include="..\Helios\Serialization\Bson\BsonTransportSerializer.cs">
       <Link>Serialization\Bson\BsonTransportSerializer.cs</Link>
     </Compile>
+    <Compile Include="..\Helios\Serialization\Encoders.cs">
+      <Link>Serialization\Encoders.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Serialization\IMessageDecoder.cs">
+      <Link>Serialization\IMessageDecoder.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Serialization\IMessageEncoder.cs">
+      <Link>Serialization\IMessageEncoder.cs</Link>
+    </Compile>
     <Compile Include="..\Helios\Serialization\ITransportSerializer.cs">
       <Link>Serialization\ITransportSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Serialization\LengthFieldFrameBasedDecoder.cs">
+      <Link>Serialization\LengthFieldFrameBasedDecoder.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Serialization\LengthFieldPrepender.cs">
+      <Link>Serialization\LengthFieldPrepender.cs</Link>
     </Compile>
     <Compile Include="..\Helios\Topology\Cluster.cs">
       <Link>Topology\Cluster.cs</Link>

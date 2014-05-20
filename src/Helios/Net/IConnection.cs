@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Helios.Exceptions;
 using Helios.Ops;
+using Helios.Serialization;
 using Helios.Topology;
 
 namespace Helios.Net
@@ -46,6 +47,9 @@ namespace Helios.Net
         event ExceptionCallback OnError;
 
         IEventLoop EventLoop { get; }
+
+        IMessageEncoder Encoder { get; }
+        IMessageDecoder Decoder { get; }
 
         DateTimeOffset Created { get; }
 

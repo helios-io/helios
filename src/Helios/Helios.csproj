@@ -53,6 +53,7 @@
     <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />
     <Compile Include="Concurrency\IFiber.cs" />
     <Compile Include="Concurrency\Impl\SynchronousFiber.cs" />
+    <Compile Include="Serialization\Encoders.cs" />
     <Compile Include="Eventing\EventSubscriptionEventArgs.cs" />
     <Compile Include="Eventing\IEventBroker.cs" />
     <Compile Include="Eventing\ITopicSubscription.cs" />
@@ -128,7 +129,10 @@
     <Compile Include="Reactor\Tcp\TcpProxyReactor.cs" />
     <Compile Include="Reactor\Udp\UdpProxyReactor.cs" />
     <Compile Include="Serialization\Bson\BsonTransportSerializer.cs" />
+    <Compile Include="Serialization\ByteOrder.cs" />
     <Compile Include="Serialization\ITransportSerializer.cs" />
+    <Compile Include="Serialization\LengthFieldFrameBasedDecoder.cs" />
+    <Compile Include="Serialization\LengthFieldPrepender.cs" />
     <Compile Include="Topology\EmptyNode.cs" />
     <Compile Include="Topology\INode.cs" />
     <Compile Include="Topology\Node.cs" />

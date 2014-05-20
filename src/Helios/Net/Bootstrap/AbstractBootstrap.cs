@@ -1,4 +1,4 @@
-﻿using Helios.Topology;
+﻿using Helios.Serialization;
 
 namespace Helios.Net.Bootstrap
 {
@@ -10,6 +10,8 @@ namespace Helios.Net.Bootstrap
         protected AbstractBootstrap()
         {
             Config = new DefaultConnectionConfig();
+            Encoder = Encoders.DefaultEncoder;
+            Decoder = Encoders.DefaultDecoder;
         }
 
         protected AbstractBootstrap(AbstractBootstrap other) : this()
@@ -26,6 +28,9 @@ namespace Helios.Net.Bootstrap
             {
                 Config.SetOption(option.Key, option.Value);
             }
+
+            Encoder = other.Encoder;
+            Decoder = other.Decoder;
         }
 
         /// <summary>
@@ -38,6 +43,22 @@ namespace Helios.Net.Bootstrap
         protected ConnectionEstablishedCallback ConnectionEstablishedCallback { get; set; }
 
         protected ConnectionTerminatedCallback ConnectionTerminatedCallback { get; set; }
+
+        protected IMessageDecoder Decoder { get; set; }
+
+        protected IMessageEncoder Encoder { get; set; }
+
+        public virtual AbstractBootstrap SetDecoder(IMessageDecoder decoder)
+        {
+            Decoder = decoder;
+            return this;
+        }
+
+        public virtual AbstractBootstrap SetEncoder(IMessageEncoder encoder)
+        {
+            Encoder = encoder;
+            return this;
+        }
 
         public virtual AbstractBootstrap SetOption(string optionKey, object optionValue)
         {

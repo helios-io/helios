@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using Helios.Exceptions;
 using Helios.Net;
 using Helios.Reactor.Response;
+using Helios.Serialization;
 using Helios.Topology;
 
 namespace Helios.Reactor.Tcp
@@ -17,8 +19,8 @@ namespace Helios.Reactor.Tcp
     /// </summary>
     public class TcpProxyReactor : ProxyReactorBase<Socket>
     {
-        public TcpProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
-            : base(localAddress, localPort, eventLoop, SocketType.Stream, ProtocolType.Tcp, bufferSize)
+        public TcpProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
+            : base(localAddress, localPort, eventLoop, encoder, decoder, SocketType.Stream, ProtocolType.Tcp, bufferSize)
         {
             LocalEndpoint = new IPEndPoint(localAddress, localPort);
             Listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -98,10 +100,13 @@ namespace Helios.Reactor.Tcp
         {
         }
 
-        public override void Send(byte[] message, INode responseAddress)
+        public override void Send(NetworkData data)
         {
-            var clientSocket = SocketMap[responseAddress];
-            clientSocket.Socket.BeginSend(message, 0, message.Length, SocketFlags.None, SendCallback, clientSocket.Socket);
+            var clientSocket = SocketMap[data.RemoteHost];
+            List<NetworkData> encoded;
+            Encoder.Encode(ConnectionAdapter, data, out encoded);
+            foreach (var message in encoded)
+               clientSocket.Socket.BeginSend(message.Buffer, 0, message.Length, SocketFlags.None, SendCallback, clientSocket.Socket);
         }
 
         internal override void CloseConnection(Exception ex, IConnection remoteHost)
@@ -170,7 +175,7 @@ namespace Helios.Reactor.Tcp
 
     public class TcpSingleEventLoopProxyReactor : TcpProxyReactor
     {
-        public TcpSingleEventLoopProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : base(localAddress, localPort, eventLoop, bufferSize)
+        public TcpSingleEventLoopProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : base(localAddress, localPort, eventLoop, encoder, decoder, bufferSize)
         {
         }
 
@@ -178,7 +183,10 @@ namespace Helios.Reactor.Tcp
         {
             if (EventLoop.Receive != null)
             {
-                EventLoop.Receive(availableData, responseChannel);
+                List<NetworkData> decoded;
+                Decoder.Decode(responseChannel, availableData, out decoded);
+                foreach(var message in decoded)
+                    EventLoop.Receive(message, responseChannel);
             }
         }
     }

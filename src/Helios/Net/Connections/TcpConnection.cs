@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Exceptions;
+using Helios.Serialization;
 using Helios.Topology;
 using Helios.Util.Concurrency;
 
@@ -12,14 +14,14 @@ namespace Helios.Net.Connections
     {
         protected TcpClient _client;
 
-        public TcpConnection(NetworkEventLoop eventLoop, INode node, TimeSpan timeout, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
-            : base(eventLoop, node, timeout, bufferSize)
+        public TcpConnection(NetworkEventLoop eventLoop, INode node, TimeSpan timeout, IMessageEncoder encoder, IMessageDecoder decoder, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : base(eventLoop, node, timeout, encoder, decoder, bufferSize)
         {
             InitClient();
         }
 
-        public TcpConnection(NetworkEventLoop eventLoop, INode node, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
-            : base(eventLoop, node, bufferSize)
+        public TcpConnection(NetworkEventLoop eventLoop, INode node, IMessageEncoder encoder, IMessageDecoder decoder, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : base(eventLoop, node, encoder, decoder, bufferSize)
         {
             InitClient();
         }
@@ -28,6 +30,14 @@ namespace Helios.Net.Connections
             : base(bufferSize)
         {
             InitClient(client);
+        }
+
+        public TcpConnection(TcpClient client, IMessageEncoder encoder, IMessageDecoder decoder, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : base(bufferSize)
+        {
+            InitClient(client);
+            Encoder = encoder;
+            Decoder = decoder;
         }
 
         public override TransportType Transport { get { return TransportType.Tcp; } }
@@ -224,7 +234,10 @@ namespace Helios.Net.Connections
         {
             try
             {
-                _client.Client.Send(payload.Buffer, payload.Length, SocketFlags.None);
+                List<NetworkData> encoded;
+                Encoder.Encode(this, payload, out encoded);
+                foreach (var message in encoded)
+                    _client.Client.Send(message.Buffer, message.Length, SocketFlags.None);
             }
             catch (SocketException ex) //socket probably closed
             {

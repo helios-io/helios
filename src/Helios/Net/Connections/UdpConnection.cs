@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Exceptions;
+using Helios.Serialization;
 using Helios.Topology;
 using Helios.Util.Concurrency;
 
@@ -19,21 +20,27 @@ namespace Helios.Net.Connections
         protected UdpClient Client;
         protected EndPoint RemoteEndpoint;
 
-        public UdpConnection(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout)
-            : base(eventLoop, binding, timeout)
+        public UdpConnection(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout, IMessageEncoder encoder, IMessageDecoder decoder)
+            : base(eventLoop, binding, timeout, encoder, decoder)
         {
             InitClient();
         }
 
-        public UdpConnection(NetworkEventLoop eventLoop, INode binding)
-            : base(eventLoop, binding)
+        public UdpConnection(NetworkEventLoop eventLoop, INode binding, IMessageEncoder encoder, IMessageDecoder decoder)
+            : base(eventLoop, binding, encoder, decoder)
         {
             InitClient();
         }
 
-        public UdpConnection(UdpClient client)
+        public UdpConnection(UdpClient client, IMessageEncoder encoder, IMessageDecoder decoder)
         {
             InitClient(client);
+            Encoder = encoder;
+            Decoder = decoder;
+        }
+
+        public UdpConnection(UdpClient client) : this(client, Encoders.DefaultEncoder, Encoders.DefaultDecoder)
+        {
         }
 
         #region IConnection Members

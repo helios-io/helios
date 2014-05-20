@@ -14,7 +14,7 @@ namespace Helios.Reactor.Bootstrap
 
         protected override ReactorBase NewReactorInternal(INode listenAddress)
         {
-            return new UdpProxyReactor(listenAddress.Host, listenAddress.Port, EventLoop, BufferBytes);
+            return new UdpProxyReactor(listenAddress.Host, listenAddress.Port, EventLoop, Encoder, Decoder, BufferBytes);
         }
     }
 }

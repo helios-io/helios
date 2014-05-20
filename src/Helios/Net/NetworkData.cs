@@ -18,8 +18,8 @@ namespace Helios.Net
         public byte[] Buffer { get;  set; }
 
         public int Length { get; set; }
+        public static NetworkData Empty = new NetworkData() {Length = 0, RemoteHost = Node.Empty()};
 
-   
 
         public static NetworkData Create(INode node, byte[] data, int bytes)
         {

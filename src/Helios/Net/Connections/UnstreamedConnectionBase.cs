@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Exceptions;
 using Helios.Ops;
+using Helios.Serialization;
 using Helios.Topology;
 
 namespace Helios.Net.Connections
@@ -12,11 +13,13 @@ namespace Helios.Net.Connections
     {
         protected byte[] Buffer;
 
-        protected UnstreamedConnectionBase(int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(EventLoopFactory.CreateNetworkEventLoop(), null, bufferSize) { }
+        protected UnstreamedConnectionBase(int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(EventLoopFactory.CreateNetworkEventLoop(), null, Encoders.DefaultEncoder, Encoders.DefaultDecoder, bufferSize) { }
 
-        protected UnstreamedConnectionBase(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        protected UnstreamedConnectionBase(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout, IMessageEncoder encoder, IMessageDecoder decoder, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base()
         {
+            Decoder = decoder;
+            Encoder = encoder;
             Created = DateTimeOffset.UtcNow;
             Binding = binding;
             Timeout = timeout;
@@ -24,7 +27,7 @@ namespace Helios.Net.Connections
             NetworkEventLoop = eventLoop;
         }
 
-        protected UnstreamedConnectionBase(NetworkEventLoop eventLoop, INode binding, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(eventLoop, binding, NetworkConstants.DefaultConnectivityTimeout, bufferSize) { }
+        protected UnstreamedConnectionBase(NetworkEventLoop eventLoop, INode binding, IMessageEncoder encoder, IMessageDecoder decoder, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(eventLoop, binding, NetworkConstants.DefaultConnectivityTimeout, encoder, decoder, bufferSize) { }
 
 
 
@@ -56,6 +59,8 @@ namespace Helios.Net.Connections
         }
 
         public IEventLoop EventLoop { get { return NetworkEventLoop; } }
+        public IMessageEncoder Encoder { get; protected set; }
+        public IMessageDecoder Decoder { get; protected set; }
 
         protected NetworkEventLoop NetworkEventLoop { get; set; }
 

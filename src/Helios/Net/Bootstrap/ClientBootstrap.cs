@@ -2,6 +2,7 @@
 using System.Net;
 using Helios.Ops;
 using Helios.Ops.Executors;
+using Helios.Serialization;
 using Helios.Topology;
 
 namespace Helios.Net.Bootstrap
@@ -26,7 +27,7 @@ namespace Helios.Net.Bootstrap
         public TransportType Type { get; private set; }
 
         protected IExecutor InternalExecutor { get; set; }
-
+     
         protected NetworkEventLoop EventLoop
         {
             get
@@ -59,6 +60,18 @@ namespace Helios.Net.Bootstrap
 
         public ClientBootstrap RemoteAddress(INode node)
         {
+            return this;
+        }
+
+        public new ClientBootstrap SetDecoder(IMessageDecoder decoder)
+        {
+            base.SetDecoder(decoder);
+            return this;
+        }
+
+        public new ClientBootstrap SetEncoder(IMessageEncoder encoder)
+        {
+            base.SetEncoder(encoder);
             return this;
         }
 

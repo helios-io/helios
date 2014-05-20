@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;
+using Helios.Serialization;
 using Helios.Topology;
 using Helios.Util.Collections;
 
@@ -13,21 +15,25 @@ namespace Helios.Reactor.Response
     /// <summary>
     /// Wraps a remote endpoint which connected <see cref="IReactor"/> instance inside a <see cref="IConnection"/> object
     /// </summary>
-    public abstract class ReactorResponseChannel : IConnection{
+    public abstract class ReactorResponseChannel : IConnection
+    {
 
         protected ICircularBuffer<NetworkData> UnreadMessages = new ConcurrentCircularBuffer<NetworkData>(100);
         private readonly ReactorBase _reactor;
         internal readonly Socket Socket;
 
-        protected ReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, NetworkEventLoop eventLoop) : this(reactor, outboundSocket, (IPEndPoint)outboundSocket.RemoteEndPoint, eventLoop)
+        protected ReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, NetworkEventLoop eventLoop)
+            : this(reactor, outboundSocket, (IPEndPoint)outboundSocket.RemoteEndPoint, eventLoop)
         {
-            
+
         }
 
         protected ReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, IPEndPoint endPoint, NetworkEventLoop eventLoop)
         {
             _reactor = reactor;
             Socket = outboundSocket;
+            Decoder = _reactor.Decoder;
+            Encoder = _reactor.Encoder;
             Local = reactor.LocalEndpoint.ToNode(reactor.Transport);
             RemoteHost = NodeBuilder.FromEndpoint(endPoint);
             NetworkEventLoop = eventLoop;
@@ -62,6 +68,8 @@ namespace Helios.Reactor.Response
         }
 
         public IEventLoop EventLoop { get { return NetworkEventLoop; } }
+        public IMessageEncoder Encoder { get; private set; }
+        public IMessageDecoder Decoder { get; private set; }
 
         public NetworkEventLoop NetworkEventLoop { get; private set; }
 
@@ -69,7 +77,7 @@ namespace Helios.Reactor.Response
         public INode RemoteHost { get; private set; }
         public INode Local { get; private set; }
         public TimeSpan Timeout { get { return TimeSpan.FromSeconds(Socket.ReceiveTimeout); } }
-        public TransportType Transport { get{ if(Socket.ProtocolType == ProtocolType.Tcp){ return TransportType.Tcp; } return TransportType.Udp; } }
+        public TransportType Transport { get { if (Socket.ProtocolType == ProtocolType.Tcp) { return TransportType.Tcp; } return TransportType.Udp; } }
         public bool Blocking { get { return Socket.Blocking; } set { Socket.Blocking = value; } }
         public bool WasDisposed { get; private set; }
         public bool Receiving { get { return _reactor.IsActive; } }
@@ -132,7 +140,7 @@ namespace Helios.Reactor.Response
             }
             else
             {
-               UnreadMessages.Enqueue(data);
+                UnreadMessages.Enqueue(data);
             }
         }
 
@@ -157,12 +165,15 @@ namespace Helios.Reactor.Response
 
         public virtual void Send(NetworkData payload)
         {
-            _reactor.Send(payload.Buffer, RemoteHost);
+            List<NetworkData> encoded;
+            Encoder.Encode(this, payload, out encoded);
+            foreach (var outboundMessage in encoded)
+                _reactor.Send(outboundMessage);
         }
 
         public virtual async Task SendAsync(NetworkData payload)
         {
-            await Task.Run(() => _reactor.Send(payload.Buffer, RemoteHost));
+            await Task.Run(() => Send(payload));
         }
 
         #region IDisposable members
@@ -177,7 +188,7 @@ namespace Helios.Reactor.Response
         {
             if (!WasDisposed)
             {
-                
+
                 if (disposing)
                 {
                     Close();

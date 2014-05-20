@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;
 using Helios.Reactor.Response;
+using Helios.Serialization;
 using Helios.Topology;
 
 namespace Helios.Reactor
@@ -14,8 +16,10 @@ namespace Helios.Reactor
     {
         protected Socket Listener;
 
-        protected ReactorBase(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        protected ReactorBase(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
         {
+            Decoder = decoder;
+            Encoder = encoder;
             LocalEndpoint = new IPEndPoint(localAddress, localPort);
             Listener = new Socket(AddressFamily.InterNetwork, socketType, protocol);
             if (protocol == ProtocolType.Tcp) { Transport = TransportType.Tcp; } else if (protocol == ProtocolType.Udp) {  Transport = TransportType.Udp; }
@@ -51,6 +55,9 @@ namespace Helios.Reactor
             // ReSharper disable once ValueParameterNotUsed
             remove { EventLoop.SetExceptionHandler(null, ConnectionAdapter); }
         }
+
+        public IMessageEncoder Encoder { get; private set; }
+        public IMessageDecoder Decoder { get; private set; }
 
         public IConnection ConnectionAdapter { get; private set; }
         public NetworkEventLoop EventLoop { get; private set; }
@@ -119,7 +126,10 @@ namespace Helios.Reactor
         {
             if (EventLoop.Receive != null)
             {
-                EventLoop.Receive(availableData, responseChannel);
+                List<NetworkData> decoded;
+                Decoder.Decode(responseChannel, availableData, out decoded);
+                foreach(var message in decoded)
+                    EventLoop.Receive(message, responseChannel);
             }
         }
 
@@ -131,8 +141,6 @@ namespace Helios.Reactor
             }
         }
 
-        public abstract void Send(byte[] message, INode responseAddress);
-
         /// <summary>
         /// Closes a connection to a remote host (without shutting down the server.)
         /// </summary>
@@ -140,6 +148,8 @@ namespace Helios.Reactor
         internal abstract void CloseConnection(IConnection remoteHost);
 
         internal abstract void CloseConnection(Exception reason, IConnection remoteHost);
+
+        public abstract void Send(NetworkData data);
 
         public int Backlog { get; set; }
 
@@ -208,6 +218,8 @@ namespace Helios.Reactor
             }
 
             public IEventLoop EventLoop { get { return _reactor.EventLoop; } }
+            public IMessageEncoder Encoder { get; private set; }
+            public IMessageDecoder Decoder { get; private set; }
             public DateTimeOffset Created { get; private set; }
             public INode RemoteHost { get; private set; }
             public INode Local { get; private set; }
@@ -262,7 +274,7 @@ namespace Helios.Reactor
 
             public void Send(NetworkData payload)
             {
-                _reactor.Send(payload.Buffer, payload.RemoteHost);
+                _reactor.Send(payload);
             }
 
             public async Task SendAsync(NetworkData payload)
