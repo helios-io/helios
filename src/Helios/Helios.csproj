@@ -121,7 +121,6 @@
     <Compile Include="Reactor\IReactor.cs" />
     <Compile Include="Reactor\ProxyReactorBase.cs" />
     <Compile Include="Reactor\ReactorBase.cs" />
-    <Compile Include="Reactor\ReactorConnectionAdapter.cs" />
     <Compile Include="Reactor\Response\ReactorProxyResponseChannel.cs" />
     <Compile Include="Reactor\Response\ReactorResponseChannel.cs" />
     <Compile Include="Reactor\Response\TcpReactorResponseChannel.cs" />

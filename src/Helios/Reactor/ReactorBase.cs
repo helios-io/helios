@@ -218,8 +218,8 @@ namespace Helios.Reactor
             }
 
             public IEventLoop EventLoop { get { return _reactor.EventLoop; } }
-            public IMessageEncoder Encoder { get; private set; }
-            public IMessageDecoder Decoder { get; private set; }
+            public IMessageEncoder Encoder { get { return _reactor.Encoder; } }
+            public IMessageDecoder Decoder { get { return _reactor.Decoder; } }
             public DateTimeOffset Created { get; private set; }
             public INode RemoteHost { get; private set; }
             public INode Local { get; private set; }

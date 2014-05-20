@@ -115,11 +115,7 @@ namespace Helios.Reactor.Response
             Receive += callback;
             foreach (var msg in UnreadMessages.DequeueAll())
             {
-                var msg1 = msg;
-                List<NetworkData> decoded;
-                Decoder.Decode(this, msg1, out decoded);
-                foreach(var message in decoded)
-                    NetworkEventLoop.Receive(message, this);
+                NetworkEventLoop.Receive(msg, this);
             }
 
             BeginReceiveInternal();
@@ -168,10 +164,7 @@ namespace Helios.Reactor.Response
 
         public virtual void Send(NetworkData payload)
         {
-            List<NetworkData> encoded;
-            Encoder.Encode(this, payload, out encoded);
-            foreach (var outboundMessage in encoded)
-                _reactor.Send(outboundMessage);
+            _reactor.Send(payload);
         }
 
         public virtual async Task SendAsync(NetworkData payload)
