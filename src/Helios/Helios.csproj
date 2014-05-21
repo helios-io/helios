@@ -48,6 +48,13 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Util\ByteArrayExtensions.cs" />
+    <Compile Include="Buffers\ByteBufBase.cs" />
+    <Compile Include="Buffers\ByteBuffer.cs" />
+    <Compile Include="Buffers\IByteBuf.cs" />
+    <Compile Include="Buffers\IByteBufAllocator.cs" />
+    <Compile Include="Buffers\IReferenceCounted.cs" />
+    <Compile Include="Buffers\UnpooledDirectByteBuf.cs" />
     <Compile Include="Concurrency\FiberFactory.cs" />
     <Compile Include="Concurrency\FiberMode.cs" />
     <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />

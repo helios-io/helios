@@ -60,6 +60,7 @@
     <Compile Include="Serialization\LengthFieldEncodingTests.cs" />
     <Compile Include="Topology\NodeTests.cs" />
     <Compile Include="Topology\NodeUriTests.cs" />
+    <Compile Include="Util\Collections\CircularBufferTests.cs" />
     <Compile Include="Util\Collections\ConcurrentFixedSizeStackTests.cs" />
     <Compile Include="Util\Concurrency\FixedSizeTaskSchedulerTests.cs" />
     <Compile Include="Util\TimedOps\ScheduledValueTests.cs" />

@@ -4,27 +4,27 @@ using System.IO.Compression;
 namespace Helios.Buffers
 {
     /// <summary>
-    /// Abstract base class implementation of a <see cref="IByteBuffer"/>
+    /// Abstract base class implementation of a <see cref="IByteBuf"/>
     /// </summary>
-    public abstract class ByteBufferBase : IByteBuffer
+    public abstract class ByteBufBase : IByteBuf
     {
         private int _markedReaderIndex;
         private int _markedWriterIndex;
 
-        protected ByteBufferBase(int maxCapacity)
+        protected ByteBufBase(int maxCapacity)
         {
             MaxCapacity = maxCapacity;
         }
 
         public abstract int Capacity { get; }
 
-        public abstract IByteBuffer AdjustCapacity(int capacity);
+        public abstract IByteBuf AdjustCapacity(int capacity);
 
         public int MaxCapacity { get; private set; }
-        public abstract IByteBufferAllocator Allocator { get; }
+        public abstract IByteBufAllocator Allocator { get; }
         public int ReaderIndex { get; private set; }
         public int WriterIndex { get; private set; }
-        public IByteBuffer SetWriterIndex(int writerIndex)
+        public IByteBuf SetWriterIndex(int writerIndex)
         {
             if (writerIndex < ReaderIndex || writerIndex > Capacity)
                 throw new IndexOutOfRangeException(string.Format("WriterIndex: {0} (expected: 0 <= readerIndex({1}) <= writerIndex <= capacity ({2})", writerIndex, ReaderIndex, Capacity));
@@ -33,7 +33,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuffer SetReaderIndex(int readerIndex)
+        public IByteBuf SetReaderIndex(int readerIndex)
         {
             if (readerIndex < 0 || readerIndex > WriterIndex)
                 throw new IndexOutOfRangeException(string.Format("ReaderIndex: {0} (expected: 0 <= readerIndex <= writerIndex({1})", readerIndex, WriterIndex));
@@ -41,7 +41,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuffer SetIndex(int readerIndex, int writerIndex)
+        public IByteBuf SetIndex(int readerIndex, int writerIndex)
         {
             if (readerIndex < 0 || readerIndex > writerIndex || writerIndex > Capacity)
                 throw new IndexOutOfRangeException(string.Format("ReaderIndex: {0}, WriterIndex: {1} (expected: 0 <= readerIndex <= writerIndex <= capacity ({2})", readerIndex, writerIndex, Capacity));
@@ -79,37 +79,37 @@ namespace Helios.Buffers
             return Capacity - WriterIndex >= size;
         }
 
-        public IByteBuffer Clear()
+        public IByteBuf Clear()
         {
             ReaderIndex = WriterIndex = 0;
             return this;
         }
 
-        public IByteBuffer MarkReaderIndex()
+        public IByteBuf MarkReaderIndex()
         {
             _markedReaderIndex = ReaderIndex;
             return this;
         }
 
-        public IByteBuffer ResetReaderIndex()
+        public IByteBuf ResetReaderIndex()
         {
             SetReaderIndex(_markedReaderIndex);
             return this;
         }
 
-        public IByteBuffer MarkWriterIndex()
+        public IByteBuf MarkWriterIndex()
         {
             _markedWriterIndex = WriterIndex;
             return this;
         }
 
-        public IByteBuffer ResetWriterIndex()
+        public IByteBuf ResetWriterIndex()
         {
             SetWriterIndex(_markedWriterIndex);
             return this;
         }
 
-        public IByteBuffer DiscardReadBytes()
+        public IByteBuf DiscardReadBytes()
         {
             EnsureAccessible();
             if (ReaderIndex == 0) return this;
@@ -130,7 +130,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuffer EnsureWritable(int minWritableBytes)
+        public IByteBuf EnsureWritable(int minWritableBytes)
         {
             if (minWritableBytes < 0)
                 throw new ArgumentOutOfRangeException("minWritableBytes",
@@ -142,7 +142,7 @@ namespace Helios.Buffers
             {
                 throw new IndexOutOfRangeException(string.Format(
                     "writerIndex({0}) + minWritableBytes({1}) exceeds maxCapacity({2}): {3}",
-                    WriterIndex, minWritableBytes, maxCapacity, this));
+                    WriterIndex, minWritableBytes, MaxCapacity, this));
             }
 
             //Normalize the current capacity to the power of 2
@@ -246,89 +246,89 @@ namespace Helios.Buffers
             return BitConverter.Int64BitsToDouble(GetLong(index));
         }
 
-        public IByteBuffer GetBytes(int index, IByteBuffer destination)
+        public IByteBuf GetBytes(int index, IByteBuf destination)
         {
             GetBytes(index, destination, destination.WritableBytes);
             return this;
         }
 
-        public IByteBuffer GetBytes(int index, IByteBuffer destination, int length)
+        public IByteBuf GetBytes(int index, IByteBuf destination, int length)
         {
             GetBytes(index, destination, destination.WriterIndex, length);
             return this;
         }
 
-        public abstract IByteBuffer GetBytes(int index, IByteBuffer destination, int dstIndex, int length);
+        public abstract IByteBuf GetBytes(int index, IByteBuf destination, int dstIndex, int length);
 
-        public IByteBuffer GetBytes(int index, byte[] destination)
+        public IByteBuf GetBytes(int index, byte[] destination)
         {
             GetBytes(index, destination, 0, destination.Length);
             return this;
         }
 
-        public abstract IByteBuffer GetBytes(int index, byte[] destination, int dstIndex, int length);
+        public abstract IByteBuf GetBytes(int index, byte[] destination, int dstIndex, int length);
 
-        public IByteBuffer SetBoolean(int index, bool value)
+        public IByteBuf SetBoolean(int index, bool value)
         {
             SetByte(index, value ? 1 : 0);
             return this;
         }
 
-        public IByteBuffer SetByte(int index, int value)
+        public IByteBuf SetByte(int index, int value)
         {
             CheckIndex(index);
             _SetByte(index, value);
             return this;
         }
 
-        protected abstract IByteBuffer _SetByte(int index, int value);
+        protected abstract IByteBuf _SetByte(int index, int value);
 
-        public IByteBuffer SetShort(int index, int value)
+        public IByteBuf SetShort(int index, int value)
         {
             CheckIndex(index, 2);
             _SetShort(index, value);
             return this;
         }
 
-        protected abstract IByteBuffer _SetShort(int index, int value);
+        protected abstract IByteBuf _SetShort(int index, int value);
 
-        public IByteBuffer SetInt(int index, int value)
+        public IByteBuf SetInt(int index, int value)
         {
             CheckIndex(index, 4);
             _SetInt(index, value);
             return this;
         }
 
-        protected abstract IByteBuffer _SetInt(int index, int value);
+        protected abstract IByteBuf _SetInt(int index, int value);
 
-        public IByteBuffer SetLong(int index, long value)
+        public IByteBuf SetLong(int index, long value)
         {
             CheckIndex(index, 8);
             _SetLong(index, value);
             return this;
         }
 
-        protected abstract IByteBuffer _SetLong(int index, long value);
+        protected abstract IByteBuf _SetLong(int index, long value);
 
-        public IByteBuffer SetChar(int index, char value)
+        public IByteBuf SetChar(int index, char value)
         {
             SetShort(index, value);
             return this;
         }
 
-        public IByteBuffer SetDouble(int index, double value)
+        public IByteBuf SetDouble(int index, double value)
         {
             SetLong(index, BitConverter.DoubleToInt64Bits(value));
             return this;
         }
 
-        public IByteBuffer SetBytes(int index, IByteBuffer src)
+        public IByteBuf SetBytes(int index, IByteBuf src)
         {
             SetBytes(index, src, src.ReadableBytes);
             return this;
         }
 
-        public IByteBuffer SetBytes(int index, IByteBuffer src, int length)
+        public IByteBuf SetBytes(int index, IByteBuf src, int length)
         {
             CheckIndex(index, length);
             if(src == null) throw new NullReferenceException("src cannot be null");
@@ -339,15 +339,15 @@ namespace Helios.Buffers
             return this;
         }
 
-        public abstract IByteBuffer SetBytes(int index, IByteBuffer src, int srcIndex, int length);
+        public abstract IByteBuf SetBytes(int index, IByteBuf src, int srcIndex, int length);
 
-        public IByteBuffer SetBytes(int index, byte[] src)
+        public IByteBuf SetBytes(int index, byte[] src)
         {
             SetBytes(index, src, 0, src.Length);
             return this;
         }
 
-        public abstract IByteBuffer SetBytes(int index, byte[] src, int srcIndex, int length);
+        public abstract IByteBuf SetBytes(int index, byte[] src, int srcIndex, int length);
 
         public bool ReadBoolean()
         {
@@ -407,19 +407,19 @@ namespace Helios.Buffers
             return BitConverter.Int64BitsToDouble(ReadLong());
         }
 
-        public IByteBuffer ReadBytes(int length)
+        public IByteBuf ReadBytes(int length)
         {
             throw new NotImplementedException();
 
         }
 
-        public IByteBuffer ReadBytes(IByteBuffer destination)
+        public IByteBuf ReadBytes(IByteBuf destination)
         {
             ReadBytes(destination, destination.WritableBytes);
             return this;
         }
 
-        public IByteBuffer ReadBytes(IByteBuffer destination, int length)
+        public IByteBuf ReadBytes(IByteBuf destination, int length)
         {
             if(length > destination.WritableBytes) 
                 throw new IndexOutOfRangeException(string.Format("length({0}) exceeds destination.WritableBytes({1}) where destination is: {2}", 
@@ -429,7 +429,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuffer ReadBytes(IByteBuffer destination, int dstIndex, int length)
+        public IByteBuf ReadBytes(IByteBuf destination, int dstIndex, int length)
         {
             CheckReadableBytes(length);
             GetBytes(ReaderIndex, destination, dstIndex, length);
@@ -437,13 +437,13 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuffer ReadBytes(byte[] destination)
+        public IByteBuf ReadBytes(byte[] destination)
         {
             ReadBytes(destination, 0, destination.Length);
             return this;
         }
 
-        public IByteBuffer ReadBytes(byte[] destination, int dstIndex, int length)
+        public IByteBuf ReadBytes(byte[] destination, int dstIndex, int length)
         {
             CheckReadableBytes(length);
             GetBytes(ReaderIndex, destination, dstIndex, length);
@@ -451,7 +451,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuffer SkipBytes(int length)
+        public IByteBuf SkipBytes(int length)
         {
             CheckReadableBytes(length);
             var newReaderIndex = ReaderIndex + length;
@@ -463,13 +463,13 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuffer WriteBoolean(bool value)
+        public IByteBuf WriteBoolean(bool value)
         {
             WriteByte(value ? 1 : 0);
             return this;
         }
 
-        public IByteBuffer WriteByte(int value)
+        public IByteBuf WriteByte(int value)
         {
             EnsureWritable(1);
             SetByte(WriterIndex, value);
@@ -477,7 +477,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuffer WriteShort(int value)
+        public IByteBuf WriteShort(int value)
         {
             EnsureWritable(2);
             _SetShort(WriterIndex, value);
@@ -485,7 +485,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuffer WriteInt(int value)
+        public IByteBuf WriteInt(int value)
         {
             EnsureWritable(4);
             _SetInt(WriterIndex, value);
@@ -493,7 +493,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuffer WriteLong(long value)
+        public IByteBuf WriteLong(long value)
         {
             EnsureWritable(8);
             _SetLong(WriterIndex, value);
@@ -501,25 +501,25 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuffer WriteChar(char value)
+        public IByteBuf WriteChar(char value)
         {
             WriteShort(value);
             return this;
         }
 
-        public IByteBuffer WriteDouble(double value)
+        public IByteBuf WriteDouble(double value)
         {
             WriteLong(BitConverter.DoubleToInt64Bits(value));
             return this;
         }
 
-        public IByteBuffer WriteBytes(IByteBuffer src)
+        public IByteBuf WriteBytes(IByteBuf src)
         {
             WriteBytes(src, src.ReadableBytes);
             return this;
         }
 
-        public IByteBuffer WriteBytes(IByteBuffer src, int length)
+        public IByteBuf WriteBytes(IByteBuf src, int length)
         {
             if (length > src.ReadableBytes)
                 throw new IndexOutOfRangeException(string.Format("length({0}) exceeds src.readableBytes({1}) where src is: {2}", length, src.ReadableBytes, src));
@@ -528,7 +528,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuffer WriteBytes(IByteBuffer src, int srcIndex, int length)
+        public IByteBuf WriteBytes(IByteBuf src, int srcIndex, int length)
         {
             EnsureWritable(length);
             SetBytes(WriterIndex, src, srcIndex, length);
@@ -536,19 +536,22 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuffer WriteBytes(byte[] src)
+        public IByteBuf WriteBytes(byte[] src)
         {
             WriteBytes(src, 0, src.Length);
             return this;
         }
 
-        public IByteBuffer WriteBytes(byte[] src, int srcIndex, int length)
+        public IByteBuf WriteBytes(byte[] src, int srcIndex, int length)
         {
             EnsureWritable(length);
             SetBytes(WriterIndex, src, srcIndex, length);
             WriterIndex += length;
             return this;
         }
+
+        public abstract bool HasArray { get; }
+        public abstract byte[] InternalArray();
 
         protected void AdjustMarkers(int decrement)
         {
@@ -633,18 +636,7 @@ namespace Helios.Buffers
 
         protected void EnsureAccessible()
         {
-            if (ReferenceCount == 0)
-                throw new IllegalReferenceCountException(0);
+            //TODO: add reference counting in the future if applicable
         }
-
-        #region IReferenceCounted members
-
-        public abstract int ReferenceCount { get; }
-        public abstract IReferenceCounted Retain();
-        public abstract IReferenceCounted Retain(int increment);
-        public abstract bool Release();
-        public abstract bool Release(int decrement);
-
-        #endregion
     }
 }

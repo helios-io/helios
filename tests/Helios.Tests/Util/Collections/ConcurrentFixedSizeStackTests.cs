@@ -28,7 +28,7 @@ namespace Helios.Tests.Util.Collections
         }
 
         /// <summary>
-        /// If we call Stack.ToArray() when the stack has no items, we should get a non-null array of size 0
+        /// If we call Stack.Array() when the stack has no items, we should get a non-null array of size 0
         /// </summary>
         [Test]
         public void Should_get_array_with_no_items_on_ToArray_when_Empty()

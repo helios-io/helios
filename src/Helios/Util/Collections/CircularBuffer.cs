@@ -11,7 +11,7 @@ namespace Helios.Util.Collections
     /// <typeparam name="T">The type being stored in the circular buffer</typeparam>
     public class CircularBuffer<T> : ICircularBuffer<T>
     {
-        protected internal CircularBuffer(int capacity)
+        public CircularBuffer(int capacity)
         {
             InternalCapacity = capacity;
             InternalSize = 0;
@@ -56,7 +56,22 @@ namespace Helios.Util.Collections
                 if (value < Size)
                     throw new ArgumentOutOfRangeException("value",
                         "Can't make maximum buffer capacity smaller than it's currently filled size!");
+                if (value > InternalCapacity)
+                {
+                    Expand(value);
+                    InternalCapacity = value;
+                }
             }
+        }
+
+        /// <summary>
+        /// Expands the circular buffer to accomodate additional space
+        /// </summary>
+        public virtual void Expand(int newSize)
+        {
+            var newBuffer = new T[newSize];
+            CopyTo(newBuffer);
+            Buffer = newBuffer;
         }
 
         public int Size

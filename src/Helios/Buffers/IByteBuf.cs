@@ -7,25 +7,25 @@ namespace Helios.Buffers
     /// 
     /// Provides circular-buffer-esque security around a byte array, allowing reads and writes to occur independently.
     /// 
-    /// In general, the <see cref="IByteBuffer"/> guarantees:
+    /// In general, the <see cref="IByteBuf"/> guarantees:
     /// 
     /// * <see cref="ReaderIndex"/> LESS THAN OR EQUAL TO <see cref="WriterIndex"/> LESS THAN OR EQUAL TO <see cref="Capacity"/>.
     /// </summary>
-    public interface IByteBuffer : IReferenceCounted
+    public interface IByteBuf
     {
         int Capacity { get; }
 
         /// <summary>
         /// Expands the capacity of this buffer so long as it is less than <see cref="MaxCapacity"/>.
         /// </summary>
-        IByteBuffer AdjustCapacity(int capacity);
+        IByteBuf AdjustCapacity(int capacity);
 
         int MaxCapacity { get; }
 
         /// <summary>
         /// The allocator who created this buffer
         /// </summary>
-        IByteBufferAllocator Allocator { get; }
+        IByteBufAllocator Allocator { get; }
 
         int ReaderIndex { get; }
 
@@ -36,19 +36,19 @@ namespace Helios.Buffers
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">thrown if <see cref="WriterIndex"/> exceeds the length of the buffer</exception>
 
-        IByteBuffer SetWriterIndex(int writerIndex);
+        IByteBuf SetWriterIndex(int writerIndex);
 
         /// <summary>
         /// Sets the <see cref="ReaderIndex"/> of this buffer
         /// </summary>
         /// <exception cref="IndexOutOfRangeException"> thrown if <see cref="ReaderIndex"/> is greater than <see cref="WriterIndex"/> or less than <c>0</c>.</exception>
-        IByteBuffer SetReaderIndex(int readerIndex);
+        IByteBuf SetReaderIndex(int readerIndex);
 
         /// <summary>
         /// Sets both indexes
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">thrown if <see cref="WriterIndex"/> or <see cref="ReaderIndex"/> exceeds the length of the buffer</exception>
-        IByteBuffer SetIndex(int readerIndex, int writerIndex);
+        IByteBuf SetIndex(int readerIndex, int writerIndex);
 
         int ReadableBytes { get; }
 
@@ -82,7 +82,7 @@ namespace Helios.Buffers
         /// Sets the <see cref="WriterIndex"/> and <see cref="ReaderIndex"/> to <c>0</c>. Does not erase any of the data written into the buffer already,
         /// but it will overwrite that data.
         /// </summary>
-        IByteBuffer Clear();
+        IByteBuf Clear();
 
         /// <summary>
         /// Marks the current <see cref="ReaderIndex"/> in this buffer. You can reposition the current <see cref="ReaderIndex"/>
@@ -90,14 +90,14 @@ namespace Helios.Buffers
         /// 
         /// The initial value of the marked <see cref="ReaderIndex"/> is <c>0</c>.
         /// </summary>
-        IByteBuffer MarkReaderIndex();
+        IByteBuf MarkReaderIndex();
 
         /// <summary>
         /// Repositions the current <see cref="ReaderIndex"/> to the marked <see cref="ReaderIndex"/> in this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">is thrown if the current <see cref="WriterIndex"/> is less than the 
         /// marked <see cref="ReaderIndex"/></exception>
-        IByteBuffer ResetReaderIndex();
+        IByteBuf ResetReaderIndex();
 
         /// <summary>
         /// Marks the current <see cref="WriterIndex"/> in this buffer. You can reposition the current <see cref="WriterIndex"/>
@@ -105,14 +105,14 @@ namespace Helios.Buffers
         /// 
         /// The initial value of the marked <see cref="WriterIndex"/> is <c>0</c>.
         /// </summary>
-        IByteBuffer MarkWriterIndex();
+        IByteBuf MarkWriterIndex();
 
         /// <summary>
         /// Repositions the current <see cref="WriterIndex"/> to the marked <see cref="WriterIndex"/> in this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">is thrown if the current <see cref="ReaderIndex"/> is greater than the 
         /// marked <see cref="WriterIndex"/></exception>
-        IByteBuffer ResetWriterIndex();
+        IByteBuf ResetWriterIndex();
 
         /// <summary>
         /// Discards the bytes between the 0th index and <see cref="ReaderIndex"/>.
@@ -121,7 +121,7 @@ namespace Helios.Buffers
         /// and sets <see cref="ReaderIndex"/> and <see cref="WriterIndex"/> to <c>0</c> and <c>oldWriterIndex - oldReaderIndex</c> respectively.
         /// </summary>
         /// <returns></returns>
-        IByteBuffer DiscardReadBytes();
+        IByteBuf DiscardReadBytes();
 
         /// <summary>
         /// Makes sure the number of <see cref="WritableBytes"/> is equal to or greater than
@@ -130,7 +130,7 @@ namespace Helios.Buffers
         /// </summary>
         /// <param name="minWritableBytes">The expected number of minimum writable bytes</param>
         /// <exception cref="IndexOutOfRangeException"> if <see cref="WriterIndex"/> + <see cref="minWritableBytes"/> > <see cref="MaxCapacity"/>.</exception>
-        IByteBuffer EnsureWritable(int minWritableBytes);
+        IByteBuf EnsureWritable(int minWritableBytes);
 
         /// <summary>
         /// Gets a boolean at the specified absolute <see cref="index"/> in this buffer.
@@ -209,35 +209,35 @@ namespace Helios.Buffers
         /// absolute <see cref="index"/> until the destination becomes non-writable.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer GetBytes(int index, IByteBuffer destination);
+        IByteBuf GetBytes(int index, IByteBuf destination);
 
         /// <summary>
         /// Transfers this buffers data to the specified <see cref="destination"/> buffer starting at the specified
         /// absolute <see cref="index"/> until the destination becomes non-writable.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer GetBytes(int index, IByteBuffer destination, int length);
+        IByteBuf GetBytes(int index, IByteBuf destination, int length);
 
         /// <summary>
         /// Transfers this buffers data to the specified <see cref="destination"/> buffer starting at the specified
         /// absolute <see cref="index"/> until the destination becomes non-writable.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer GetBytes(int index, IByteBuffer destination, int dstIndex, int length);
+        IByteBuf GetBytes(int index, IByteBuf destination, int dstIndex, int length);
 
         /// <summary>
         /// Transfers this buffers data to the specified <see cref="destination"/> buffer starting at the specified
         /// absolute <see cref="index"/> until the destination becomes non-writable.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer GetBytes(int index, byte[] destination);
+        IByteBuf GetBytes(int index, byte[] destination);
 
         /// <summary>
         /// Transfers this buffers data to the specified <see cref="destination"/> buffer starting at the specified
         /// absolute <see cref="index"/> until the destination becomes non-writable.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer GetBytes(int index, byte[] destination, int dstIndex, int length);
+        IByteBuf GetBytes(int index, byte[] destination, int dstIndex, int length);
 
         /// <summary>
         /// Sets the specified boolean at the specified absolute <see cref="index"/> in this buffer.
@@ -245,7 +245,7 @@ namespace Helios.Buffers
         /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer SetBoolean(int index, bool value);
+        IByteBuf SetBoolean(int index, bool value);
 
         /// <summary>
         /// Sets the specified byte at the specified absolute <see cref="index"/> in this buffer.
@@ -253,7 +253,7 @@ namespace Helios.Buffers
         /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer SetByte(int index, int value);
+        IByteBuf SetByte(int index, int value);
 
         /// <summary>
         /// Sets the specified short at the specified absolute <see cref="index"/> in this buffer.
@@ -261,7 +261,7 @@ namespace Helios.Buffers
         /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer SetShort(int index, int value);
+        IByteBuf SetShort(int index, int value);
 
         /// <summary>
         /// Sets the specified integer at the specified absolute <see cref="index"/> in this buffer.
@@ -269,7 +269,7 @@ namespace Helios.Buffers
         /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer SetInt(int index, int value);
+        IByteBuf SetInt(int index, int value);
 
         /// <summary>
         /// Sets the specified long integer at the specified absolute <see cref="index"/> in this buffer.
@@ -277,7 +277,7 @@ namespace Helios.Buffers
         /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer SetLong(int index, long value);
+        IByteBuf SetLong(int index, long value);
 
         /// <summary>
         /// Sets the specified UTF-16 char at the specified absolute <see cref="index"/> in this buffer.
@@ -285,7 +285,7 @@ namespace Helios.Buffers
         /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer SetChar(int index, char value);
+        IByteBuf SetChar(int index, char value);
 
         /// <summary>
         /// Sets the specified double at the specified absolute <see cref="index"/> in this buffer.
@@ -293,7 +293,7 @@ namespace Helios.Buffers
         /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer SetDouble(int index, double value);
+        IByteBuf SetDouble(int index, double value);
 
         /// <summary>
         /// Transfers the <see cref="src"/> byte buffer's contents starting at the specified absolute <see cref="index"/>.
@@ -301,7 +301,7 @@ namespace Helios.Buffers
         /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer SetBytes(int index, IByteBuffer src);
+        IByteBuf SetBytes(int index, IByteBuf src);
 
         /// <summary>
         /// Transfers the <see cref="src"/> byte buffer's contents starting at the specified absolute <see cref="index"/>.
@@ -309,7 +309,7 @@ namespace Helios.Buffers
         /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer SetBytes(int index, IByteBuffer src, int length);
+        IByteBuf SetBytes(int index, IByteBuf src, int length);
 
         /// <summary>
         /// Transfers the <see cref="src"/> byte buffer's contents starting at the specified absolute <see cref="index"/>.
@@ -317,7 +317,7 @@ namespace Helios.Buffers
         /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer SetBytes(int index, IByteBuffer src, int srcIndex, int length);
+        IByteBuf SetBytes(int index, IByteBuf src, int srcIndex, int length);
 
         /// <summary>
         /// Transfers the <see cref="src"/> byte buffer's contents starting at the specified absolute <see cref="index"/>.
@@ -325,7 +325,7 @@ namespace Helios.Buffers
         /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer SetBytes(int index, byte[] src);
+        IByteBuf SetBytes(int index, byte[] src);
 
         /// <summary>
         /// Transfers the <see cref="src"/> byte buffer's contents starting at the specified absolute <see cref="index"/>.
@@ -333,7 +333,7 @@ namespace Helios.Buffers
         /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
-        IByteBuffer SetBytes(int index, byte[] src, int srcIndex, int length);
+        IByteBuf SetBytes(int index, byte[] src, int srcIndex, int length);
 
         /// <summary>
         /// Gets a boolean at the current <see cref="ReaderIndex"/> and increases the <see cref="ReaderIndex"/>
@@ -398,7 +398,7 @@ namespace Helios.Buffers
         /// Reads <see cref="length"/> bytes from this buffer into a new destination buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if <see cref="ReadableBytes"/> is less than <see cref="length"/></exception>
-        IByteBuffer ReadBytes(int length);
+        IByteBuf ReadBytes(int length);
 
         /// <summary>
         /// Transfers bytes from this buffer's data into the specified destination buffer
@@ -406,44 +406,55 @@ namespace Helios.Buffers
         /// non-writable and increases the <see cref="ReaderIndex"/> by the number of transferred bytes.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if <see cref="destination.WritableBytes"/> is greaer than <see cref="ReadableBytes"/>.</exception>
-        IByteBuffer ReadBytes(IByteBuffer destination);
+        IByteBuf ReadBytes(IByteBuf destination);
 
-        IByteBuffer ReadBytes(IByteBuffer destination, int length);
+        IByteBuf ReadBytes(IByteBuf destination, int length);
 
-        IByteBuffer ReadBytes(IByteBuffer destination, int dstIndex, int length);
+        IByteBuf ReadBytes(IByteBuf destination, int dstIndex, int length);
 
-        IByteBuffer ReadBytes(byte[] destination);
+        IByteBuf ReadBytes(byte[] destination);
 
-        IByteBuffer ReadBytes(byte[] destination, int dstIndex, int length);
+        IByteBuf ReadBytes(byte[] destination, int dstIndex, int length);
 
         /// <summary>
         /// Increases the current <see cref="ReaderIndex"/> by the specified <see cref="length"/> in this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException"> if <see cref="length"/> is greater than <see cref="ReadableBytes"/>.</exception>
-        IByteBuffer SkipBytes(int length);
+        IByteBuf SkipBytes(int length);
 
-        IByteBuffer WriteBoolean(bool value);
+        IByteBuf WriteBoolean(bool value);
 
-        IByteBuffer WriteByte(int value);
+        IByteBuf WriteByte(int value);
 
-        IByteBuffer WriteShort(int value);
+        IByteBuf WriteShort(int value);
 
-        IByteBuffer WriteInt(int value);
+        IByteBuf WriteInt(int value);
 
-        IByteBuffer WriteLong(long value);
+        IByteBuf WriteLong(long value);
 
-        IByteBuffer WriteChar(char value);
+        IByteBuf WriteChar(char value);
 
-        IByteBuffer WriteDouble(double value);
+        IByteBuf WriteDouble(double value);
 
-        IByteBuffer WriteBytes(IByteBuffer src);
+        IByteBuf WriteBytes(IByteBuf src);
 
-        IByteBuffer WriteBytes(IByteBuffer src, int length);
+        IByteBuf WriteBytes(IByteBuf src, int length);
 
-        IByteBuffer WriteBytes(IByteBuffer src, int srcIndex, int length);
+        IByteBuf WriteBytes(IByteBuf src, int srcIndex, int length);
 
-        IByteBuffer WriteBytes(byte[] src);
+        IByteBuf WriteBytes(byte[] src);
 
-        IByteBuffer WriteBytes(byte[] src, int srcIndex, int length);
+        IByteBuf WriteBytes(byte[] src, int srcIndex, int length);
+
+        /// <summary>
+        /// Flag that indicates if this <see cref="IByteBuf"/> is backed by a byte array or not
+        /// </summary>
+        bool HasArray { get; }
+
+        /// <summary>
+        /// Grabs the underlying byte array for this buffer
+        /// </summary>
+        /// <returns></returns>
+        byte[] InternalArray();
     }
 }
