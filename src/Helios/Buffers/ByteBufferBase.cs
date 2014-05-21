@@ -1,0 +1,650 @@
+using System;
+using System.IO.Compression;
+
+namespace Helios.Buffers
+{
+    /// <summary>
+    /// Abstract base class implementation of a <see cref="IByteBuffer"/>
+    /// </summary>
+    public abstract class ByteBufferBase : IByteBuffer
+    {
+        private int _markedReaderIndex;
+        private int _markedWriterIndex;
+
+        protected ByteBufferBase(int maxCapacity)
+        {
+            MaxCapacity = maxCapacity;
+        }
+
+        public abstract int Capacity { get; }
+
+        public abstract IByteBuffer AdjustCapacity(int capacity);
+
+        public int MaxCapacity { get; private set; }
+        public abstract IByteBufferAllocator Allocator { get; }
+        public int ReaderIndex { get; private set; }
+        public int WriterIndex { get; private set; }
+        public IByteBuffer SetWriterIndex(int writerIndex)
+        {
+            if (writerIndex < ReaderIndex || writerIndex > Capacity)
+                throw new IndexOutOfRangeException(string.Format("WriterIndex: {0} (expected: 0 <= readerIndex({1}) <= writerIndex <= capacity ({2})", writerIndex, ReaderIndex, Capacity));
+
+            WriterIndex = writerIndex;
+            return this;
+        }
+
+        public IByteBuffer SetReaderIndex(int readerIndex)
+        {
+            if (readerIndex < 0 || readerIndex > WriterIndex)
+                throw new IndexOutOfRangeException(string.Format("ReaderIndex: {0} (expected: 0 <= readerIndex <= writerIndex({1})", readerIndex, WriterIndex));
+            ReaderIndex = readerIndex;
+            return this;
+        }
+
+        public IByteBuffer SetIndex(int readerIndex, int writerIndex)
+        {
+            if (readerIndex < 0 || readerIndex > writerIndex || writerIndex > Capacity)
+                throw new IndexOutOfRangeException(string.Format("ReaderIndex: {0}, WriterIndex: {1} (expected: 0 <= readerIndex <= writerIndex <= capacity ({2})", readerIndex, writerIndex, Capacity));
+
+            ReaderIndex = readerIndex;
+            WriterIndex = writerIndex;
+            return this;
+        }
+
+        public int ReadableBytes { get { return WriterIndex - ReaderIndex; } }
+        public int WritableBytes { get { return Capacity - WriterIndex; } }
+
+        public int MaxWritableBytes
+        {
+            get { return MaxCapacity - WriterIndex; }
+        }
+
+        public bool IsReadable()
+        {
+            return WriterIndex > ReaderIndex;
+        }
+
+        public bool IsReadable(int size)
+        {
+            return WriterIndex - ReaderIndex >= size;
+        }
+
+        public bool IsWritable()
+        {
+            return Capacity > WriterIndex;
+        }
+
+        public bool IsWritable(int size)
+        {
+            return Capacity - WriterIndex >= size;
+        }
+
+        public IByteBuffer Clear()
+        {
+            ReaderIndex = WriterIndex = 0;
+            return this;
+        }
+
+        public IByteBuffer MarkReaderIndex()
+        {
+            _markedReaderIndex = ReaderIndex;
+            return this;
+        }
+
+        public IByteBuffer ResetReaderIndex()
+        {
+            SetReaderIndex(_markedReaderIndex);
+            return this;
+        }
+
+        public IByteBuffer MarkWriterIndex()
+        {
+            _markedWriterIndex = WriterIndex;
+            return this;
+        }
+
+        public IByteBuffer ResetWriterIndex()
+        {
+            SetWriterIndex(_markedWriterIndex);
+            return this;
+        }
+
+        public IByteBuffer DiscardReadBytes()
+        {
+            EnsureAccessible();
+            if (ReaderIndex == 0) return this;
+
+            if (ReaderIndex != WriterIndex)
+            {
+                SetBytes(0, this, ReaderIndex, WriterIndex - ReaderIndex);
+                WriterIndex -= ReaderIndex;
+                AdjustMarkers(ReaderIndex);
+                ReaderIndex = 0;
+            }
+            else
+            {
+                AdjustMarkers(ReaderIndex);
+                WriterIndex = ReaderIndex = 0;
+            }
+
+            return this;
+        }
+
+        public IByteBuffer EnsureWritable(int minWritableBytes)
+        {
+            if (minWritableBytes < 0)
+                throw new ArgumentOutOfRangeException("minWritableBytes",
+                    "expected minWritableBytes to be greater than zero");
+
+            if (minWritableBytes <= WritableBytes) return this;
+
+            if (minWritableBytes > MaxCapacity - WriterIndex)
+            {
+                throw new IndexOutOfRangeException(string.Format(
+                    "writerIndex({0}) + minWritableBytes({1}) exceeds maxCapacity({2}): {3}",
+                    WriterIndex, minWritableBytes, maxCapacity, this));
+            }
+
+            //Normalize the current capacity to the power of 2
+            var newCapacity = CalculateNewCapacity(WriterIndex + minWritableBytes);
+
+            //Adjust to the new capacity
+            AdjustCapacity(newCapacity);
+            return this;
+        }
+
+        private int CalculateNewCapacity(int minNewCapacity)
+        {
+            var maxCapacity = MaxCapacity;
+            var threshold = 1048576 * 4; // 4 MiB page
+            var newCapacity = 0;
+            if (minNewCapacity == threshold)
+            {
+                return threshold;
+            }
+
+            // If over threshold, do not double but just increase by threshold.
+            if (minNewCapacity > threshold)
+            {
+                newCapacity = minNewCapacity / threshold * threshold;
+                if (newCapacity > maxCapacity - threshold)
+                {
+                    newCapacity = maxCapacity;
+                }
+                else
+                {
+                    newCapacity += threshold;
+                }
+                return newCapacity;
+            }
+
+            // Not over threshold. Double up to 4 MiB, starting from 64.
+            newCapacity = 64;
+            while (newCapacity < minNewCapacity)
+            {
+                newCapacity <<= 1;
+            }
+
+            return Math.Min(newCapacity, maxCapacity);
+        }
+
+        public bool GetBoolean(int index)
+        {
+            CheckIndex(index);
+            return GetByte(index) != 0;
+        }
+
+        public byte GetByte(int index)
+        {
+            CheckIndex(index);
+            return _GetByte(index);
+        }
+
+        protected abstract byte _GetByte(int index);
+
+        public short GetShort(int index)
+        {
+            CheckIndex(index, 2);
+            return _GetShort(index);
+        }
+
+        protected abstract short _GetShort(int index);
+
+        public ushort GetUnsignedShort(int index)
+        {
+            return Convert.ToUInt16(GetShort(index));
+        }
+
+        public int GetInt(int index)
+        {
+            CheckIndex(index, 4);
+            return _GetInt(index);
+        }
+
+        protected abstract int _GetInt(int index);
+
+        public uint GetUnsignedInt(int index)
+        {
+            return Convert.ToUInt32(GetInt(index));
+        }
+
+        public long GetLong(int index)
+        {
+            CheckIndex(index, 8);
+            return _GetLong(index);
+        }
+
+        protected abstract long _GetLong(int index);
+
+        public char GetChar(int index)
+        {
+            return Convert.ToChar(GetShort(index));
+        }
+
+        public double GetDouble(int index)
+        {
+            return BitConverter.Int64BitsToDouble(GetLong(index));
+        }
+
+        public IByteBuffer GetBytes(int index, IByteBuffer destination)
+        {
+            GetBytes(index, destination, destination.WritableBytes);
+            return this;
+        }
+
+        public IByteBuffer GetBytes(int index, IByteBuffer destination, int length)
+        {
+            GetBytes(index, destination, destination.WriterIndex, length);
+            return this;
+        }
+
+        public abstract IByteBuffer GetBytes(int index, IByteBuffer destination, int dstIndex, int length);
+
+        public IByteBuffer GetBytes(int index, byte[] destination)
+        {
+            GetBytes(index, destination, 0, destination.Length);
+            return this;
+        }
+
+        public abstract IByteBuffer GetBytes(int index, byte[] destination, int dstIndex, int length);
+
+        public IByteBuffer SetBoolean(int index, bool value)
+        {
+            SetByte(index, value ? 1 : 0);
+            return this;
+        }
+
+        public IByteBuffer SetByte(int index, int value)
+        {
+            CheckIndex(index);
+            _SetByte(index, value);
+            return this;
+        }
+
+        protected abstract IByteBuffer _SetByte(int index, int value);
+
+        public IByteBuffer SetShort(int index, int value)
+        {
+            CheckIndex(index, 2);
+            _SetShort(index, value);
+            return this;
+        }
+
+        protected abstract IByteBuffer _SetShort(int index, int value);
+
+        public IByteBuffer SetInt(int index, int value)
+        {
+            CheckIndex(index, 4);
+            _SetInt(index, value);
+            return this;
+        }
+
+        protected abstract IByteBuffer _SetInt(int index, int value);
+
+        public IByteBuffer SetLong(int index, long value)
+        {
+            CheckIndex(index, 8);
+            _SetLong(index, value);
+            return this;
+        }
+
+        protected abstract IByteBuffer _SetLong(int index, long value);
+
+        public IByteBuffer SetChar(int index, char value)
+        {
+            SetShort(index, value);
+            return this;
+        }
+
+        public IByteBuffer SetDouble(int index, double value)
+        {
+            SetLong(index, BitConverter.DoubleToInt64Bits(value));
+            return this;
+        }
+
+        public IByteBuffer SetBytes(int index, IByteBuffer src)
+        {
+            SetBytes(index, src, src.ReadableBytes);
+            return this;
+        }
+
+        public IByteBuffer SetBytes(int index, IByteBuffer src, int length)
+        {
+            CheckIndex(index, length);
+            if(src == null) throw new NullReferenceException("src cannot be null");
+            if (length > src.ReadableBytes) throw new IndexOutOfRangeException(string.Format(
+                     "length({0}) exceeds src.readableBytes({1}) where src is: {2}", length, src.ReadableBytes, src));
+            SetBytes(index, src, src.ReaderIndex, length);
+            src.SetReaderIndex(src.ReaderIndex + length);
+            return this;
+        }
+
+        public abstract IByteBuffer SetBytes(int index, IByteBuffer src, int srcIndex, int length);
+
+        public IByteBuffer SetBytes(int index, byte[] src)
+        {
+            SetBytes(index, src, 0, src.Length);
+            return this;
+        }
+
+        public abstract IByteBuffer SetBytes(int index, byte[] src, int srcIndex, int length);
+
+        public bool ReadBoolean()
+        {
+            return ReadByte() != 0;
+        }
+
+        public byte ReadByte()
+        {
+            CheckReadableBytes(1);
+            var i = ReaderIndex;
+            var b = GetByte(i);
+            ReaderIndex = i + 1;
+            return b;
+        }
+
+        public short ReadShort()
+        {
+            CheckReadableBytes(2);
+            var v = _GetShort(ReaderIndex);
+            ReaderIndex += 2;
+            return v;
+        }
+
+        public ushort ReadUnsignedShort()
+        {
+            return Convert.ToUInt16(ReadShort());
+        }
+
+        public int ReadInt()
+        {
+            CheckReadableBytes(4);
+            var v = _GetInt(ReaderIndex);
+            ReaderIndex += 4;
+            return v;
+        }
+
+        public uint ReadUnsignedInt()
+        {
+            return Convert.ToUInt32(ReadInt());
+        }
+
+        public long ReadLong()
+        {
+            CheckReadableBytes(8);
+            var v = _GetLong(ReaderIndex);
+            ReaderIndex += 8;
+            return v;
+        }
+
+        public char ReadChar()
+        {
+            return (char) ReadShort();
+        }
+
+        public double ReadDouble()
+        {
+            return BitConverter.Int64BitsToDouble(ReadLong());
+        }
+
+        public IByteBuffer ReadBytes(int length)
+        {
+            throw new NotImplementedException();
+
+        }
+
+        public IByteBuffer ReadBytes(IByteBuffer destination)
+        {
+            ReadBytes(destination, destination.WritableBytes);
+            return this;
+        }
+
+        public IByteBuffer ReadBytes(IByteBuffer destination, int length)
+        {
+            if(length > destination.WritableBytes) 
+                throw new IndexOutOfRangeException(string.Format("length({0}) exceeds destination.WritableBytes({1}) where destination is: {2}", 
+                    length, destination.WritableBytes, destination));
+            ReadBytes(destination, destination.WriterIndex, length);
+            destination.SetWriterIndex(destination.WriterIndex + length);
+            return this;
+        }
+
+        public IByteBuffer ReadBytes(IByteBuffer destination, int dstIndex, int length)
+        {
+            CheckReadableBytes(length);
+            GetBytes(ReaderIndex, destination, dstIndex, length);
+            ReaderIndex += length;
+            return this;
+        }
+
+        public IByteBuffer ReadBytes(byte[] destination)
+        {
+            ReadBytes(destination, 0, destination.Length);
+            return this;
+        }
+
+        public IByteBuffer ReadBytes(byte[] destination, int dstIndex, int length)
+        {
+            CheckReadableBytes(length);
+            GetBytes(ReaderIndex, destination, dstIndex, length);
+            ReaderIndex += length;
+            return this;
+        }
+
+        public IByteBuffer SkipBytes(int length)
+        {
+            CheckReadableBytes(length);
+            var newReaderIndex = ReaderIndex + length;
+            if(newReaderIndex > WriterIndex)
+                throw new IndexOutOfRangeException(string.Format(
+                    "length: {0} (expected: readerIndex({1}) + length <= writerIndex({2}))",
+                    length, ReaderIndex, WriterIndex));
+            ReaderIndex = newReaderIndex;
+            return this;
+        }
+
+        public IByteBuffer WriteBoolean(bool value)
+        {
+            WriteByte(value ? 1 : 0);
+            return this;
+        }
+
+        public IByteBuffer WriteByte(int value)
+        {
+            EnsureWritable(1);
+            SetByte(WriterIndex, value);
+            WriterIndex += 1;
+            return this;
+        }
+
+        public IByteBuffer WriteShort(int value)
+        {
+            EnsureWritable(2);
+            _SetShort(WriterIndex, value);
+            WriterIndex += 2;
+            return this;
+        }
+
+        public IByteBuffer WriteInt(int value)
+        {
+            EnsureWritable(4);
+            _SetInt(WriterIndex, value);
+            WriterIndex += 4;
+            return this;
+        }
+
+        public IByteBuffer WriteLong(long value)
+        {
+            EnsureWritable(8);
+            _SetLong(WriterIndex, value);
+            WriterIndex += 8;
+            return this;
+        }
+
+        public IByteBuffer WriteChar(char value)
+        {
+            WriteShort(value);
+            return this;
+        }
+
+        public IByteBuffer WriteDouble(double value)
+        {
+            WriteLong(BitConverter.DoubleToInt64Bits(value));
+            return this;
+        }
+
+        public IByteBuffer WriteBytes(IByteBuffer src)
+        {
+            WriteBytes(src, src.ReadableBytes);
+            return this;
+        }
+
+        public IByteBuffer WriteBytes(IByteBuffer src, int length)
+        {
+            if (length > src.ReadableBytes)
+                throw new IndexOutOfRangeException(string.Format("length({0}) exceeds src.readableBytes({1}) where src is: {2}", length, src.ReadableBytes, src));
+            WriteBytes(src, src.ReaderIndex, length);
+            src.SetReaderIndex(src.ReaderIndex + length);
+            return this;
+        }
+
+        public IByteBuffer WriteBytes(IByteBuffer src, int srcIndex, int length)
+        {
+            EnsureWritable(length);
+            SetBytes(WriterIndex, src, srcIndex, length);
+            WriterIndex += length;
+            return this;
+        }
+
+        public IByteBuffer WriteBytes(byte[] src)
+        {
+            WriteBytes(src, 0, src.Length);
+            return this;
+        }
+
+        public IByteBuffer WriteBytes(byte[] src, int srcIndex, int length)
+        {
+            EnsureWritable(length);
+            SetBytes(WriterIndex, src, srcIndex, length);
+            WriterIndex += length;
+            return this;
+        }
+
+        protected void AdjustMarkers(int decrement)
+        {
+            var markedReaderIndex = _markedReaderIndex;
+            if (markedReaderIndex <= decrement)
+            {
+                _markedReaderIndex = 0;
+                var markedWriterIndex = _markedWriterIndex;
+                if (markedWriterIndex <= decrement)
+                {
+                    _markedWriterIndex = 0;
+                }
+                else
+                {
+                    _markedWriterIndex = markedWriterIndex - decrement;
+                }
+            }
+            else
+            {
+                _markedReaderIndex = markedReaderIndex - decrement;
+                _markedWriterIndex -= decrement;
+            }
+        }
+
+        protected void CheckIndex(int index)
+        {
+            EnsureAccessible();
+            if (index < 0 || index >= Capacity)
+            {
+                throw new IndexOutOfRangeException(string.Format("index: {0} (expected: range(0, {1})", index, Capacity));
+            }
+        }
+
+        protected void CheckIndex(int index, int fieldLength)
+        {
+            EnsureAccessible();
+            if (fieldLength < 0)
+            {
+                throw new IndexOutOfRangeException(string.Format("length: {0} (expected: >= 0)", fieldLength));
+            }
+
+            if (index < 0 || index > Capacity - fieldLength)
+            {
+                throw new IndexOutOfRangeException(string.Format("index: {0}, length: {1} (expected: range(0, {2})", index, fieldLength, Capacity));
+            }
+        }
+
+        protected void CheckSrcIndex(int index, int length, int srcIndex, int srcCapacity)
+        {
+            CheckIndex(index, length);
+            if (srcIndex < 0 || srcIndex > srcCapacity - length)
+            {
+                throw new IndexOutOfRangeException(string.Format(
+                        "srcIndex: {0}, length: {1} (expected: range(0, {2}))", srcIndex, length, srcCapacity));
+            }
+        }
+
+        protected void CheckDstIndex(int index, int length, int dstIndex, int dstCapacity)
+        {
+            CheckIndex(index, length);
+            if (dstIndex < 0 || dstIndex > dstCapacity - length)
+            {
+                throw new IndexOutOfRangeException(string.Format(
+                        "dstIndex: {0}, length: {1} (expected: range(0, {2}))", dstIndex, length, dstCapacity));
+            }
+        }
+
+        /// <summary>
+        /// Throws a <see cref="IndexOutOfRangeException"/> if the current <see cref="ReadableBytes"/> of this buffer
+        /// is less than <see cref="minimumReadableBytes"/>.
+        /// </summary>
+        protected void CheckReadableBytes(int minimumReadableBytes)
+        {
+            EnsureAccessible();
+            if (minimumReadableBytes < 0) throw new ArgumentOutOfRangeException("minimumReadableBytes", string.Format("minimumReadableBytes: {0} (expected: >= 0)", minimumReadableBytes));
+
+            if(ReaderIndex > WriterIndex - minimumReadableBytes)
+                throw new IndexOutOfRangeException(string.Format(
+                    "readerIndex({0}) + length({1}) exceeds writerIndex({2}): {3}",
+                    ReaderIndex, minimumReadableBytes, WriterIndex, this));
+        }
+
+        protected void EnsureAccessible()
+        {
+            if (ReferenceCount == 0)
+                throw new IllegalReferenceCountException(0);
+        }
+
+        #region IReferenceCounted members
+
+        public abstract int ReferenceCount { get; }
+        public abstract IReferenceCounted Retain();
+        public abstract IReferenceCounted Retain(int increment);
+        public abstract bool Release();
+        public abstract bool Release(int decrement);
+
+        #endregion
+    }
+}

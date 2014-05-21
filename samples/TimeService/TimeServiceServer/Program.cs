@@ -13,8 +13,10 @@ namespace TimeServiceServer
     {
         static void Main(string[] args)
         {
+            var host = IPAddress.Any;
+            var port = 9991;
             Console.Title = "Server";
-            Console.WriteLine("Starting server on {0}:{1}", IPAddress.Any, 1337);
+            Console.WriteLine("Starting server on {0}:{1}", host, port);
             var executor = new TryCatchExecutor(exception => Console.WriteLine("Unhandled exception: {0}", exception));
 
             var bootstrapper =
@@ -23,7 +25,7 @@ namespace TimeServiceServer
                     .Executor(executor)
                     .SetTransport(TransportType.Tcp)
                     .Build();
-            var server = bootstrapper.NewReactor(NodeBuilder.BuildNode().Host(IPAddress.Any).WithPort(1337));
+            var server = bootstrapper.NewReactor(NodeBuilder.BuildNode().Host(host).WithPort(port));
             server.OnConnection += (address, connection) =>
             {
                 Console.WriteLine("Connected: {0}", address);

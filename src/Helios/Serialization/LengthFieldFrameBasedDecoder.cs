@@ -104,9 +104,19 @@ namespace Helios.Serialization
 
         protected NetworkData ExtractFrame(NetworkData data, int offset, int length)
         {
-            var newData = new byte[length];
-            Array.Copy(data.Buffer, offset, newData, 0, length);
-            return NetworkData.Create(data.RemoteHost, newData, length);
+            try
+            {
+                var newData = new byte[length];
+                Array.Copy(data.Buffer, offset, newData, 0, length);
+                return NetworkData.Create(data.RemoteHost, newData, length);
+            }
+            catch (Exception ex)
+            {
+                throw new HeliosException(
+                    string.Format("Error while copying {0} bytes from buffer of length {1} from starting index {2} to {3} into buffer of length {0}",
+                    length, data.Length, offset, offset + length)
+                    , ex);
+            }
         }
     }
 }

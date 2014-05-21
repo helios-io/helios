@@ -17,11 +17,13 @@ namespace TimeServiceClient
 
         static void Main(string[] args)
         {
+            var host = "ec2-54-86-185-156.compute-1.amazonaws.com";
+            var port = 9991;
             var bootstrapper =
                 new ClientBootstrap()
                     .SetTransport(TransportType.Tcp).Build();
 
-            TimeServer = bootstrapper.NewConnection(Node.Empty(), NodeBuilder.BuildNode().Host(IPAddress.Loopback).WithPort(1337));
+            TimeServer = bootstrapper.NewConnection(Node.Empty(), NodeBuilder.BuildNode().Host(host).WithPort(port));
             TimeServer.OnConnection += (address, connection) =>
             {
                 Console.WriteLine("Confirmed connection with host.");
