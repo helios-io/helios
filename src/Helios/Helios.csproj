@@ -48,6 +48,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Buffers\ByteBufferUtil.cs" />
     <Compile Include="Util\ByteArrayExtensions.cs" />
     <Compile Include="Buffers\ByteBufBase.cs" />
     <Compile Include="Buffers\ByteBuffer.cs" />

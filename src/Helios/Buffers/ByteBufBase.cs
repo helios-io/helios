@@ -373,7 +373,10 @@ namespace Helios.Buffers
 
         public ushort ReadUnsignedShort()
         {
-            return Convert.ToUInt16(ReadShort());
+            unchecked
+            {
+                return (ushort)(ReadShort());
+            }
         }
 
         public int ReadInt()
@@ -386,7 +389,10 @@ namespace Helios.Buffers
 
         public uint ReadUnsignedInt()
         {
-            return Convert.ToUInt32(ReadInt());
+            unchecked
+            {
+                return (uint)(ReadInt());
+            }
         }
 
         public long ReadLong()

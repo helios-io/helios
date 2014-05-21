@@ -13,7 +13,12 @@ namespace Helios.Buffers
 
         private int _capacity;
 
-        public ByteBuffer(int initialCapacity, int maxCapacity) : base(maxCapacity)
+        public static ByteBuffer AllocateDirect(int capacity, int maxCapacity = ByteBufferUtil.DEFAULT_MAX_CAPACITY)
+        {
+            return new ByteBuffer(capacity, maxCapacity);
+        }
+
+        protected ByteBuffer(int initialCapacity, int maxCapacity) : base(maxCapacity)
         {
             if (initialCapacity < 0) throw new ArgumentOutOfRangeException("initialCapacity", "initialCapacity must be at least 0");
             if (maxCapacity < 0) throw new ArgumentOutOfRangeException("maxCapacity", "maxCapacity must be at least 0");
@@ -84,7 +89,10 @@ namespace Helios.Buffers
 
         protected override IByteBuf _SetShort(int index, int value)
         {
-            Buffer.SetRange(index, BitConverter.GetBytes(Convert.ToInt16(value)));
+            unchecked
+            {
+                Buffer.SetRange(index, BitConverter.GetBytes((short)(value)));
+            }
             return this;
         }
 
