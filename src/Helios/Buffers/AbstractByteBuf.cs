@@ -22,8 +22,8 @@ namespace Helios.Buffers
 
         public int MaxCapacity { get; private set; }
         public abstract IByteBufAllocator Allocator { get; }
-        public int ReaderIndex { get; private set; }
-        public int WriterIndex { get; private set; }
+        public int ReaderIndex { get; protected set; }
+        public int WriterIndex { get; protected set; }
         public IByteBuf SetWriterIndex(int writerIndex)
         {
             if (writerIndex < ReaderIndex || writerIndex > Capacity)
@@ -415,8 +415,13 @@ namespace Helios.Buffers
 
         public virtual IByteBuf ReadBytes(int length)
         {
-            throw new NotImplementedException();
+            CheckReadableBytes(length);
+            if (length == 0) return Unpooled.Empty;
 
+            var buf = Unpooled.Buffer(length, MaxCapacity);
+            buf.WriteBytes(this, ReaderIndex, length);
+            ReaderIndex += length;
+            return buf;
         }
 
         public virtual IByteBuf ReadBytes(IByteBuf destination)
@@ -559,7 +564,7 @@ namespace Helios.Buffers
         public abstract bool HasArray { get; }
         public abstract byte[] InternalArray();
         public abstract bool IsDirect { get; }
-        public IByteBuf Duplicate()
+        public virtual IByteBuf Duplicate()
         {
             return new DuplicateByteBuf(this);
         }

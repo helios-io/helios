@@ -135,18 +135,36 @@ namespace Helios.Tests.Buffer
         public void Should_expand_ByteBuffer()
         {
             var originalByteBuffer = ByteBuffer.AllocateDirect(10, 100);
-            originalByteBuffer.AdjustCapacity(20);
+            originalByteBuffer.WriteInt(12).AdjustCapacity(20).WriteInt(4);
             Assert.AreEqual(20, originalByteBuffer.Capacity);
-            Assert.AreEqual(20, originalByteBuffer.InternalArray().Length);
+            Assert.AreEqual(12, originalByteBuffer.ReadInt());
+            Assert.AreEqual(4, originalByteBuffer.ReadInt());
         }
 
         [Test]
         public void Should_shrink_ByteBuffer()
         {
-            var originalByteBuffer = ByteBuffer.AllocateDirect(10, 100);
-            originalByteBuffer.AdjustCapacity(5);
-            Assert.AreEqual(5, originalByteBuffer.Capacity);
-            Assert.AreEqual(5, originalByteBuffer.InternalArray().Length);
+            var originalByteBuffer = ByteBuffer.AllocateDirect(100, 100);
+            originalByteBuffer.WriteInt(12).AdjustCapacity(50).WriteInt(4);
+            Assert.AreEqual(50, originalByteBuffer.Capacity);
+            Assert.AreEqual(12, originalByteBuffer.ReadInt());
+            Assert.AreEqual(4, originalByteBuffer.ReadInt());
+        }
+
+        [Test]
+        public void Should_deep_clone_ByteBuffer()
+        {
+            var expectedString = "THIS IS A STRING";
+            var originalByteBuffer =
+                ByteBuffer.AllocateDirect(100, 100).WriteInt(110).WriteBytes(Encoding.Unicode.GetBytes(expectedString));
+            var clonedByteBuffer = originalByteBuffer.Duplicate();
+            clonedByteBuffer.WriteBoolean(true).WriteDouble(-1113.4d);
+            Assert.AreEqual(110, originalByteBuffer.ReadInt());
+            Assert.AreEqual(110, clonedByteBuffer.ReadInt());
+            Assert.AreEqual(expectedString, Encoding.Unicode.GetString(originalByteBuffer.ReadBytes(expectedString.Length * 2).InternalArray()));
+            Assert.AreEqual(expectedString, Encoding.Unicode.GetString(clonedByteBuffer.ReadBytes(expectedString.Length * 2).InternalArray()));
+            Assert.AreEqual(true, clonedByteBuffer.ReadBoolean());
+            Assert.AreEqual(-1113.4d, clonedByteBuffer.ReadDouble());
         }
 
         #endregion

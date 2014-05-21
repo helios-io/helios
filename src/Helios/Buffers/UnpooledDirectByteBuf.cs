@@ -146,6 +146,7 @@ namespace Helios.Buffers
             throw new NotImplementedException();
         }
 
+        /* currently are not using the "isInternal" field, since we don't do much with shared buffer pools */
         private void GetBytes(int index, byte[] destination, int dstIndex, int length, bool isInternal)
         {
             CheckDstIndex(index, length, dstIndex, destination.Length);
@@ -153,11 +154,9 @@ namespace Helios.Buffers
                 throw new IndexOutOfRangeException(string.Format(
                     "dstIndex: {0}, length: {1} (expected: range(0, {2}))", dstIndex, length, destination.Length));
 
-            ByteBuffer tmpBuf;
-            if (isInternal)
-            {
-                
-            }
+            var tmpBuf = (ByteBuffer)_buffer.Duplicate();
+            tmpBuf.Clear().SetIndex(index, index + length);
+            tmpBuf.GetBytes(index, destination, dstIndex, length);
         }
 
         protected override IByteBuf _SetByte(int index, int value)

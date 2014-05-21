@@ -17,13 +17,20 @@ namespace Helios.Buffers
             return new ByteBuffer(capacity, maxCapacity);
         }
 
-        protected ByteBuffer(int initialCapacity, int maxCapacity) : base(maxCapacity)
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        protected ByteBuffer(byte[] buffer, int initialCapacity, int maxCapacity) : base(maxCapacity)
         {
             if (initialCapacity < 0) throw new ArgumentOutOfRangeException("initialCapacity", "initialCapacity must be at least 0");
             if (maxCapacity < 0) throw new ArgumentOutOfRangeException("maxCapacity", "maxCapacity must be at least 0");
             if (initialCapacity > maxCapacity) throw new ArgumentException(string.Format("initialCapacity {0} must be less than maxCapacity {1}", initialCapacity, maxCapacity));
-            Buffer = new byte[initialCapacity];
+            Buffer = buffer;
             _capacity = initialCapacity;
+        }
+
+        protected ByteBuffer(int initialCapacity, int maxCapacity) : this(new byte[initialCapacity], initialCapacity, maxCapacity)
+        {
         }
 
         public override int Capacity
@@ -91,6 +98,17 @@ namespace Helios.Buffers
         protected override long _GetLong(int index)
         {
             return BitConverter.ToInt64(Buffer.Slice(index, 8), 0);
+        }
+
+        public override IByteBuf ReadBytes(int length)
+        {
+            CheckReadableBytes(length);
+            if (length == 0) return Unpooled.Empty;
+
+            var buf = new byte[length];
+            Array.Copy(Buffer, ReaderIndex, buf, 0, length);
+            ReaderIndex += length;
+            return new ByteBuffer(buf, length, length).SetWriterIndex(length);
         }
 
         public override IByteBuf GetBytes(int index, IByteBuf destination, int dstIndex, int length)
@@ -173,6 +191,16 @@ namespace Helios.Buffers
         public override IByteBuf Unwrap()
         {
             return null;
+        }
+
+        /// <summary>
+        /// Duplicate for <see cref="ByteBuffer"/> instances actually creates a deep clone, rather than a proxy
+        /// </summary>
+        public override IByteBuf Duplicate()
+        {
+            var buffer = new byte[Capacity];
+            Array.Copy(Buffer,ReaderIndex, buffer, 0, ReadableBytes);
+            return new ByteBuffer(buffer, Capacity, MaxCapacity).SetIndex(ReaderIndex, WriterIndex);
         }
     }
 }
