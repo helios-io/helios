@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Helios.Util;
 
 namespace Helios.Buffers
@@ -7,7 +6,7 @@ namespace Helios.Buffers
     /// <summary>
     /// Concrete ByteBuffer implementation that uses a simple backing array
     /// </summary>
-    public class ByteBuffer : ByteBufBase
+    public class ByteBuffer : AbstractByteBuf
     {
         protected byte[] Buffer;
 
@@ -32,13 +31,40 @@ namespace Helios.Buffers
             get { return _capacity; }
         }
 
-        public override IByteBuf AdjustCapacity(int capacity)
+        public override IByteBuf AdjustCapacity(int newCapacity)
         {
-            if (capacity > MaxCapacity) throw new ArgumentOutOfRangeException("capacity", string.Format("capacity({0}) must be less than MaxCapacity({1})", capacity, MaxCapacity));
-            var newBuffer = new byte[capacity];
-            System.Array.Copy(Buffer, ReaderIndex, newBuffer,0, ReadableBytes);
+            if (newCapacity > MaxCapacity) throw new ArgumentOutOfRangeException("newCapacity", string.Format("capacity({0}) must be less than MaxCapacity({1})", newCapacity, MaxCapacity));
+            var newBuffer = new byte[newCapacity];
+
+            //expand
+            if (newCapacity > Capacity)
+            {
+                Array.Copy(Buffer, ReaderIndex, newBuffer, 0, ReadableBytes);
+                SetIndex(0, ReadableBytes);
+            }
+            else //shrink
+            {
+                Array.Copy(Buffer, ReaderIndex, newBuffer, 0, newCapacity);
+                if (ReaderIndex < newCapacity)
+                {
+                    if (WriterIndex > newCapacity)
+                    {
+                        SetWriterIndex(newCapacity);
+                    }
+                    else
+                    {
+                        SetWriterIndex(ReadableBytes);
+                    }
+                    SetReaderIndex(0);
+                }
+                else
+                {
+                    SetIndex(newCapacity, newCapacity);
+                }
+            }
+           
             Buffer = newBuffer;
-            _capacity = capacity;
+            _capacity = newCapacity;
             return this;
         }
 
@@ -137,6 +163,16 @@ namespace Helios.Buffers
         public override byte[] InternalArray()
         {
             return Buffer;
+        }
+
+        public override bool IsDirect
+        {
+            get { return true; }
+        }
+
+        public override IByteBuf Unwrap()
+        {
+            return null;
         }
     }
 }

@@ -137,6 +137,16 @@ namespace Helios.Tests.Buffer
             var originalByteBuffer = ByteBuffer.AllocateDirect(10, 100);
             originalByteBuffer.AdjustCapacity(20);
             Assert.AreEqual(20, originalByteBuffer.Capacity);
+            Assert.AreEqual(20, originalByteBuffer.InternalArray().Length);
+        }
+
+        [Test]
+        public void Should_shrink_ByteBuffer()
+        {
+            var originalByteBuffer = ByteBuffer.AllocateDirect(10, 100);
+            originalByteBuffer.AdjustCapacity(5);
+            Assert.AreEqual(5, originalByteBuffer.Capacity);
+            Assert.AreEqual(5, originalByteBuffer.InternalArray().Length);
         }
 
         #endregion

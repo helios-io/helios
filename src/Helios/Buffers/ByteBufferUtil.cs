@@ -6,9 +6,9 @@
     public static class ByteBufferUtil
     {
         /// <summary>
-        /// Default initial capacity = 4mb
+        /// Default initial capacity = 256 bytes
         /// </summary>
-        public const int DEFAULT_INITIAL_CAPACITY = 1048576*4;
+        public const int DEFAULT_INITIAL_CAPACITY = 256;
 
         /// <summary>
         /// Default max capacity = 80mb

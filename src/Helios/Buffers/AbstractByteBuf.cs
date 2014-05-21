@@ -6,19 +6,19 @@ namespace Helios.Buffers
     /// <summary>
     /// Abstract base class implementation of a <see cref="IByteBuf"/>
     /// </summary>
-    public abstract class ByteBufBase : IByteBuf
+    public abstract class AbstractByteBuf : IByteBuf
     {
         private int _markedReaderIndex;
         private int _markedWriterIndex;
 
-        protected ByteBufBase(int maxCapacity)
+        protected AbstractByteBuf(int maxCapacity)
         {
             MaxCapacity = maxCapacity;
         }
 
         public abstract int Capacity { get; }
 
-        public abstract IByteBuf AdjustCapacity(int capacity);
+        public abstract IByteBuf AdjustCapacity(int newCapacity);
 
         public int MaxCapacity { get; private set; }
         public abstract IByteBufAllocator Allocator { get; }
@@ -188,13 +188,13 @@ namespace Helios.Buffers
             return Math.Min(newCapacity, maxCapacity);
         }
 
-        public bool GetBoolean(int index)
+        public virtual bool GetBoolean(int index)
         {
             CheckIndex(index);
             return GetByte(index) != 0;
         }
 
-        public byte GetByte(int index)
+        public virtual byte GetByte(int index)
         {
             CheckIndex(index);
             return _GetByte(index);
@@ -202,7 +202,7 @@ namespace Helios.Buffers
 
         protected abstract byte _GetByte(int index);
 
-        public short GetShort(int index)
+        public virtual short GetShort(int index)
         {
             CheckIndex(index, 2);
             return _GetShort(index);
@@ -210,12 +210,12 @@ namespace Helios.Buffers
 
         protected abstract short _GetShort(int index);
 
-        public ushort GetUnsignedShort(int index)
+        public virtual ushort GetUnsignedShort(int index)
         {
             return Convert.ToUInt16(GetShort(index));
         }
 
-        public int GetInt(int index)
+        public virtual int GetInt(int index)
         {
             CheckIndex(index, 4);
             return _GetInt(index);
@@ -223,12 +223,12 @@ namespace Helios.Buffers
 
         protected abstract int _GetInt(int index);
 
-        public uint GetUnsignedInt(int index)
+        public virtual uint GetUnsignedInt(int index)
         {
             return Convert.ToUInt32(GetInt(index));
         }
 
-        public long GetLong(int index)
+        public virtual long GetLong(int index)
         {
             CheckIndex(index, 8);
             return _GetLong(index);
@@ -236,23 +236,23 @@ namespace Helios.Buffers
 
         protected abstract long _GetLong(int index);
 
-        public char GetChar(int index)
+        public virtual char GetChar(int index)
         {
             return Convert.ToChar(GetShort(index));
         }
 
-        public double GetDouble(int index)
+        public virtual double GetDouble(int index)
         {
             return BitConverter.Int64BitsToDouble(GetLong(index));
         }
 
-        public IByteBuf GetBytes(int index, IByteBuf destination)
+        public virtual IByteBuf GetBytes(int index, IByteBuf destination)
         {
             GetBytes(index, destination, destination.WritableBytes);
             return this;
         }
 
-        public IByteBuf GetBytes(int index, IByteBuf destination, int length)
+        public virtual IByteBuf GetBytes(int index, IByteBuf destination, int length)
         {
             GetBytes(index, destination, destination.WriterIndex, length);
             return this;
@@ -260,7 +260,7 @@ namespace Helios.Buffers
 
         public abstract IByteBuf GetBytes(int index, IByteBuf destination, int dstIndex, int length);
 
-        public IByteBuf GetBytes(int index, byte[] destination)
+        public virtual IByteBuf GetBytes(int index, byte[] destination)
         {
             GetBytes(index, destination, 0, destination.Length);
             return this;
@@ -268,13 +268,13 @@ namespace Helios.Buffers
 
         public abstract IByteBuf GetBytes(int index, byte[] destination, int dstIndex, int length);
 
-        public IByteBuf SetBoolean(int index, bool value)
+        public virtual IByteBuf SetBoolean(int index, bool value)
         {
             SetByte(index, value ? 1 : 0);
             return this;
         }
 
-        public IByteBuf SetByte(int index, int value)
+        public virtual IByteBuf SetByte(int index, int value)
         {
             CheckIndex(index);
             _SetByte(index, value);
@@ -283,7 +283,7 @@ namespace Helios.Buffers
 
         protected abstract IByteBuf _SetByte(int index, int value);
 
-        public IByteBuf SetShort(int index, int value)
+        public virtual IByteBuf SetShort(int index, int value)
         {
             CheckIndex(index, 2);
             _SetShort(index, value);
@@ -292,7 +292,7 @@ namespace Helios.Buffers
 
         protected abstract IByteBuf _SetShort(int index, int value);
 
-        public IByteBuf SetInt(int index, int value)
+        public virtual IByteBuf SetInt(int index, int value)
         {
             CheckIndex(index, 4);
             _SetInt(index, value);
@@ -301,7 +301,7 @@ namespace Helios.Buffers
 
         protected abstract IByteBuf _SetInt(int index, int value);
 
-        public IByteBuf SetLong(int index, long value)
+        public virtual IByteBuf SetLong(int index, long value)
         {
             CheckIndex(index, 8);
             _SetLong(index, value);
@@ -310,25 +310,25 @@ namespace Helios.Buffers
 
         protected abstract IByteBuf _SetLong(int index, long value);
 
-        public IByteBuf SetChar(int index, char value)
+        public virtual IByteBuf SetChar(int index, char value)
         {
             SetShort(index, value);
             return this;
         }
 
-        public IByteBuf SetDouble(int index, double value)
+        public virtual IByteBuf SetDouble(int index, double value)
         {
             SetLong(index, BitConverter.DoubleToInt64Bits(value));
             return this;
         }
 
-        public IByteBuf SetBytes(int index, IByteBuf src)
+        public virtual IByteBuf SetBytes(int index, IByteBuf src)
         {
             SetBytes(index, src, src.ReadableBytes);
             return this;
         }
 
-        public IByteBuf SetBytes(int index, IByteBuf src, int length)
+        public virtual IByteBuf SetBytes(int index, IByteBuf src, int length)
         {
             CheckIndex(index, length);
             if(src == null) throw new NullReferenceException("src cannot be null");
@@ -341,7 +341,7 @@ namespace Helios.Buffers
 
         public abstract IByteBuf SetBytes(int index, IByteBuf src, int srcIndex, int length);
 
-        public IByteBuf SetBytes(int index, byte[] src)
+        public virtual IByteBuf SetBytes(int index, byte[] src)
         {
             SetBytes(index, src, 0, src.Length);
             return this;
@@ -349,12 +349,12 @@ namespace Helios.Buffers
 
         public abstract IByteBuf SetBytes(int index, byte[] src, int srcIndex, int length);
 
-        public bool ReadBoolean()
+        public virtual bool ReadBoolean()
         {
             return ReadByte() != 0;
         }
 
-        public byte ReadByte()
+        public virtual byte ReadByte()
         {
             CheckReadableBytes(1);
             var i = ReaderIndex;
@@ -363,7 +363,7 @@ namespace Helios.Buffers
             return b;
         }
 
-        public short ReadShort()
+        public virtual short ReadShort()
         {
             CheckReadableBytes(2);
             var v = _GetShort(ReaderIndex);
@@ -371,7 +371,7 @@ namespace Helios.Buffers
             return v;
         }
 
-        public ushort ReadUnsignedShort()
+        public virtual ushort ReadUnsignedShort()
         {
             unchecked
             {
@@ -379,7 +379,7 @@ namespace Helios.Buffers
             }
         }
 
-        public int ReadInt()
+        public virtual int ReadInt()
         {
             CheckReadableBytes(4);
             var v = _GetInt(ReaderIndex);
@@ -387,7 +387,7 @@ namespace Helios.Buffers
             return v;
         }
 
-        public uint ReadUnsignedInt()
+        public virtual uint ReadUnsignedInt()
         {
             unchecked
             {
@@ -395,7 +395,7 @@ namespace Helios.Buffers
             }
         }
 
-        public long ReadLong()
+        public virtual long ReadLong()
         {
             CheckReadableBytes(8);
             var v = _GetLong(ReaderIndex);
@@ -403,29 +403,29 @@ namespace Helios.Buffers
             return v;
         }
 
-        public char ReadChar()
+        public virtual char ReadChar()
         {
             return (char) ReadShort();
         }
 
-        public double ReadDouble()
+        public virtual double ReadDouble()
         {
             return BitConverter.Int64BitsToDouble(ReadLong());
         }
 
-        public IByteBuf ReadBytes(int length)
+        public virtual IByteBuf ReadBytes(int length)
         {
             throw new NotImplementedException();
 
         }
 
-        public IByteBuf ReadBytes(IByteBuf destination)
+        public virtual IByteBuf ReadBytes(IByteBuf destination)
         {
             ReadBytes(destination, destination.WritableBytes);
             return this;
         }
 
-        public IByteBuf ReadBytes(IByteBuf destination, int length)
+        public virtual IByteBuf ReadBytes(IByteBuf destination, int length)
         {
             if(length > destination.WritableBytes) 
                 throw new IndexOutOfRangeException(string.Format("length({0}) exceeds destination.WritableBytes({1}) where destination is: {2}", 
@@ -435,7 +435,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuf ReadBytes(IByteBuf destination, int dstIndex, int length)
+        public virtual IByteBuf ReadBytes(IByteBuf destination, int dstIndex, int length)
         {
             CheckReadableBytes(length);
             GetBytes(ReaderIndex, destination, dstIndex, length);
@@ -443,13 +443,13 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuf ReadBytes(byte[] destination)
+        public virtual IByteBuf ReadBytes(byte[] destination)
         {
             ReadBytes(destination, 0, destination.Length);
             return this;
         }
 
-        public IByteBuf ReadBytes(byte[] destination, int dstIndex, int length)
+        public virtual IByteBuf ReadBytes(byte[] destination, int dstIndex, int length)
         {
             CheckReadableBytes(length);
             GetBytes(ReaderIndex, destination, dstIndex, length);
@@ -457,7 +457,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuf SkipBytes(int length)
+        public virtual IByteBuf SkipBytes(int length)
         {
             CheckReadableBytes(length);
             var newReaderIndex = ReaderIndex + length;
@@ -469,13 +469,13 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuf WriteBoolean(bool value)
+        public virtual IByteBuf WriteBoolean(bool value)
         {
             WriteByte(value ? 1 : 0);
             return this;
         }
 
-        public IByteBuf WriteByte(int value)
+        public virtual IByteBuf WriteByte(int value)
         {
             EnsureWritable(1);
             SetByte(WriterIndex, value);
@@ -483,7 +483,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuf WriteShort(int value)
+        public virtual IByteBuf WriteShort(int value)
         {
             EnsureWritable(2);
             _SetShort(WriterIndex, value);
@@ -491,7 +491,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuf WriteInt(int value)
+        public virtual IByteBuf WriteInt(int value)
         {
             EnsureWritable(4);
             _SetInt(WriterIndex, value);
@@ -499,7 +499,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuf WriteLong(long value)
+        public virtual IByteBuf WriteLong(long value)
         {
             EnsureWritable(8);
             _SetLong(WriterIndex, value);
@@ -507,25 +507,25 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuf WriteChar(char value)
+        public virtual IByteBuf WriteChar(char value)
         {
             WriteShort(value);
             return this;
         }
 
-        public IByteBuf WriteDouble(double value)
+        public virtual IByteBuf WriteDouble(double value)
         {
             WriteLong(BitConverter.DoubleToInt64Bits(value));
             return this;
         }
 
-        public IByteBuf WriteBytes(IByteBuf src)
+        public virtual IByteBuf WriteBytes(IByteBuf src)
         {
             WriteBytes(src, src.ReadableBytes);
             return this;
         }
 
-        public IByteBuf WriteBytes(IByteBuf src, int length)
+        public virtual IByteBuf WriteBytes(IByteBuf src, int length)
         {
             if (length > src.ReadableBytes)
                 throw new IndexOutOfRangeException(string.Format("length({0}) exceeds src.readableBytes({1}) where src is: {2}", length, src.ReadableBytes, src));
@@ -534,7 +534,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuf WriteBytes(IByteBuf src, int srcIndex, int length)
+        public virtual IByteBuf WriteBytes(IByteBuf src, int srcIndex, int length)
         {
             EnsureWritable(length);
             SetBytes(WriterIndex, src, srcIndex, length);
@@ -542,13 +542,13 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuf WriteBytes(byte[] src)
+        public virtual IByteBuf WriteBytes(byte[] src)
         {
             WriteBytes(src, 0, src.Length);
             return this;
         }
 
-        public IByteBuf WriteBytes(byte[] src, int srcIndex, int length)
+        public virtual IByteBuf WriteBytes(byte[] src, int srcIndex, int length)
         {
             EnsureWritable(length);
             SetBytes(WriterIndex, src, srcIndex, length);
@@ -558,6 +558,13 @@ namespace Helios.Buffers
 
         public abstract bool HasArray { get; }
         public abstract byte[] InternalArray();
+        public abstract bool IsDirect { get; }
+        public IByteBuf Duplicate()
+        {
+            return new DuplicateByteBuf(this);
+        }
+
+        public abstract IByteBuf Unwrap();
 
         protected void AdjustMarkers(int decrement)
         {

@@ -5,12 +5,13 @@ namespace Helios.Buffers
     /// <summary>
     /// An unpooled non-blocking IO byte buffer implementation.
     /// </summary>
-    public class UnpooledDirectByteBuf : ByteBufBase
+    public class UnpooledDirectByteBuf : AbstractByteBuf
     {
         private readonly IByteBufAllocator _alloc;
 
         private ByteBuffer _buffer;
         private int _capacity;
+        private bool _doNotFree;
 
         public UnpooledDirectByteBuf(IByteBufAllocator alloc, int initialCapacity, int maxCapacity) : base(maxCapacity)
         {
@@ -21,12 +22,30 @@ namespace Helios.Buffers
 
             _alloc = alloc;
             _capacity = initialCapacity;
-            //SetByteBuffer();
+            SetByteBuffer(ByteBuffer.AllocateDirect(initialCapacity));
+        }
+
+        protected ByteBuffer AllocateDirect(int initialCapacity)
+        {
+            return ByteBuffer.AllocateDirect(initialCapacity);
         }
 
         private void SetByteBuffer(ByteBuffer buffer)
         {
-            
+            var oldBuffer = _buffer;
+            if (oldBuffer != null)
+            {
+                if (_doNotFree)
+                {
+                    _doNotFree = false;
+                }
+                else
+                {
+                    oldBuffer = null; //mark for GC
+                }
+            }
+            _buffer = buffer;
+            _capacity = buffer.Capacity;
         }
 
         public override int Capacity
@@ -34,44 +53,111 @@ namespace Helios.Buffers
             get { return _capacity; }
         }
 
-        public override IByteBuf AdjustCapacity(int capacity)
+        public override IByteBuf AdjustCapacity(int newCapacity)
         {
-            throw new NotImplementedException();
+            EnsureAccessible();
+            if(newCapacity < 0 || newCapacity > MaxCapacity)
+                throw new ArgumentOutOfRangeException("newCapacity", string.Format("newCapacity: {0}", newCapacity));
+
+            var readerIndex = ReaderIndex;
+            var writerIndex = WriterIndex;
+
+            var oldCapacity = Capacity;
+            if (newCapacity > oldCapacity)
+            {
+                var oldBuffer = _buffer;
+                var newBuffer = AllocateDirect(newCapacity);
+                oldBuffer.SetIndex(0, oldBuffer.Capacity);
+                newBuffer.SetIndex(0, oldBuffer.Capacity);
+                newBuffer.WriteBytes(oldBuffer);
+                newBuffer.Clear();
+                SetByteBuffer(newBuffer);
+            }
+            else if (newCapacity < oldCapacity)
+            {
+                var oldBuffer = _buffer;
+                var newBuffer = AllocateDirect(newCapacity);
+                if (ReaderIndex < newCapacity)
+                {
+                    if (WriterIndex > newCapacity)
+                    {
+                        SetWriterIndex(newCapacity);
+                    }
+                    oldBuffer.SetIndex(ReaderIndex, WriterIndex);
+                    newBuffer.SetIndex(ReaderIndex, WriterIndex);
+                    newBuffer.WriteBytes(oldBuffer);
+                    newBuffer.Clear();
+                }
+                else
+                {
+                    SetIndex(newCapacity, newCapacity);
+                }
+                SetByteBuffer(newBuffer);
+            }
+
+            return this;
         }
 
         public override IByteBufAllocator Allocator
         {
-            get { throw new NotImplementedException(); }
+            get { return _alloc; }
         }
 
         protected override byte _GetByte(int index)
         {
-            throw new NotImplementedException();
+            EnsureAccessible();
+            return _buffer.GetByte(index);
         }
 
         protected override short _GetShort(int index)
         {
-            throw new NotImplementedException();
+            EnsureAccessible();
+            return _buffer.GetShort(index);
         }
 
         protected override int _GetInt(int index)
         {
-            throw new NotImplementedException();
+            EnsureAccessible();
+            return _buffer.GetInt(index);
         }
 
         protected override long _GetLong(int index)
         {
-            throw new NotImplementedException();
+            EnsureAccessible();
+            return _buffer.GetLong(index);
         }
 
         public override IByteBuf GetBytes(int index, IByteBuf destination, int dstIndex, int length)
         {
-            throw new NotImplementedException();
+            CheckDstIndex(index, length, dstIndex, destination.Capacity);
+            if (destination.HasArray)
+            {
+                GetBytes(index, destination.InternalArray(), dstIndex, length);
+            }
+            else
+            {
+                destination.SetBytes(dstIndex, this, index, length);
+            }
+            return this;
         }
 
         public override IByteBuf GetBytes(int index, byte[] destination, int dstIndex, int length)
         {
             throw new NotImplementedException();
+        }
+
+        private void GetBytes(int index, byte[] destination, int dstIndex, int length, bool isInternal)
+        {
+            CheckDstIndex(index, length, dstIndex, destination.Length);
+            if(dstIndex < 0 || dstIndex > destination.Length - length)
+                throw new IndexOutOfRangeException(string.Format(
+                    "dstIndex: {0}, length: {1} (expected: range(0, {2}))", dstIndex, length, destination.Length));
+
+            ByteBuffer tmpBuf;
+            if (isInternal)
+            {
+                
+            }
         }
 
         protected override IByteBuf _SetByte(int index, int value)
@@ -112,6 +198,16 @@ namespace Helios.Buffers
         public override byte[] InternalArray()
         {
             throw new NotSupportedException("direct buffer");
+        }
+
+        public override bool IsDirect
+        {
+            get { return true; }
+        }
+
+        public override IByteBuf Unwrap()
+        {
+            return null;
         }
     }
 }

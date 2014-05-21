@@ -18,7 +18,7 @@ namespace Helios.Buffers
         /// <summary>
         /// Expands the capacity of this buffer so long as it is less than <see cref="MaxCapacity"/>.
         /// </summary>
-        IByteBuf AdjustCapacity(int capacity);
+        IByteBuf AdjustCapacity(int newCapacity);
 
         int MaxCapacity { get; }
 
@@ -456,5 +456,20 @@ namespace Helios.Buffers
         /// </summary>
         /// <returns></returns>
         byte[] InternalArray();
+
+        /// <summary>
+        /// Is this a direct buffer or not, e.g. is it backed by a simple byte array?
+        /// </summary>
+        bool IsDirect { get; }
+
+        /// <summary>
+        /// Creates a deep clone of the existing byte array and returns it
+        /// </summary>
+        IByteBuf Duplicate();
+
+        /// <summary>
+        /// Unwraps a nested buffer
+        /// </summary>
+        IByteBuf Unwrap();
     }
 }

@@ -48,9 +48,12 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Buffers\AbstractByteBufAllocator.cs" />
     <Compile Include="Buffers\ByteBufferUtil.cs" />
+    <Compile Include="Buffers\DuplicateByteBuf.cs" />
+    <Compile Include="Buffers\EmptyByteBuf.cs" />
     <Compile Include="Util\ByteArrayExtensions.cs" />
-    <Compile Include="Buffers\ByteBufBase.cs" />
+    <Compile Include="Buffers\AbstractByteBuf.cs" />
     <Compile Include="Buffers\ByteBuffer.cs" />
     <Compile Include="Buffers\IByteBuf.cs" />
     <Compile Include="Buffers\IByteBufAllocator.cs" />
