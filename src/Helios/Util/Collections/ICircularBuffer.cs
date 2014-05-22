@@ -58,6 +58,26 @@ namespace Helios.Util.Collections
         IEnumerable<T> DequeueAll();
 
         /// <summary>
+        /// Checks an index relative to the <see cref="Head"/> to see if there's a set element there
+        /// </summary>
+        bool IsElementAt(int index);
+
+        T ElementAt(int index);
+
+        /// <summary>
+        /// Sets an element at the specified position relative to <see cref="Head"/>
+        /// WITHOUT MODIFYING <see cref="Tail"/>
+        /// </summary>
+        /// <param name="element">The element we want to add at the specified <see cref="index"/></param>
+        /// <param name="index">The index relative to the front of the buffer where we want to add <see cref="element"/></param>
+        void SetElementAt(T element, int index);
+
+        /// <summary>
+        /// Indexing operator - doesn't explicitly move the head or tail of the underlying buffer.
+        /// </summary>
+        T this[int index] { get; set; }
+
+        /// <summary>
         /// Clears the contents from the buffer
         /// </summary>
         void Clear();
@@ -75,5 +95,53 @@ namespace Helios.Util.Collections
         /// <param name="index">The starting index for copying in the destination array</param>
         /// <param name="count">The number of items to copy from the current buffer (max value = current Size of buffer)</param>
         void CopyTo(T[] array, int index, int count);
+
+        /// <summary>
+        /// Copies the elements of <see cref="src"/> directly into the internal buffer
+        /// of this ICircularBuffer and automatically adjusts the queue length accordingly.
+        /// 
+        /// Designed for performance sensitive operations.
+        /// </summary>
+        void DirectBufferWrite(T[] src);
+
+        /// <summary>
+        /// Copies the elements of <see cref="src"/> directly into the internal buffer
+        /// of this ICircularBuffer and automatically adjusts the queue length accordingly.
+        /// 
+        /// Designed for performance sensitive operations.
+        /// </summary>
+        void DirectBufferWrite(T[] src, int srcLength);
+
+        /// <summary>
+        /// Copies the elements of <see cref="src"/> directly into the internal buffer
+        /// of this ICircularBuffer and automatically adjusts the queue length accordingly.
+        /// 
+        /// Designed for performance sensitive operations.
+        /// </summary>
+        void DirectBufferWrite(T[] src, int srcIndex, int srcLength);
+
+        /// <summary>
+        /// Copies elements directly from the CircularBuffer's internal buffer into <see cref="dest"/>
+        /// and automatically adjusts the queue read position accordingly.
+        /// 
+        /// Designed for performance-sensitive operations.
+        /// </summary>
+        void DirectBufferRead(T[] dest);
+
+        /// <summary>
+        /// Copies elements directly from the CircularBuffer's internal buffer into <see cref="dest"/>
+        /// and automatically adjusts the queue read position accordingly.
+        /// 
+        /// Designed for performance-sensitive operations.
+        /// </summary>
+        void DirectBufferRead(T[] dest, int destLength);
+
+        /// <summary>
+        /// Copies elements directly from the CircularBuffer's internal buffer into <see cref="dest"/>
+        /// and automatically adjusts the queue read position accordingly.
+        /// 
+        /// Designed for performance-sensitive operations.
+        /// </summary>
+        void DirectBufferRead(T[] dest, int destIndex, int destLength);
     }
 }

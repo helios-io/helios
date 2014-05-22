@@ -78,7 +78,7 @@ namespace Helios.Util.Collections
         protected int CalculateNewCapacity(int minNewCapacity)
         {
             var maxCapacity = MaxCapacity;
-            var threshold = 1048576; // 1 MiB page if sizeof(T) == 1 byte.
+            var threshold = 1048576; // 1 MiB page if sizeof(T) == 1 byte. Most T will be bigger than 1 byte.
             var newCapacity = 0;
             if (minNewCapacity == threshold)
             {
@@ -100,7 +100,7 @@ namespace Helios.Util.Collections
                 return newCapacity;
             }
 
-            // Not over threshold. Double up to 4 MiB, starting from 64.
+            // Not over threshold. Double up to 1MB, starting from 64.
             newCapacity = 64;
             while (newCapacity < minNewCapacity)
             {
@@ -133,6 +133,36 @@ namespace Helios.Util.Collections
             if (Size == 0)
                 return default(T);
             return Buffer[(Head % Capacity)];
+        }
+
+        /// <summary>
+        /// Checks an index relative to the <see cref="Head"/> to see if there's a set element there
+        /// </summary>
+        public bool IsElementAt(int index)
+        {
+            return ((Head + index) % Capacity) <= Size;
+        }
+
+        public T ElementAt(int index)
+        {
+            return Buffer[(Head + index)%Capacity];
+        }
+
+        /// <summary>
+        /// Sets an element at the specified position relative to <see cref="Head"/>
+        /// WITHOUT MODIFYING <see cref="Tail"/>
+        /// </summary>
+        /// <param name="element">The element we want to add at the specified <see cref="index"/></param>
+        /// <param name="index">The index relative to the front of the buffer where we want to add <see cref="element"/></param>
+        public void SetElementAt(T element, int index)
+        {
+            Buffer[(Head + index) % Capacity] = element;
+        }
+
+        public T this[int index]
+        {
+            get { return ElementAt(index); }
+            set { SetElementAt(value, index); }
         }
 
         public virtual void Enqueue(T obj)
@@ -271,6 +301,74 @@ namespace Helios.Util.Collections
                     bufferBegin = 0; //Jump to the front of the buffer
                 array[index] = Buffer[bufferBegin];
             }
+        }
+
+        public void DirectBufferWrite(T[] src)
+        {
+            DirectBufferWrite(src, 0, src.Length);
+        }
+
+        public void DirectBufferWrite(T[] src, int srcLength)
+        {
+            DirectBufferWrite(src, 0, srcLength);
+        }
+
+        public void DirectBufferWrite(T[] src, int srcIndex, int srcLength)
+        {
+            if(srcIndex + srcLength > src.Length) throw new ArgumentOutOfRangeException(string.Format("srcIndex: {0}, srcLength: {1} - expected srcIndex + srcLength to be less than src.Length ({2}", srcIndex, srcLength, src.Length));
+            if (InternalSize + srcLength >= Capacity)
+                Capacity += srcLength; //expand
+           
+            //check to see if we have enough contiguous space from the current Tail to the end of the buffer
+            var physicalTailPos = (Tail%Capacity);
+            if (physicalTailPos + srcLength < Capacity) //we can fit this inside one contiguous write
+            {
+                Array.Copy(src, srcIndex, Buffer, (Tail%Capacity), srcLength);
+            }
+            else //have to commit this write into two phases and wrap-around
+            {
+                var firstCommitLength = Capacity - physicalTailPos;
+                var secondCommitLength = srcLength - firstCommitLength;
+                Array.Copy(src, srcIndex, Buffer, physicalTailPos, firstCommitLength);
+                Array.Copy(src, srcIndex + firstCommitLength, Buffer, 0, secondCommitLength);
+            }
+
+            Tail += srcLength;
+            InternalSize += srcLength;
+            if (InternalSize > Capacity) InternalSize = Capacity; //wrapped around
+        }
+
+        public void DirectBufferRead(T[] dest)
+        {
+            DirectBufferRead(dest, 0, dest.Length);
+        }
+
+        public void DirectBufferRead(T[] dest, int destLength)
+        {
+            DirectBufferRead(dest, 0, destLength);
+        }
+
+        public void DirectBufferRead(T[] dest, int destIndex, int destLength)
+        {
+            if (destIndex + destLength > dest.Length) throw new ArgumentOutOfRangeException(string.Format("destIndex: {0}, destLength: {1} - expected destIndex + srcLength to be less than dest.Length ({2})", destIndex, destLength, dest.Length));
+            if(InternalSize < destLength) throw new ArgumentOutOfRangeException(string.Format("destLength: {0}, expected destLength to be less than or equal to the size of the buffer ({1})", destLength, Size));
+
+            //check to see if we have enough contiguous space from the current Head to the end of the buffer
+            var physicalHeadPos = (Head % Capacity);
+            if (physicalHeadPos + destLength < Capacity) //We have enough room to perform a contiguous read
+            {
+                Array.Copy(Buffer, physicalHeadPos, dest, destIndex, destLength);
+            }
+            else //we have to wrap around and perform the read in two steps
+            {
+                var firstCommitLength = Capacity - physicalHeadPos;
+                var secondCommitLength = destLength - firstCommitLength;
+                Array.Copy(Buffer, physicalHeadPos, dest, destIndex, firstCommitLength);
+                Array.Copy(Buffer, 0, dest, destIndex + firstCommitLength, secondCommitLength);
+            }
+
+            Head += destLength;
+            InternalSize -= destLength;
         }
 
         public IEnumerator<T> GetEnumerator()

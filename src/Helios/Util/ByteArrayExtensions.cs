@@ -18,6 +18,7 @@ namespace Helios.Util
         {
             if (array == null) throw new ArgumentNullException("array");
             if (index + length > array.Length) throw new ArgumentOutOfRangeException("length", string.Format("index: ({0}), length({1}) index + length cannot be longer than Array.length({2})", index, length, array.Length));
+            var arraySegment = new ArraySegment<byte>(array, index, length);
             var result = new byte[length];
             Array.Copy(array, index, result, 0, length);
             return result;

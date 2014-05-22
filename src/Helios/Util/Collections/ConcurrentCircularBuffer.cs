@@ -139,6 +139,27 @@ namespace Helios.Util.Collections
             return resultArray;
         }
 
+        public bool IsElementAt(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T ElementAt(int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetElementAt(T element, int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T this[int index]
+        {
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
+        }
+
         public void Add(T item)
         {
             Enqueue(item);
@@ -222,6 +243,41 @@ namespace Helios.Util.Collections
             {
                 array[index] = internalCopy[internalHead % Capacity];
             }
+        }
+
+        public void DirectBufferWrite(T[] src)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DirectBufferWrite(T[] src, int srcLength)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DirectBufferWrite(T[] src, int srcIndex, int srcLength)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DirectBufferRead(T[] dest)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DirectBufferRead(T[] dest, int destLength)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DirectBufferRead(T[] dest, int destIndex, int destLength)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DirectBufferWrite(int index, T[] src, int srcIndex, int srcLength)
+        {
+            throw new NotImplementedException();
         }
 
         public void CopyTo(Array array, int index)
