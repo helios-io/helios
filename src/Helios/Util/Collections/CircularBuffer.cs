@@ -11,19 +11,28 @@ namespace Helios.Util.Collections
     /// <typeparam name="T">The type being stored in the circular buffer</typeparam>
     public class CircularBuffer<T> : ICircularBuffer<T>
     {
+        public CircularBuffer(T[] initialArray) : this(initialArray, initialArray.Length, initialArray.Length)
+        {
+        }
+
+        public CircularBuffer(T[] initialArray, int capacity, int maxCapacity)
+        {
+            MaxCapacity = maxCapacity;
+            InternalCapacity = capacity;
+            _size = 0;
+            _head = 0;
+            _tail = 0;
+            Buffer = initialArray;
+        }
+
         /// <summary>
         /// Non-expanding circular buffer
         /// </summary>
         public CircularBuffer(int capacity) : this(capacity, capacity) { }
 
-        public CircularBuffer(int capacity, int maxCapacity)
+        public CircularBuffer(int capacity, int maxCapacity) : this(new T[capacity], capacity, maxCapacity)
         {
-            MaxCapacity = maxCapacity;
-            InternalCapacity = capacity;
-            InternalSize = 0;
-            Head = 0;
-            Tail = 0;
-            Buffer = new T[Capacity];
+            
         }
 
         /// <summary>
@@ -34,17 +43,17 @@ namespace Helios.Util.Collections
         /// <summary>
         /// The current fill level of the buffer
         /// </summary>
-        protected int InternalSize;
+        private int _size;
 
         /// <summary>
         /// Front of the buffer
         /// </summary>
-        protected int Head;
+        private int _head;
 
         /// <summary>
         /// Back of the buffer
         /// </summary>
-        protected int Tail;
+        private int _tail;
 
         /// <summary>
         /// The buffer itself
@@ -66,6 +75,13 @@ namespace Helios.Util.Collections
                     var newCapacity = CalculateNewCapacity(value);
                     Expand(newCapacity);
                     InternalCapacity = newCapacity;
+                }
+
+                //Truncate
+                if (value < InternalCapacity)
+                {
+                    Shrink(value);
+                    InternalCapacity = value;
                 }
             }
         }
@@ -110,53 +126,66 @@ namespace Helios.Util.Collections
             return Math.Min(newCapacity, maxCapacity);
         }
 
+        public virtual void Shrink(int newSize)
+        {
+            var previousSize = _size;
+            var newBuffer = new T[newSize];
+            CopyTo(newBuffer, 0, newSize);
+            Buffer = newBuffer;
+            _head = 0;
+            _tail = previousSize;
+        }
+
         /// <summary>
         /// Expands the circular buffer to accomodate additional space
         /// </summary>
         public virtual void Expand(int newSize)
         {
-            var previousSize = InternalSize; //number of elements in the array
+            var previousSize = _size; //number of elements in the array
             var newBuffer = new T[newSize];
             CopyTo(newBuffer);
             Buffer = newBuffer;
-            Head = 0;
-            Tail = previousSize;
+            _head = 0;
+            _tail = previousSize;
         }
 
         public int Size
         {
-            get { return InternalSize; }
+            get { return _size; }
         }
+
+        public int Head { get { return _head%Capacity; } }
+        public int Tail { get { return _tail%Capacity; } }
 
         public virtual T Peek()
         {
             if (Size == 0)
                 return default(T);
-            return Buffer[(Head % Capacity)];
+            return Buffer[(_head % Capacity)];
         }
 
         /// <summary>
-        /// Checks an index relative to the <see cref="Head"/> to see if there's a set element there
+        /// Checks an index relative to the <see cref="_head"/> to see if there's a set element there
         /// </summary>
         public bool IsElementAt(int index)
         {
-            return ((Head + index) % Capacity) <= Size;
+            return ((_head + index) % Capacity) <= Size;
         }
 
         public T ElementAt(int index)
         {
-            return Buffer[(Head + index)%Capacity];
+            return Buffer[(_head + index)%Capacity];
         }
 
         /// <summary>
-        /// Sets an element at the specified position relative to <see cref="Head"/>
-        /// WITHOUT MODIFYING <see cref="Tail"/>
+        /// Sets an element at the specified position relative to <see cref="_head"/>
+        /// WITHOUT MODIFYING <see cref="_tail"/>
         /// </summary>
         /// <param name="element">The element we want to add at the specified <see cref="index"/></param>
         /// <param name="index">The index relative to the front of the buffer where we want to add <see cref="element"/></param>
         public void SetElementAt(T element, int index)
         {
-            Buffer[(Head + index) % Capacity] = element;
+            Buffer[(_head + index) % Capacity] = element;
         }
 
         public T this[int index]
@@ -167,31 +196,31 @@ namespace Helios.Util.Collections
 
         public virtual void Enqueue(T obj)
         {
-            if (InternalSize + 1 > Capacity)
+            if (_size + 1 > Capacity)
             {
                 Capacity += 1; //expand by 1 (or no-op if expansion isn't supported)
             }
 
-            Buffer[Tail % Capacity] = obj;
+            Buffer[_tail % Capacity] = obj;
 
-            Tail++;
+            _tail++;
 
-            if (InternalSize < Capacity) //overflowed, time to wrap around
-                InternalSize++;
+            if (_size < Capacity) //overflowed, time to wrap around
+                _size++;
         }
 
         public void Enqueue(T[] objs)
         {
             //Expand
-            if (InternalSize + objs.Length >= Capacity)
+            if (_size + objs.Length >= Capacity)
                 Capacity += objs.Length;
 
             foreach (var item in objs)
             {
-                Buffer[Tail % Capacity] = item;
-                Tail++;
-                if (InternalSize < Capacity) //overflowed, time to wrap around
-                    InternalSize++;
+                Buffer[_tail % Capacity] = item;
+                _tail++;
+                if (_size < Capacity) //overflowed, time to wrap around
+                    _size++;
             }
         }
 
@@ -200,9 +229,9 @@ namespace Helios.Util.Collections
             if (Size == 0)
                 return default(T);
 
-            var item = Buffer[Head % Capacity];
-            Head++;
-            InternalSize--;
+            var item = Buffer[_head % Capacity];
+            _head++;
+            _size--;
             return item;
         }
 
@@ -210,9 +239,9 @@ namespace Helios.Util.Collections
         {
             var availabileItems = Math.Min(count, Size);
             var returnItems = new List<T>(availabileItems);
-            for (var i = 0; i < availabileItems; i++, Head++, InternalSize--)
+            for (var i = 0; i < availabileItems; i++, _head++, _size--)
             {
-                returnItems.Add(Buffer[Head % Capacity]);
+                returnItems.Add(Buffer[_head % Capacity]);
             }
 
             return returnItems;
@@ -230,9 +259,9 @@ namespace Helios.Util.Collections
 
         public virtual void Clear()
         {
-            Head = 0;
-            Tail = 0;
-            InternalSize = 0;
+            _head = 0;
+            _tail = 0;
+            _size = 0;
         }
 
         public bool Contains(T item)
@@ -294,7 +323,7 @@ namespace Helios.Util.Collections
             if (count > Size) //The maximum value of count is Size
                 count = Size;
 
-            var bufferBegin = Head;
+            var bufferBegin = _head;
             for (var i = 0; i < count; i++, bufferBegin++, index++)
             {
                 if (bufferBegin == Capacity)
@@ -315,27 +344,32 @@ namespace Helios.Util.Collections
 
         public void DirectBufferWrite(T[] src, int srcIndex, int srcLength)
         {
+            DirectBufferWrite(0, src, srcIndex, srcLength);
+            _tail += srcLength;
+            _size += srcLength;
+            if (_size > Capacity) _size = Capacity; //wrapped around
+        }
+
+        public void DirectBufferWrite(int index, T[] src, int srcIndex, int srcLength)
+        {
             if(srcIndex + srcLength > src.Length) throw new ArgumentOutOfRangeException(string.Format("srcIndex: {0}, srcLength: {1} - expected srcIndex + srcLength to be less than src.Length ({2}", srcIndex, srcLength, src.Length));
-            if (InternalSize + srcLength >= Capacity)
+            if (_size + srcLength >= Capacity)
                 Capacity += srcLength; //expand
-           
-            //check to see if we have enough contiguous space from the current Tail to the end of the buffer
-            var physicalTailPos = (Tail%Capacity);
-            if (physicalTailPos + srcLength < Capacity) //we can fit this inside one contiguous write
+
+            var adjustedIndex = (_tail + index)%Capacity;
+
+            //check to see if we have enough contiguous space from the index to the end of the buffer
+            if (adjustedIndex + srcLength < Capacity) //we can fit this inside one contiguous write
             {
-                Array.Copy(src, srcIndex, Buffer, (Tail%Capacity), srcLength);
+                Array.Copy(src, srcIndex, Buffer, adjustedIndex, srcLength);
             }
             else //have to commit this write into two phases and wrap-around
             {
-                var firstCommitLength = Capacity - physicalTailPos;
+                var firstCommitLength = Capacity - adjustedIndex;
                 var secondCommitLength = srcLength - firstCommitLength;
-                Array.Copy(src, srcIndex, Buffer, physicalTailPos, firstCommitLength);
+                Array.Copy(src, srcIndex, Buffer, adjustedIndex, firstCommitLength);
                 Array.Copy(src, srcIndex + firstCommitLength, Buffer, 0, secondCommitLength);
             }
-
-            Tail += srcLength;
-            InternalSize += srcLength;
-            if (InternalSize > Capacity) InternalSize = Capacity; //wrapped around
         }
 
         public void DirectBufferRead(T[] dest)
@@ -350,25 +384,35 @@ namespace Helios.Util.Collections
 
         public void DirectBufferRead(T[] dest, int destIndex, int destLength)
         {
-            if (destIndex + destLength > dest.Length) throw new ArgumentOutOfRangeException(string.Format("destIndex: {0}, destLength: {1} - expected destIndex + srcLength to be less than dest.Length ({2})", destIndex, destLength, dest.Length));
-            if(InternalSize < destLength) throw new ArgumentOutOfRangeException(string.Format("destLength: {0}, expected destLength to be less than or equal to the size of the buffer ({1})", destLength, Size));
+            DirectBufferRead(0, dest, destIndex, destLength);
+            _head += destLength;
+            _size -= destLength;
+        }
 
-            //check to see if we have enough contiguous space from the current Head to the end of the buffer
-            var physicalHeadPos = (Head % Capacity);
-            if (physicalHeadPos + destLength < Capacity) //We have enough room to perform a contiguous read
+        public void DirectBufferRead(int index, T[] dest, int destIndex, int destLength)
+        {
+            if (destIndex + destLength > dest.Length) throw new ArgumentOutOfRangeException(string.Format("destIndex: {0}, destLength: {1} - expected destIndex + srcLength to be less than dest.Length ({2})", destIndex, destLength, dest.Length));
+            if (_size < destLength) throw new ArgumentOutOfRangeException(string.Format("destLength: {0}, expected destLength to be less than or equal to the size of the buffer ({1})", destLength, Size));
+
+            var adjustedIndex = (_head + index) % Capacity;
+
+            //check to see if we have enough contiguous space from the current index to the end of the buffer
+            if (adjustedIndex + destLength < Capacity) //We have enough room to perform a contiguous read
             {
-                Array.Copy(Buffer, physicalHeadPos, dest, destIndex, destLength);
+                Array.Copy(Buffer, adjustedIndex, dest, destIndex, destLength);
             }
             else //we have to wrap around and perform the read in two steps
             {
-                var firstCommitLength = Capacity - physicalHeadPos;
+                var firstCommitLength = Capacity - adjustedIndex;
                 var secondCommitLength = destLength - firstCommitLength;
-                Array.Copy(Buffer, physicalHeadPos, dest, destIndex, firstCommitLength);
+                Array.Copy(Buffer, adjustedIndex, dest, destIndex, firstCommitLength);
                 Array.Copy(Buffer, 0, dest, destIndex + firstCommitLength, secondCommitLength);
             }
+        }
 
-            Head += destLength;
-            InternalSize -= destLength;
+        public void SetRange(int index, T[] values)
+        {
+            DirectBufferWrite(index, values, 0, values.Length);
         }
 
         public IEnumerator<T> GetEnumerator()

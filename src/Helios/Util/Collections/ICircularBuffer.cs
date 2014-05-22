@@ -11,14 +11,24 @@ namespace Helios.Util.Collections
         int MaxCapacity { get; }
 
         /// <summary>
-        /// The current size of the buffer
+        /// The gets or sets the capacity of the buffer
         /// </summary>
-        int Capacity { get;}
+        int Capacity { get; set; }
 
         /// <summary>
         /// The current size of the buffer.
         /// </summary>
         int Size { get; }
+
+        /// <summary>
+        /// Read position of the current buffer
+        /// </summary>
+        int Head { get; }
+
+        /// <summary>
+        /// Tail position of the current buffer
+        /// </summary>
+        int Tail { get; }
 
         /// <summary>
         /// Peeks at the next message in the buffer
@@ -121,6 +131,16 @@ namespace Helios.Util.Collections
         void DirectBufferWrite(T[] src, int srcIndex, int srcLength);
 
         /// <summary>
+        /// Copies the elements of <see cref="src"/> directly into the internal buffer
+        /// at the specified <see cref="index"/> of this ICircularBuffer.
+        /// 
+        /// Does NOT automatically adjust queue length.
+        /// 
+        /// Designed for performance sensitive operations.
+        /// </summary>
+        void DirectBufferWrite(int index, T[] src, int srcIndex, int srcLength);
+
+        /// <summary>
         /// Copies elements directly from the CircularBuffer's internal buffer into <see cref="dest"/>
         /// and automatically adjusts the queue read position accordingly.
         /// 
@@ -143,5 +163,18 @@ namespace Helios.Util.Collections
         /// Designed for performance-sensitive operations.
         /// </summary>
         void DirectBufferRead(T[] dest, int destIndex, int destLength);
+
+        /// <summary>
+        /// Copies elements directly from the CircularBuffer's internal buffer into <see cref="dest"/>
+        /// and beginning from position <see cref="index"/>. Does NOT automatically adjust the queue length.
+        /// 
+        /// Designed for performance-sensitive operations.
+        /// </summary>
+        void DirectBufferRead(int index, T[] dest, int destIndex, int destLength);
+
+        /// <summary>
+        /// Set a range of values starting from the specified index
+        /// </summary>
+        void SetRange(int index, T[] values);
     }
 }

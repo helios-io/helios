@@ -20,7 +20,8 @@ namespace Helios.Buffers
         /// <summary>
         /// Copy constructor
         /// </summary>
-        protected ByteBuffer(byte[] buffer, int initialCapacity, int maxCapacity) : base(maxCapacity)
+        protected ByteBuffer(byte[] buffer, int initialCapacity, int maxCapacity)
+            : base(maxCapacity)
         {
             if (initialCapacity < 0) throw new ArgumentOutOfRangeException("initialCapacity", "initialCapacity must be at least 0");
             if (maxCapacity < 0) throw new ArgumentOutOfRangeException("maxCapacity", "maxCapacity must be at least 0");
@@ -29,7 +30,8 @@ namespace Helios.Buffers
             _capacity = initialCapacity;
         }
 
-        protected ByteBuffer(int initialCapacity, int maxCapacity) : this(new byte[initialCapacity], initialCapacity, maxCapacity)
+        protected ByteBuffer(int initialCapacity, int maxCapacity)
+            : this(new byte[initialCapacity], initialCapacity, maxCapacity)
         {
         }
 
@@ -69,7 +71,7 @@ namespace Helios.Buffers
                     SetIndex(newCapacity, newCapacity);
                 }
             }
-           
+
             Buffer = newBuffer;
             _capacity = newCapacity;
             return this;
@@ -87,12 +89,12 @@ namespace Helios.Buffers
 
         protected override short _GetShort(int index)
         {
-            return BitConverter.ToInt16(Buffer.Slice(index,2), 0);
+            return BitConverter.ToInt16(Buffer.Slice(index, 2), 0);
         }
 
         protected override int _GetInt(int index)
         {
-            return BitConverter.ToInt32(Buffer.Slice(index,4), 0);
+            return BitConverter.ToInt32(Buffer.Slice(index, 4), 0);
         }
 
         protected override long _GetLong(int index)
@@ -113,7 +115,7 @@ namespace Helios.Buffers
 
         public override IByteBuf GetBytes(int index, IByteBuf destination, int dstIndex, int length)
         {
-            CheckDstIndex(index,length, dstIndex, destination.WritableBytes);
+            CheckDstIndex(index, length, dstIndex, destination.WritableBytes);
             destination.SetBytes(dstIndex, Buffer.Slice(index, length), 0, length);
             return this;
         }
@@ -127,7 +129,7 @@ namespace Helios.Buffers
 
         protected override IByteBuf _SetByte(int index, int value)
         {
-            Buffer.SetValue((byte)value,index);
+            Buffer.SetValue((byte)value, index);
             return this;
         }
 
@@ -200,7 +202,10 @@ namespace Helios.Buffers
 
         public override IByteBuf Compact()
         {
-            throw new NotImplementedException();
+            var buffer = new byte[Capacity];
+            Array.Copy(Buffer, ReaderIndex, buffer, 0, ReadableBytes);
+            Buffer = buffer;
+            SetIndex(0, ReadableBytes);
             return this;
         }
 
@@ -210,7 +215,7 @@ namespace Helios.Buffers
         public IByteBuf DeepDuplicate()
         {
             var buffer = new byte[Capacity];
-            Array.Copy(Buffer,ReaderIndex, buffer, 0, ReadableBytes);
+            Array.Copy(Buffer, ReaderIndex, buffer, 0, ReadableBytes);
             return new ByteBuffer(buffer, Capacity, MaxCapacity).SetIndex(ReaderIndex, WriterIndex);
         }
     }

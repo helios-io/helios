@@ -1,4 +1,5 @@
 using System;
+using Helios.Util.Collections;
 
 namespace Helios.Util
 {
@@ -18,9 +19,24 @@ namespace Helios.Util
         {
             if (array == null) throw new ArgumentNullException("array");
             if (index + length > array.Length) throw new ArgumentOutOfRangeException("length", string.Format("index: ({0}), length({1}) index + length cannot be longer than Array.length({2})", index, length, array.Length));
-            var arraySegment = new ArraySegment<byte>(array, index, length);
             var result = new byte[length];
             Array.Copy(array, index, result, 0, length);
+            return result;
+        }
+
+        public static byte[] Slice(this ICircularBuffer<byte> array, int length)
+        {
+            if (array == null) throw new ArgumentNullException("array");
+            if (length > array.Size) throw new ArgumentOutOfRangeException("length", string.Format("length({0}) cannot be longer than Array.length({1})", length, array.Size));
+            return Slice(array, 0, length);
+        }
+
+        public static byte[] Slice(this ICircularBuffer<byte> array, int index, int length)
+        {
+            if (array == null) throw new ArgumentNullException("array");
+            if (index + length > array.Size) throw new ArgumentOutOfRangeException("length", string.Format("index: ({0}), length({1}) index + length cannot be longer than Array.length({2})", index, length, array.Size));
+            var result = new byte[length];
+            array.DirectBufferRead(index, result, 0, length);
             return result;
         }
 

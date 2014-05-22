@@ -25,10 +25,12 @@ namespace Helios.Util.Collections
         }
 
         public int MaxCapacity { get; private set; }
-        public int Capacity { get; private set; }
+        public int Capacity { get;  set; }
 
 
         public int Size { get { return _size; } }
+        public int Head { get { return _head % Capacity; } }
+        public int Tail { get { return _tail % Capacity; } }
 
         #region Internal members
 
@@ -271,6 +273,16 @@ namespace Helios.Util.Collections
         }
 
         public void DirectBufferRead(T[] dest, int destIndex, int destLength)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DirectBufferRead(int index, T[] dest, int destIndex, int destLength)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetRange(int index, T[] values)
         {
             throw new NotImplementedException();
         }

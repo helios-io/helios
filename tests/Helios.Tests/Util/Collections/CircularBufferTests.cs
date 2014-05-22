@@ -29,6 +29,17 @@ namespace Helios.Tests.Util.Collections
             Assert.AreEqual(20, initialBuffer.Size);
         }
 
+        [Test]
+        public void CircularBuffer_should_shrink()
+        {
+            var initialBuffer = GetBuffer<int>(10, 30);
+            for (var i = 0; i < 20; i++)
+                initialBuffer.Enqueue(i);
+            initialBuffer.Capacity = 5;
+            Assert.AreEqual(5, initialBuffer.Capacity);
+            Assert.AreEqual(5, initialBuffer.Size);
+        }
+
         /// <summary>
         /// If a circular buffer is defined with a fixed maximum capacity, it should
         /// simply overwrite the old elements even if they haven't been dequed
