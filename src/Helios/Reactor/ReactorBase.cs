@@ -127,7 +127,7 @@ namespace Helios.Reactor
             if (EventLoop.Receive != null)
             {
                 List<NetworkData> decoded;
-                Decoder.Decode(responseChannel, availableData, out decoded);
+                Decoder.Decode(availableData, out decoded);
                 foreach(var message in decoded)
                     EventLoop.Receive(message, responseChannel);
             }

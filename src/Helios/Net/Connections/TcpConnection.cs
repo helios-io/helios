@@ -235,7 +235,7 @@ namespace Helios.Net.Connections
             try
             {
                 List<NetworkData> encoded;
-                Encoder.Encode(this, payload, out encoded);
+                Encoder.Encode(payload, out encoded);
                 foreach (var message in encoded)
                     _client.Client.Send(message.Buffer, message.Length, SocketFlags.None);
             }

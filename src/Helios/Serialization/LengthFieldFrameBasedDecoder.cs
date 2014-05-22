@@ -36,7 +36,7 @@ namespace Helios.Serialization
             _failFast = failFast;
         }
 
-        public override void Decode(IConnection connection, NetworkData data, out List<NetworkData> decoded)
+        public override void Decode(NetworkData data, out List<NetworkData> decoded)
         {
             decoded = new List<NetworkData>();
             var position = 0;

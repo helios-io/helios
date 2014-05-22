@@ -30,7 +30,7 @@ namespace Helios.Reactor
         protected override void ReceivedData(NetworkData availableData, ReactorResponseChannel responseChannel)
         {
             List<NetworkData> decoded;
-            Decoder.Decode(responseChannel, availableData, out decoded);
+            Decoder.Decode(availableData, out decoded);
             foreach(var message in decoded)
                 responseChannel.OnReceive(message);
         }

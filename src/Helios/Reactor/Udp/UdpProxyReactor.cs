@@ -86,7 +86,7 @@ namespace Helios.Reactor.Udp
         public override void Send(NetworkData data)
         {
             List<NetworkData> encoded;
-            Encoder.Encode(ConnectionAdapter, data, out encoded);
+            Encoder.Encode(data, out encoded);
             foreach (var message in encoded)
                 Listener.BeginSendTo(message.Buffer, 0, message.Length, SocketFlags.None, data.RemoteHost.ToEndPoint(), SendCallback, Listener);
         }

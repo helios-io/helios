@@ -104,7 +104,7 @@ namespace Helios.Reactor.Tcp
         {
             var clientSocket = SocketMap[data.RemoteHost];
             List<NetworkData> encoded;
-            Encoder.Encode(ConnectionAdapter, data, out encoded);
+            Encoder.Encode(data, out encoded);
             foreach (var message in encoded)
                clientSocket.Socket.BeginSend(message.Buffer, 0, message.Length, SocketFlags.None, SendCallback, clientSocket.Socket);
         }
@@ -184,7 +184,7 @@ namespace Helios.Reactor.Tcp
             if (EventLoop.Receive != null)
             {
                 List<NetworkData> decoded;
-                Decoder.Decode(responseChannel, availableData, out decoded);
+                Decoder.Decode(availableData, out decoded);
                 foreach(var message in decoded)
                     EventLoop.Receive(message, responseChannel);
             }

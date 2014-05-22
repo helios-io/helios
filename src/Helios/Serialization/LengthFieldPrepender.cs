@@ -28,7 +28,7 @@ namespace Helios.Serialization
             _lengthAdjustment = lengthAdjustment;
         }
 
-        public override void Encode(IConnection connection, NetworkData data, out List<NetworkData> encoded)
+        public override void Encode(NetworkData data, out List<NetworkData> encoded)
         {
             var length = data.Length + _lengthAdjustment;
             if (_lengthIncludesLenghtFieldLength)

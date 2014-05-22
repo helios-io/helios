@@ -133,7 +133,7 @@ namespace Helios.Net.Connections
             if (NetworkEventLoop.Receive != null)
             {
                 List<NetworkData> decoded;
-                Decoder.Decode(this, data, out decoded);
+                Decoder.Decode(data, out decoded);
                 foreach(var message in decoded)
                     NetworkEventLoop.Receive(message, this);
             }

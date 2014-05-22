@@ -44,7 +44,7 @@ namespace Helios.Tests.Serialization
             };
 
             List<NetworkData> encodedMessages;
-            Encoder.Encode(null, networkData, out encodedMessages);
+            Encoder.Encode(networkData, out encodedMessages);
 
             var encodedData = encodedMessages[0];
             Assert.AreEqual(networkData.Length + 4, encodedData.Length);
@@ -65,10 +65,10 @@ namespace Helios.Tests.Serialization
             };
 
             List<NetworkData> encodedMessages;
-            Encoder.Encode(null, networkData, out encodedMessages);
+            Encoder.Encode(networkData, out encodedMessages);
 
             List<NetworkData> decodedMessages;
-            Decoder.Decode(null, encodedMessages[0], out decodedMessages);
+            Decoder.Decode(encodedMessages[0], out decodedMessages);
 
             Assert.IsTrue(binaryContent.SequenceEqual(decodedMessages[0].Buffer));
         }
@@ -108,7 +108,7 @@ namespace Helios.Tests.Serialization
             };
 
             List<NetworkData> decodedMessages;
-            Decoder.Decode(null, networkData, out decodedMessages);
+            Decoder.Decode(networkData, out decodedMessages);
             Assert.AreEqual(3, decodedMessages.Count);
             Assert.IsTrue(binaryContent1.SequenceEqual(decodedMessages[0].Buffer));
             Assert.IsTrue(binaryContent2.SequenceEqual(decodedMessages[1].Buffer));
