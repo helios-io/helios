@@ -61,9 +61,6 @@ namespace Helios.Util.Collections
                 if (value == InternalCapacity)
                     return;
 
-                if (value < Size)
-                    throw new ArgumentOutOfRangeException("value",
-                        "Can't make maximum buffer capacity smaller than it's currently filled size!");
                 if (value > InternalCapacity && InternalCapacity < MaxCapacity)
                 {
                     var newCapacity = CalculateNewCapacity(value);
@@ -118,9 +115,12 @@ namespace Helios.Util.Collections
         /// </summary>
         public virtual void Expand(int newSize)
         {
+            var previousSize = InternalSize; //number of elements in the array
             var newBuffer = new T[newSize];
             CopyTo(newBuffer);
             Buffer = newBuffer;
+            Head = 0;
+            Tail = previousSize;
         }
 
         public int Size
@@ -130,32 +130,38 @@ namespace Helios.Util.Collections
 
         public virtual T Peek()
         {
-            return Buffer[Head];
+            if (Size == 0)
+                return default(T);
+            return Buffer[(Head % Capacity)];
         }
 
         public virtual void Enqueue(T obj)
         {
-            Buffer[Tail] = obj;
-
-            if (InternalSize + 1 >= Capacity)
+            if (InternalSize + 1 > Capacity)
             {
                 Capacity += 1; //expand by 1 (or no-op if expansion isn't supported)
             }
 
-            if (++Tail == Capacity)
-                Tail = 0;
-            InternalSize++;
+            Buffer[Tail % Capacity] = obj;
+
+            Tail++;
+
+            if (InternalSize < Capacity) //overflowed, time to wrap around
+                InternalSize++;
         }
 
         public void Enqueue(T[] objs)
         {
             //Expand
             if (InternalSize + objs.Length >= Capacity)
-                Capacity = InternalCapacity + objs.Length;
+                Capacity += objs.Length;
 
             foreach (var item in objs)
             {
-                Enqueue(item);
+                Buffer[Tail % Capacity] = item;
+                Tail++;
+                if (InternalSize < Capacity) //overflowed, time to wrap around
+                    InternalSize++;
             }
         }
 
@@ -164,9 +170,8 @@ namespace Helios.Util.Collections
             if (Size == 0)
                 return default(T);
 
-            var item = Buffer[Head];
-            if (++Head == Capacity)
-                Head = 0;
+            var item = Buffer[Head % Capacity];
+            Head++;
             InternalSize--;
             return item;
         }
@@ -175,13 +180,11 @@ namespace Helios.Util.Collections
         {
             var availabileItems = Math.Min(count, Size);
             var returnItems = new List<T>(availabileItems);
-            for (var i = 0; i < availabileItems; i++, Head++)
+            for (var i = 0; i < availabileItems; i++, Head++, InternalSize--)
             {
-                if (Head == Capacity)
-                    Head = 0;
-                returnItems.Add(Buffer[Head]);
+                returnItems.Add(Buffer[Head % Capacity]);
             }
-            InternalSize -= availabileItems;
+
             return returnItems;
         }
 
@@ -272,7 +275,7 @@ namespace Helios.Util.Collections
 
         public IEnumerator<T> GetEnumerator()
         {
-            return ((IEnumerable<T>) ToArray()).GetEnumerator();
+            return ((IEnumerable<T>)ToArray()).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -282,7 +285,7 @@ namespace Helios.Util.Collections
 
         public void CopyTo(Array array, int index)
         {
-            CopyTo((T[]) array, index);
+            CopyTo((T[])array, index);
         }
 
         public int Count
