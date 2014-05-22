@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Helios.Buffers;
 using NUnit.Framework;
 
@@ -162,7 +159,9 @@ namespace Helios.Tests.Buffer
             Assert.AreEqual(110, originalByteBuffer.ReadInt());
             Assert.AreEqual(110, clonedByteBuffer.ReadInt());
             Assert.AreEqual(expectedString, Encoding.Unicode.GetString(originalByteBuffer.ReadBytes(expectedString.Length * 2).InternalArray()));
-            Assert.AreEqual(expectedString, Encoding.Unicode.GetString(clonedByteBuffer.ReadBytes(expectedString.Length * 2).InternalArray()));
+            var stringBuf = new byte[expectedString.Length*2];
+            clonedByteBuffer.ReadBytes(stringBuf);
+            Assert.AreEqual(expectedString, Encoding.Unicode.GetString(stringBuf));
             Assert.AreEqual(true, clonedByteBuffer.ReadBoolean());
             Assert.AreEqual(-1113.4d, clonedByteBuffer.ReadDouble());
         }

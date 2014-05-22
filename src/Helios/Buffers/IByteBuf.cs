@@ -471,5 +471,10 @@ namespace Helios.Buffers
         /// Unwraps a nested buffer
         /// </summary>
         IByteBuf Unwrap();
+
+        /// <summary>
+        /// Internal use only. Exposes the underlying NIO buffer.
+        /// </summary>
+        ByteBuffer InternalNioBuffer(int index, int length);
     }
 }

@@ -10,6 +10,7 @@ namespace Helios.Buffers
         private readonly IByteBufAllocator _alloc;
 
         private ByteBuffer _buffer;
+        private ByteBuffer _internalNioBuffer;
         private int _capacity;
         private bool _doNotFree;
 
@@ -103,6 +104,21 @@ namespace Helios.Buffers
             get { return _alloc; }
         }
 
+        public override ByteBuffer InternalNioBuffer(int index, int length)
+        {
+            return (ByteBuffer)InternalNioBuffer().Clear().SetIndex(index, length);
+        }
+
+        private ByteBuffer InternalNioBuffer()
+        {
+            var tmpNioBuff = _internalNioBuffer;
+            if (_internalNioBuffer == null)
+            {
+                _internalNioBuffer = tmpNioBuff = (ByteBuffer)_buffer.Duplicate();
+            }
+            return tmpNioBuff;
+        }
+
         protected override byte _GetByte(int index)
         {
             EnsureAccessible();
@@ -143,10 +159,10 @@ namespace Helios.Buffers
 
         public override IByteBuf GetBytes(int index, byte[] destination, int dstIndex, int length)
         {
-            throw new NotImplementedException();
+            GetBytes(index, destination, dstIndex, length, false);
+            return this;
         }
 
-        /* currently are not using the "isInternal" field, since we don't do much with shared buffer pools */
         private void GetBytes(int index, byte[] destination, int dstIndex, int length, bool isInternal)
         {
             CheckDstIndex(index, length, dstIndex, destination.Length);
@@ -154,39 +170,90 @@ namespace Helios.Buffers
                 throw new IndexOutOfRangeException(string.Format(
                     "dstIndex: {0}, length: {1} (expected: range(0, {2}))", dstIndex, length, destination.Length));
 
-            var tmpBuf = (ByteBuffer)_buffer.Duplicate();
+            ByteBuffer tmpBuf;
+
+            if (isInternal)
+            {
+                tmpBuf = InternalNioBuffer();
+            }
+            else
+            {
+                tmpBuf = (ByteBuffer)_buffer.Duplicate();
+            }
+            
             tmpBuf.Clear().SetIndex(index, index + length);
             tmpBuf.GetBytes(index, destination, dstIndex, length);
         }
 
+        public override IByteBuf SetByte(int index, int value)
+        {
+            EnsureAccessible();
+            return _SetByte(index, value);
+        }
+
         protected override IByteBuf _SetByte(int index, int value)
         {
-            throw new NotImplementedException();
+            return _buffer.SetByte(index, value);
+        }
+
+        public override IByteBuf SetShort(int index, int value)
+        {
+            EnsureAccessible();
+            _SetShort(index, value);
+            return this;
         }
 
         protected override IByteBuf _SetShort(int index, int value)
         {
-            throw new NotImplementedException();
+            _buffer.SetShort(index, value);
+            return this;
+        }
+
+        public override IByteBuf SetInt(int index, int value)
+        {
+            EnsureAccessible();
+            return _SetInt(index, value);
         }
 
         protected override IByteBuf _SetInt(int index, int value)
         {
-            throw new NotImplementedException();
+            _buffer.SetInt(index, value);
+            return this;
+        }
+
+        public override IByteBuf SetLong(int index, long value)
+        {
+            EnsureAccessible();
+            return _SetLong(index, value);
         }
 
         protected override IByteBuf _SetLong(int index, long value)
         {
-            throw new NotImplementedException();
+            _buffer.SetLong(index, value);
+            return this;
         }
 
         public override IByteBuf SetBytes(int index, IByteBuf src, int srcIndex, int length)
         {
-            throw new NotImplementedException();
+            CheckSrcIndex(index, length, srcIndex, src.Capacity);
+            if (_buffer.HasArray)
+            {
+                src.GetBytes(srcIndex, _buffer.InternalArray(), index, length);
+            }
+            else
+            {
+                src.GetBytes(srcIndex, this, index, length);
+            }
+            return this;
         }
 
         public override IByteBuf SetBytes(int index, byte[] src, int srcIndex, int length)
         {
-            throw new NotImplementedException();
+            CheckSrcIndex(index, length, srcIndex, src.Length);
+            var tmpBuf = InternalNioBuffer();
+            tmpBuf.Clear().SetIndex(index, index + length);
+            tmpBuf.WriteBytes(src, srcIndex, length);
+            return this;
         }
 
         public override bool HasArray

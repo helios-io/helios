@@ -193,10 +193,15 @@ namespace Helios.Buffers
             return null;
         }
 
+        public override ByteBuffer InternalNioBuffer(int index, int length)
+        {
+            return (ByteBuffer)(Duplicate()).Clear().SetIndex(index, length);
+        }
+
         /// <summary>
         /// Duplicate for <see cref="ByteBuffer"/> instances actually creates a deep clone, rather than a proxy
         /// </summary>
-        public override IByteBuf Duplicate()
+        public IByteBuf DeepDuplicate()
         {
             var buffer = new byte[Capacity];
             Array.Copy(Buffer,ReaderIndex, buffer, 0, ReadableBytes);

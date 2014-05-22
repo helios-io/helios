@@ -169,5 +169,10 @@ namespace Helios.Buffers
         {
             return _buffer;
         }
+
+        public override ByteBuffer InternalNioBuffer(int index, int length)
+        {
+            return _buffer.InternalNioBuffer(index, length);
+        }
     }
 }
