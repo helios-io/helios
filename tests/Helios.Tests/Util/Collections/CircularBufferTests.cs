@@ -9,12 +9,12 @@ namespace Helios.Tests.Util.Collections
         [Test]
         public void CircularBuffer_should_expand()
         {
-            var initialBuffer = new CircularBuffer<int>(10);
+            var initialBuffer = new CircularBuffer<int>(10,30);
             initialBuffer.Capacity = 20; //should expand
             for(var i = 0; i < 20; i++)
                 initialBuffer.Add(i);
-            Assert.AreEqual(20, initialBuffer.Capacity);
-            Assert.AreEqual(initialBuffer.Capacity, initialBuffer.Size);
+            Assert.AreEqual(30, initialBuffer.Capacity);
+            Assert.AreEqual(20, initialBuffer.Size);
         }
     }
 }

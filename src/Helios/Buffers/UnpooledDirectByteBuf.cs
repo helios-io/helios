@@ -107,6 +107,14 @@ namespace Helios.Buffers
             return (ByteBuffer)InternalNioBuffer().Clear().SetIndex(index, length);
         }
 
+        public override IByteBuf Compact()
+        {
+            _buffer.Compact();
+            _internalNioBuffer = (DuplicateByteBuf) _buffer.Duplicate();
+            SetIndex(0, _buffer.ReadableBytes);
+            return this;
+        }
+
         private ByteBuffer InternalNioBuffer()
         {
             var tmpNioBuff = _internalNioBuffer;

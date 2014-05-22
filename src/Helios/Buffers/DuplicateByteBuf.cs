@@ -175,6 +175,13 @@ namespace Helios.Buffers
             return _buffer.InternalNioBuffer(index, length);
         }
 
+        public override IByteBuf Compact()
+        {
+            _buffer.Compact();
+            SetIndex(_buffer.ReaderIndex, _buffer.WriterIndex);
+            return this;
+        }
+
         #region Conversion
 
         public static implicit operator ByteBuffer(DuplicateByteBuf buf)

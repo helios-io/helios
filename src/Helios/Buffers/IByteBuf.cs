@@ -483,5 +483,13 @@ namespace Helios.Buffers
         /// Internal use only. Exposes the underlying NIO buffer.
         /// </summary>
         ByteBuffer InternalNioBuffer(int index, int length);
+
+        /// <summary>
+        /// Shifts all of the <see cref="ReadableBytes"/> to the front of the internal buffer
+        /// and resets the <see cref="ReaderIndex"/> to zero and <see cref="WriterIndex"/> to <see cref="ReadableBytes"/>.
+        /// 
+        /// Designed to work with frequently re-used buffers that are held for long periods of time.
+        /// </summary>
+        IByteBuf Compact();
     }
 }

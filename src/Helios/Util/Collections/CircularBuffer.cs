@@ -11,8 +11,14 @@ namespace Helios.Util.Collections
     /// <typeparam name="T">The type being stored in the circular buffer</typeparam>
     public class CircularBuffer<T> : ICircularBuffer<T>
     {
-        public CircularBuffer(int capacity)
+        /// <summary>
+        /// Non-expanding circular buffer
+        /// </summary>
+        public CircularBuffer(int capacity) : this(capacity, capacity) { }
+
+        public CircularBuffer(int capacity, int maxCapacity)
         {
+            MaxCapacity = maxCapacity;
             InternalCapacity = capacity;
             InternalSize = 0;
             Head = 0;
@@ -21,7 +27,7 @@ namespace Helios.Util.Collections
         }
 
         /// <summary>
-        /// The maximum size of the buffer
+        /// Thesize of the buffer
         /// </summary>
         protected int InternalCapacity;
 
@@ -45,6 +51,8 @@ namespace Helios.Util.Collections
         /// </summary>
         protected T[] Buffer;
 
+        public int MaxCapacity { get; private set; }
+
         public int Capacity
         {
             get { return InternalCapacity; }
@@ -56,12 +64,53 @@ namespace Helios.Util.Collections
                 if (value < Size)
                     throw new ArgumentOutOfRangeException("value",
                         "Can't make maximum buffer capacity smaller than it's currently filled size!");
-                if (value > InternalCapacity)
+                if (value > InternalCapacity && InternalCapacity < MaxCapacity)
                 {
-                    Expand(value);
-                    InternalCapacity = value;
+                    var newCapacity = CalculateNewCapacity(value);
+                    Expand(newCapacity);
+                    InternalCapacity = newCapacity;
                 }
             }
+        }
+
+        /// <summary>
+        /// Grow the capacity by a power of two, so we aren't having to constantly expand it over and over again
+        /// during periods of sustained writes.
+        /// </summary>
+        /// <param name="minNewCapacity">The minimum additional space we need to accomodiate</param>
+        protected int CalculateNewCapacity(int minNewCapacity)
+        {
+            var maxCapacity = MaxCapacity;
+            var threshold = 1048576; // 1 MiB page if sizeof(T) == 1 byte.
+            var newCapacity = 0;
+            if (minNewCapacity == threshold)
+            {
+                return threshold;
+            }
+
+            // If over threshold, do not double but just increase by threshold.
+            if (minNewCapacity > threshold)
+            {
+                newCapacity = minNewCapacity / threshold * threshold;
+                if (newCapacity > maxCapacity - threshold)
+                {
+                    newCapacity = maxCapacity;
+                }
+                else
+                {
+                    newCapacity += threshold;
+                }
+                return newCapacity;
+            }
+
+            // Not over threshold. Double up to 4 MiB, starting from 64.
+            newCapacity = 64;
+            while (newCapacity < minNewCapacity)
+            {
+                newCapacity <<= 1;
+            }
+
+            return Math.Min(newCapacity, maxCapacity);
         }
 
         /// <summary>
@@ -87,6 +136,12 @@ namespace Helios.Util.Collections
         public virtual void Enqueue(T obj)
         {
             Buffer[Tail] = obj;
+
+            if (InternalSize + 1 >= Capacity)
+            {
+                Capacity += 1; //expand by 1 (or no-op if expansion isn't supported)
+            }
+
             if (++Tail == Capacity)
                 Tail = 0;
             InternalSize++;
@@ -94,6 +149,10 @@ namespace Helios.Util.Collections
 
         public void Enqueue(T[] objs)
         {
+            //Expand
+            if (InternalSize + objs.Length >= Capacity)
+                Capacity = InternalCapacity + objs.Length;
+
             foreach (var item in objs)
             {
                 Enqueue(item);

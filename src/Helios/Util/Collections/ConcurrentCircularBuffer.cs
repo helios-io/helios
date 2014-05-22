@@ -11,8 +11,12 @@ namespace Helios.Util.Collections
     /// <typeparam name="T"></typeparam>
     public class ConcurrentCircularBuffer<T> : ICircularBuffer<T>
     {
-        public ConcurrentCircularBuffer(int capacity)
+        //Non-expanding buffer
+        public ConcurrentCircularBuffer(int capacity) : this(capacity, capacity) { }
+
+        public ConcurrentCircularBuffer(int capacity, int maxCapacity)
         {
+            MaxCapacity = maxCapacity;
             Capacity = capacity;
             _size = 0;
             _head = 0;
@@ -20,6 +24,7 @@ namespace Helios.Util.Collections
             _buffer = new T[Capacity];
         }
 
+        public int MaxCapacity { get; private set; }
         public int Capacity { get; private set; }
 
 

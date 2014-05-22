@@ -198,6 +198,12 @@ namespace Helios.Buffers
             return (ByteBuffer)(Duplicate()).Clear().SetIndex(index, length);
         }
 
+        public override IByteBuf Compact()
+        {
+            throw new NotImplementedException();
+            return this;
+        }
+
         /// <summary>
         /// Duplicate for <see cref="ByteBuffer"/> instances actually creates a deep clone, rather than a proxy
         /// </summary>
