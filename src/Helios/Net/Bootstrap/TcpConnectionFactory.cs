@@ -15,7 +15,7 @@ namespace Helios.Net.Bootstrap
 
         protected override IConnection CreateConnection(INode localEndpoint, INode remoteEndpoint)
         {
-            return new TcpConnection(EventLoop, remoteEndpoint, Encoder, Decoder);
+            return new TcpConnection(EventLoop, remoteEndpoint, Encoder, Decoder, Allocator);
         }
     }
 }

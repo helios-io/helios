@@ -17,13 +17,13 @@ namespace Helios.Serialization
         /// </summary>
         void Decode(NetworkData data, out List<NetworkData> decoded);
 
-        void Decode(IByteBuf buffer, out List<byte[]> decoded);
+        void Decode(IConnection connection, IByteBuf buffer, out List<IByteBuf> decoded);
     }
 
     public abstract class MessageDecoderBase : IMessageDecoder
     {
         public abstract void Decode(NetworkData data, out List<NetworkData> decoded);
-        public abstract void Decode(IByteBuf buffer, out List<byte[]> decoded);
+        public abstract void Decode(IConnection connection, IByteBuf buffer, out List<IByteBuf> decoded);
     }
 
     /// <summary>
@@ -36,10 +36,9 @@ namespace Helios.Serialization
             decoded = new List<NetworkData>() {data};
         }
 
-        public override void Decode(IByteBuf buffer, out List<byte[]> decoded)
+        public override void Decode(IConnection connection, IByteBuf buffer, out List<IByteBuf> decoded)
         {
-            var decode = buffer.ToArray();
-            decoded = new List<byte[]>() {decode};
+            decoded = new List<IByteBuf>() {buffer};
         }
     }
 }

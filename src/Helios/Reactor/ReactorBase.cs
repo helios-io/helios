@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Helios.Buffers;
 using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;
@@ -16,10 +17,11 @@ namespace Helios.Reactor
     {
         protected Socket Listener;
 
-        protected ReactorBase(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        protected ReactorBase(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
         {
             Decoder = decoder;
             Encoder = encoder;
+            Allocator = allocator;
             LocalEndpoint = new IPEndPoint(localAddress, localPort);
             Listener = new Socket(AddressFamily.InterNetwork, socketType, protocol);
             if (protocol == ProtocolType.Tcp) { Transport = TransportType.Tcp; } else if (protocol == ProtocolType.Udp) {  Transport = TransportType.Udp; }
@@ -58,6 +60,7 @@ namespace Helios.Reactor
 
         public IMessageEncoder Encoder { get; private set; }
         public IMessageDecoder Decoder { get; private set; }
+        public IByteBufAllocator Allocator { get; private set; }
 
         public IConnection ConnectionAdapter { get; private set; }
         public NetworkEventLoop EventLoop { get; private set; }
@@ -220,6 +223,7 @@ namespace Helios.Reactor
             public IEventLoop EventLoop { get { return _reactor.EventLoop; } }
             public IMessageEncoder Encoder { get { return _reactor.Encoder; } }
             public IMessageDecoder Decoder { get { return _reactor.Decoder; } }
+            public IByteBufAllocator Allocator { get { return _reactor.Allocator; } }
             public DateTimeOffset Created { get; private set; }
             public INode RemoteHost { get; private set; }
             public INode Local { get; private set; }

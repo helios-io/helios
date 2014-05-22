@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Helios.Buffers;
 using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;
@@ -18,7 +18,7 @@ namespace Helios.Reactor.Response
     public abstract class ReactorResponseChannel : IConnection
     {
 
-        protected ICircularBuffer<NetworkData> UnreadMessages = new ConcurrentCircularBuffer<NetworkData>(100);
+        protected ICircularBuffer<NetworkData> UnreadMessages = new ConcurrentCircularBuffer<NetworkData>(1000);
         private readonly ReactorBase _reactor;
         internal readonly Socket Socket;
 
@@ -70,6 +70,7 @@ namespace Helios.Reactor.Response
         public IEventLoop EventLoop { get { return NetworkEventLoop; } }
         public IMessageEncoder Encoder { get; private set; }
         public IMessageDecoder Decoder { get; private set; }
+        public IByteBufAllocator Allocator { get; private set; }
 
         public NetworkEventLoop NetworkEventLoop { get; private set; }
 

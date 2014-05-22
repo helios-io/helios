@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using Helios.Buffers;
 using Helios.Ops;
 using Helios.Ops.Executors;
 using Helios.Serialization;
@@ -72,6 +73,12 @@ namespace Helios.Net.Bootstrap
         public new ClientBootstrap SetEncoder(IMessageEncoder encoder)
         {
             base.SetEncoder(encoder);
+            return this;
+        }
+
+        public new ClientBootstrap SetAllocator(IByteBufAllocator allocator)
+        {
+            base.SetAllocator(allocator);
             return this;
         }
 

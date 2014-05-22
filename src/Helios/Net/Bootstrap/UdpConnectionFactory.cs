@@ -14,7 +14,7 @@ namespace Helios.Net.Bootstrap
 
         protected override IConnection CreateConnection(INode localEndpoint, INode remoteEndpoint)
         {
-            return new UdpConnection(EventLoop, localEndpoint, Encoder, Decoder);
+            return new UdpConnection(EventLoop, localEndpoint, Encoder, Decoder, Allocator);
         }
     }
 }

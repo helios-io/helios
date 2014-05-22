@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using Helios.Buffers;
 using Helios.Net;
 using Helios.Net.Bootstrap;
 using Helios.Ops;
@@ -88,6 +89,12 @@ namespace Helios.Reactor.Bootstrap
         public new ServerBootstrap SetEncoder(IMessageEncoder encoder)
         {
             base.SetEncoder(encoder);
+            return this;
+        }
+
+        public new ServerBootstrap SetAllocator(IByteBufAllocator allocator)
+        {
+            base.SetAllocator(allocator);
             return this;
         }
 

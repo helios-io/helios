@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using Helios.Buffers;
 using Helios.Net;
 using Helios.Serialization;
 using Helios.Topology;
@@ -22,6 +23,7 @@ namespace Helios.Reactor
 
         IMessageEncoder Encoder { get; }
         IMessageDecoder Decoder { get; }
+        IByteBufAllocator Allocator { get; }
 
         IConnection ConnectionAdapter { get; }
 

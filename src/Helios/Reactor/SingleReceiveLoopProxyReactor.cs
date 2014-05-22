@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Helios.Buffers;
 using Helios.Net;
 using Helios.Reactor.Response;
 using Helios.Serialization;
@@ -17,8 +18,8 @@ namespace Helios.Reactor
     /// </summary>
     public abstract class SingleReceiveLoopProxyReactor<TIdentifier> : ProxyReactorBase<TIdentifier>
     {
-        protected SingleReceiveLoopProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
-            : base(localAddress, localPort, eventLoop, encoder, decoder, socketType, protocol, bufferSize)
+        protected SingleReceiveLoopProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
+            : base(localAddress, localPort, eventLoop, encoder, decoder, allocator, socketType, protocol, bufferSize)
         {
         }
 

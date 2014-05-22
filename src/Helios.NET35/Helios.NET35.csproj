@@ -116,6 +116,9 @@
     <Compile Include="..\Helios\Eventing\Subscriptions\TopicHelpers.cs">
       <Link>Eventing\Subscriptions\TopicHelpers.cs</Link>
     </Compile>
+    <Compile Include="..\Helios\Exceptions\EncodingExceptions.cs">
+      <Link>Exceptions\EncodingExceptions.cs</Link>
+    </Compile>
     <Compile Include="..\Helios\Exceptions\Events\ExceptionEventArgs.cs">
       <Link>Exceptions\Events\ExceptionEventArgs.cs</Link>
     </Compile>

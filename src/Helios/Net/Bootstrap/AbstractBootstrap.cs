@@ -1,4 +1,5 @@
-﻿using Helios.Serialization;
+﻿using Helios.Buffers;
+using Helios.Serialization;
 
 namespace Helios.Net.Bootstrap
 {
@@ -12,6 +13,7 @@ namespace Helios.Net.Bootstrap
             Config = new DefaultConnectionConfig();
             Encoder = Encoders.DefaultEncoder;
             Decoder = Encoders.DefaultDecoder;
+            Allocator = UnpooledByteBufAllocator.Default;
         }
 
         protected AbstractBootstrap(AbstractBootstrap other) : this()
@@ -48,6 +50,8 @@ namespace Helios.Net.Bootstrap
 
         protected IMessageEncoder Encoder { get; set; }
 
+        protected IByteBufAllocator Allocator { get; set; }
+
         public virtual AbstractBootstrap SetDecoder(IMessageDecoder decoder)
         {
             Decoder = decoder;
@@ -57,6 +61,12 @@ namespace Helios.Net.Bootstrap
         public virtual AbstractBootstrap SetEncoder(IMessageEncoder encoder)
         {
             Encoder = encoder;
+            return this;
+        }
+
+        public virtual AbstractBootstrap SetAllocator(IByteBufAllocator allocator)
+        {
+            Allocator = allocator;
             return this;
         }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using Helios.Buffers;
 using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;
@@ -16,8 +17,8 @@ namespace Helios.Reactor.Udp
     {
         protected EndPoint RemoteEndPoint;
 
-        public UdpProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
-            : base(localAddress, localPort, eventLoop, encoder, decoder, SocketType.Dgram, ProtocolType.Udp, bufferSize)
+        public UdpProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : base(localAddress, localPort, eventLoop, encoder, decoder, allocator, SocketType.Dgram, ProtocolType.Udp, bufferSize)
         {
             RemoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
         }

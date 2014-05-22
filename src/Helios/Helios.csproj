@@ -54,6 +54,7 @@
     <Compile Include="Buffers\EmptyByteBuf.cs" />
     <Compile Include="Buffers\Unpooled.cs" />
     <Compile Include="Buffers\UnpooledByteBufAllocator.cs" />
+    <Compile Include="Exceptions\EncodingExceptions.cs" />
     <Compile Include="Util\ByteArrayExtensions.cs" />
     <Compile Include="Buffers\AbstractByteBuf.cs" />
     <Compile Include="Buffers\ByteBuffer.cs" />

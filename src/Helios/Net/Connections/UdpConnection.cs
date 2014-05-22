@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Helios.Buffers;
 using Helios.Exceptions;
 using Helios.Serialization;
 using Helios.Topology;
@@ -20,26 +21,27 @@ namespace Helios.Net.Connections
         protected UdpClient Client;
         protected EndPoint RemoteEndpoint;
 
-        public UdpConnection(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout, IMessageEncoder encoder, IMessageDecoder decoder)
-            : base(eventLoop, binding, timeout, encoder, decoder)
+        public UdpConnection(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator)
+            : base(eventLoop, binding, timeout, encoder, decoder, allocator)
         {
             InitClient();
         }
 
-        public UdpConnection(NetworkEventLoop eventLoop, INode binding, IMessageEncoder encoder, IMessageDecoder decoder)
-            : base(eventLoop, binding, encoder, decoder)
+        public UdpConnection(NetworkEventLoop eventLoop, INode binding, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator)
+            : base(eventLoop, binding, encoder, decoder, allocator)
         {
             InitClient();
         }
 
-        public UdpConnection(UdpClient client, IMessageEncoder encoder, IMessageDecoder decoder)
+        public UdpConnection(UdpClient client, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator)
         {
             InitClient(client);
             Encoder = encoder;
             Decoder = decoder;
+            Allocator = allocator;
         }
 
-        public UdpConnection(UdpClient client) : this(client, Encoders.DefaultEncoder, Encoders.DefaultDecoder)
+        public UdpConnection(UdpClient client) : this(client, Encoders.DefaultEncoder, Encoders.DefaultDecoder, UnpooledByteBufAllocator.Default)
         {
         }
 

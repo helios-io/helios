@@ -72,9 +72,40 @@ namespace Helios.Serialization
             encoded.Add(networkData);
         }
 
-        public override void Encode(IByteBuf buffer, out List<byte[]> encoded)
+        public override void Encode(IConnection connection, IByteBuf buffer, out List<IByteBuf> encoded)
         {
-            throw new NotImplementedException();
+            var length = buffer.ReadableBytes + _lengthAdjustment;
+            if (_lengthIncludesLenghtFieldLength)
+            {
+                length += _lengthFieldLength;
+            }
+
+            encoded = new List<IByteBuf>();
+            var sourceByteBuf = connection.Allocator.Buffer(_lengthFieldLength + length);
+            if (length < 0) throw new ArgumentException(string.Format("Adjusted frame length ({0}) is less than zero", length));
+
+            switch (_lengthFieldLength)
+            {
+
+                case 1:
+                    if (length >= 256) throw new ArgumentException("length of object does not fit into one byte: " + length);
+                    sourceByteBuf.WriteByte(length);
+                    break;
+                case 2:
+                    if (length >= 65536) throw new ArgumentException("length of object does not fit into a short integer: " + length);
+                    sourceByteBuf.WriteShort((ushort)length);
+                    break;
+                case 4:
+                    sourceByteBuf.WriteInt(length);
+                    break;
+                case 8:
+                    sourceByteBuf.WriteLong(length);
+                    break;
+                default:
+                    throw new Exception("Unknown length field length");
+            }
+            sourceByteBuf.WriteBytes(buffer);
+            encoded.Add(sourceByteBuf);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
+using Helios.Buffers;
 using Helios.Exceptions;
 using Helios.Ops;
 using Helios.Serialization;
@@ -50,6 +51,11 @@ namespace Helios.Net
 
         IMessageEncoder Encoder { get; }
         IMessageDecoder Decoder { get; }
+
+        /// <summary>
+        /// Used to allocate reusable buffers for network I/O
+        /// </summary>
+        IByteBufAllocator Allocator { get; }
 
         DateTimeOffset Created { get; }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Helios.Buffers;
 using Helios.Exceptions;
 using Helios.Serialization;
 using Helios.Topology;
@@ -14,14 +15,14 @@ namespace Helios.Net.Connections
     {
         protected TcpClient _client;
 
-        public TcpConnection(NetworkEventLoop eventLoop, INode node, TimeSpan timeout, IMessageEncoder encoder, IMessageDecoder decoder, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
-            : base(eventLoop, node, timeout, encoder, decoder, bufferSize)
+        public TcpConnection(NetworkEventLoop eventLoop, INode node, TimeSpan timeout, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : base(eventLoop, node, timeout, encoder, decoder, allocator, bufferSize)
         {
             InitClient();
         }
 
-        public TcpConnection(NetworkEventLoop eventLoop, INode node, IMessageEncoder encoder, IMessageDecoder decoder, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
-            : base(eventLoop, node, encoder, decoder, bufferSize)
+        public TcpConnection(NetworkEventLoop eventLoop, INode node, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : base(eventLoop, node, encoder, decoder, allocator, bufferSize)
         {
             InitClient();
         }
@@ -32,12 +33,13 @@ namespace Helios.Net.Connections
             InitClient(client);
         }
 
-        public TcpConnection(TcpClient client, IMessageEncoder encoder, IMessageDecoder decoder, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        public TcpConnection(TcpClient client, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base(bufferSize)
         {
             InitClient(client);
             Encoder = encoder;
             Decoder = decoder;
+            Allocator = allocator;
         }
 
         public override TransportType Transport { get { return TransportType.Tcp; } }

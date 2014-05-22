@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using Helios.Buffers;
 using Helios.Exceptions;
 using Helios.Net.Connections;
 using Helios.Ops;
@@ -24,9 +25,9 @@ namespace Helios.Net.Builders
             switch (node.TransportType)
             {
                 case TransportType.Tcp:
-                    return new TcpConnection(EventLoopFactory.CreateNetworkEventLoop(), node, Timeout, Encoders.DefaultEncoder, Encoders.DefaultDecoder);
+                    return new TcpConnection(EventLoopFactory.CreateNetworkEventLoop(), node, Timeout, Encoders.DefaultEncoder, Encoders.DefaultDecoder, UnpooledByteBufAllocator.Default);
                 case TransportType.Udp:
-                    return new UdpConnection(EventLoopFactory.CreateNetworkEventLoop(), node, Timeout, Encoders.DefaultEncoder, Encoders.DefaultDecoder);
+                    return new UdpConnection(EventLoopFactory.CreateNetworkEventLoop(), node, Timeout, Encoders.DefaultEncoder, Encoders.DefaultDecoder, UnpooledByteBufAllocator.Default);
                 default:
                     throw new HeliosConnectionException(ExceptionType.NotSupported, "No support for non-UDP / TCP connections at this time.");
             }
@@ -35,7 +36,7 @@ namespace Helios.Net.Builders
         public IConnection BuildMulticastConnection(INode bindNode, INode multicastNode)
         {
             if(MulticastHelper.IsValidMulticastAddress(multicastNode.Host))
-                return new MulticastUdpConnection(EventLoopFactory.CreateNetworkEventLoop(), bindNode, multicastNode, Encoders.DefaultEncoder, Encoders.DefaultDecoder);
+                return new MulticastUdpConnection(EventLoopFactory.CreateNetworkEventLoop(), bindNode, multicastNode, Encoders.DefaultEncoder, Encoders.DefaultDecoder, UnpooledByteBufAllocator.Default);
 
             throw new HeliosConnectionException(ExceptionType.NotSupported, string.Format("{0} is an invalid multicast IP address", multicastNode.Host));
         }
