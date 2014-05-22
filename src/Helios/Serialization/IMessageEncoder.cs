@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Helios.Buffers;
 using Helios.Net;
 
 namespace Helios.Serialization
@@ -15,11 +16,14 @@ namespace Helios.Serialization
         /// what to do with them.
         /// </summary>
         void Encode(NetworkData data, out List<NetworkData> encoded);
+
+        void Encode(IByteBuf buffer, out List<byte[]> encoded);
     }
 
     public abstract class MessageEncoderBase : IMessageEncoder
     {
         public abstract void Encode(NetworkData data, out List<NetworkData> encoded);
+        public abstract void Encode(IByteBuf buffer, out List<byte[]> encoded);
     }
 
     /// <summary>
@@ -30,6 +34,12 @@ namespace Helios.Serialization
         public override void Encode(NetworkData data, out List<NetworkData> encoded)
         {
             encoded = new List<NetworkData>() {data};
+        }
+
+        public override void Encode(IByteBuf buffer, out List<byte[]> encoded)
+        {
+            var data = buffer.ToArray();
+            encoded = new List<byte[]>() {data};
         }
     }
 }

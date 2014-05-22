@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Helios.Buffers;
 using Helios.Net;
 
 namespace Helios.Serialization
@@ -69,6 +70,11 @@ namespace Helios.Serialization
 
             var networkData = NetworkData.Create(data.RemoteHost, newData, _lengthIncludesLenghtFieldLength ? length : length + _lengthFieldLength);
             encoded.Add(networkData);
+        }
+
+        public override void Encode(IByteBuf buffer, out List<byte[]> encoded)
+        {
+            throw new NotImplementedException();
         }
     }
 }

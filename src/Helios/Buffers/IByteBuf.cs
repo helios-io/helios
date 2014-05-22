@@ -458,6 +458,13 @@ namespace Helios.Buffers
         byte[] InternalArray();
 
         /// <summary>
+        /// Converts the readable contents of the buffer into an array.
+        /// 
+        /// Does not affect the <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of the <see cref="IByteBuf"/>
+        /// </summary>
+        byte[] ToArray();
+
+        /// <summary>
         /// Is this a direct buffer or not, e.g. is it backed by a simple byte array?
         /// </summary>
         bool IsDirect { get; }

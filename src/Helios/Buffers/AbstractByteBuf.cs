@@ -1,5 +1,6 @@
 using System;
 using System.IO.Compression;
+using Helios.Util;
 
 namespace Helios.Buffers
 {
@@ -563,6 +564,18 @@ namespace Helios.Buffers
 
         public abstract bool HasArray { get; }
         public abstract byte[] InternalArray();
+        public byte[] ToArray()
+        {
+            if (HasArray)
+            {
+                return InternalArray().Slice(ReaderIndex, ReadableBytes);
+            }
+
+            var bytes = new byte[ReadableBytes];
+            GetBytes(ReaderIndex, bytes);
+            return bytes;
+        }
+
         public abstract bool IsDirect { get; }
         public virtual IByteBuf Duplicate()
         {

@@ -174,5 +174,15 @@ namespace Helios.Buffers
         {
             return _buffer.InternalNioBuffer(index, length);
         }
+
+        #region Conversion
+
+        public static implicit operator ByteBuffer(DuplicateByteBuf buf)
+        {
+            if (buf.Unwrap() is ByteBuffer) return (ByteBuffer)buf.Unwrap();
+            return null;
+        }
+
+        #endregion
     }
 }

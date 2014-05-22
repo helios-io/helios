@@ -161,7 +161,7 @@ namespace Helios.Buffers
             }
             else
             {
-                src.ReadBytes(Buffer, WriterIndex, length);
+                src.ReadBytes(Buffer, srcIndex, length);
             }
             return this;
         }
@@ -169,7 +169,7 @@ namespace Helios.Buffers
         public override IByteBuf SetBytes(int index, byte[] src, int srcIndex, int length)
         {
             CheckSrcIndex(index, length, srcIndex, src.Length);
-            System.Array.Copy(src, srcIndex, Buffer, WriterIndex, length);
+            System.Array.Copy(src, srcIndex, Buffer, index, length);
             return this;
         }
 

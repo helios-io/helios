@@ -47,6 +47,42 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Helios\Buffers\AbstractByteBuf.cs">
+      <Link>Buffers\AbstractByteBuf.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Buffers\AbstractByteBufAllocator.cs">
+      <Link>Buffers\AbstractByteBufAllocator.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Buffers\ByteBuffer.cs">
+      <Link>Buffers\ByteBuffer.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Buffers\ByteBufferUtil.cs">
+      <Link>Buffers\ByteBufferUtil.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Buffers\DuplicateByteBuf.cs">
+      <Link>Buffers\DuplicateByteBuf.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Buffers\EmptyByteBuf.cs">
+      <Link>Buffers\EmptyByteBuf.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Buffers\IByteBuf.cs">
+      <Link>Buffers\IByteBuf.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Buffers\IByteBufAllocator.cs">
+      <Link>Buffers\IByteBufAllocator.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Buffers\IReferenceCounted.cs">
+      <Link>Buffers\IReferenceCounted.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Buffers\Unpooled.cs">
+      <Link>Buffers\Unpooled.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Buffers\UnpooledByteBufAllocator.cs">
+      <Link>Buffers\UnpooledByteBufAllocator.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Buffers\UnpooledDirectByteBuf.cs">
+      <Link>Buffers\UnpooledDirectByteBuf.cs</Link>
+    </Compile>
     <Compile Include="..\Helios\Concurrency\FiberFactory.cs">
       <Link>Concurrency\FiberFactory.cs</Link>
     </Compile>
@@ -274,6 +310,9 @@
     </Compile>
     <Compile Include="..\Helios\Util\AtomicReference.cs">
       <Link>Util\AtomicReference.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Util\ByteArrayExtensions.cs">
+      <Link>Util\ByteArrayExtensions.cs</Link>
     </Compile>
     <Compile Include="..\Helios\Util\CollectionBuilder.cs">
       <Link>Util\CollectionBuilder.cs</Link>

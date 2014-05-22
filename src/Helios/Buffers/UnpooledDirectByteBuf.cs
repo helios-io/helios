@@ -69,8 +69,7 @@ namespace Helios.Buffers
                 var oldBuffer = _buffer;
                 var newBuffer = AllocateDirect(newCapacity);
                 oldBuffer.SetIndex(0, oldBuffer.Capacity);
-                newBuffer.SetIndex(0, oldBuffer.Capacity);
-                newBuffer.WriteBytes(oldBuffer);
+                newBuffer.WriteBytes(oldBuffer.ToArray());
                 newBuffer.Clear();
                 SetByteBuffer(newBuffer);
             }
@@ -82,11 +81,10 @@ namespace Helios.Buffers
                 {
                     if (WriterIndex > newCapacity)
                     {
-                        SetWriterIndex(newCapacity);
+                        SetWriterIndex(writerIndex = newCapacity);
                     }
-                    oldBuffer.SetIndex(ReaderIndex, WriterIndex);
-                    newBuffer.SetIndex(ReaderIndex, WriterIndex);
-                    newBuffer.WriteBytes(oldBuffer);
+                    oldBuffer.SetIndex(readerIndex, writerIndex);
+                    newBuffer.WriteBytes(oldBuffer.ToArray());
                     newBuffer.Clear();
                 }
                 else
@@ -114,7 +112,7 @@ namespace Helios.Buffers
             var tmpNioBuff = _internalNioBuffer;
             if (_internalNioBuffer == null)
             {
-                _internalNioBuffer = tmpNioBuff = (ByteBuffer)_buffer.Duplicate();
+                _internalNioBuffer = tmpNioBuff = (DuplicateByteBuf)_buffer.Duplicate();
             }
             return tmpNioBuff;
         }
@@ -178,7 +176,7 @@ namespace Helios.Buffers
             }
             else
             {
-                tmpBuf = (ByteBuffer)_buffer.Duplicate();
+                tmpBuf = (DuplicateByteBuf)_buffer.Duplicate();
             }
             
             tmpBuf.Clear().SetIndex(index, index + length);
@@ -252,7 +250,7 @@ namespace Helios.Buffers
             CheckSrcIndex(index, length, srcIndex, src.Length);
             var tmpBuf = InternalNioBuffer();
             tmpBuf.Clear().SetIndex(index, index + length);
-            tmpBuf.WriteBytes(src, srcIndex, length);
+            tmpBuf.SetBytes(index, src, srcIndex, length);
             return this;
         }
 

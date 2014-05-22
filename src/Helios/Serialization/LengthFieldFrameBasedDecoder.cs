@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Helios.Buffers;
 using Helios.Net;
 using Helios.Topology;
 
@@ -47,6 +48,11 @@ namespace Helios.Serialization
                 if(!nextFrame.RemoteHost.IsEmpty())
                     decoded.Add(nextFrame);
             }
+        }
+
+        public override void Decode(IByteBuf buffer, out List<byte[]> decoded)
+        {
+            throw new NotImplementedException();
         }
 
         protected int Decode(NetworkData input, int initialOffset, out NetworkData nextFrame)

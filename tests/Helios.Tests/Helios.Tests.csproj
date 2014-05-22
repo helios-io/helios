@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Buffer\ByteBufferTests.cs" />
+    <Compile Include="Buffer\UnpooledDirectByteBufferTests.cs" />
     <Compile Include="Eventing\SimpleEventBrokerTests.cs" />
     <Compile Include="Net\MulticastHelperTests.cs" />
     <Compile Include="Net\NodeUniquenessTests.cs" />
