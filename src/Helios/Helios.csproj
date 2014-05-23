@@ -50,7 +50,6 @@
     </Compile>
     <Compile Include="Buffers\AbstractByteBufAllocator.cs" />
     <Compile Include="Buffers\ByteBufferUtil.cs" />
-    <Compile Include="Buffers\ChannelReservedByteBufAllocator.cs" />
     <Compile Include="Buffers\CircularByteBuf.cs" />
     <Compile Include="Buffers\DuplicateByteBuf.cs" />
     <Compile Include="Buffers\EmptyByteBuf.cs" />
