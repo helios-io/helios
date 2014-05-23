@@ -18,9 +18,9 @@ namespace Helios.Reactor.Tcp
     /// 
     /// All I/O is still handled internally through the proxy reactor.
     /// </summary>
-    public class TcpProxyReactor : ProxyReactorBase<Socket>
+    public class TcpProxyReactor : ProxyReactorBase
     {
-        public TcpProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
+        public TcpProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base(localAddress, localPort, eventLoop, encoder, decoder, allocator, SocketType.Stream, ProtocolType.Tcp, bufferSize)
         {
             LocalEndpoint = new IPEndPoint(localAddress, localPort);
@@ -43,7 +43,7 @@ namespace Helios.Reactor.Tcp
                 Listener.NoDelay = config.GetOption<bool>("tcpNoDelay");
             if (config.HasOption<bool>("keepAlive"))
                 Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, config.GetOption<bool>("keepAlive"));
-            if(config.HasOption<bool>("linger") && config.GetOption<bool>("linger"))
+            if (config.HasOption<bool>("linger") && config.GetOption<bool>("linger"))
                 Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Linger, new LingerOption(true, 10));
             else
                 Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontLinger, true);
@@ -60,40 +60,67 @@ namespace Helios.Reactor.Tcp
         private void AcceptCallback(IAsyncResult ar)
         {
             var newSocket = Listener.EndAccept(ar);
-            var node = NodeBuilder.FromEndpoint((IPEndPoint) newSocket.RemoteEndPoint);
-            NodeMap.Add(newSocket, node);
+            var node = NodeBuilder.FromEndpoint((IPEndPoint)newSocket.RemoteEndPoint);
+
+            var receiveState = CreateNetworkState(newSocket, node);
             var responseChannel = new ReactorProxyResponseChannel(this, newSocket, EventLoop);
             SocketMap.Add(node, responseChannel);
             NodeConnected(node, responseChannel);
-            newSocket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, newSocket);
+            newSocket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
             Listener.BeginAccept(AcceptCallback, null); //accept more connections
         }
 
         private void ReceiveCallback(IAsyncResult ar)
         {
-            var socket = (Socket)ar.AsyncState;
+            var receiveState = (NetworkState)ar.AsyncState;
             try
             {
-                var received = socket.EndReceive(ar);
-                var dataBuff = new byte[received];
-                Array.Copy(Buffer, dataBuff, received);
-                var networkData = new NetworkData() {Buffer = dataBuff, Length = received, RemoteHost = NodeMap[socket]};
-                socket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, socket);
-                    //receive more messages
-                var adapter = SocketMap[NodeMap[socket]];
-                ReceivedData(networkData, adapter);
+                if (!receiveState.Socket.Connected)
+                {
+                    var connection = SocketMap[receiveState.RemoteHost];
+                    CloseConnection(connection);
+                    return;
+                }
+
+                var received = receiveState.Socket.EndReceive(ar);
+                receiveState.Buffer.WriteBytes(Buffer, 0, received);
+
+                var adapter = SocketMap[receiveState.RemoteHost];
+
+                List<IByteBuf> decoded;
+                Decoder.Decode(ConnectionAdapter, receiveState.Buffer, out decoded);
+
+                foreach (var message in decoded)
+                {
+                    var networkData = NetworkData.Create(receiveState.RemoteHost, message);
+                    ReceivedData(networkData, adapter);
+                }
+
+                //reuse the buffer
+                if (receiveState.Buffer.ReadableBytes == 0)
+                    receiveState.Buffer.SetIndex(0, 0);
+                else
+                    receiveState.Buffer.CompactIfNecessary();
+
+                //continue receiving in a loop
+                receiveState.Socket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
+
             }
             catch (SocketException ex) //node disconnected
             {
-                var node = NodeMap[socket];
-                var connection = SocketMap[node];
-                CloseConnection(ex, connection);
+                if (SocketMap.ContainsKey(receiveState.RemoteHost))
+                {
+                    var connection = SocketMap[receiveState.RemoteHost];
+                    CloseConnection(ex, connection);
+                }
             }
             catch (Exception ex)
             {
-                 var node = NodeMap[socket];
-                var connection = SocketMap[node];
-                OnErrorIfNotNull(ex, connection);
+                if (SocketMap.ContainsKey(receiveState.RemoteHost))
+                {
+                    var connection = SocketMap[receiveState.RemoteHost];
+                    OnErrorIfNotNull(ex, connection);
+                }
             }
         }
 
@@ -101,13 +128,25 @@ namespace Helios.Reactor.Tcp
         {
         }
 
-        public override void Send(NetworkData data)
+        public override void Send(byte[] buffer, int index, int length, INode destination)
         {
-            var clientSocket = SocketMap[data.RemoteHost];
-            List<NetworkData> encoded;
-            Encoder.Encode(data, out encoded);
-            foreach (var message in encoded)
-               clientSocket.Socket.BeginSend(message.Buffer, 0, message.Length, SocketFlags.None, SendCallback, clientSocket.Socket);
+            var clientSocket = SocketMap[destination];
+            if (clientSocket.WasDisposed || !clientSocket.Socket.Connected)
+            {
+                CloseConnection(clientSocket);
+                return;
+            }
+
+            var buf = Allocator.Buffer(length);
+            buf.WriteBytes(buffer, index, length);
+            List<IByteBuf> encodedMessages;
+            Encoder.Encode(ConnectionAdapter, buf, out encodedMessages);
+            foreach (var message in encodedMessages)
+            {
+                var state = CreateNetworkState(clientSocket.Socket, destination, message);
+                clientSocket.Socket.BeginSend(message.ToArray(), 0, message.ReadableBytes, SocketFlags.None,
+                    SendCallback, state);
+            }
         }
 
         internal override void CloseConnection(Exception ex, IConnection remoteHost)
@@ -126,35 +165,53 @@ namespace Helios.Reactor.Tcp
             }
             finally
             {
-                NodeMap.Remove(clientSocket.Socket);
-                SocketMap.Remove(remoteHost.RemoteHost);
-                clientSocket.Dispose();
+                if (SocketMap.ContainsKey(remoteHost.RemoteHost))
+                    SocketMap.Remove(remoteHost.RemoteHost);
+
+                if (!clientSocket.WasDisposed)
+                    clientSocket.Dispose();
             }
         }
 
         internal override void CloseConnection(IConnection remoteHost)
         {
-           CloseConnection(null, remoteHost);
+            CloseConnection(null, remoteHost);
         }
 
         private void SendCallback(IAsyncResult ar)
         {
-            var socket = (Socket) ar.AsyncState;
+            var receiveState = (NetworkState)ar.AsyncState;
             try
             {
-                socket.EndSend(ar);
+                if (!receiveState.Socket.Connected)
+                {
+                    var connection = SocketMap[receiveState.RemoteHost];
+                    CloseConnection(connection);
+                    return;
+                }
+
+                var bytesSent = receiveState.Socket.EndSend(ar);
+                receiveState.Buffer.SkipBytes(bytesSent);
+
+                if(receiveState.Buffer.ReadableBytes > 0) //need to send again
+                    receiveState.Socket.BeginSend(receiveState.Buffer.ToArray(), 0, receiveState.Buffer.ReadableBytes, SocketFlags.None,
+                   SendCallback, receiveState);
             }
             catch (SocketException ex) //node disconnected
             {
-                var node = NodeMap[socket];
-                var connection = SocketMap[node];
-                CloseConnection(ex, connection);
+                if (SocketMap.ContainsKey(receiveState.RemoteHost))
+                {
+                    var connection = SocketMap[receiveState.RemoteHost];
+                    CloseConnection(ex, connection);
+                }
             }
             catch (Exception ex)
             {
-                var node = NodeMap[socket];
-                var connection = SocketMap[node];
-                OnErrorIfNotNull(ex, connection);
+                if (SocketMap.ContainsKey(receiveState.RemoteHost))
+                {
+                    var connection = SocketMap[receiveState.RemoteHost];
+                    OnErrorIfNotNull(ex, connection);
+                }
             }
         }
 
@@ -176,7 +233,8 @@ namespace Helios.Reactor.Tcp
 
     public class TcpSingleEventLoopProxyReactor : TcpProxyReactor
     {
-        public TcpSingleEventLoopProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder,IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : base(localAddress, localPort, eventLoop, encoder, decoder, allocator, bufferSize)
+        public TcpSingleEventLoopProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : base(localAddress, localPort, eventLoop, encoder, decoder, allocator, bufferSize)
         {
         }
 
@@ -184,10 +242,7 @@ namespace Helios.Reactor.Tcp
         {
             if (EventLoop.Receive != null)
             {
-                List<NetworkData> decoded;
-                Decoder.Decode(availableData, out decoded);
-                foreach(var message in decoded)
-                    EventLoop.Receive(message, responseChannel);
+                EventLoop.Receive(availableData, responseChannel);
             }
         }
     }

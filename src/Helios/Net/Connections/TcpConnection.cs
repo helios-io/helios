@@ -248,6 +248,11 @@ namespace Helios.Net.Connections
             }
         }
 
+        public override void Send(byte[] buffer, int index, int length, INode destination)
+        {
+            throw new NotImplementedException();
+        }
+
 #if NET35 || NET40
         public override Task SendAsync(NetworkData payload)
         {

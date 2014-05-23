@@ -139,7 +139,7 @@ namespace Helios.Net.Connections
 
         protected override void ReceiveCallback(IAsyncResult ar)
         {
-            var receiveState = (ReceiveState)ar.AsyncState;
+            var receiveState = (NetworkState)ar.AsyncState;
             try
             {
                 var buffSize = receiveState.Socket.EndReceiveFrom(ar, ref RemoteEndpoint);
@@ -198,6 +198,11 @@ namespace Helios.Net.Connections
             {
                 Close(ex);
             }
+        }
+
+        public override void Send(byte[] buffer, int index, int length, INode destination)
+        {
+            throw new NotImplementedException();
         }
 
 #if !NET35 && !NET40

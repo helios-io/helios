@@ -118,18 +118,35 @@ namespace Helios.Net
         /// <summary>
         /// Send data to a remote host
         /// </summary>
-        /// <param name="payload">A NetworkData payload</param>
-        void Send(NetworkData payload);
+        /// <param name="data">A NetworkData data</param>
+        void Send(NetworkData data);
 
-        Task SendAsync(NetworkData payload);
+        /// <summary>
+        /// Send a data of data from the specified byte array to the 
+        /// <see cref="INode"/> specified. 
+        /// 
+        /// <see cref="destination"/> is not used for TCP and other connection-oriented 
+        /// protocols, where the recipient is well-known. It is
+        /// 
+        /// <see cref="destination"/> is REQUIRED, however, for connectionless protocols like UDP.
+        /// 
+        /// Not sure what type of connection you're using? Include <see cref="destination"/> by default.
+        /// 
+        /// All sends are done asynchronously by default.
+        /// </summary>
+        /// <param name="buffer">The byte array to send over the network</param>
+        /// <param name="index">Send bytes starting at this index in the array</param>
+        /// <param name="length">Send this many bytes from the array starting at <see cref="index"/>.</param>
+        /// <param name="destination">The network address where this information will be sent.</param>
+        void Send(byte[] buffer, int index, int length, INode destination);
     }
 
     /// <summary>
     /// The state object used to process data on an <see cref="IConnection"/> instance
     /// </summary>
-    public class ReceiveState
+    public class NetworkState
     {
-        public ReceiveState(Socket socket, INode remoteHost, IByteBuf buffer)
+        public NetworkState(Socket socket, INode remoteHost, IByteBuf buffer)
         {
             Buffer = buffer;
             RemoteHost = remoteHost;
@@ -144,7 +161,7 @@ namespace Helios.Net
         /// <summary>
         /// The remote host on the other end ofthe connection
         /// </summary>
-        public INode RemoteHost { get; private set; }
+        public INode RemoteHost { get; set; }
 
         /// <summary>
         /// The receive buffer used for processing data from this connection

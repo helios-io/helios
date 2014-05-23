@@ -143,6 +143,15 @@ namespace Helios.Reactor
                 EventLoop.Exception(reason, connection);
             }
         }
+        protected NetworkState CreateNetworkState(Socket socket, INode remotehost)
+        {
+            return CreateNetworkState(socket, remotehost, Allocator.Buffer());
+        }
+
+        protected NetworkState CreateNetworkState(Socket socket, INode remotehost, IByteBuf buffer)
+        {
+            return new NetworkState(socket, remotehost, buffer);
+        }
 
         /// <summary>
         /// Closes a connection to a remote host (without shutting down the server.)
@@ -152,7 +161,11 @@ namespace Helios.Reactor
 
         internal abstract void CloseConnection(Exception reason, IConnection remoteHost);
 
-        public abstract void Send(NetworkData data);
+        public void Send(NetworkData data)
+        {
+            Send(data.Buffer, 0, data.Length, data.RemoteHost);
+        }
+        public abstract void Send(byte[] buffer, int index, int length, INode destination);
 
         public int Backlog { get; set; }
 
@@ -237,7 +250,7 @@ namespace Helios.Reactor
                 return _reactor.IsActive;
             }
 
-            public int Available { get { throw new NotImplementedException("[Available] is not supported on ReactorConnectionAdapter"); } }
+            public int Available { get { throw new NotSupportedException("[Available] is not supported on ReactorConnectionAdapter"); } }
 
             public async Task<bool> OpenAsync()
             {
@@ -276,19 +289,19 @@ namespace Helios.Reactor
                 _reactor.Stop();
             }
 
-            public void Send(NetworkData payload)
+            public void Send(NetworkData data)
             {
-                _reactor.Send(payload);
+                _reactor.Send(data);
+            }
+
+            public void Send(byte[] buffer, int index, int length, INode destination)
+            {
+                _reactor.Send(buffer, index, length, destination);
             }
 
             public async Task SendAsync(NetworkData payload)
             {
                 await Task.Run(() => Send(payload));
-            }
-
-            public void InvokeReceiveIfNotNull(NetworkData data)
-            {
-                throw new NotImplementedException();
             }
 
             #region IDisposable methods

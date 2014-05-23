@@ -88,9 +88,10 @@ namespace Helios.Topology
             return NodeBuilder.BuildNode().Host(IPAddress.Loopback).WithPort(port);
         }
 
+        private static INode empty = new EmptyNode();
         public static INode Empty()
         {
-            return new EmptyNode();
+            return empty;
         }
 
 #if !NET35 && !NET40

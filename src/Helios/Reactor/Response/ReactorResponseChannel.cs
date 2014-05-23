@@ -34,6 +34,7 @@ namespace Helios.Reactor.Response
             Socket = outboundSocket;
             Decoder = _reactor.Decoder;
             Encoder = _reactor.Encoder;
+            Allocator = _reactor.Allocator;
             Local = reactor.LocalEndpoint.ToNode(reactor.Transport);
             RemoteHost = NodeBuilder.FromEndpoint(endPoint);
             NetworkEventLoop = eventLoop;
@@ -163,9 +164,14 @@ namespace Helios.Reactor.Response
             }
         }
 
-        public virtual void Send(NetworkData payload)
+        public virtual void Send(NetworkData data)
         {
-            _reactor.Send(payload);
+            _reactor.Send(data);
+        }
+
+        public void Send(byte[] buffer, int index, int length, INode destination)
+        {
+            _reactor.Send(buffer, index, length, destination);
         }
 
         public virtual async Task SendAsync(NetworkData payload)
@@ -185,17 +191,12 @@ namespace Helios.Reactor.Response
         {
             if (!WasDisposed)
             {
-
+                WasDisposed = true;
                 if (disposing)
                 {
                     Close();
-                    if (Socket != null)
-                    {
-                        ((IDisposable)Socket).Dispose();
-                    }
                 }
             }
-            WasDisposed = true;
         }
 
         #endregion

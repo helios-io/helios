@@ -13,7 +13,7 @@ using Helios.Topology;
 
 namespace Helios.Reactor.Udp
 {
-    public class UdpProxyReactor : ProxyReactorBase<IPEndPoint>
+    public class UdpProxyReactor : ProxyReactorBase
     {
         protected EndPoint RemoteEndPoint;
 
@@ -40,46 +40,67 @@ namespace Helios.Reactor.Udp
         protected override void StartInternal()
         {
             IsActive = true;
-            Listener.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndPoint, ReceiveCallback, Listener);
+            var receiveState = CreateNetworkState(Listener, Node.Empty());
+            Listener.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndPoint, ReceiveCallback, receiveState);
         }
 
         private void ReceiveCallback(IAsyncResult ar)
         {
-            var socket = (Socket)ar.AsyncState;
+            var receiveState = (NetworkState)ar.AsyncState;
             try
             {
-                var received = socket.EndReceiveFrom(ar, ref RemoteEndPoint);
-                var dataBuff = new byte[received];
-                Array.Copy(Buffer, dataBuff, received);
-
-                var remoteAddress = (IPEndPoint)RemoteEndPoint;
-                ReactorResponseChannel adapter;
-                if (NodeMap.ContainsKey(remoteAddress))
+                if (!receiveState.Socket.Connected)
                 {
-                    adapter = SocketMap[NodeMap[remoteAddress]];
+                    var connection = SocketMap[receiveState.RemoteHost];
+                    CloseConnection(connection);
+                    return;
+                }
+
+                var received = receiveState.Socket.EndReceiveFrom(ar, ref RemoteEndPoint);
+                var remoteAddress = (IPEndPoint)RemoteEndPoint;
+
+                if (receiveState.RemoteHost.IsEmpty())
+                    receiveState.RemoteHost = remoteAddress.ToNode(TransportType.Udp);
+
+                ReactorResponseChannel adapter;
+                if (SocketMap.ContainsKey(receiveState.RemoteHost))
+                {
+                    adapter = SocketMap[receiveState.RemoteHost];
                 }
                 else
                 {
-                    adapter = new ReactorProxyResponseChannel(this, socket, remoteAddress, EventLoop);
-                    NodeMap.Add(remoteAddress, adapter.RemoteHost);
+                    adapter = new ReactorProxyResponseChannel(this, receiveState.Socket, remoteAddress, EventLoop);;
                     SocketMap.Add(adapter.RemoteHost, adapter);
                     NodeConnected(adapter.RemoteHost, adapter);
                 }
 
-                var networkData = new NetworkData() { Buffer = dataBuff, Length = received, RemoteHost = adapter.RemoteHost };
-                socket.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndPoint, ReceiveCallback, socket); //receive more messages
-                ReceivedData(networkData, adapter);
+                receiveState.Buffer.WriteBytes(Buffer, 0, received);
+
+                List<IByteBuf> decoded;
+                Decoder.Decode(ConnectionAdapter, receiveState.Buffer, out decoded);
+
+                foreach (var message in decoded)
+                {
+                    var networkData = NetworkData.Create(receiveState.RemoteHost, message);
+                    ReceivedData(networkData, adapter);
+                }
+
+                //reuse the buffer
+                if (receiveState.Buffer.ReadableBytes == 0)
+                    receiveState.Buffer.SetIndex(0, 0);
+                else
+                    receiveState.Buffer.CompactIfNecessary();
+                
+                receiveState.Socket.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndPoint, ReceiveCallback, receiveState); //receive more messages
             }
             catch (SocketException ex) //node disconnected
             {
-                var node = NodeMap[(IPEndPoint)socket.RemoteEndPoint];
-                var connection = SocketMap[node];
+                var connection = SocketMap[receiveState.RemoteHost];
                 CloseConnection(ex, connection);
             }
             catch (Exception ex)
             {
-                var node = NodeMap[(IPEndPoint)socket.RemoteEndPoint];
-                var connection = SocketMap[node];
+                var connection = SocketMap[receiveState.RemoteHost];
                 OnErrorIfNotNull(ex, connection);
             }
         }
@@ -92,6 +113,11 @@ namespace Helios.Reactor.Udp
                 Listener.BeginSendTo(message.Buffer, 0, message.Length, SocketFlags.None, data.RemoteHost.ToEndPoint(), SendCallback, Listener);
         }
 
+        public override void Send(byte[] buffer, int index, int length, INode destination)
+        {
+            throw new NotImplementedException();
+        }
+
         private void SendCallback(IAsyncResult ar)
         {
             var socket = (Socket)ar.AsyncState;
@@ -101,13 +127,11 @@ namespace Helios.Reactor.Udp
             }
             catch (SocketException ex) //node disconnected
             {
-                var node = NodeMap[(IPEndPoint)socket.RemoteEndPoint];
                 var connection = SocketMap[node];
                 CloseConnection(ex, connection);
             }
             catch (Exception ex)
             {
-                var node = NodeMap[(IPEndPoint)socket.RemoteEndPoint];
                 var connection = SocketMap[node];
                 OnErrorIfNotNull(ex, connection);
             }
@@ -127,8 +151,8 @@ namespace Helios.Reactor.Udp
             }
             finally
             {
-                NodeMap.Remove(remoteConnection.RemoteHost.ToEndPoint());
-                SocketMap.Remove(remoteConnection.RemoteHost);
+                if(SocketMap.ContainsKey(remoteConnection.RemoteHost))
+                    SocketMap.Remove(remoteConnection.RemoteHost);
             }
         }
 

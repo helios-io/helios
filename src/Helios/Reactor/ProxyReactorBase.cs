@@ -12,17 +12,16 @@ namespace Helios.Reactor
     /// <summary>
     /// <see cref="IReactor"/> implementation which spawns <see cref="ReactorProxyResponseChannel"/> instances for interacting directly with connected clients
     /// </summary>
-    public abstract class ProxyReactorBase<TIdentifier> : ReactorBase
+    public abstract class ProxyReactorBase : ReactorBase
     {
         /// <summary>
         /// shared buffer used by all incoming connections
         /// </summary>
         protected byte[] Buffer;
 
-        protected Dictionary<TIdentifier, INode> NodeMap = new Dictionary<TIdentifier, INode>();
         protected Dictionary<INode, ReactorResponseChannel> SocketMap = new Dictionary<INode, ReactorResponseChannel>();
 
-        protected ProxyReactorBase(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) 
+        protected ProxyReactorBase(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base(localAddress, localPort, eventLoop, encoder, decoder, allocator, socketType, protocol, bufferSize)
         {
             Buffer = new byte[bufferSize];
@@ -30,10 +29,7 @@ namespace Helios.Reactor
 
         protected override void ReceivedData(NetworkData availableData, ReactorResponseChannel responseChannel)
         {
-            List<NetworkData> decoded;
-            Decoder.Decode(availableData, out decoded);
-            foreach(var message in decoded)
-                responseChannel.OnReceive(message);
+            responseChannel.OnReceive(availableData);
         }
     }
 }

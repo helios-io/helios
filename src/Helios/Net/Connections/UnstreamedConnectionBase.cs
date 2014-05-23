@@ -106,14 +106,14 @@ namespace Helios.Net.Connections
             BeginReceiveInternal();
         }
 
-        protected ReceiveState CreateReceiveState(Socket socket, INode remotehost)
+        protected NetworkState CreateReceiveState(Socket socket, INode remotehost)
         {
-            return new ReceiveState(socket, remotehost, Allocator.Buffer());
+            return new NetworkState(socket, remotehost, Allocator.Buffer());
         }
 
         protected virtual void ReceiveCallback(IAsyncResult ar)
         {
-            var receiveState = (ReceiveState) ar.AsyncState;
+            var receiveState = (NetworkState) ar.AsyncState;
             try
             {
                 if (!receiveState.Socket.Connected)
@@ -123,8 +123,8 @@ namespace Helios.Net.Connections
                     Dispose();
                 }
 
-                var buffSize = receiveState.Socket.EndReceive(ar);
-                receiveState.Buffer.WriteBytes(Buffer, 0, buffSize);
+                var received = receiveState.Socket.EndReceive(ar);
+                receiveState.Buffer.WriteBytes(Buffer, 0, received);
 
                 List<IByteBuf> decoded;
                 Decoder.Decode(this, receiveState.Buffer, out decoded);
@@ -202,7 +202,12 @@ namespace Helios.Net.Connections
 
         public abstract void Close();
 
-        public abstract void Send(NetworkData payload);
+        public void Send(NetworkData data)
+        {
+            Send(data.Buffer, 0, data.Length, data.RemoteHost);
+        }
+
+        public abstract void Send(byte[] buffer, int index, int length, INode destination);
 
         public abstract Task SendAsync(NetworkData payload);
 

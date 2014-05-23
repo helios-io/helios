@@ -32,6 +32,25 @@ namespace Helios.Reactor
         void Send(NetworkData data);
 
         /// <summary>
+        /// Send a payload of data from the specified byte array to the 
+        /// <see cref="INode"/> specified. 
+        /// 
+        /// <see cref="destination"/> is not used for TCP and other connection-oriented 
+        /// protocols, where the recipient is well-known. It is
+        /// 
+        /// <see cref="destination"/> is REQUIRED, however, for connectionless protocols like UDP.
+        /// 
+        /// Not sure what type of connection you're using? Include <see cref="destination"/> by default.
+        /// 
+        /// All sends are done asynchronously by default.
+        /// </summary>
+        /// <param name="buffer">The byte array to send over the network</param>
+        /// <param name="index">Send bytes starting at this index in the array</param>
+        /// <param name="length">Send this many bytes from the array starting at <see cref="index"/>.</param>
+        /// <param name="destination">The network address where this information will be sent.</param>
+        void Send(byte[] buffer, int index, int length, INode destination);
+
+        /// <summary>
         /// The backlog of pending connections allowed for the underlying transport
         /// </summary>
         int Backlog { get; set; }

@@ -45,9 +45,9 @@ namespace Helios.Reactor.Response
             throw new NotImplementedException();
         }
 
-        public override void Send(NetworkData payload)
+        public override void Send(NetworkData data)
         {
-            base.Send(payload);
+            base.Send(data);
         }
 
         public override Task SendAsync(NetworkData payload)
