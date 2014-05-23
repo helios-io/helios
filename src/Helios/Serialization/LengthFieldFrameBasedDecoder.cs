@@ -137,7 +137,7 @@ namespace Helios.Serialization
             //extract frame
             var readerIndex = input.ReaderIndex;
             var actualFrameLength = frameLengthInt - _initialBytesToStrip;
-            var frame = ExtractFrame(connection, input, readerIndex, frameLengthInt);
+            var frame = ExtractFrame(connection, input, readerIndex, actualFrameLength);
             input.SetReaderIndex(readerIndex + actualFrameLength);
             return frame;
         }

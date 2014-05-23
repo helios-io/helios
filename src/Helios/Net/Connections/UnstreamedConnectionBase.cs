@@ -126,6 +126,7 @@ namespace Helios.Net.Connections
                     Receiving = false;
                     InvokeDisconnectIfNotNull(receiveState.RemoteHost, new HeliosConnectionException(ExceptionType.Closed));
                     Dispose();
+                    return;
                 }
 
                 var received = receiveState.Socket.EndReceive(ar);

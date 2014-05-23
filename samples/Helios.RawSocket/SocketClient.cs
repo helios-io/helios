@@ -122,6 +122,7 @@ namespace Helios.RawSocket
             Invoke((Action) (() =>
             {
                 AppendStatusText(string.Format("Connected to {0}", remoteAddress));
+                responseChannel.BeginReceive();
                 tsStatusLabel.Text = string.Format("Connected to {0}", remoteAddress);
                 btnConnect.Enabled = false;
                 btnDisconnect.Enabled = true;

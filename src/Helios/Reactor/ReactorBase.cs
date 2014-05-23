@@ -86,7 +86,14 @@ namespace Helios.Reactor
         public void Stop()
         {
             CheckWasDisposed();
-            Listener.Shutdown(SocketShutdown.Both);
+            try
+            {
+                Listener.Shutdown(SocketShutdown.Both);
+            }
+            catch 
+            {
+              
+            }
             IsActive = false;
             StopInternal();
         }
