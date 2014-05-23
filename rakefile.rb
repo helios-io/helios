@@ -175,6 +175,7 @@ task :helios_symbol_src_nuget_output => [:create_output_folders] do |out|
     src = File.join(Folders[:src], Projects[:helios_net45][:dir])
     dest = Folders[:helios_symbol_nuspec][:src]
     FileUtils.cp_r Dir.glob(src + '/*.cs'), dest
+    FileUtils.cp_r File.join(src, "Buffers"), dest
     FileUtils.cp_r File.join(src, "Concurrency"), dest
     FileUtils.cp_r File.join(src, "Eventing"), dest
     FileUtils.cp_r File.join(src, "Exceptions"), dest
