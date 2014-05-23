@@ -8,7 +8,7 @@
         /// <summary>
         /// The default decoder option
         /// </summary>
-        public static readonly IMessageDecoder DefaultDecoder = new LengthFieldFrameBasedDecoder(128000, 0, 4);
+        public static readonly IMessageDecoder DefaultDecoder = new LengthFieldFrameBasedDecoder(128000, 0, 4,0,4,true);
 
         /// <summary>
         /// The default encoder option

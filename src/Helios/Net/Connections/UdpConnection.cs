@@ -133,7 +133,7 @@ namespace Helios.Net.Connections
 
         protected override void BeginReceiveInternal()
         {
-            var receiveState = CreateReceiveState(Client.Client, RemoteHost);
+            var receiveState = CreateNetworkState(Client.Client, RemoteHost);
             Client.Client.BeginReceiveFrom(Buffer, 0, BufferSize, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, receiveState);
         }
 
@@ -144,6 +144,7 @@ namespace Helios.Net.Connections
             {
                 var buffSize = receiveState.Socket.EndReceiveFrom(ar, ref RemoteEndpoint);
                 receiveState.Buffer.WriteBytes(Buffer, 0, buffSize);
+                receiveState.RemoteHost = ((IPEndPoint) RemoteEndpoint).ToNode(TransportType.Udp);
 
                 List<IByteBuf> decoded;
                 Decoder.Decode(this, receiveState.Buffer, out decoded);
@@ -188,34 +189,64 @@ namespace Helios.Net.Connections
             Close(null);
         }
 
-        public override void Send(NetworkData payload)
+        public override void Send(byte[] buffer, int index, int length, INode destination)
         {
             try
             {
-                Client.Send(payload.Buffer, payload.Length, payload.RemoteHost.ToEndPoint());
+                if (Client.Client == null || WasDisposed)
+                {
+                    Close();
+                    return;
+                }
+
+                var buf = Allocator.Buffer(length);
+                buf.WriteBytes(buffer, index, length);
+                List<IByteBuf> encodedMessages;
+                Encoder.Encode(this, buf, out encodedMessages);
+                foreach (var message in encodedMessages)
+                {
+                    var state = CreateNetworkState(Client.Client, destination, message);
+                    state.Socket.BeginSendTo(message.ToArray(), 0, message.ReadableBytes, SocketFlags.None, destination.ToEndPoint(),
+                    SendCallback, state);
+                }
             }
-            catch (SocketException ex) //socket probably closed
+            catch (SocketException ex)
             {
                 Close(ex);
             }
+            catch (Exception ex)
+            {
+                InvokeErrorIfNotNull(ex);
+            }
         }
 
-        public override void Send(byte[] buffer, int index, int length, INode destination)
+        private void SendCallback(IAsyncResult ar)
         {
-            throw new NotImplementedException();
-        }
+            var receiveState = (NetworkState)ar.AsyncState;
+            try
+            {
+                if (!receiveState.Socket.Connected)
+                {
+                    Close();
+                    return;
+                }
 
-#if !NET35 && !NET40
-        public override async Task SendAsync(NetworkData payload)
-        {
-            await Client.SendAsync(payload.Buffer, payload.Length, payload.RemoteHost.ToEndPoint());
+                var bytesSent = receiveState.Socket.EndSend(ar);
+                receiveState.Buffer.SkipBytes(bytesSent);
+
+                if (receiveState.Buffer.ReadableBytes > 0) //need to send again
+                    receiveState.Socket.BeginSendTo(receiveState.Buffer.ToArray(), 0, receiveState.Buffer.ReadableBytes, SocketFlags.None, receiveState.RemoteHost.ToEndPoint(),
+                   SendCallback, receiveState);
+            }
+            catch (SocketException ex)
+            {
+                Close(ex);
+            }
+            catch (Exception ex)
+            {
+                InvokeErrorIfNotNull(ex);
+            }
         }
-#else
-        public override Task SendAsync(NetworkData payload)
-        {
-            return TaskRunner.Run(() => Send(payload));
-        }
-#endif
 
         #endregion
 

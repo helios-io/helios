@@ -106,9 +106,14 @@ namespace Helios.Net.Connections
             BeginReceiveInternal();
         }
 
-        protected NetworkState CreateReceiveState(Socket socket, INode remotehost)
+        protected NetworkState CreateNetworkState(Socket socket, INode remotehost)
         {
-            return new NetworkState(socket, remotehost, Allocator.Buffer());
+            return CreateNetworkState(socket, remotehost, Allocator.Buffer());
+        }
+
+        protected NetworkState CreateNetworkState(Socket socket, INode remotehost, IByteBuf buffer)
+        {
+            return new NetworkState(socket, remotehost, buffer);
         }
 
         protected virtual void ReceiveCallback(IAsyncResult ar)
@@ -208,8 +213,6 @@ namespace Helios.Net.Connections
         }
 
         public abstract void Send(byte[] buffer, int index, int length, INode destination);
-
-        public abstract Task SendAsync(NetworkData payload);
 
         public override string ToString()
         {

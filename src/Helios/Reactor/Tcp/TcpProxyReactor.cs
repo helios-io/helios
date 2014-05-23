@@ -131,21 +131,32 @@ namespace Helios.Reactor.Tcp
         public override void Send(byte[] buffer, int index, int length, INode destination)
         {
             var clientSocket = SocketMap[destination];
-            if (clientSocket.WasDisposed || !clientSocket.Socket.Connected)
+            try
             {
-                CloseConnection(clientSocket);
-                return;
-            }
+                if (clientSocket.WasDisposed || !clientSocket.Socket.Connected)
+                {
+                    CloseConnection(clientSocket);
+                    return;
+                }
 
-            var buf = Allocator.Buffer(length);
-            buf.WriteBytes(buffer, index, length);
-            List<IByteBuf> encodedMessages;
-            Encoder.Encode(ConnectionAdapter, buf, out encodedMessages);
-            foreach (var message in encodedMessages)
+                var buf = Allocator.Buffer(length);
+                buf.WriteBytes(buffer, index, length);
+                List<IByteBuf> encodedMessages;
+                Encoder.Encode(ConnectionAdapter, buf, out encodedMessages);
+                foreach (var message in encodedMessages)
+                {
+                    var state = CreateNetworkState(clientSocket.Socket, destination, message);
+                    clientSocket.Socket.BeginSend(message.ToArray(), 0, message.ReadableBytes, SocketFlags.None,
+                        SendCallback, state);
+                }
+            }
+            catch (SocketException ex)
             {
-                var state = CreateNetworkState(clientSocket.Socket, destination, message);
-                clientSocket.Socket.BeginSend(message.ToArray(), 0, message.ReadableBytes, SocketFlags.None,
-                    SendCallback, state);
+                CloseConnection(ex, clientSocket);
+            }
+            catch (Exception ex)
+            {
+                OnErrorIfNotNull(ex, clientSocket);
             }
         }
 
@@ -162,6 +173,10 @@ namespace Helios.Reactor.Tcp
                     clientSocket.Socket.Close();
                     NodeDisconnected(new HeliosConnectionException(ExceptionType.Closed, ex), remoteHost);
                 }
+            }
+            catch(Exception innerEx)
+            {
+                OnErrorIfNotNull(innerEx, remoteHost);
             }
             finally
             {

@@ -69,7 +69,7 @@ namespace Helios.Reactor.Udp
                 }
                 else
                 {
-                    adapter = new ReactorProxyResponseChannel(this, receiveState.Socket, remoteAddress, EventLoop);;
+                    adapter = new ReactorProxyResponseChannel(this, receiveState.Socket, remoteAddress, EventLoop); ;
                     SocketMap.Add(adapter.RemoteHost, adapter);
                     NodeConnected(adapter.RemoteHost, adapter);
                 }
@@ -90,7 +90,7 @@ namespace Helios.Reactor.Udp
                     receiveState.Buffer.SetIndex(0, 0);
                 else
                     receiveState.Buffer.CompactIfNecessary();
-                
+
                 receiveState.Socket.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndPoint, ReceiveCallback, receiveState); //receive more messages
             }
             catch (SocketException ex) //node disconnected
@@ -105,35 +105,72 @@ namespace Helios.Reactor.Udp
             }
         }
 
-        public override void Send(NetworkData data)
-        {
-            List<NetworkData> encoded;
-            Encoder.Encode(data, out encoded);
-            foreach (var message in encoded)
-                Listener.BeginSendTo(message.Buffer, 0, message.Length, SocketFlags.None, data.RemoteHost.ToEndPoint(), SendCallback, Listener);
-        }
-
         public override void Send(byte[] buffer, int index, int length, INode destination)
         {
-            throw new NotImplementedException();
+            var clientSocket = SocketMap[destination];
+            try
+            {
+                if (clientSocket.WasDisposed || !clientSocket.Socket.Connected)
+                {
+                    CloseConnection(clientSocket);
+                    return;
+                }
+
+                var buf = Allocator.Buffer(length);
+                buf.WriteBytes(buffer, index, length);
+                List<IByteBuf> encodedMessages;
+                Encoder.Encode(ConnectionAdapter, buf, out encodedMessages);
+                foreach (var message in encodedMessages)
+                {
+                    var state = CreateNetworkState(clientSocket.Socket, destination, message);
+                    clientSocket.Socket.BeginSendTo(message.ToArray(), 0, message.ReadableBytes, SocketFlags.None, destination.ToEndPoint(),
+                    SendCallback, state);
+                }
+            }
+            catch (SocketException ex)
+            {
+                CloseConnection(ex, clientSocket);
+            }
+            catch (Exception ex)
+            {
+                OnErrorIfNotNull(ex, clientSocket);
+            }
         }
 
         private void SendCallback(IAsyncResult ar)
         {
-            var socket = (Socket)ar.AsyncState;
+            var receiveState = (NetworkState)ar.AsyncState;
             try
             {
-                socket.EndSendTo(ar);
+                if (!receiveState.Socket.Connected)
+                {
+                    var connection = SocketMap[receiveState.RemoteHost];
+                    CloseConnection(connection);
+                    return;
+                }
+
+                var bytesSent = receiveState.Socket.EndSend(ar);
+                receiveState.Buffer.SkipBytes(bytesSent);
+
+                if (receiveState.Buffer.ReadableBytes > 0) //need to send again
+                    receiveState.Socket.BeginSendTo(receiveState.Buffer.ToArray(), 0, receiveState.Buffer.ReadableBytes, SocketFlags.None, receiveState.RemoteHost.ToEndPoint(),
+                   SendCallback, receiveState);
             }
             catch (SocketException ex) //node disconnected
             {
-                var connection = SocketMap[node];
-                CloseConnection(ex, connection);
+                if (SocketMap.ContainsKey(receiveState.RemoteHost))
+                {
+                    var connection = SocketMap[receiveState.RemoteHost];
+                    CloseConnection(ex, connection);
+                }
             }
             catch (Exception ex)
             {
-                var connection = SocketMap[node];
-                OnErrorIfNotNull(ex, connection);
+                if (SocketMap.ContainsKey(receiveState.RemoteHost))
+                {
+                    var connection = SocketMap[receiveState.RemoteHost];
+                    OnErrorIfNotNull(ex, connection);
+                }
             }
         }
 
@@ -149,9 +186,13 @@ namespace Helios.Reactor.Udp
             {
                 NodeDisconnected(new HeliosConnectionException(ExceptionType.Closed, reason), remoteConnection);
             }
+            catch (Exception innerEx)
+            {
+                OnErrorIfNotNull(innerEx, remoteConnection);
+            }
             finally
             {
-                if(SocketMap.ContainsKey(remoteConnection.RemoteHost))
+                if (SocketMap.ContainsKey(remoteConnection.RemoteHost))
                     SocketMap.Remove(remoteConnection.RemoteHost);
             }
         }
