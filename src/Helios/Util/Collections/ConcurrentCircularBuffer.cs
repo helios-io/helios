@@ -31,6 +31,25 @@ namespace Helios.Util.Collections
         public int Size { get { return _size; } }
         public int Head { get { return _head % Capacity; } }
         public int Tail { get { return _tail % Capacity; } }
+        public void SetHead(int position)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetTail(int position)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void IncrementHead(int increment)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void IncrementTail(int increment)
+        {
+            throw new NotImplementedException();
+        }
 
         #region Internal members
 
@@ -95,6 +114,11 @@ namespace Helios.Util.Collections
             }
 
             return item;
+        }
+
+        public void Skip(int length)
+        {
+            throw new NotImplementedException();
         }
 
         public IEnumerable<T> Dequeue(int count)

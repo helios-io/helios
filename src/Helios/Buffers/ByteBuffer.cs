@@ -20,7 +20,7 @@ namespace Helios.Buffers
         /// <summary>
         /// Copy constructor
         /// </summary>
-        protected ByteBuffer(byte[] buffer, int initialCapacity, int maxCapacity)
+        internal protected ByteBuffer(byte[] buffer, int initialCapacity, int maxCapacity)
             : base(maxCapacity)
         {
             if (initialCapacity < 0) throw new ArgumentOutOfRangeException("initialCapacity", "initialCapacity must be at least 0");

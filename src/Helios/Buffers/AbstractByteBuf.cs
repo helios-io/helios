@@ -23,9 +23,9 @@ namespace Helios.Buffers
 
         public int MaxCapacity { get; private set; }
         public abstract IByteBufAllocator Allocator { get; }
-        public int ReaderIndex { get; protected set; }
-        public int WriterIndex { get; protected set; }
-        public IByteBuf SetWriterIndex(int writerIndex)
+        public virtual int ReaderIndex { get; protected set; }
+        public virtual int WriterIndex { get; protected set; }
+        public virtual IByteBuf SetWriterIndex(int writerIndex)
         {
             if (writerIndex < ReaderIndex || writerIndex > Capacity)
                 throw new IndexOutOfRangeException(string.Format("WriterIndex: {0} (expected: 0 <= readerIndex({1}) <= writerIndex <= capacity ({2})", writerIndex, ReaderIndex, Capacity));
@@ -34,7 +34,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuf SetReaderIndex(int readerIndex)
+        public virtual IByteBuf SetReaderIndex(int readerIndex)
         {
             if (readerIndex < 0 || readerIndex > WriterIndex)
                 throw new IndexOutOfRangeException(string.Format("ReaderIndex: {0} (expected: 0 <= readerIndex <= writerIndex({1})", readerIndex, WriterIndex));
@@ -42,7 +42,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuf SetIndex(int readerIndex, int writerIndex)
+        public virtual IByteBuf SetIndex(int readerIndex, int writerIndex)
         {
             if (readerIndex < 0 || readerIndex > writerIndex || writerIndex > Capacity)
                 throw new IndexOutOfRangeException(string.Format("ReaderIndex: {0}, WriterIndex: {1} (expected: 0 <= readerIndex <= writerIndex <= capacity ({2})", readerIndex, writerIndex, Capacity));
@@ -52,10 +52,10 @@ namespace Helios.Buffers
             return this;
         }
 
-        public int ReadableBytes { get { return WriterIndex - ReaderIndex; } }
-        public int WritableBytes { get { return Capacity - WriterIndex; } }
+        public virtual int ReadableBytes { get { return WriterIndex - ReaderIndex; } }
+        public virtual int WritableBytes { get { return Capacity - WriterIndex; } }
 
-        public int MaxWritableBytes
+        public virtual int MaxWritableBytes
         {
             get { return MaxCapacity - WriterIndex; }
         }
@@ -80,37 +80,37 @@ namespace Helios.Buffers
             return Capacity - WriterIndex >= size;
         }
 
-        public IByteBuf Clear()
+        public virtual IByteBuf Clear()
         {
             ReaderIndex = WriterIndex = 0;
             return this;
         }
 
-        public IByteBuf MarkReaderIndex()
+        public virtual IByteBuf MarkReaderIndex()
         {
             _markedReaderIndex = ReaderIndex;
             return this;
         }
 
-        public IByteBuf ResetReaderIndex()
+        public virtual IByteBuf ResetReaderIndex()
         {
             SetReaderIndex(_markedReaderIndex);
             return this;
         }
 
-        public IByteBuf MarkWriterIndex()
+        public virtual IByteBuf MarkWriterIndex()
         {
             _markedWriterIndex = WriterIndex;
             return this;
         }
 
-        public IByteBuf ResetWriterIndex()
+        public virtual IByteBuf ResetWriterIndex()
         {
             SetWriterIndex(_markedWriterIndex);
             return this;
         }
 
-        public IByteBuf DiscardReadBytes()
+        public virtual IByteBuf DiscardReadBytes()
         {
             EnsureAccessible();
             if (ReaderIndex == 0) return this;
@@ -131,7 +131,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public IByteBuf EnsureWritable(int minWritableBytes)
+        public virtual IByteBuf EnsureWritable(int minWritableBytes)
         {
             if (minWritableBytes < 0)
                 throw new ArgumentOutOfRangeException("minWritableBytes",
@@ -564,7 +564,7 @@ namespace Helios.Buffers
 
         public abstract bool HasArray { get; }
         public abstract byte[] InternalArray();
-        public byte[] ToArray()
+        public virtual byte[] ToArray()
         {
             if (HasArray)
             {

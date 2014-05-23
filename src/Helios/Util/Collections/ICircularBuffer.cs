@@ -26,9 +26,17 @@ namespace Helios.Util.Collections
         int Head { get; }
 
         /// <summary>
-        /// Tail position of the current buffer
+        /// Write position of the current buffer
         /// </summary>
         int Tail { get; }
+
+        void SetHead(int position);
+
+        void SetTail(int position);
+
+        void IncrementHead(int increment);
+
+        void IncrementTail(int increment);
 
         /// <summary>
         /// Peeks at the next message in the buffer
@@ -53,6 +61,11 @@ namespace Helios.Util.Collections
         /// </summary>
         /// <returns>An object of type T</returns>
         T Dequeue();
+
+        /// <summary>
+        /// Skip N number of items in the queue
+        /// </summary>
+        void Skip(int length);
 
         /// <summary>
         /// Dequeues multiple items at once, if available

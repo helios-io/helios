@@ -28,7 +28,9 @@ namespace Helios.Util
         {
             if (array == null) throw new ArgumentNullException("array");
             if (length > array.Size) throw new ArgumentOutOfRangeException("length", string.Format("length({0}) cannot be longer than Array.length({1})", length, array.Size));
-            return Slice(array, 0, length);
+            var result = new byte[length];
+            array.DirectBufferRead(result);
+            return result;
         }
 
         public static byte[] Slice(this ICircularBuffer<byte> array, int index, int length)

@@ -70,15 +70,13 @@ namespace Helios.Util.Collections
                 if (value == InternalCapacity)
                     return;
 
-                if (value > InternalCapacity && InternalCapacity < MaxCapacity)
+                if (value > InternalCapacity && InternalCapacity < MaxCapacity) //expand
                 {
                     var newCapacity = CalculateNewCapacity(value);
                     Expand(newCapacity);
                     InternalCapacity = newCapacity;
-                }
 
-                //Truncate
-                if (value < InternalCapacity)
+                } else if (value < InternalCapacity) //shrink
                 {
                     Shrink(value);
                     InternalCapacity = value;
@@ -134,6 +132,7 @@ namespace Helios.Util.Collections
             Buffer = newBuffer;
             _head = 0;
             _tail = previousSize;
+            _size = newSize;
         }
 
         /// <summary>
@@ -156,6 +155,31 @@ namespace Helios.Util.Collections
 
         public int Head { get { return _head%Capacity; } }
         public int Tail { get { return _tail%Capacity; } }
+        public void SetHead(int position)
+        {
+            IncrementHead(position - Head);
+        }
+
+        public void SetTail(int position)
+        {
+            IncrementTail(position - Head);
+        }
+
+        public void IncrementHead(int increment)
+        {
+            _head += increment;
+            _size -= increment;
+            if (_size < 0)
+                _size = 0;
+        }
+
+        public void IncrementTail(int increment)
+        {
+            _tail += increment;
+            _size += increment;
+            if (_size > Capacity)
+                _size = Capacity;
+        }
 
         public virtual T Peek()
         {
@@ -233,6 +257,15 @@ namespace Helios.Util.Collections
             _head++;
             _size--;
             return item;
+        }
+
+        public void Skip(int length)
+        {
+            if (_size >= length)
+            {
+                _head += length;
+                _size -= length;
+            }
         }
 
         public virtual IEnumerable<T> Dequeue(int count)
