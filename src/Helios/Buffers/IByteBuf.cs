@@ -491,5 +491,13 @@ namespace Helios.Buffers
         /// Designed to work with frequently re-used buffers that are held for long periods of time.
         /// </summary>
         IByteBuf Compact();
+
+        /// <summary>
+        /// Compacts if and only if the buffer determines that there aren't enough
+        /// <see cref="WritableBytes"/> for it to continue functioning as necessary.
+        /// 
+        /// Designed to work with frequently re-used buffers
+        /// </summary>
+        IByteBuf CompactIfNecessary();
     }
 }

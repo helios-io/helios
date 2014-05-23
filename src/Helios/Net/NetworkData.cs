@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using Helios.Buffers;
 using Helios.Topology;
 
 namespace Helios.Net
@@ -27,6 +28,17 @@ namespace Helios.Net
             {
                 Buffer = data,
                 Length = bytes,
+                RemoteHost = node
+            };
+        }
+
+        public static NetworkData Create(INode node, IByteBuf buf)
+        {
+            var readableBytes = buf.ReadableBytes;
+            return new NetworkData()
+            {
+                Buffer = buf.ToArray(),
+                Length = readableBytes,
                 RemoteHost = node
             };
         }

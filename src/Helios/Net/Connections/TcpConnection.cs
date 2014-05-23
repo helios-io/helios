@@ -211,7 +211,8 @@ namespace Helios.Net.Connections
 
         protected override void BeginReceiveInternal()
         {
-            _client.Client.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, _client.Client);
+            var receiveState = CreateReceiveState(_client.Client, RemoteHost);
+            _client.Client.BeginReceive(Buffer, 0, BufferSize, SocketFlags.None, ReceiveCallback, receiveState);
         }
 
 

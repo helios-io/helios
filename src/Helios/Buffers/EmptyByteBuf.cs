@@ -118,5 +118,10 @@ namespace Helios.Buffers
         {
             return this;
         }
+
+        public override IByteBuf CompactIfNecessary()
+        {
+            return this;
+        }
     }
 }

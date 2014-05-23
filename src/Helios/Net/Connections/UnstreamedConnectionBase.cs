@@ -27,6 +27,7 @@ namespace Helios.Net.Connections
             Binding = binding;
             Timeout = timeout;
             Buffer = new byte[bufferSize];
+            BufferSize = bufferSize;
             NetworkEventLoop = eventLoop;
         }
 
@@ -60,6 +61,8 @@ namespace Helios.Net.Connections
 // ReSharper disable once ValueParameterNotUsed
             remove { NetworkEventLoop.SetExceptionHandler(null, this); }
         }
+
+        protected int BufferSize { get; set; }
 
         public IEventLoop EventLoop { get { return NetworkEventLoop; } }
         public IMessageEncoder Encoder { get; protected set; }
@@ -103,30 +106,51 @@ namespace Helios.Net.Connections
             BeginReceiveInternal();
         }
 
+        protected ReceiveState CreateReceiveState(Socket socket, INode remotehost)
+        {
+            return new ReceiveState(socket, remotehost, Allocator.Buffer());
+        }
+
         protected virtual void ReceiveCallback(IAsyncResult ar)
         {
-            var socket = (Socket) ar.AsyncState;
+            var receiveState = (ReceiveState) ar.AsyncState;
             try
             {
-                var buffSize = socket.EndReceive(ar);
-                var receivedData = new byte[buffSize];
-                Array.Copy(Buffer, receivedData, buffSize);
+                if (!receiveState.Socket.Connected)
+                {
+                    Receiving = false;
+                    InvokeDisconnectIfNotNull(receiveState.RemoteHost, new HeliosConnectionException(ExceptionType.Closed));
+                    Dispose();
+                }
 
-                var networkData = NetworkData.Create(NodeBuilder.FromEndpoint((IPEndPoint) socket.RemoteEndPoint),
-                    receivedData, buffSize);
-                RemoteHost = networkData.RemoteHost;
+                var buffSize = receiveState.Socket.EndReceive(ar);
+                receiveState.Buffer.WriteBytes(Buffer, 0, buffSize);
+
+                List<IByteBuf> decoded;
+                Decoder.Decode(this, receiveState.Buffer, out decoded);
+
+                foreach (var message in decoded)
+                {
+                    var networkData = NetworkData.Create(receiveState.RemoteHost, message);
+                    InvokeReceiveIfNotNull(networkData);
+                }
+
+                //reuse the buffer
+                if (receiveState.Buffer.ReadableBytes == 0)
+                    receiveState.Buffer.SetIndex(0, 0);
+                else
+                    receiveState.Buffer.CompactIfNecessary();
 
                 //continue receiving in a loop
                 if (Receiving)
                 {
-                    socket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, socket);
+                    receiveState.Socket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
                 }
-                InvokeReceiveIfNotNull(networkData);
             }
             catch (SocketException ex) //typically means that the socket is now closed
             {
                 Receiving = false;
-                InvokeDisconnectIfNotNull(NodeBuilder.FromEndpoint((IPEndPoint)socket.RemoteEndPoint), new HeliosConnectionException(ExceptionType.Closed, ex));
+                InvokeDisconnectIfNotNull(receiveState.RemoteHost, new HeliosConnectionException(ExceptionType.Closed, ex));
                 Dispose();
             }
         }
@@ -135,10 +159,7 @@ namespace Helios.Net.Connections
         {
             if (NetworkEventLoop.Receive != null)
             {
-                List<NetworkData> decoded;
-                Decoder.Decode(data, out decoded);
-                foreach(var message in decoded)
-                    NetworkEventLoop.Receive(message, this);
+                NetworkEventLoop.Receive(data, this);
             }
         }
 

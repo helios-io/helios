@@ -60,8 +60,11 @@ namespace Helios.Serialization
         {
             decoded = new List<IByteBuf>();
             var obj = Decode(connection, buffer);
-            if(obj != null)
+            while (obj != null)
+            {
                 decoded.Add(obj);
+                obj = Decode(connection, buffer);
+            } 
         }
 
         protected IByteBuf Decode(IConnection connection, IByteBuf input)

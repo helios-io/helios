@@ -182,6 +182,13 @@ namespace Helios.Buffers
             return this;
         }
 
+        public override IByteBuf CompactIfNecessary()
+        {
+            _buffer.CompactIfNecessary();
+            SetIndex(_buffer.ReaderIndex, _buffer.WriterIndex);
+            return this;
+        }
+
         #region Conversion
 
         public static implicit operator ByteBuffer(DuplicateByteBuf buf)

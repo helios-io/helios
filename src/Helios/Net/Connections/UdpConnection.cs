@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -41,7 +42,8 @@ namespace Helios.Net.Connections
             Allocator = allocator;
         }
 
-        public UdpConnection(UdpClient client) : this(client, Encoders.DefaultEncoder, Encoders.DefaultDecoder, UnpooledByteBufAllocator.Default)
+        public UdpConnection(UdpClient client)
+            : this(client, Encoders.DefaultEncoder, Encoders.DefaultDecoder, UnpooledByteBufAllocator.Default)
         {
         }
 
@@ -131,28 +133,35 @@ namespace Helios.Net.Connections
 
         protected override void BeginReceiveInternal()
         {
-            Client.Client.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, Client.Client);
+            var receiveState = CreateReceiveState(Client.Client, RemoteHost);
+            Client.Client.BeginReceiveFrom(Buffer, 0, BufferSize, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, receiveState);
         }
 
         protected override void ReceiveCallback(IAsyncResult ar)
         {
-            var socket = (Socket)ar.AsyncState;
+            var receiveState = (ReceiveState)ar.AsyncState;
             try
             {
-                var buffSize = socket.EndReceiveFrom(ar, ref RemoteEndpoint);
-                var receivedData = new byte[buffSize];
-                Array.Copy(Buffer, receivedData, buffSize);
+                var buffSize = receiveState.Socket.EndReceiveFrom(ar, ref RemoteEndpoint);
+                receiveState.Buffer.WriteBytes(Buffer, 0, buffSize);
 
-                var networkData = NetworkData.Create(NodeBuilder.FromEndpoint((IPEndPoint)RemoteEndpoint),
-                    receivedData, buffSize);
-                RemoteHost = networkData.RemoteHost;
+                List<IByteBuf> decoded;
+                Decoder.Decode(this, receiveState.Buffer, out decoded);
+
+                foreach (var message in decoded)
+                {
+                    var networkData = NetworkData.Create(receiveState.RemoteHost, message);
+                    InvokeReceiveIfNotNull(networkData);
+                }
+
+                //shift the contents of the buffer
+                receiveState.Buffer.CompactIfNecessary();
 
                 //continue receiving in a loop
                 if (Receiving)
                 {
-                    socket.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, socket);
+                    receiveState.Socket.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, receiveState);
                 }
-                InvokeReceiveIfNotNull(networkData);
             }
             catch (SocketException ex) //typically means that the socket is now closed
             {
@@ -176,7 +185,7 @@ namespace Helios.Net.Connections
 
         public override void Close()
         {
-           Close(null);
+            Close(null);
         }
 
         public override void Send(NetworkData payload)
@@ -210,7 +219,7 @@ namespace Helios.Net.Connections
 
         protected void InitClient()
         {
-            Client = new UdpClient(){ MulticastLoopback = false };
+            Client = new UdpClient() { MulticastLoopback = false };
         }
 
         protected void InitClient(UdpClient client)

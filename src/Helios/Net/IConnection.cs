@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Exceptions;
@@ -121,10 +122,33 @@ namespace Helios.Net
         void Send(NetworkData payload);
 
         Task SendAsync(NetworkData payload);
+    }
+
+    /// <summary>
+    /// The state object used to process data on an <see cref="IConnection"/> instance
+    /// </summary>
+    public class ReceiveState
+    {
+        public ReceiveState(Socket socket, INode remoteHost, IByteBuf buffer)
+        {
+            Buffer = buffer;
+            RemoteHost = remoteHost;
+            Socket = socket;
+        }
 
         /// <summary>
-        /// INTERNAL API. Used by encoders.
+        /// The low-level socket object
         /// </summary>
-        void InvokeReceiveIfNotNull(NetworkData data);
+        public Socket Socket { get; private set; }
+
+        /// <summary>
+        /// The remote host on the other end ofthe connection
+        /// </summary>
+        public INode RemoteHost { get; private set; }
+
+        /// <summary>
+        /// The receive buffer used for processing data from this connection
+        /// </summary>
+        public IByteBuf Buffer { get; private set; }
     }
 }

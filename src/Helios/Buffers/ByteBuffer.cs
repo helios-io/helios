@@ -200,6 +200,11 @@ namespace Helios.Buffers
             return (ByteBuffer)(Duplicate()).Clear().SetIndex(index, length);
         }
 
+        public override IByteBuf CompactIfNecessary()
+        {
+            return Compact();
+        }
+
         public override IByteBuf Compact()
         {
             var buffer = new byte[Capacity];

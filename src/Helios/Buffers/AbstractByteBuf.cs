@@ -585,6 +585,7 @@ namespace Helios.Buffers
         public abstract IByteBuf Unwrap();
         public abstract ByteBuffer InternalNioBuffer(int index, int length);
         public abstract IByteBuf Compact();
+        public abstract IByteBuf CompactIfNecessary();
 
         protected void AdjustMarkers(int decrement)
         {

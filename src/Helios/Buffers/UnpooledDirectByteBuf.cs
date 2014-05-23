@@ -28,7 +28,7 @@ namespace Helios.Buffers
 
         protected ByteBuffer AllocateDirect(int initialCapacity)
         {
-            return ByteBuffer.AllocateDirect(initialCapacity);
+            return ByteBuffer.AllocateDirect(initialCapacity, MaxCapacity);
         }
 
         private void SetByteBuffer(ByteBuffer buffer)
@@ -46,6 +46,7 @@ namespace Helios.Buffers
                 }
             }
             _buffer = buffer;
+            _internalNioBuffer = null;
             _capacity = buffer.Capacity;
         }
 
@@ -110,8 +111,18 @@ namespace Helios.Buffers
         public override IByteBuf Compact()
         {
             _buffer.Compact();
-            _internalNioBuffer = (DuplicateByteBuf) _buffer.Duplicate();
+            _internalNioBuffer = null;
             SetIndex(0, _buffer.ReadableBytes);
+            return this;
+        }
+
+        public override IByteBuf CompactIfNecessary()
+        {
+            //compact if under 10%
+            if ((double) WritableBytes/Capacity <= 0.1)
+            {
+                return Compact();
+            }
             return this;
         }
 
