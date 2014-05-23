@@ -27,10 +27,7 @@ namespace Helios.Reactor
         {
             if (EventLoop.Receive != null)
             {
-                List<NetworkData> decoded;
-                Decoder.Decode(availableData, out decoded);
-                foreach(var message in decoded)
-                    EventLoop.Receive(message, responseChannel);
+                EventLoop.Receive(availableData, responseChannel);
             }
         }
     }

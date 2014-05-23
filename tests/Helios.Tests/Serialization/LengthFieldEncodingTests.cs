@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using Helios.Buffers;
 using Helios.Net;
 using Helios.Serialization;
 using Helios.Topology;
@@ -19,12 +20,13 @@ namespace Helios.Tests.Serialization
         protected int LengthFieldLength = 4;
         protected IMessageEncoder Encoder;
         protected IMessageDecoder Decoder;
+        protected IConnection TestConnection = new DummyConnection(UnpooledByteBufAllocator.Default);
 
         [TestFixtureSetUp]
         public void Setup()
         {
             Encoder = new LengthFieldPrepender(LengthFieldLength);
-            Decoder = new LengthFieldFrameBasedDecoder(2000,0,LengthFieldLength);
+            Decoder = new LengthFieldFrameBasedDecoder(2000,0,LengthFieldLength,0,LengthFieldLength);  //stip headers
         }
 
         #endregion
@@ -36,20 +38,15 @@ namespace Helios.Tests.Serialization
         {
             var binaryContent = Encoding.UTF8.GetBytes("somebytes");
             var expectedBytes = binaryContent.Length;
-            var networkData = new NetworkData()
-            {
-                Buffer = binaryContent,
-                Length = expectedBytes,
-                RemoteHost = NodeBuilder.BuildNode().Host("host1.com").WithPort(1000)
-            };
+            var data = ByteBuffer.AllocateDirect(expectedBytes).WriteBytes(binaryContent);
 
-            List<NetworkData> encodedMessages;
-            Encoder.Encode(networkData, out encodedMessages);
+            List<IByteBuf> encodedMessages;
+            Encoder.Encode(TestConnection, data, out encodedMessages);
 
             var encodedData = encodedMessages[0];
-            Assert.AreEqual(networkData.Length + 4, encodedData.Length);
-            var decodedLength = BitConverter.ToInt32(encodedData.Buffer, 0);
-            Assert.AreEqual(networkData.Length, decodedLength);
+            Assert.AreEqual(expectedBytes + 4, encodedData.ReadableBytes);
+            var decodedLength = encodedData.ReadInt();
+            Assert.AreEqual(expectedBytes, decodedLength);
         }
 
         [Test]
@@ -57,20 +54,16 @@ namespace Helios.Tests.Serialization
         {
             var binaryContent = Encoding.UTF8.GetBytes("somebytes");
             var expectedBytes = binaryContent.Length;
-            var networkData = new NetworkData()
-            {
-                Buffer = binaryContent,
-                Length = expectedBytes,
-                RemoteHost = NodeBuilder.BuildNode().Host("host1.com").WithPort(1000)
-            };
 
-            List<NetworkData> encodedMessages;
-            Encoder.Encode(networkData, out encodedMessages);
+            var data = ByteBuffer.AllocateDirect(expectedBytes).WriteBytes(binaryContent);
 
-            List<NetworkData> decodedMessages;
-            Decoder.Decode(encodedMessages[0], out decodedMessages);
+            List<IByteBuf> encodedMessages;
+            Encoder.Encode(TestConnection, data, out encodedMessages);
 
-            Assert.IsTrue(binaryContent.SequenceEqual(decodedMessages[0].Buffer));
+            List<IByteBuf> decodedMessages;
+            Decoder.Decode(TestConnection, encodedMessages[0], out decodedMessages);
+
+            Assert.IsTrue(binaryContent.SequenceEqual(decodedMessages[0].ToArray()));
         }
 
         [Test]
@@ -80,39 +73,17 @@ namespace Helios.Tests.Serialization
             var binaryContent2 = Encoding.UTF8.GetBytes("moarbytes");
             var binaryContent3 = BitConverter.GetBytes(100034034L);
 
-            var multiMessageBuffer = new byte[0];
-            var length = 0;
-            using (var memoryStream = new MemoryStream())
-            {
+            var buffer = ByteBuffer.AllocateDirect(100).WriteInt(binaryContent1.Length)
+                .WriteBytes(binaryContent1).WriteInt(binaryContent2.Length).WriteBytes(binaryContent2)
+                .WriteInt(binaryContent3.Length).WriteBytes(binaryContent3);
 
-                memoryStream.Write(BitConverter.GetBytes((uint)binaryContent1.Length), 0, 4);
-                memoryStream.Write(binaryContent1, 0, binaryContent1.Length);
-                length = 4 + binaryContent1.Length;
 
-                memoryStream.Write(BitConverter.GetBytes((uint)binaryContent2.Length), 0, 4);
-                memoryStream.Write(binaryContent2, 0, binaryContent2.Length);
-                length += 4 + binaryContent2.Length;
-
-                memoryStream.Write(BitConverter.GetBytes((uint)binaryContent3.Length), 0, 4);
-                memoryStream.Write(binaryContent3, 0, binaryContent3.Length);
-                length += 4 + binaryContent3.Length;
-
-                multiMessageBuffer = memoryStream.GetBuffer();
-            }
-
-            var networkData = new NetworkData()
-            {
-                Buffer = multiMessageBuffer,
-                Length = length,
-                RemoteHost = NodeBuilder.BuildNode().Host("host1.com").WithPort(1000)
-            };
-
-            List<NetworkData> decodedMessages;
-            Decoder.Decode(networkData, out decodedMessages);
+            List<IByteBuf> decodedMessages;
+            Decoder.Decode(TestConnection, buffer, out decodedMessages);
             Assert.AreEqual(3, decodedMessages.Count);
-            Assert.IsTrue(binaryContent1.SequenceEqual(decodedMessages[0].Buffer));
-            Assert.IsTrue(binaryContent2.SequenceEqual(decodedMessages[1].Buffer));
-            Assert.IsTrue(binaryContent3.SequenceEqual(decodedMessages[2].Buffer));
+            Assert.IsTrue(binaryContent1.SequenceEqual(decodedMessages[0].ToArray()));
+            Assert.IsTrue(binaryContent2.SequenceEqual(decodedMessages[1].ToArray()));
+            Assert.IsTrue(binaryContent3.SequenceEqual(decodedMessages[2].ToArray()));
         }
 
         #endregion
