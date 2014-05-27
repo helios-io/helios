@@ -211,7 +211,6 @@ namespace Helios.Reactor
             public ReactorConnectionAdapter(ReactorBase reactor)
             {
                 _reactor = reactor;
-                Local = _reactor.LocalEndpoint.ToNode(_reactor.Transport);
             }
 
             public event ReceivedDataCallback Receive
@@ -244,7 +243,7 @@ namespace Helios.Reactor
             public IByteBufAllocator Allocator { get { return _reactor.Allocator; } }
             public DateTimeOffset Created { get; private set; }
             public INode RemoteHost { get; private set; }
-            public INode Local { get; private set; }
+            public INode Local { get { return _reactor.LocalEndpoint.ToNode(_reactor.Transport); } }
             public TimeSpan Timeout { get; private set; }
             public TransportType Transport { get { return _reactor.Transport; } }
             public bool Blocking { get { return _reactor.Blocking; } set { _reactor.Blocking = value; } }

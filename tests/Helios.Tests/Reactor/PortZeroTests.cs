@@ -24,6 +24,17 @@ namespace Helios.Tests.Reactor
             server.Stop();
         }
 
+
+        [Test]
+        public void TcpProxyServer_connection_adapter_should_bind_to_ephemeral_port()
+        {
+            var server =
+                new ServerBootstrap().SetTransport(TransportType.Tcp).Build().NewReactor(NodeBuilder.BuildNode().Host(IPAddress.Any).WithPort(0)).ConnectionAdapter;
+            server.Open();
+            Assert.AreNotEqual(0, server.Local.Port);
+            server.Close();
+        }
+
         [Test]
         public void UdpProxyServer_should_bind_to_ephemeral_port()
         {
