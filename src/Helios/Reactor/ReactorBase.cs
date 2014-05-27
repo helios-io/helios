@@ -78,6 +78,7 @@ namespace Helios.Reactor
             CheckWasDisposed();
             IsActive = true;
             Listener.Bind(LocalEndpoint);
+            LocalEndpoint = (IPEndPoint)Listener.LocalEndPoint;
             StartInternal();
         }
 

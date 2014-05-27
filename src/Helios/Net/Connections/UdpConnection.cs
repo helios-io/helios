@@ -112,7 +112,7 @@ namespace Helios.Net.Connections
                 throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to a null Node or null Node.Host");
             }
 
-            if (Binding.Port <= 0)
+            if (Binding.Port < 0)
             {
                 throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to an invalid port");
             }
@@ -124,6 +124,7 @@ namespace Helios.Net.Connections
             {
                 // ReSharper disable once PossibleNullReferenceException
                 Client.Client.Bind(Binding.ToEndPoint());
+                Local = ((IPEndPoint) Client.Client.LocalEndPoint).ToNode(TransportType.Udp);
             }
             catch (SocketException ex)
             {

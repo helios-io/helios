@@ -20,6 +20,7 @@ namespace Helios.Reactor.Udp
         public UdpProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base(localAddress, localPort, eventLoop, encoder, decoder, allocator, SocketType.Dgram, ProtocolType.Udp, bufferSize)
         {
+            LocalEndpoint = new IPEndPoint(localAddress, localPort);
             RemoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
         }
 

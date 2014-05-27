@@ -1,4 +1,5 @@
-﻿using Helios.Buffers;
+﻿using System.Net;
+using Helios.Buffers;
 using Helios.Serialization;
 
 namespace Helios.Net.Bootstrap
@@ -14,6 +15,7 @@ namespace Helios.Net.Bootstrap
             Encoder = Encoders.DefaultEncoder;
             Decoder = Encoders.DefaultDecoder;
             Allocator = UnpooledByteBufAllocator.Default;
+            Type = TransportType.Tcp;
         }
 
         protected AbstractBootstrap(AbstractBootstrap other) : this()
@@ -40,6 +42,8 @@ namespace Helios.Net.Bootstrap
         /// </summary>
         protected IConnectionConfig Config { get; set; }
 
+        protected TransportType Type { get; set; }
+
         protected ReceivedDataCallback ReceivedData { get; set; }
 
         protected ConnectionEstablishedCallback ConnectionEstablishedCallback { get; set; }
@@ -51,6 +55,12 @@ namespace Helios.Net.Bootstrap
         protected IMessageEncoder Encoder { get; set; }
 
         protected IByteBufAllocator Allocator { get; set; }
+
+        public virtual AbstractBootstrap SetTransport(TransportType type)
+        {
+            Type = type;
+            return this;
+        }
 
         public virtual AbstractBootstrap SetDecoder(IMessageDecoder decoder)
         {

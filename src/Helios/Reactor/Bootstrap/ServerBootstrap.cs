@@ -45,11 +45,9 @@ namespace Helios.Reactor.Bootstrap
 
         protected bool UseProxies { get; set; }
 
-        public TransportType Type { get; private set; }
-
-        public ServerBootstrap SetTransport(TransportType type)
+        public new ServerBootstrap SetTransport(TransportType type)
         {
-            Type = type;
+            base.SetTransport(type);
             return this;
         }
 

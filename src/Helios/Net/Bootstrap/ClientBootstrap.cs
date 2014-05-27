@@ -25,8 +25,6 @@ namespace Helios.Net.Bootstrap
             InternalExecutor = other.InternalExecutor;
         }
 
-        public TransportType Type { get; private set; }
-
         protected IExecutor InternalExecutor { get; set; }
      
         protected NetworkEventLoop EventLoop
@@ -53,9 +51,9 @@ namespace Helios.Net.Bootstrap
             return this;
         }
 
-        public ClientBootstrap SetTransport(TransportType type)
+        public new ClientBootstrap SetTransport(TransportType type)
         {
-            Type = type;
+            base.SetTransport(type);
             return this;
         }
 
