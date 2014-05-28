@@ -219,13 +219,12 @@ namespace Helios.Net.Connections
 
         public override void Close(Exception reason)
         {
-            CheckWasDisposed();
+            InvokeDisconnectIfNotNull(RemoteHost, new HeliosConnectionException(ExceptionType.Closed, reason));
 
-            if (!IsOpen())
+            if (_client == null || WasDisposed || !IsOpen())
                 return;
 
             _client.Close();
-            InvokeDisconnectIfNotNull(RemoteHost, new HeliosConnectionException(ExceptionType.Closed, reason));
             _client = null;
         }
 
@@ -304,6 +303,7 @@ namespace Helios.Net.Connections
                     if (_client != null)
                     {
                         ((IDisposable)_client).Dispose();
+                        _client = null;
                     }
                 }
             }
