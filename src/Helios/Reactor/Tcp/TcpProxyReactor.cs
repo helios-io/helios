@@ -25,7 +25,6 @@ namespace Helios.Reactor.Tcp
         {
             LocalEndpoint = new IPEndPoint(localAddress, localPort);
             Listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            Buffer = new byte[bufferSize];
         }
 
         public override bool IsActive { get; protected set; }
@@ -70,7 +69,7 @@ namespace Helios.Reactor.Tcp
             var responseChannel = new ReactorProxyResponseChannel(this, newSocket, EventLoop.Clone(ProxiesShareFiber));
             SocketMap.Add(node, responseChannel);
             NodeConnected(node, responseChannel);
-            newSocket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
+            newSocket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
             Listener.BeginAccept(AcceptCallback, null); //accept more connections
         }
 
@@ -87,7 +86,7 @@ namespace Helios.Reactor.Tcp
                 }
 
                 var received = receiveState.Socket.EndReceive(ar);
-                receiveState.Buffer.WriteBytes(Buffer, 0, received);
+                receiveState.Buffer.WriteBytes(receiveState.RawBuffer, 0, received);
 
                 var adapter = SocketMap[receiveState.RemoteHost];
 
@@ -107,7 +106,7 @@ namespace Helios.Reactor.Tcp
                     receiveState.Buffer.CompactIfNecessary();
 
                 //continue receiving in a loop
-                receiveState.Socket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
+                receiveState.Socket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
 
             }
             catch (SocketException ex) //node disconnected
@@ -149,7 +148,7 @@ namespace Helios.Reactor.Tcp
                 Encoder.Encode(ConnectionAdapter, buf, out encodedMessages);
                 foreach (var message in encodedMessages)
                 {
-                    var state = CreateNetworkState(clientSocket.Socket, destination, message);
+                    var state = CreateNetworkState(clientSocket.Socket, destination, message,0);
                     clientSocket.Socket.BeginSend(message.ToArray(), 0, message.ReadableBytes, SocketFlags.None,
                         SendCallback, state);
                 }

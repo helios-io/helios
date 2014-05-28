@@ -135,7 +135,7 @@ namespace Helios.Net.Connections
         protected override void BeginReceiveInternal()
         {
             var receiveState = CreateNetworkState(Client.Client, RemoteHost);
-            Client.Client.BeginReceiveFrom(Buffer, 0, BufferSize, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, receiveState);
+            Client.Client.BeginReceiveFrom(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, receiveState);
         }
 
         protected override void ReceiveCallback(IAsyncResult ar)
@@ -144,7 +144,7 @@ namespace Helios.Net.Connections
             try
             {
                 var buffSize = receiveState.Socket.EndReceiveFrom(ar, ref RemoteEndpoint);
-                receiveState.Buffer.WriteBytes(Buffer, 0, buffSize);
+                receiveState.Buffer.WriteBytes(receiveState.RawBuffer, 0, buffSize);
                 receiveState.RemoteHost = ((IPEndPoint) RemoteEndpoint).ToNode(TransportType.Udp);
 
                 List<IByteBuf> decoded;
@@ -162,7 +162,7 @@ namespace Helios.Net.Connections
                 //continue receiving in a loop
                 if (Receiving)
                 {
-                    receiveState.Socket.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, receiveState);
+                    receiveState.Socket.BeginReceiveFrom(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, receiveState);
                 }
             }
             catch (SocketException ex) //typically means that the socket is now closed
@@ -206,7 +206,7 @@ namespace Helios.Net.Connections
                 Encoder.Encode(this, buf, out encodedMessages);
                 foreach (var message in encodedMessages)
                 {
-                    var state = CreateNetworkState(Client.Client, destination, message);
+                    var state = CreateNetworkState(Client.Client, destination, message,0);
                     state.Socket.BeginSendTo(message.ToArray(), 0, message.ReadableBytes, SocketFlags.None, destination.ToEndPoint(),
                     SendCallback, state);
                 }

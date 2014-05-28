@@ -13,8 +13,6 @@ namespace Helios.Net.Connections
 {
     public abstract class UnstreamedConnectionBase : IConnection
     {
-        protected byte[] Buffer;
-
         protected UnstreamedConnectionBase(int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(EventLoopFactory.CreateNetworkEventLoop(), null, Encoders.DefaultEncoder, Encoders.DefaultDecoder, UnpooledByteBufAllocator.Default, bufferSize) { }
 
         protected UnstreamedConnectionBase(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
@@ -26,7 +24,6 @@ namespace Helios.Net.Connections
             Created = DateTimeOffset.UtcNow;
             Binding = binding;
             Timeout = timeout;
-            Buffer = new byte[bufferSize];
             BufferSize = bufferSize;
             NetworkEventLoop = eventLoop;
         }
@@ -108,12 +105,12 @@ namespace Helios.Net.Connections
 
         protected NetworkState CreateNetworkState(Socket socket, INode remotehost)
         {
-            return CreateNetworkState(socket, remotehost, Allocator.Buffer());
+            return CreateNetworkState(socket, remotehost, Allocator.Buffer(), BufferSize);
         }
 
-        protected NetworkState CreateNetworkState(Socket socket, INode remotehost, IByteBuf buffer)
+        protected NetworkState CreateNetworkState(Socket socket, INode remotehost, IByteBuf buffer, int bufferSize)
         {
-            return new NetworkState(socket, remotehost, buffer);
+            return new NetworkState(socket, remotehost, buffer, bufferSize);
         }
 
         protected virtual void ReceiveCallback(IAsyncResult ar)
@@ -130,7 +127,7 @@ namespace Helios.Net.Connections
                 }
 
                 var received = receiveState.Socket.EndReceive(ar);
-                receiveState.Buffer.WriteBytes(Buffer, 0, received);
+                receiveState.Buffer.WriteBytes(receiveState.RawBuffer, 0, received);
 
                 List<IByteBuf> decoded;
                 Decoder.Decode(this, receiveState.Buffer, out decoded);
@@ -150,7 +147,7 @@ namespace Helios.Net.Connections
                 //continue receiving in a loop
                 if (Receiving)
                 {
-                    receiveState.Socket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
+                    receiveState.Socket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
                 }
             }
             catch (SocketException ex) //typically means that the socket is now closed

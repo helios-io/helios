@@ -213,7 +213,7 @@ namespace Helios.Net.Connections
         protected override void BeginReceiveInternal()
         {
             var receiveState = CreateNetworkState(_client.Client, RemoteHost);
-            _client.Client.BeginReceive(Buffer, 0, BufferSize, SocketFlags.None, ReceiveCallback, receiveState);
+            _client.Client.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
         }
 
 
@@ -249,7 +249,7 @@ namespace Helios.Net.Connections
                 Encoder.Encode(this, buf, out encodedMessages);
                 foreach (var message in encodedMessages)
                 {
-                    var state = CreateNetworkState(_client.Client, destination, message);
+                    var state = CreateNetworkState(_client.Client, destination, message,0);
                     _client.Client.BeginSend(message.ToArray(), 0, message.ReadableBytes, SocketFlags.None,
                         SendCallback, state);
                 }
@@ -318,7 +318,7 @@ namespace Helios.Net.Connections
             _client.NoDelay = true;
             _client.ReceiveTimeout = Timeout.Seconds;
             _client.SendTimeout = Timeout.Seconds;
-            _client.ReceiveBufferSize = Buffer.Length;
+            _client.ReceiveBufferSize = BufferSize;
             var ipAddress = (IPEndPoint)_client.Client.RemoteEndPoint;
             RemoteHost = Binding = NodeBuilder.FromEndpoint(ipAddress);
             Local = NodeBuilder.FromEndpoint((IPEndPoint)_client.Client.LocalEndPoint);
@@ -331,7 +331,7 @@ namespace Helios.Net.Connections
                 ReceiveTimeout = Timeout.Seconds,
                 SendTimeout = Timeout.Seconds,
                 Client = { NoDelay = true },
-                ReceiveBufferSize = Buffer.Length
+                ReceiveBufferSize = BufferSize
             };
             RemoteHost = Binding;
         }

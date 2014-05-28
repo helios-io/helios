@@ -146,11 +146,12 @@ namespace Helios.Net
     /// </summary>
     public class NetworkState
     {
-        public NetworkState(Socket socket, INode remoteHost, IByteBuf buffer)
+        public NetworkState(Socket socket, INode remoteHost, IByteBuf buffer, int rawBufferLength)
         {
             Buffer = buffer;
             RemoteHost = remoteHost;
             Socket = socket;
+            RawBuffer = new byte[rawBufferLength];
         }
 
         /// <summary>
@@ -167,5 +168,10 @@ namespace Helios.Net
         /// The receive buffer used for processing data from this connection
         /// </summary>
         public IByteBuf Buffer { get; private set; }
+
+        /// <summary>
+        /// Raw buffer used for receiving data directly from the network
+        /// </summary>
+        public byte[] RawBuffer { get; private set; }
     }
 }

@@ -28,7 +28,10 @@ namespace Helios.Reactor
             Backlog = NetworkConstants.DefaultBacklog;
             EventLoop = eventLoop;
             ConnectionAdapter = new ReactorConnectionAdapter(this);
+            BufferSize = bufferSize;
         }
+
+        protected int BufferSize { get; set; }
 
         public event ReceivedDataCallback OnReceive
         {
@@ -150,12 +153,12 @@ namespace Helios.Reactor
         }
         protected NetworkState CreateNetworkState(Socket socket, INode remotehost)
         {
-            return CreateNetworkState(socket, remotehost, Allocator.Buffer());
+            return CreateNetworkState(socket, remotehost, Allocator.Buffer(), BufferSize);
         }
 
-        protected NetworkState CreateNetworkState(Socket socket, INode remotehost, IByteBuf buffer)
+        protected NetworkState CreateNetworkState(Socket socket, INode remotehost, IByteBuf buffer, int bufferSize)
         {
-            return new NetworkState(socket, remotehost, buffer);
+            return new NetworkState(socket, remotehost, buffer, bufferSize);
         }
 
         /// <summary>

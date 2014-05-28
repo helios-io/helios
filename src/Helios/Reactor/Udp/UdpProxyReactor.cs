@@ -46,7 +46,7 @@ namespace Helios.Reactor.Udp
         {
             IsActive = true;
             var receiveState = CreateNetworkState(Listener, Node.Empty());
-            Listener.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndPoint, ReceiveCallback, receiveState);
+            Listener.BeginReceiveFrom(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ref RemoteEndPoint, ReceiveCallback, receiveState);
         }
 
         private void ReceiveCallback(IAsyncResult ar)
@@ -79,7 +79,7 @@ namespace Helios.Reactor.Udp
                     NodeConnected(adapter.RemoteHost, adapter);
                 }
 
-                receiveState.Buffer.WriteBytes(Buffer, 0, received);
+                receiveState.Buffer.WriteBytes(receiveState.RawBuffer, 0, received);
 
                 List<IByteBuf> decoded;
                 Decoder.Decode(ConnectionAdapter, receiveState.Buffer, out decoded);
@@ -96,7 +96,7 @@ namespace Helios.Reactor.Udp
                 else
                     receiveState.Buffer.CompactIfNecessary();
 
-                receiveState.Socket.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref RemoteEndPoint, ReceiveCallback, receiveState); //receive more messages
+                receiveState.Socket.BeginReceiveFrom(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ref RemoteEndPoint, ReceiveCallback, receiveState); //receive more messages
             }
             catch (SocketException ex) //node disconnected
             {
@@ -127,7 +127,7 @@ namespace Helios.Reactor.Udp
                 Encoder.Encode(ConnectionAdapter, buf, out encodedMessages);
                 foreach (var message in encodedMessages)
                 {
-                    var state = CreateNetworkState(clientSocket.Socket, destination, message);
+                    var state = CreateNetworkState(clientSocket.Socket, destination, message,0);
                     clientSocket.Socket.BeginSendTo(message.ToArray(), 0, message.ReadableBytes, SocketFlags.None, destination.ToEndPoint(),
                     SendCallback, state);
                 }
