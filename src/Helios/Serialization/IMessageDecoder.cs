@@ -16,11 +16,18 @@ namespace Helios.Serialization
         /// what to do with them.
         /// </summary>
         void Decode(IConnection connection, IByteBuf buffer, out List<IByteBuf> decoded);
+
+        /// <summary>
+        /// Creates a deep clone of this <see cref="IMessageDecoder"/> instance with the exact same settings as the parent.
+        /// </summary>
+        /// <returns></returns>
+        IMessageDecoder Clone();
     }
 
     public abstract class MessageDecoderBase : IMessageDecoder
     {
         public abstract void Decode(IConnection connection, IByteBuf buffer, out List<IByteBuf> decoded);
+        public abstract IMessageDecoder Clone();
     }
 
     /// <summary>
@@ -31,6 +38,11 @@ namespace Helios.Serialization
         public override void Decode(IConnection connection, IByteBuf buffer, out List<IByteBuf> decoded)
         {
             decoded = new List<IByteBuf>() {buffer};
+        }
+
+        public override IMessageDecoder Clone()
+        {
+            return new NoOpDecoder();
         }
     }
 }

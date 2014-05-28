@@ -16,11 +16,17 @@ namespace Helios.Serialization
         /// what to do with them.
         /// </summary>
         void Encode(IConnection connection, IByteBuf buffer, out List<IByteBuf> encoded);
+
+        /// <summary>
+        /// Creates a deep clone of this <see cref="IMessageEncoder"/>, including 
+        /// </summary>
+        IMessageEncoder Clone();
     }
 
     public abstract class MessageEncoderBase : IMessageEncoder
     {
         public abstract void Encode(IConnection connection, IByteBuf buffer, out List<IByteBuf> encoded);
+        public abstract IMessageEncoder Clone();
     }
 
     /// <summary>
@@ -31,6 +37,11 @@ namespace Helios.Serialization
         public override void Encode(IConnection connection, IByteBuf buffer, out List<IByteBuf> encoded)
         {
             encoded = new List<IByteBuf>() { buffer };
+        }
+
+        public override IMessageEncoder Clone()
+        {
+            return new NoOpEncoder();
         }
     }
 }

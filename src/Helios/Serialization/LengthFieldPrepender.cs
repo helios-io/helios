@@ -107,5 +107,10 @@ namespace Helios.Serialization
             sourceByteBuf.WriteBytes(buffer);
             encoded.Add(sourceByteBuf);
         }
+
+        public override IMessageEncoder Clone()
+        {
+            return new LengthFieldPrepender(_lengthFieldLength, _lengthIncludesLenghtFieldLength, _lengthAdjustment);
+        }
     }
 }

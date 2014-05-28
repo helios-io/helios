@@ -43,19 +43,6 @@ namespace Helios.Serialization
             _failFast = failFast;
         }
 
-        public void Decode(NetworkData data, out List<NetworkData> decoded)
-        {
-            decoded = new List<NetworkData>();
-            var position = 0;
-            while (position < data.Length)
-            {
-                NetworkData nextFrame;
-                position = Decode(data, position, out nextFrame);
-                if(!nextFrame.RemoteHost.IsEmpty())
-                    decoded.Add(nextFrame);
-            }
-        }
-
         public override void Decode(IConnection connection, IByteBuf buffer, out List<IByteBuf> decoded)
         {
             decoded = new List<IByteBuf>();
@@ -65,6 +52,11 @@ namespace Helios.Serialization
                 decoded.Add(obj);
                 obj = Decode(connection, buffer);
             } 
+        }
+
+        public override IMessageDecoder Clone()
+        {
+            return new LengthFieldFrameBasedDecoder(_maxFrameLength, _lengthFieldOffset, _lengthFieldLength, _lengthAdjustment, _initialBytesToStrip, _failFast);
         }
 
         protected IByteBuf Decode(IConnection connection, IByteBuf input)
@@ -198,82 +190,12 @@ namespace Helios.Serialization
 
         private void Fail(long frameLength)
         {
-            if(frameLength > 0)
-                throw new TooLongFrameException(string.Format("Adjusted frame length exceeds {0}: {1} - discarded", _maxFrameLength, frameLength));
+            if (frameLength > 0)
+                throw new TooLongFrameException(string.Format("Adjusted frame length exceeds {0}: {1} - discarded",
+                    _maxFrameLength, frameLength));
             else
-                throw new TooLongFrameException(string.Format("Adjusted frame lenght exceeds {0} - discarding", _maxFrameLength));
-        }
-
-        protected int Decode(NetworkData input, int initialOffset, out NetworkData nextFrame)
-        {
-            nextFrame = NetworkData.Empty;
-            if (input.Length < _lengthFieldOffset) return input.Length;
-
-            var actualLengthFieldOffset = initialOffset + _lengthFieldOffset;
-            var frameLength = GetFrameLength(input, actualLengthFieldOffset, _lengthFieldLength);
-
-            if (frameLength > _maxFrameLength)
-            {
-                if(_failFast) throw new Exception(string.Format("Object exceeded maximum length of {0} bytes. Was {1}", _maxFrameLength, frameLength));
-                return input.Length;
-            }
-
-            var frameLengthInt = (int) frameLength;
-            if (input.Length < frameLengthInt)
-            {
-                return input.Length;
-            }
-
-            //extract the framed message
-            var index = _lengthFieldLength + actualLengthFieldOffset;
-            var actualFrameLength = frameLengthInt - _initialBytesToStrip;
-            nextFrame = ExtractFrame(input, index, actualFrameLength);
-            return index + actualFrameLength;
-        }
-
-        protected long GetFrameLength(NetworkData data, int offset, int length)
-        {
-            long frameLength = 0;
-            switch (length)
-            {
-                case 1:
-                    frameLength = data.Buffer[offset];
-                    break;
-                case 2:
-                    frameLength = BitConverter.ToUInt16(data.Buffer, offset);
-                    break;
-                case 4:
-                    frameLength = BitConverter.ToUInt32(data.Buffer, offset);
-                    break;
-                case 8:
-                    frameLength = BitConverter.ToInt64(data.Buffer, offset);
-                    break;
-                default:
-                    throw new ArgumentException(
-                        "unsupported lengthFieldLength: " + _lengthFieldLength + " (expected: 1, 2, 4, or 8)");
-                
-            }
-
-            return frameLength;
-        }
-
-        protected NetworkData ExtractFrame(NetworkData data, int offset, int length)
-        {
-            try
-            {
-                var newData = new byte[length];
-                Array.Copy(data.Buffer, offset, newData, 0, length);
-                return NetworkData.Create(data.RemoteHost, newData, length);
-            }
-            catch (Exception ex)
-            {
-                throw new HeliosException(
-                    string.Format("Error while copying {0} bytes from buffer of length {1} from starting index {2} to {3} into buffer of length {0}",
-                    length, data.Length, offset, offset + length)
-                    , ex);
-            }
+                throw new TooLongFrameException(string.Format("Adjusted frame lenght exceeds {0} - discarding",
+                    _maxFrameLength));
         }
     }
-
-    
 }
