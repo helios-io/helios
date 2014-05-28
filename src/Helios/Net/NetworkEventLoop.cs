@@ -105,5 +105,16 @@ namespace Helios.Net
         private IConnection _owner;
 
         #endregion
+
+        #region Clone methods
+
+        public NetworkEventLoop Clone(bool shareFiber = false)
+        {
+            if(shareFiber)
+                return new NetworkEventLoop(Scheduler);
+            return new NetworkEventLoop(Scheduler.Clone());
+        }
+
+        #endregion
     }
 }

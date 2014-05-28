@@ -31,5 +31,13 @@ namespace Helios.Reactor
         {
             responseChannel.OnReceive(availableData);
         }
+
+        /// <summary>
+        /// If true, proxies created for each inbound connection share the parent's thread-pool. If false, each proxy is allocated
+        /// its own thread pool.
+        /// 
+        /// Defaults to true.
+        /// </summary>
+        public bool ProxiesShareFiber { get; protected set; }
     }
 }

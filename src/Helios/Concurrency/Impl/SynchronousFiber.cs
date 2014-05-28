@@ -61,6 +61,11 @@ namespace Helios.Concurrency.Impl
             WasDisposed = true;
         }
 
+        public IFiber Clone()
+        {
+            return new SynchronousFiber(Executor.Clone());
+        }
+
         #region IDisposable members
 
         public void Dispose()

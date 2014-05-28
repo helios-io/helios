@@ -47,6 +47,10 @@ namespace Helios.Reactor.Tcp
                 Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Linger, new LingerOption(true, 10));
             else
                 Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontLinger, true);
+            if (config.HasOption<bool>("proxiesShareFiber"))
+                ProxiesShareFiber = config.GetOption<bool>("proxiesShareFiber");
+            else
+                ProxiesShareFiber = true;
 
         }
 
@@ -63,7 +67,7 @@ namespace Helios.Reactor.Tcp
             var node = NodeBuilder.FromEndpoint((IPEndPoint)newSocket.RemoteEndPoint);
 
             var receiveState = CreateNetworkState(newSocket, node);
-            var responseChannel = new ReactorProxyResponseChannel(this, newSocket, EventLoop);
+            var responseChannel = new ReactorProxyResponseChannel(this, newSocket, EventLoop.Clone(ProxiesShareFiber));
             SocketMap.Add(node, responseChannel);
             NodeConnected(node, responseChannel);
             newSocket.BeginReceive(Buffer, 0, Buffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
@@ -170,8 +174,7 @@ namespace Helios.Reactor.Tcp
             {
                 if (clientSocket.Socket.Connected)
                 {
-                    clientSocket.Socket.Close();
-                    NodeDisconnected(new HeliosConnectionException(ExceptionType.Closed, ex), remoteHost);
+                    clientSocket.Socket.Close();                    
                 }
             }
             catch(Exception innerEx)
@@ -180,6 +183,8 @@ namespace Helios.Reactor.Tcp
             }
             finally
             {
+                NodeDisconnected(new HeliosConnectionException(ExceptionType.Closed, ex), remoteHost);
+
                 if (SocketMap.ContainsKey(remoteHost.RemoteHost))
                     SocketMap.Remove(remoteHost.RemoteHost);
 

@@ -42,5 +42,10 @@ namespace Helios.Concurrency
         void Stop();
 
         void Dispose(bool isDisposing);
+
+        /// <summary>
+        /// Creates a deep clone of this <see cref="IFiber"/> instance
+        /// </summary>
+        IFiber Clone();
     }
 }

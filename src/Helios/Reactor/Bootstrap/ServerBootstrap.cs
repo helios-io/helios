@@ -15,6 +15,7 @@ namespace Helios.Reactor.Bootstrap
             : base()
         {
             UseProxies = true;
+            WorkersShareFiber(true);
             BufferBytes = NetworkConstants.DEFAULT_BUFFER_SIZE;
             Workers = 2;
             InternalExecutor = new BasicExecutor();
@@ -25,6 +26,7 @@ namespace Helios.Reactor.Bootstrap
         {
             UseProxies = other.UseProxies;
             BufferBytes = other.BufferBytes;
+            WorkersShareFiber(other.UseSharedFiber);
             Workers = other.Workers;
             InternalExecutor = other.InternalExecutor;
         }
@@ -44,6 +46,15 @@ namespace Helios.Reactor.Bootstrap
         protected int BufferBytes { get; set; }
 
         protected bool UseProxies { get; set; }
+
+        protected bool UseSharedFiber { get; set; }
+
+        public ServerBootstrap WorkersShareFiber(bool shareFiber)
+        {
+            UseSharedFiber = shareFiber;
+            SetOption("proxiesShareFiber", UseSharedFiber);
+            return this;
+        }
 
         public new ServerBootstrap SetTransport(TransportType type)
         {

@@ -18,6 +18,11 @@ namespace Helios.Ops.Executors
 
         public ThreadedEventLoop(IFiber scheduler) : base(scheduler) { }
 
+        public override IExecutor Clone()
+        {
+            return new ThreadedEventLoop(Scheduler.Clone());
+        }
+
         public override IExecutor Next()
         {
             return new ThreadedEventLoop(Scheduler);

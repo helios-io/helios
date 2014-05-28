@@ -57,5 +57,10 @@ namespace Helios.Ops
         /// Checks to see if this <see cref="IExecutor"/> is executing inside the given thread
         /// </summary>
         bool InThread(Thread thread);
+
+        /// <summary>
+        /// Creates a deep clone of this <see cref="IExecutor"/> instance
+        /// </summary>
+        IExecutor Clone();
     }
 }

@@ -79,6 +79,8 @@ namespace Helios.Ops.Executors
             return (Thread.CurrentThread.ManagedThreadId == thread.ManagedThreadId);
         }
 
+        public abstract IExecutor Clone();
+
         public bool WasDisposed { get; private set; }
 
         /// <summary>

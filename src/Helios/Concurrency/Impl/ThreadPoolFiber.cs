@@ -11,9 +11,18 @@ namespace Helios.Concurrency.Impl
     {
         protected readonly TaskFactory TF;
 
-        public ThreadPoolFiber(int numThreads) : this((IExecutor) new TryCatchExecutor(), (TaskFactory) TaskRunner.GetTaskFactory(numThreads)) { }
+        protected readonly int NumThreads;
 
-        public ThreadPoolFiber(IExecutor executor, int numThreads) : this(executor, (TaskFactory) TaskRunner.GetTaskFactory(numThreads)) { }
+        public ThreadPoolFiber(int numThreads)
+            : this((IExecutor) new TryCatchExecutor(), (TaskFactory) TaskRunner.GetTaskFactory(numThreads))
+        {
+        }
+
+        public ThreadPoolFiber(IExecutor executor, int numThreads)
+            : this(executor, (TaskFactory) TaskRunner.GetTaskFactory(numThreads))
+        {
+            NumThreads = numThreads;
+        }
 
         public ThreadPoolFiber(IExecutor executor) : this(executor, (TaskFactory) TaskRunner.GetTaskFactory()) { }
 
@@ -78,6 +87,13 @@ namespace Helios.Concurrency.Impl
             }
 
             WasDisposed = true;
+        }
+
+        public IFiber Clone()
+        {
+            if(NumThreads == 0)
+                return new ThreadPoolFiber(Executor.Clone());
+            return new ThreadPoolFiber(Executor.Clone(), NumThreads);
         }
 
         #endregion

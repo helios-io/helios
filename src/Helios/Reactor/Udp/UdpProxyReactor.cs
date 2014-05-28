@@ -36,6 +36,10 @@ namespace Helios.Reactor.Udp
                 Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, config.GetOption<bool>("reuseAddress"));
             if (config.HasOption<bool>("keepAlive"))
                 Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, config.GetOption<bool>("keepAlive"));
+            if (config.HasOption<bool>("proxiesShareFiber"))
+                ProxiesShareFiber = config.GetOption<bool>("proxiesShareFiber");
+            else
+                ProxiesShareFiber = true;
         }
 
         protected override void StartInternal()
@@ -70,7 +74,7 @@ namespace Helios.Reactor.Udp
                 }
                 else
                 {
-                    adapter = new ReactorProxyResponseChannel(this, receiveState.Socket, remoteAddress, EventLoop); ;
+                    adapter = new ReactorProxyResponseChannel(this, receiveState.Socket, remoteAddress, EventLoop.Clone(ProxiesShareFiber)); ;
                     SocketMap.Add(adapter.RemoteHost, adapter);
                     NodeConnected(adapter.RemoteHost, adapter);
                 }

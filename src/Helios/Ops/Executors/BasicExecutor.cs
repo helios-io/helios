@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using System.Threading.Tasks;
 using Helios.Util;
@@ -107,6 +108,11 @@ namespace Helios.Ops.Executors
         public bool InThread(Thread thread)
         {
             return (Thread.CurrentThread.ManagedThreadId == thread.ManagedThreadId);
+        }
+
+        public IExecutor Clone()
+        {
+            return new BasicExecutor();
         }
     }
 }
