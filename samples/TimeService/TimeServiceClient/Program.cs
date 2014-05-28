@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using Helios.Concurrency;
 using Helios.Net;
 using Helios.Net.Bootstrap;
 using Helios.Net.Connections;
@@ -48,13 +49,19 @@ namespace TimeServiceClient
         static void LoopWrite()
         {
             var command = Encoding.UTF8.GetBytes("gettime");
+            var fiber = FiberFactory.CreateFiber(3);
+           
 
             while (TimeServer.IsOpen())
             {
-                Thread.Sleep(1);
-                TimeServer.Send(new NetworkData() { Buffer = command, Length = command.Length });
+                fiber.Add(() =>
+                {
+                    Thread.Sleep(1);
+                    TimeServer.Send(new NetworkData() { Buffer = command, Length = command.Length });
+                });
             }
             Console.WriteLine("Connection closed.");
+            fiber.GracefulShutdown(TimeSpan.FromSeconds(1));
         }
 
         static void LoopConnect()
