@@ -213,7 +213,11 @@ namespace Helios.Buffers
 
         public virtual ushort GetUnsignedShort(int index)
         {
-            return Convert.ToUInt16(GetShort(index));
+            unchecked
+            {
+                return (ushort)(GetShort(index));
+            }
+            
         }
 
         public virtual int GetInt(int index)
@@ -226,7 +230,10 @@ namespace Helios.Buffers
 
         public virtual uint GetUnsignedInt(int index)
         {
-            return Convert.ToUInt32(GetInt(index));
+            unchecked
+            {
+                return (uint)(GetInt(index));
+            }
         }
 
         public virtual long GetLong(int index)
