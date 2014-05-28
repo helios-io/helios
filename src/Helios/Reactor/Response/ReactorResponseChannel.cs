@@ -32,8 +32,8 @@ namespace Helios.Reactor.Response
         {
             _reactor = reactor;
             Socket = outboundSocket;
-            Decoder = _reactor.Decoder;
-            Encoder = _reactor.Encoder;
+            Decoder = _reactor.Decoder.Clone();
+            Encoder = _reactor.Encoder.Clone();
             Allocator = _reactor.Allocator;
             Local = reactor.LocalEndpoint.ToNode(reactor.Transport);
             RemoteHost = NodeBuilder.FromEndpoint(endPoint);

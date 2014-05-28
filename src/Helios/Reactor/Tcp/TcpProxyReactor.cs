@@ -91,7 +91,7 @@ namespace Helios.Reactor.Tcp
                 var adapter = SocketMap[receiveState.RemoteHost];
 
                 List<IByteBuf> decoded;
-                Decoder.Decode(ConnectionAdapter, receiveState.Buffer, out decoded);
+                adapter.Decoder.Decode(ConnectionAdapter, receiveState.Buffer, out decoded);
 
                 foreach (var message in decoded)
                 {
@@ -145,7 +145,7 @@ namespace Helios.Reactor.Tcp
                 var buf = Allocator.Buffer(length);
                 buf.WriteBytes(buffer, index, length);
                 List<IByteBuf> encodedMessages;
-                Encoder.Encode(ConnectionAdapter, buf, out encodedMessages);
+                clientSocket.Encoder.Encode(ConnectionAdapter, buf, out encodedMessages);
                 foreach (var message in encodedMessages)
                 {
                     var state = CreateNetworkState(clientSocket.Socket, destination, message,0);
