@@ -66,7 +66,7 @@ namespace Helios.Reactor.Tcp
             var node = NodeBuilder.FromEndpoint((IPEndPoint)newSocket.RemoteEndPoint);
 
             var receiveState = CreateNetworkState(newSocket, node);
-            var responseChannel = new ReactorProxyResponseChannel(this, newSocket, EventLoop.Clone(ProxiesShareFiber));
+            var responseChannel = new TcpReactorResponseChannel(this, newSocket, EventLoop.Clone(ProxiesShareFiber));
             SocketMap.Add(node, responseChannel);
             NodeConnected(node, responseChannel);
             newSocket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
