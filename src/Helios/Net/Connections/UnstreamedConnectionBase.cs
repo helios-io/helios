@@ -23,7 +23,7 @@ namespace Helios.Net.Connections
 
     public abstract class UnstreamedConnectionBase : IConnection
     {
-        protected ConcurrentCircularBuffer<NetworkData> SendQueue = new ConcurrentCircularBuffer<NetworkData>(10,500);
+        protected ConcurrentCircularBuffer<NetworkData> SendQueue = new ConcurrentCircularBuffer<NetworkData>(10,1500);
         protected int Throughput = 10;
         protected int IsIdle = SendBufferProcessingStatus.Idle; //1 for busy, 0 for idle
         protected volatile bool HasUnsentMessages;

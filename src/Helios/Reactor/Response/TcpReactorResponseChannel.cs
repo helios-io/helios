@@ -14,11 +14,6 @@ namespace Helios.Reactor.Response
     /// </summary>
     public class TcpReactorResponseChannel : ReactorResponseChannel
     {
-        /// <summary>
-        /// shared buffer used by all incoming connections
-        /// </summary>
-        protected byte[] Buffer;
-
         public TcpReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, NetworkEventLoop eventLoop, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : this(reactor, outboundSocket, (IPEndPoint)outboundSocket.RemoteEndPoint, eventLoop, bufferSize)
         {
