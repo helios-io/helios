@@ -362,8 +362,10 @@ namespace Helios.Util.Collections
 
         public bool TryTake(out T item)
         {
+            item = default(T);
+            if (Size == 0) return false;
             item = Dequeue();
-            return item != null;
+            return true;
         }
 
         public T[] ToArray()
