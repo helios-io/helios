@@ -96,7 +96,10 @@ namespace Helios.Serialization
                     sourceByteBuf.WriteShort((ushort)length);
                     break;
                 case 4:
-                    sourceByteBuf.WriteInt(length);
+                    unchecked
+                    {
+                        sourceByteBuf.WriteUnsignedInt((uint)length);
+                    }
                     break;
                 case 8:
                     sourceByteBuf.WriteLong(length);

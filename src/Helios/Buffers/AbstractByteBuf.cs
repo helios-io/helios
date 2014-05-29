@@ -298,12 +298,27 @@ namespace Helios.Buffers
             return this;
         }
 
+        public IByteBuf SetUnsignedShort(int index, int value)
+        {
+            SetShort(index, value);
+            return this;
+        }
+
         protected abstract IByteBuf _SetShort(int index, int value);
 
         public virtual IByteBuf SetInt(int index, int value)
         {
             CheckIndex(index, 4);
             _SetInt(index, value);
+            return this;
+        }
+
+        public IByteBuf SetUnsignedInt(int index, uint value)
+        {
+            unchecked
+            {
+                SetInt(index, (int)value);
+            }
             return this;
         }
 
@@ -504,11 +519,25 @@ namespace Helios.Buffers
             return this;
         }
 
+        public IByteBuf WriteUnsignedShort(int value)
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual IByteBuf WriteInt(int value)
         {
             EnsureWritable(4);
             _SetInt(WriterIndex, value);
             WriterIndex += 4;
+            return this;
+        }
+
+        public IByteBuf WriteUnsignedInt(uint value)
+        {
+            unchecked
+            {
+                WriteInt((int) value);
+            }
             return this;
         }
 

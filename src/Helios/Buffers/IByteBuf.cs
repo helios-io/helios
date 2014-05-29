@@ -264,12 +264,28 @@ namespace Helios.Buffers
         IByteBuf SetShort(int index, int value);
 
         /// <summary>
+        /// Sets the specified unsigned short at the specified absolute <see cref="index"/> in this buffer.
+        /// 
+        /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
+        /// </summary>
+        /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
+        IByteBuf SetUnsignedShort(int index, int value);
+
+        /// <summary>
         /// Sets the specified integer at the specified absolute <see cref="index"/> in this buffer.
         /// 
         /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
         IByteBuf SetInt(int index, int value);
+
+        /// <summary>
+        /// Sets the specified unsigned integer at the specified absolute <see cref="index"/> in this buffer.
+        /// 
+        /// This method does not directly modify <see cref="ReaderIndex"/> or <see cref="WriterIndex"/> of this buffer.
+        /// </summary>
+        /// <exception cref="IndexOutOfRangeException">if the specified <see cref="index"/> is less than <c>0</c> or <c>index + 1</c> greater than <see cref="Capacity"/></exception>
+        IByteBuf SetUnsignedInt(int index, uint value);
 
         /// <summary>
         /// Sets the specified long integer at the specified absolute <see cref="index"/> in this buffer.
@@ -428,7 +444,11 @@ namespace Helios.Buffers
 
         IByteBuf WriteShort(int value);
 
+        IByteBuf WriteUnsignedShort(int value);
+
         IByteBuf WriteInt(int value);
+
+        IByteBuf WriteUnsignedInt(uint value);
 
         IByteBuf WriteLong(long value);
 
