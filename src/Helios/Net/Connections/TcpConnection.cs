@@ -233,7 +233,7 @@ namespace Helios.Net.Connections
             Close(null);
         }
 
-        public override void Send(byte[] buffer, int index, int length, INode destination)
+        protected override void SendInternal(byte[] buffer, int index, int length, INode destination)
         {
             try
             {
@@ -249,38 +249,15 @@ namespace Helios.Net.Connections
                 Encoder.Encode(this, buf, out encodedMessages);
                 foreach (var message in encodedMessages)
                 {
-                    var state = CreateNetworkState(_client.Client, destination, message,0);
-                    _client.Client.BeginSend(message.ToArray(), 0, message.ReadableBytes, SocketFlags.None,
-                        SendCallback, state);
+                    var bytesToSend = message.ToArray();
+                    var bytesSent = 0;
+                    while (bytesSent < bytesToSend.Length)
+                    {
+                        bytesSent += _client.Client.Send(bytesToSend, bytesSent, bytesToSend.Length - bytesSent,
+                            SocketFlags.None);
+                    }
+
                 }
-            }
-            catch (SocketException ex)
-            {
-                Close(ex);
-            }
-            catch (Exception ex)
-            {
-                InvokeErrorIfNotNull(ex);
-            }
-        }
-
-        private void SendCallback(IAsyncResult ar)
-        {
-            var receiveState = (NetworkState)ar.AsyncState;
-            try
-            {
-                if (!receiveState.Socket.Connected)
-                {
-                    Close();
-                    return;
-                }
-
-                var bytesSent = receiveState.Socket.EndSend(ar);
-                receiveState.Buffer.SkipBytes(bytesSent);
-
-                if(receiveState.Buffer.ReadableBytes > 0) //need to send again
-                    receiveState.Socket.BeginSend(receiveState.Buffer.ToArray(), 0, receiveState.Buffer.ReadableBytes, SocketFlags.None,
-                   SendCallback, receiveState);
             }
             catch (SocketException ex)
             {

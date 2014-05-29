@@ -2,17 +2,32 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Exceptions;
 using Helios.Ops;
 using Helios.Serialization;
 using Helios.Topology;
+using Helios.Util;
+using Helios.Util.Collections;
+using Helios.Util.TimedOps;
 
 namespace Helios.Net.Connections
 {
+    internal static class SendBufferProcessingStatus
+    {
+        public const int Idle = 0;
+        public const int Busy = 1;
+    }
+
     public abstract class UnstreamedConnectionBase : IConnection
     {
+        protected ConcurrentCircularBuffer<NetworkData> SendQueue = new ConcurrentCircularBuffer<NetworkData>(10,500);
+        protected int Throughput = 10;
+        protected int IsIdle = SendBufferProcessingStatus.Idle; //1 for busy, 0 for idle
+        protected volatile bool HasUnsentMessages;
+
         protected UnstreamedConnectionBase(int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(EventLoopFactory.CreateNetworkEventLoop(), null, Encoders.DefaultEncoder, Encoders.DefaultDecoder, UnpooledByteBufAllocator.Default, bufferSize) { }
 
         protected UnstreamedConnectionBase(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
@@ -207,10 +222,68 @@ namespace Helios.Net.Connections
 
         public void Send(NetworkData data)
         {
-            Send(data.Buffer, 0, data.Length, data.RemoteHost);
+            HasUnsentMessages = true;
+            SendQueue.Enqueue(data);
+            Schedule();
         }
 
-        public abstract void Send(byte[] buffer, int index, int length, INode destination);
+        public void Send(byte[] buffer, int index, int length, INode destination)
+        {
+            Send(NetworkData.Create(destination, buffer.Slice(index, length), length));
+        }
+
+        protected abstract void SendInternal(byte[] buffer, int index, int length, INode destination);
+
+        /// <summary>
+        /// Schedules the send buffer to begin draining
+        /// </summary>
+        protected void Schedule()
+        {
+            //only schedule if we're idle
+            if (Interlocked.Exchange(ref IsIdle, SendBufferProcessingStatus.Busy) == SendBufferProcessingStatus.Idle)
+            {
+                EventLoop.Execute(Run);
+            }
+        }
+
+        protected void Run()
+        {
+            if (WasDisposed || !IsOpen())
+                return;
+
+            //Set the deadline timer for this run
+            var deadlineTimer = Deadline.Now + Timeout;
+
+            //we are about to process all enqueued messages
+            HasUnsentMessages = false;
+
+            //we should process x messages in this run
+            var left = Throughput;
+
+            NetworkData message;
+            while (SendQueue.TryTake(out message))
+            {
+                SendInternal(message.Buffer, 0, message.Length, message.RemoteHost);
+                left--;
+                if (WasDisposed)
+                    return;
+
+                //if the deadline has expired, stop and break
+                if (deadlineTimer.IsOverdue || left == 0)
+                {
+                    break; //we're done for this run
+                }
+            }
+
+            //there are still unsent messages that need to be processed
+            if (SendQueue.Count > 0)
+                HasUnsentMessages = true;
+
+            if (HasUnsentMessages)
+                EventLoop.Execute(Run);
+            else
+                Interlocked.Exchange(ref IsIdle, SendBufferProcessingStatus.Idle);
+        }
 
         public override string ToString()
         {

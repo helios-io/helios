@@ -190,7 +190,7 @@ namespace Helios.Net.Connections
             Close(null);
         }
 
-        public override void Send(byte[] buffer, int index, int length, INode destination)
+        protected override void SendInternal(byte[] buffer, int index, int length, INode destination)
         {
             try
             {
@@ -206,9 +206,14 @@ namespace Helios.Net.Connections
                 Encoder.Encode(this, buf, out encodedMessages);
                 foreach (var message in encodedMessages)
                 {
-                    var state = CreateNetworkState(Client.Client, destination, message,0);
-                    state.Socket.BeginSendTo(message.ToArray(), 0, message.ReadableBytes, SocketFlags.None, destination.ToEndPoint(),
-                    SendCallback, state);
+                    var bytesToSend = message.ToArray();
+                    var bytesSent = 0;
+                    while (bytesSent < bytesToSend.Length)
+                    {
+                        bytesSent += Client.Client.SendTo(bytesToSend, bytesSent, bytesToSend.Length - bytesSent,
+                            SocketFlags.None, destination.ToEndPoint());
+                    }
+                    
                 }
             }
             catch (SocketException ex)
@@ -221,33 +226,6 @@ namespace Helios.Net.Connections
             }
         }
 
-        private void SendCallback(IAsyncResult ar)
-        {
-            var receiveState = (NetworkState)ar.AsyncState;
-            try
-            {
-                if (!receiveState.Socket.Connected)
-                {
-                    Close();
-                    return;
-                }
-
-                var bytesSent = receiveState.Socket.EndSend(ar);
-                receiveState.Buffer.SkipBytes(bytesSent);
-
-                if (receiveState.Buffer.ReadableBytes > 0) //need to send again
-                    receiveState.Socket.BeginSendTo(receiveState.Buffer.ToArray(), 0, receiveState.Buffer.ReadableBytes, SocketFlags.None, receiveState.RemoteHost.ToEndPoint(),
-                   SendCallback, receiveState);
-            }
-            catch (SocketException ex)
-            {
-                Close(ex);
-            }
-            catch (Exception ex)
-            {
-                InvokeErrorIfNotNull(ex);
-            }
-        }
 
         #endregion
 
