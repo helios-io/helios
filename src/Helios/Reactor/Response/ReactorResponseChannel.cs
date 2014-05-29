@@ -20,7 +20,7 @@ namespace Helios.Reactor.Response
 
         protected ICircularBuffer<NetworkData> UnreadMessages = new ConcurrentCircularBuffer<NetworkData>(1000);
         private readonly ReactorBase _reactor;
-        internal readonly Socket Socket;
+        internal Socket Socket;
 
         protected ReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, NetworkEventLoop eventLoop)
             : this(reactor, outboundSocket, (IPEndPoint)outboundSocket.RemoteEndPoint, eventLoop)
@@ -174,11 +174,6 @@ namespace Helios.Reactor.Response
             _reactor.Send(buffer, index, length, destination);
         }
 
-        public virtual async Task SendAsync(NetworkData payload)
-        {
-            await Task.Run(() => Send(payload));
-        }
-
         #region IDisposable members
 
         public void Dispose()
@@ -195,6 +190,7 @@ namespace Helios.Reactor.Response
                 if (disposing)
                 {
                     Close();
+                    Socket = null;
                 }
             }
         }
@@ -204,6 +200,18 @@ namespace Helios.Reactor.Response
         public void InvokeReceiveIfNotNull(NetworkData data)
         {
             OnReceive(data);
+        }
+
+        protected void InvokeErrorIfNotNull(Exception ex)
+        {
+            if (NetworkEventLoop.Exception != null)
+            {
+                NetworkEventLoop.Exception(ex, this);
+            }
+            else
+            {
+                throw new HeliosException("Unhandled exception on a connection with no error handler", ex);
+            }
         }
     }
 }
