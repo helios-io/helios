@@ -12,7 +12,7 @@ namespace Helios.Buffers
 
         private int _capacity;
 
-        public static ByteBuffer AllocateDirect(int capacity, int maxCapacity = ByteBufferUtil.DEFAULT_MAX_CAPACITY)
+        public static ByteBuffer AllocateDirect(int capacity, int maxCapacity = Int32.MaxValue)
         {
             return new ByteBuffer(capacity, maxCapacity);
         }

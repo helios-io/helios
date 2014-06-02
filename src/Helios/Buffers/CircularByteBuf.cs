@@ -14,7 +14,7 @@ namespace Helios.Buffers
         protected ICircularBuffer<byte> InternalBuffer;
         protected IByteBufAllocator Alloc;
 
-        public static CircularByteBuf AllocateDirect(int capacity, int maxCapacity = ByteBufferUtil.DEFAULT_MAX_CAPACITY)
+        public static CircularByteBuf AllocateDirect(int capacity, int maxCapacity = Int32.MaxValue)
         {
             return new CircularByteBuf(capacity, maxCapacity);
         }
