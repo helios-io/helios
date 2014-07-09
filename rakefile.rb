@@ -141,6 +141,7 @@ task :create_output_folders => :clean_output_folders do
     create_dir(Folders[:helios_symbol_nuspec][:lib])
     create_dir(Folders[:helios_symbol_nuspec][:src])
     create_dir(Folders[:helios_symbol_nuspec][:net45])
+    create_dir(Folders[:helios_symbol_nuspec][:net40])
 end
 
 #-----------------------
@@ -163,6 +164,13 @@ output :helios_symbol_nuget_output => [:create_output_folders] do |out|
     out.to Folders[:helios_symbol_nuspec][:net45]
     out.file Files[:helios_net45][:bin]
     out.file Files[:helios_net45][:pdb]
+end
+
+output :helios_symbol_net40_nuget_output => [:create_output_folders] do |out|
+    out.from Folders[:bin][:helios_net40]
+    out.to Folders[:helios_symbol_nuspec][:net40]
+    out.file Files[:helios_net40][:bin]
+    out.file Files[:helios_net40][:pdb]
 end
 
 output :helios_net35_nuget_output => [:create_output_folders] do |out|
@@ -192,6 +200,7 @@ end
 desc "Executes all file/copy tasks"
 task :all_output => [:helios_net45_nuget_output, 
     :helios_net40_nuget_output,
+    :helios_symbol_net40_nuget_output,
     :helios_symbol_nuget_output, 
     :helios_symbol_src_nuget_output, 
     :helios_net35_nuget_output]

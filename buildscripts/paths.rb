@@ -32,6 +32,7 @@ Folders = {
         :lib => File.join(root_folder, "build", "nuget", "Helios-Symbol", "lib"),
         :src => File.join(root_folder, "build", "nuget", "Helios-Symbol", "src"),
         :net35 => File.join(root_folder, "build", "nuget", "Helios-Symbol", "lib", "net35"),
+        :net40 => File.join(root_folder, "build", "nuget", "Helios-Symbol", "lib", "net40"),
         :net45 => File.join(root_folder, "build", "nuget", "Helios-Symbol", "lib", "net45"),
     },
 
