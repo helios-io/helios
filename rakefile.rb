@@ -223,8 +223,6 @@ nuspec :nuspec_net45 => [:all_output] do |nuspec|
     nuspec.language = Projects[:language]
     nuspec.tags = Projects[:helios_net45][:nuget_tags]
     nuspec.output_file = File.join(Folders[:nuget_out], "#{Projects[:helios_net45][:id]}-v#{env_nuget_version}(#{@env_buildconfigname}).nuspec");
-    nuspec.dependency "Newtonsoft.Json", "6.0.1"
-
 end
 
 desc "Builds a nuspec file for helios"
@@ -242,7 +240,6 @@ nuspec :nuspec_net35 => [:all_output] do |nuspec|
     nuspec.language = Projects[:language]
     nuspec.tags = Projects[:helios_net35][:nuget_tags]
     nuspec.output_file = File.join(Folders[:nuget_out], "#{Projects[:helios_net35][:id]}-v#{env_nuget_version}(#{@env_buildconfigname}).nuspec");
-    nuspec.dependency "Newtonsoft.Json", "6.0.1"
     nuspec.dependency "TaskParallelLibrary", "1.0.2856.0"
 end
 

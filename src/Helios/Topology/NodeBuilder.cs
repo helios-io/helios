@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using Newtonsoft.Json;
 
 namespace Helios.Topology
 {
@@ -120,18 +119,6 @@ namespace Helios.Topology
         public static INode WithCustomData(this INode n, string customData)
         {
             n.CustomData = customData;
-            return n;
-        }
-
-        /// <summary>
-        /// Add an object (which will be converted to JSON) to a node's metadata
-        /// </summary>
-        /// <param name="n">A valid INode instance</param>
-        /// <param name="customData">An object which will be converted into a JSON string, containing custom meta data about this node</param>
-        /// <returns>A valid node</returns>
-        public static INode WithCustomDataObject(this INode n, object customData)
-        {
-            n.CustomData = JsonConvert.SerializeObject(customData);
             return n;
         }
 
