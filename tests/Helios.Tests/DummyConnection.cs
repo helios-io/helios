@@ -47,6 +47,8 @@ namespace Helios.Tests
         }
 
         public int Available { get; private set; }
+        public int MessagesInSendQueue { get; private set; }
+
         public Task<bool> OpenAsync()
         {
             throw new NotImplementedException();

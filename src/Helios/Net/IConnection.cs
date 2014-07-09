@@ -85,6 +85,11 @@ namespace Helios.Net
         /// <returns>the number of bytes received from the network that are available to be read</returns>
         int Available { get; }
 
+        /// <summary>
+        /// Messages that have not yet been delivered to their intended destination
+        /// </summary>
+        int MessagesInSendQueue { get; }
+
         Task<bool> OpenAsync();
 
         /// <summary>

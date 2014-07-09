@@ -25,7 +25,7 @@ namespace Helios.Reactor
             Allocator = allocator;
             LocalEndpoint = new IPEndPoint(localAddress, localPort);
             Listener = new Socket(AddressFamily.InterNetwork, socketType, protocol);
-            if (protocol == ProtocolType.Tcp) { Transport = TransportType.Tcp; } else if (protocol == ProtocolType.Udp) {  Transport = TransportType.Udp; }
+            if (protocol == ProtocolType.Tcp) { Transport = TransportType.Tcp; } else if (protocol == ProtocolType.Udp) { Transport = TransportType.Udp; }
             Backlog = NetworkConstants.DefaultBacklog;
             EventLoop = eventLoop;
             ConnectionAdapter = new ReactorConnectionAdapter(this);
@@ -95,9 +95,9 @@ namespace Helios.Reactor
             {
                 Listener.Shutdown(SocketShutdown.Both);
             }
-            catch 
+            catch
             {
-              
+
             }
             IsActive = false;
             StopInternal();
@@ -127,7 +127,7 @@ namespace Helios.Reactor
         {
             if (EventLoop.Disconnection != null)
             {
-               EventLoop.Disconnection(reason, closedChannel);
+                EventLoop.Disconnection(reason, closedChannel);
             }
         }
 
@@ -241,24 +241,65 @@ namespace Helios.Reactor
                 remove { _reactor.OnError -= value; }
             }
 
-            public IEventLoop EventLoop { get { return _reactor.EventLoop; } }
-            public IMessageEncoder Encoder { get { return _reactor.Encoder; } }
-            public IMessageDecoder Decoder { get { return _reactor.Decoder; } }
-            public IByteBufAllocator Allocator { get { return _reactor.Allocator; } }
+            public IEventLoop EventLoop
+            {
+                get { return _reactor.EventLoop; }
+            }
+
+            public IMessageEncoder Encoder
+            {
+                get { return _reactor.Encoder; }
+            }
+
+            public IMessageDecoder Decoder
+            {
+                get { return _reactor.Decoder; }
+            }
+
+            public IByteBufAllocator Allocator
+            {
+                get { return _reactor.Allocator; }
+            }
+
             public DateTimeOffset Created { get; private set; }
             public INode RemoteHost { get; private set; }
-            public INode Local { get { return _reactor.LocalEndpoint.ToNode(_reactor.Transport); } }
+
+            public INode Local
+            {
+                get { return _reactor.LocalEndpoint.ToNode(_reactor.Transport); }
+            }
+
             public TimeSpan Timeout { get; private set; }
-            public TransportType Transport { get { return _reactor.Transport; } }
-            public bool Blocking { get { return _reactor.Blocking; } set { _reactor.Blocking = value; } }
+
+            public TransportType Transport
+            {
+                get { return _reactor.Transport; }
+            }
+
+            public bool Blocking
+            {
+                get { return _reactor.Blocking; }
+                set { _reactor.Blocking = value; }
+            }
+
             public bool WasDisposed { get; private set; }
-            public bool Receiving { get { return _reactor.IsActive; } }
+
+            public bool Receiving
+            {
+                get { return _reactor.IsActive; }
+            }
+
             public bool IsOpen()
             {
                 return _reactor.IsActive;
             }
 
-            public int Available { get { throw new NotSupportedException("[Available] is not supported on ReactorConnectionAdapter"); } }
+            public int Available
+            {
+                get { throw new NotSupportedException("[Available] is not supported on ReactorConnectionAdapter"); }
+            }
+
+            public int MessagesInSendQueue { get { return 0; } }
 
             public Task<bool> OpenAsync()
             {

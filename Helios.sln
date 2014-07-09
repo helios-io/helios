@@ -36,6 +36,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.RawSocket", "samples
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.RawUdpSocket", "samples\Helios.RawUdpSocket\Helios.RawUdpSocket.csproj", "{B4483775-BF67-4963-8A12-70145DA3136D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Samples.UdpPerformanceTest", "samples\Helios.Samples.UdpPerformanceTest\Helios.Samples.UdpPerformanceTest.csproj", "{4F89F69D-F12C-4754-BAB8-67582908F7DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -86,6 +88,10 @@ Global
 		{B4483775-BF67-4963-8A12-70145DA3136D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B4483775-BF67-4963-8A12-70145DA3136D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B4483775-BF67-4963-8A12-70145DA3136D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F89F69D-F12C-4754-BAB8-67582908F7DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F89F69D-F12C-4754-BAB8-67582908F7DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F89F69D-F12C-4754-BAB8-67582908F7DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F89F69D-F12C-4754-BAB8-67582908F7DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,5 +105,6 @@ Global
 		{7E169CAF-9D9E-4D1F-9627-FD9D1ACEC8B1} = {E5ECC7CF-3DE5-4507-9F2F-91EC0E928742}
 		{6B38304A-9DBD-4761-9C6D-2ADD9755B5C6} = {CDCC7F36-83CF-430B-86CF-46CDF610301F}
 		{B4483775-BF67-4963-8A12-70145DA3136D} = {CDCC7F36-83CF-430B-86CF-46CDF610301F}
+		{4F89F69D-F12C-4754-BAB8-67582908F7DE} = {CDCC7F36-83CF-430B-86CF-46CDF610301F}
 	EndGlobalSection
 EndGlobal

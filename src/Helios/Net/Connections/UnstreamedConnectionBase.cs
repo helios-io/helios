@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -95,6 +96,7 @@ namespace Helios.Net.Connections
 
         public abstract bool IsOpen();
         public abstract int Available { get; }
+        public int MessagesInSendQueue { get { return SendQueue.Count; } }
         public abstract Task<bool> OpenAsync();
         public abstract void Configure(IConnectionConfig config);
 

@@ -90,6 +90,8 @@ namespace Helios.Reactor.Response
         }
 
         public int Available { get { return Socket.Available; } }
+        public int MessagesInSendQueue { get { return 0; } }
+
         public Task<bool> OpenAsync()
         {
             Open();
