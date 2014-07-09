@@ -10,6 +10,7 @@ using Helios.Ops;
 using Helios.Reactor.Response;
 using Helios.Serialization;
 using Helios.Topology;
+using Helios.Util.Concurrency;
 
 namespace Helios.Reactor
 {
@@ -259,10 +260,10 @@ namespace Helios.Reactor
 
             public int Available { get { throw new NotSupportedException("[Available] is not supported on ReactorConnectionAdapter"); } }
 
-            public async Task<bool> OpenAsync()
+            public Task<bool> OpenAsync()
             {
-                await Task.Run(() => _reactor.Start());
-                return true;
+                TaskRunner.Run(() => _reactor.Start());
+                return TaskRunner.Run(() => true);
             }
 
             public void Configure(IConnectionConfig config)
@@ -306,9 +307,9 @@ namespace Helios.Reactor
                 _reactor.Send(buffer, index, length, destination);
             }
 
-            public async Task SendAsync(NetworkData payload)
+            public Task SendAsync(NetworkData payload)
             {
-                await Task.Run(() => Send(payload));
+                return TaskRunner.Run(() => Send(payload));
             }
 
             #region IDisposable methods

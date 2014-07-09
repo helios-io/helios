@@ -9,6 +9,7 @@ using Helios.Ops;
 using Helios.Serialization;
 using Helios.Topology;
 using Helios.Util.Collections;
+using Helios.Util.Concurrency;
 
 namespace Helios.Reactor.Response
 {
@@ -92,7 +93,7 @@ namespace Helios.Reactor.Response
         public Task<bool> OpenAsync()
         {
             Open();
-            return Task.Run(() => true);
+            return TaskRunner.Run(() => true);
         }
 
         public abstract void Configure(IConnectionConfig config);

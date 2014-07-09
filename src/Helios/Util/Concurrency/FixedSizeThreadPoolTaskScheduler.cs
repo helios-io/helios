@@ -56,7 +56,7 @@ namespace Helios.Util.Concurrency
         {
             var t = new Thread(() =>
             {
-                foreach (var task in _tasks.GetConsumingEnumerable())
+             foreach (var task in _tasks.GetConsumingEnumerable())
                 {
                     TryExecuteTask(task);
                 }

@@ -264,6 +264,48 @@
     <Compile Include="..\Helios\Ops\OperationResult.cs">
       <Link>Ops\OperationResult.cs</Link>
     </Compile>
+    <Compile Include="..\Helios\Reactor\Bootstrap\IServerFactory.cs">
+      <Link>Reactor\Bootstrap\IServerFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Reactor\Bootstrap\ServerBootstrap.cs">
+      <Link>Reactor\Bootstrap\ServerBootstrap.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Reactor\Bootstrap\ServerFactoryBase.cs">
+      <Link>Reactor\Bootstrap\ServerFactoryBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Reactor\Bootstrap\TcpServerFactory.cs">
+      <Link>Reactor\Bootstrap\TcpServerFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Reactor\Bootstrap\UdpServerFactory.cs">
+      <Link>Reactor\Bootstrap\UdpServerFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Reactor\IReactor.cs">
+      <Link>Reactor\IReactor.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Reactor\ProxyReactorBase.cs">
+      <Link>Reactor\ProxyReactorBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Reactor\ReactorBase.cs">
+      <Link>Reactor\ReactorBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Reactor\Response\ReactorProxyResponseChannel.cs">
+      <Link>Reactor\Response\ReactorProxyResponseChannel.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Reactor\Response\ReactorResponseChannel.cs">
+      <Link>Reactor\Response\ReactorResponseChannel.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Reactor\Response\TcpReactorResponseChannel.cs">
+      <Link>Reactor\Response\TcpReactorResponseChannel.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Reactor\SingleReceiveLoopProxyReactor.cs">
+      <Link>Reactor\SingleReceiveLoopProxyReactor.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Reactor\Tcp\TcpProxyReactor.cs">
+      <Link>Reactor\Tcp\TcpProxyReactor.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Reactor\Udp\UdpProxyReactor.cs">
+      <Link>Reactor\Udp\UdpProxyReactor.cs</Link>
+    </Compile>
     <Compile Include="..\Helios\Serialization\Bson\BsonTransportSerializer.cs">
       <Link>Serialization\Bson\BsonTransportSerializer.cs</Link>
     </Compile>
@@ -371,10 +413,7 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Reactor\Tcp\" />
-    <Folder Include="Reactor\Udp\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
