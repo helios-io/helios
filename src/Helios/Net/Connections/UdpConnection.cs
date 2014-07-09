@@ -59,11 +59,9 @@ namespace Helios.Net.Connections
             get { return Client.Client.Blocking; }
             set { Client.Client.Blocking = value; }
         }
-
         public override bool IsOpen()
         {
-            if (Client == null) return false;
-            return Client.Client.Connected;
+            return Local != null;
         }
 
         public override int Available
