@@ -64,6 +64,12 @@ namespace Helios.Topology
            
         }
 
+        private IPEndPoint _endPoint;
+        public IPEndPoint ToEndPoint()
+        {
+            return _endPoint ?? (_endPoint = new IPEndPoint(Host, Port));
+        }
+
         public object Clone()
         {
             return new Node()
@@ -92,6 +98,11 @@ namespace Helios.Topology
         public static INode Empty()
         {
             return empty;
+        }
+
+        public static INode Any(int port = 0)
+        {
+            return NodeBuilder.BuildNode().Host(IPAddress.Any).WithPort(port);
         }
 
 #if !NET35 && !NET40

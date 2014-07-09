@@ -39,5 +39,10 @@ namespace Helios.Topology
         /// A JSON blob representing arbtirary data about this node
         /// </summary>
         string CustomData { get; set; }
+
+        /// <summary>
+        /// Converts the node to an <see cref="IPEndPoint"/>
+        /// </summary>
+        IPEndPoint ToEndPoint();
     }
 }

@@ -14,6 +14,13 @@ namespace Helios.Topology
         public string OS { get; set; }
         public string ServiceVersion { get; set; }
         public string CustomData { get; set; }
+
+        private IPEndPoint _endPoint;
+        public IPEndPoint ToEndPoint()
+        {
+            return _endPoint ?? (_endPoint =new IPEndPoint(IPAddress.None, 0));
+        }
+
         public object Clone()
         {
             return Node.Empty();
