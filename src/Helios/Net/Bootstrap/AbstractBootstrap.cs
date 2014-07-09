@@ -27,6 +27,9 @@ namespace Helios.Net.Bootstrap
             ConnectionTerminatedCallback = other.ConnectionTerminatedCallback != null
                 ? (Net.ConnectionTerminatedCallback) other.ConnectionTerminatedCallback.Clone()
                 : null;
+            ExceptionCallback = other.ExceptionCallback != null
+                ? (ExceptionCallback) other.ExceptionCallback.Clone()
+                : null;
 
             foreach (var option in other.Config.Options)
             {
@@ -49,6 +52,8 @@ namespace Helios.Net.Bootstrap
         protected ConnectionEstablishedCallback ConnectionEstablishedCallback { get; set; }
 
         protected ConnectionTerminatedCallback ConnectionTerminatedCallback { get; set; }
+
+        protected ExceptionCallback ExceptionCallback { get; set; }
 
         protected IMessageDecoder Decoder { get; set; }
 
@@ -101,6 +106,12 @@ namespace Helios.Net.Bootstrap
         public virtual AbstractBootstrap OnDisconnect(ConnectionTerminatedCallback connectionTerminatedCallback)
         {
             ConnectionTerminatedCallback = connectionTerminatedCallback;
+            return this;
+        }
+
+        public virtual AbstractBootstrap OnError(ExceptionCallback exceptionCallback)
+        {
+            ExceptionCallback = exceptionCallback;
             return this;
         }
 

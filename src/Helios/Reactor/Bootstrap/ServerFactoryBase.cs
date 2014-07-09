@@ -26,6 +26,8 @@ namespace Helios.Reactor.Bootstrap
                 reactor.OnConnection += (ConnectionEstablishedCallback)ConnectionEstablishedCallback.Clone();
             if (ConnectionTerminatedCallback != null)
                 reactor.OnDisconnection += (ConnectionTerminatedCallback)ConnectionTerminatedCallback.Clone();
+            if (ExceptionCallback != null)
+                reactor.OnError += (ExceptionCallback) ExceptionCallback.Clone();
 
             return reactor;
         }

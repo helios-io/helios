@@ -98,6 +98,12 @@ namespace Helios.Net.Bootstrap
             return this;
         }
 
+        public new ClientBootstrap OnError(ExceptionCallback exceptionCallback)
+        {
+            base.OnError(exceptionCallback);
+            return this;
+        }
+
         public new ClientBootstrap SetOption(string optionKey, object optionValue)
         {
             base.SetOption(optionKey, optionValue);

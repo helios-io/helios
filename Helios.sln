@@ -34,6 +34,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.NET40", "src\Helios.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.RawSocket", "samples\Helios.RawSocket\Helios.RawSocket.csproj", "{6B38304A-9DBD-4761-9C6D-2ADD9755B5C6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.RawUdpSocket", "samples\Helios.RawUdpSocket\Helios.RawUdpSocket.csproj", "{B4483775-BF67-4963-8A12-70145DA3136D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +82,10 @@ Global
 		{6B38304A-9DBD-4761-9C6D-2ADD9755B5C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B38304A-9DBD-4761-9C6D-2ADD9755B5C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B38304A-9DBD-4761-9C6D-2ADD9755B5C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4483775-BF67-4963-8A12-70145DA3136D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4483775-BF67-4963-8A12-70145DA3136D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4483775-BF67-4963-8A12-70145DA3136D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4483775-BF67-4963-8A12-70145DA3136D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,5 +98,6 @@ Global
 		{1BECF167-1425-4DB6-85E0-E6FEF730E791} = {E5ECC7CF-3DE5-4507-9F2F-91EC0E928742}
 		{7E169CAF-9D9E-4D1F-9627-FD9D1ACEC8B1} = {E5ECC7CF-3DE5-4507-9F2F-91EC0E928742}
 		{6B38304A-9DBD-4761-9C6D-2ADD9755B5C6} = {CDCC7F36-83CF-430B-86CF-46CDF610301F}
+		{B4483775-BF67-4963-8A12-70145DA3136D} = {CDCC7F36-83CF-430B-86CF-46CDF610301F}
 	EndGlobalSection
 EndGlobal

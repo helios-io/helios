@@ -22,6 +22,8 @@ namespace Helios.Net.Bootstrap
                 connection.OnConnection += (ConnectionEstablishedCallback)ConnectionEstablishedCallback.Clone();
             if (ConnectionTerminatedCallback != null)
                 connection.OnDisconnection += (ConnectionTerminatedCallback)ConnectionTerminatedCallback.Clone();
+            if (ExceptionCallback != null)
+                connection.OnError += (ExceptionCallback)ExceptionCallback.Clone();
 
             return connection;
         }

@@ -124,6 +124,11 @@ namespace Helios.Reactor.Bootstrap
             base.OnReceive(receivedDataCallback);
             return this;
         }
+        public new ServerBootstrap OnError(ExceptionCallback exceptionCallback)
+        {
+            base.OnError(exceptionCallback);
+            return this;
+        }
 
         public new ServerBootstrap SetOption(string optionKey, object optionValue)
         {
