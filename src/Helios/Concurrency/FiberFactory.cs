@@ -9,7 +9,7 @@ namespace Helios.Concurrency
     public static class FiberFactory
     {
         /// <summary>
-        /// 3 threads is the default for a constrained ThreadPoolFiber
+        /// 3 threads is the default for a constrained DedicatedThreadPoolFiber
         /// </summary>
         public const int DefaultLimitedThreadPoolSize = 3; 
 
@@ -18,9 +18,9 @@ namespace Helios.Concurrency
             switch (mode)
             {
                 case FiberMode.MultiThreaded:
-                    return new ThreadPoolFiber(DefaultLimitedThreadPoolSize);
+                    return new DedicatedThreadPoolFiber(DefaultLimitedThreadPoolSize);
                 case FiberMode.SingleThreaded:
-                    return new ThreadPoolFiber(1);
+                    return new DedicatedThreadPoolFiber(1);
                 case FiberMode.MaximumConcurrency:
                     return new ThreadPoolFiber();
                 case FiberMode.Synchronous:
@@ -34,9 +34,9 @@ namespace Helios.Concurrency
             switch (mode)
             {
                 case FiberMode.MultiThreaded:
-                    return new ThreadPoolFiber(executor, DefaultLimitedThreadPoolSize);
+                    return new DedicatedThreadPoolFiber(executor, DefaultLimitedThreadPoolSize);
                 case FiberMode.SingleThreaded:
-                    return new ThreadPoolFiber(executor, 1);
+                    return new DedicatedThreadPoolFiber(executor, 1);
                 case FiberMode.MaximumConcurrency:
                     return new ThreadPoolFiber(executor);
                 case FiberMode.Synchronous:
@@ -47,12 +47,12 @@ namespace Helios.Concurrency
 
         public static IFiber CreateFiber(IExecutor executor, int numThreads)
         {
-            return new ThreadPoolFiber(executor, numThreads);
+            return new DedicatedThreadPoolFiber(executor, numThreads);
         }
 
         public static IFiber CreateFiber(int numThreads)
         {
-            return new ThreadPoolFiber(numThreads);
+            return new DedicatedThreadPoolFiber(numThreads);
         }
     }
 }

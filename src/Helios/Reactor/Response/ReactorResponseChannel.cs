@@ -165,6 +165,7 @@ namespace Helios.Reactor.Response
             {
                 NetworkEventLoop.Disconnection(new HeliosConnectionException(ExceptionType.Closed), this);
             }
+            EventLoop.Dispose();
         }
 
         public virtual void Send(NetworkData data)
@@ -194,6 +195,7 @@ namespace Helios.Reactor.Response
                 {
                     Close();
                     Socket = null;
+                    EventLoop.Dispose();
                 }
             }
         }

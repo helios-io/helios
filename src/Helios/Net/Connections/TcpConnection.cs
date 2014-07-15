@@ -225,6 +225,7 @@ namespace Helios.Net.Connections
             InvokeDisconnectIfNotNull(RemoteHost, new HeliosConnectionException(ExceptionType.Closed, reason));
 
             _client.Close();
+            EventLoop.Shutdown(TimeSpan.FromSeconds(2));
             _client = null;
         }
 
@@ -281,6 +282,7 @@ namespace Helios.Net.Connections
                     {
                         ((IDisposable)_client).Dispose();
                         _client = null;
+                        EventLoop.Dispose();
                     }
                 }
             }

@@ -13,9 +13,7 @@ namespace Helios.Util.Concurrency
 
         public static TaskFactory GetTaskFactory(int concurrencyLevel = DefaultConcurrency)
         {
-            if (concurrencyLevel <= DefaultConcurrency)
-                return new TaskFactory(TaskScheduler.Default);
-            return new TaskFactory(new FixedSizeThreadPoolTaskScheduler(concurrencyLevel));
+            return new TaskFactory(TaskScheduler.Default);
         }
 
         public static Task Run(Action a)

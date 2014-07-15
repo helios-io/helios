@@ -19,7 +19,7 @@ namespace Helios.Ops.Executors
 
         protected IFiber Scheduler { get; private set; }
 
-        public bool AcceptingJobs { get { return Scheduler.Executor.AcceptingJobs; } }
+        public bool AcceptingJobs { get { return Scheduler.Running; } }
 
         public void Execute(Action op)
         {
@@ -93,6 +93,7 @@ namespace Helios.Ops.Executors
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         public void Dispose(bool isDisposing)

@@ -242,6 +242,7 @@ namespace Helios.Reactor.Tcp
             {
                 Stop();
                 Listener.Dispose();
+                EventLoop.Dispose();
             }
             IsActive = false;
             WasDisposed = true;

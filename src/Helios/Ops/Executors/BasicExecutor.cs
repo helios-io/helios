@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using System.Threading.Tasks;
 using Helios.Util;
@@ -17,15 +16,15 @@ namespace Helios.Ops.Executors
     {
         public BasicExecutor()
         {
-            Deadline = Util.TimedOps.Deadline.Never;
+            AcceptingJobsDeadline = new ScheduledValue<bool>(true);
         }
 
-        protected Deadline Deadline;
+        protected ScheduledValue<bool> AcceptingJobsDeadline;
         public bool AcceptingJobs
         {
             get
             {
-                return Deadline.HasTimeLeft;
+                return AcceptingJobsDeadline.Value;
             }
         }
 
@@ -91,12 +90,12 @@ namespace Helios.Ops.Executors
 
         public virtual void Shutdown()
         {
-            Deadline = Deadline.Now;
+            AcceptingJobsDeadline.Value = false;
         }
 
         public virtual void Shutdown(TimeSpan gracePeriod)
         {
-            Deadline = Deadline.Now + gracePeriod;
+            AcceptingJobsDeadline.Schedule(false,gracePeriod);
         }
 
         public Task GracefulShutdown(TimeSpan gracePeriod)

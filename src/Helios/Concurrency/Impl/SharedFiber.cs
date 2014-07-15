@@ -1,60 +1,58 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Helios.Ops;
-using Helios.Ops.Executors;
+using Helios.Util.Concurrency;
+using Helios.Util.TimedOps;
 
 namespace Helios.Concurrency.Impl
 {
     /// <summary>
-    /// IFiber implementation that doesn't use any form of concurrency under the hood
+    /// A shared <see cref="IFiber"/> instance that avoids disposing the original Fiber in the event of a shutdown
     /// </summary>
-    public class SynchronousFiber : IFiber
+    public class SharedFiber : IFiber
     {
-        public SynchronousFiber() : this(new BasicExecutor()) { }
+        private readonly IFiber _sharedFiber;
 
-        public SynchronousFiber(IExecutor executor)
+        private volatile Deadline _gracefulShutdownDeadline = Deadline.Never;
+
+        public SharedFiber(IFiber sharedFiber)
         {
-            Executor = executor ?? new BasicExecutor();
+            _sharedFiber = sharedFiber;
         }
 
         public IExecutor Executor { get; private set; }
-
-        public bool Running { get { return Executor.AcceptingJobs; } }
+        public bool Running { get { return _gracefulShutdownDeadline.HasTimeLeft; } }
         public bool WasDisposed { get; private set; }
-
         public void Add(Action op)
         {
-            if(Executor.AcceptingJobs)
-                Executor.Execute(op);
+            if (_gracefulShutdownDeadline.HasTimeLeft)
+                _sharedFiber.Add(op);
         }
 
         public void SwapExecutor(IExecutor executor)
         {
-            //Shut down the previous executor
-            Executor.GracefulShutdown(TimeSpan.FromSeconds(3));
-            Executor = executor;
+            //no-op
         }
 
         public void Shutdown(TimeSpan gracePeriod)
         {
-            Executor.Shutdown(gracePeriod);
+            _gracefulShutdownDeadline = Deadline.Now + gracePeriod;
         }
 
         public Task GracefulShutdown(TimeSpan gracePeriod)
         {
-            return Executor.GracefulShutdown(gracePeriod);
+            Shutdown(gracePeriod);
+            return TaskRunner.Delay(gracePeriod);
         }
 
         public void Stop()
         {
-            Executor.Shutdown();
+            _gracefulShutdownDeadline = Deadline.Now;
         }
-
-       
 
         public IFiber Clone()
         {
-            return new SynchronousFiber(Executor.Clone());
+            return new SharedFiber(_sharedFiber);
         }
 
         #region IDisposable members
@@ -65,7 +63,7 @@ namespace Helios.Concurrency.Impl
             {
                 if (isDisposing)
                 {
-                    Executor.Shutdown();
+                    Stop();
                 }
             }
 

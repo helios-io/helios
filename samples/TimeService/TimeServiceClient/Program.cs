@@ -9,12 +9,13 @@ using Helios.Net;
 using Helios.Net.Bootstrap;
 using Helios.Net.Connections;
 using Helios.Topology;
+using Helios.Util;
 
 namespace TimeServiceClient
 {
     class Program
     {
-        public static IConnection TimeServer;
+        public static IConnection TimeClient;
 
         static void Main(string[] args)
         {
@@ -24,17 +25,18 @@ namespace TimeServiceClient
                 new ClientBootstrap()
                     .SetTransport(TransportType.Tcp).Build();
 
-            TimeServer = bootstrapper.NewConnection(Node.Empty(), NodeBuilder.BuildNode().Host(host).WithPort(port));
-            TimeServer.OnConnection += (address, connection) =>
+            TimeClient = bootstrapper.NewConnection(Node.Empty(), NodeBuilder.BuildNode().Host(host).WithPort(port));
+            TimeClient.OnConnection += (address, connection) =>
             {
                 Console.WriteLine("Confirmed connection with host.");
                 connection.BeginReceive(ReceivedCallback);
             };
-            TimeServer.OnDisconnection += (address, reason) => Console.WriteLine("Disconnected.");
+            TimeClient.OnDisconnection += (address, reason) => Console.WriteLine("Disconnected.");
 
             Console.Title = string.Format("TimeClient {0}", Process.GetCurrentProcess().Id);
             LoopConnect();
             Console.WriteLine("Requesting time from server...");
+            Console.WriteLine("Printing every 1/1000 received messages");
             LoopWrite();
             Console.WriteLine("Press any key to exit.");
             Console.ReadLine();
@@ -43,22 +45,26 @@ namespace TimeServiceClient
         private static void ReceivedCallback(NetworkData data, IConnection responseChannel)
         {
             var timeStr = Encoding.UTF8.GetString(data.Buffer);
-            Console.WriteLine("Received: {0}", timeStr);
+            if (ThreadLocalRandom.Current.Next(0, 1000) == 1)
+            {
+                Console.WriteLine("Received: {0}", timeStr);
+            }
         }
 
         static void LoopWrite()
         {
             var command = Encoding.UTF8.GetBytes("gettime");
             var fiber = FiberFactory.CreateFiber(3);
-           
 
-            while (TimeServer.IsOpen())
+            Action dedicatedMethod = () =>
             {
-                fiber.Add(() =>
-                {
-                    Thread.Sleep(1);
-                    TimeServer.Send(new NetworkData() { Buffer = command, Length = command.Length });
-                });
+                Thread.Sleep(1);
+                TimeClient.Send(new NetworkData() {Buffer = command, Length = command.Length});
+            };
+
+            while (TimeClient.IsOpen())
+            {
+                fiber.Add(dedicatedMethod);
             }
             Console.WriteLine("Connection closed.");
             fiber.GracefulShutdown(TimeSpan.FromSeconds(1));
@@ -67,12 +73,12 @@ namespace TimeServiceClient
         static void LoopConnect()
         {
             var attempts = 0;
-            while (!TimeServer.IsOpen())
+            while (!TimeClient.IsOpen())
             {
                 try
                 {
                     attempts++;
-                    TimeServer.Open();
+                    TimeClient.Open();
                 }
                 catch (SocketException ex)
                 {

@@ -215,6 +215,7 @@ namespace Helios.Reactor.Udp
             {
                 Stop();
                 Listener.Dispose();
+                EventLoop.Dispose();
             }
             IsActive = false;
             WasDisposed = true;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using Helios.Concurrency;
+using Helios.Concurrency.Impl;
 using Helios.Ops;
 using Helios.Ops.Executors;
 
@@ -111,7 +112,7 @@ namespace Helios.Net
         public NetworkEventLoop Clone(bool shareFiber = false)
         {
             if(shareFiber)
-                return new NetworkEventLoop(Scheduler);
+                return new NetworkEventLoop(new SharedFiber(Scheduler));
             return new NetworkEventLoop(Scheduler.Clone());
         }
 

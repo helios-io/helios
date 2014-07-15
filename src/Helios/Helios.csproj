@@ -51,6 +51,8 @@
     <Compile Include="Buffers\EmptyByteBuf.cs" />
     <Compile Include="Buffers\Unpooled.cs" />
     <Compile Include="Buffers\UnpooledByteBufAllocator.cs" />
+    <Compile Include="Concurrency\Impl\SharedFiber.cs" />
+    <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />
     <Compile Include="Exceptions\EncodingExceptions.cs" />
     <Compile Include="Util\ByteArrayExtensions.cs" />
     <Compile Include="Buffers\AbstractByteBuf.cs" />
@@ -61,7 +63,7 @@
     <Compile Include="Buffers\UnpooledDirectByteBuf.cs" />
     <Compile Include="Concurrency\FiberFactory.cs" />
     <Compile Include="Concurrency\FiberMode.cs" />
-    <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />
+    <Compile Include="Concurrency\Impl\DedicatedThreadPoolFiber.cs" />
     <Compile Include="Concurrency\IFiber.cs" />
     <Compile Include="Concurrency\Impl\SynchronousFiber.cs" />
     <Compile Include="Serialization\Encoders.cs" />
@@ -159,7 +161,6 @@
     <Compile Include="Util\Collections\FixedSizeStack.cs" />
     <Compile Include="Util\Collections\ICircularBuffer.cs" />
     <Compile Include="Util\Collections\IFixedSizeStack.cs" />
-    <Compile Include="Util\Concurrency\FixedSizeThreadPoolTaskScheduler.cs" />
     <Compile Include="Util\Concurrency\TaskRunner.cs" />
     <Compile Include="Util\FlagsHelper.cs" />
     <Compile Include="Util\Guard.cs" />

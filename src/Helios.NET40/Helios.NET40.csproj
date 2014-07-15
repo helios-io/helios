@@ -86,6 +86,12 @@
     <Compile Include="..\Helios\Concurrency\IFiber.cs">
       <Link>Concurrency\IFiber.cs</Link>
     </Compile>
+    <Compile Include="..\Helios\Concurrency\Impl\DedicatedThreadPoolFiber.cs">
+      <Link>Concurrency\Impl\DedicatedThreadPoolFiber.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Concurrency\Impl\SharedFiber.cs">
+      <Link>Concurrency\Impl\SharedFiber.cs</Link>
+    </Compile>
     <Compile Include="..\Helios\Concurrency\Impl\SynchronousFiber.cs">
       <Link>Concurrency\Impl\SynchronousFiber.cs</Link>
     </Compile>
@@ -376,9 +382,6 @@
     </Compile>
     <Compile Include="..\Helios\Util\Collections\IFixedSizeStack.cs">
       <Link>Util\Collections\IFixedSizeStack.cs</Link>
-    </Compile>
-    <Compile Include="..\Helios\Util\Concurrency\FixedSizeThreadPoolTaskScheduler.cs">
-      <Link>Util\Concurrency\FixedSizeThreadPoolTaskScheduler.cs</Link>
     </Compile>
     <Compile Include="..\Helios\Util\Concurrency\TaskRunner.cs">
       <Link>Util\Concurrency\TaskRunner.cs</Link>

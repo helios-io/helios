@@ -94,6 +94,7 @@ namespace Helios.Reactor
             try
             {
                 Listener.Shutdown(SocketShutdown.Both);
+                EventLoop.Shutdown(TimeSpan.FromSeconds(2));
             }
             catch
             {

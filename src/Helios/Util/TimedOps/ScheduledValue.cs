@@ -54,7 +54,7 @@ namespace Helios.Util.TimedOps
                 SetTimer = new Timer();
             }
             IsScheduled = true;
-            SetTimer.Interval = timeToSet.TotalMilliseconds;
+            SetTimer.Interval = Math.Max(timeToSet.TotalMilliseconds,1);
             SetTimer.Enabled = true;
             SetTimer.Elapsed += SetTimerOnElapsed;
         }
@@ -128,6 +128,7 @@ namespace Helios.Util.TimedOps
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         #endregion

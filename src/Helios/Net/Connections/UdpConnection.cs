@@ -180,6 +180,7 @@ namespace Helios.Net.Connections
 
             Client.Close();
             Client = null;
+            EventLoop.Shutdown(TimeSpan.FromSeconds(2));
             InvokeDisconnectIfNotNull(RemoteHost, new HeliosConnectionException(ExceptionType.Closed, reason));
         }
 
@@ -257,6 +258,7 @@ namespace Helios.Net.Connections
                     {
                         Close();
                         ((IDisposable)Client).Dispose();
+                        EventLoop.Dispose();
                     }
                 }
             }

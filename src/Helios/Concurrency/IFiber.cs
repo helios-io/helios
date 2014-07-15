@@ -14,6 +14,11 @@ namespace Helios.Concurrency
         /// </summary>
         IExecutor Executor { get; }
 
+        /// <summary>
+        /// Is this Fiber still running?
+        /// </summary>
+        bool Running { get; }
+
         bool WasDisposed { get; }
 
         void Add(Action op);

@@ -1,51 +1,40 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Helios.Concurrency;
 using Helios.Ops;
 using Helios.Ops.Executors;
-using Helios.Util;
-using Helios.Util.Concurrency;
+using Helios.Util.TimedOps;
 
 namespace Helios.Concurrency.Impl
 {
+    /// <summary>
+    /// A <see cref="IFiber"/> implementation that uses the built-in .NET threadpool for maximum concurrency
+    /// </summary>
     public class ThreadPoolFiber : IFiber
     {
-        protected readonly TaskFactory TF;
+        public ThreadPoolFiber() : this(new BasicExecutor()) { }
 
-        protected readonly int NumThreads;
-
-        public ThreadPoolFiber(int numThreads)
-            : this((IExecutor) new TryCatchExecutor(), (TaskFactory) TaskRunner.GetTaskFactory(numThreads))
+        public ThreadPoolFiber(IExecutor executor)
         {
-        }
-
-        public ThreadPoolFiber(IExecutor executor, int numThreads)
-            : this(executor, (TaskFactory) TaskRunner.GetTaskFactory(numThreads))
-        {
-            NumThreads = numThreads;
-        }
-
-        public ThreadPoolFiber(IExecutor executor) : this(executor, (TaskFactory) TaskRunner.GetTaskFactory()) { }
-
-        public ThreadPoolFiber() : this((IExecutor) new TryCatchExecutor(), (TaskFactory) TaskRunner.GetTaskFactory()) { }
-
-        public ThreadPoolFiber(IExecutor executor, TaskFactory tf)
-        {
-            Executor = executor ?? new BasicExecutor();
-            TF = tf;
+            Executor = executor;
         }
 
         public IExecutor Executor { get; private set; }
+        public bool Running { get { return Executor.AcceptingJobs; } }
         public bool WasDisposed { get; private set; }
 
         public void Add(Action op)
         {
-            if (Executor.AcceptingJobs)
-                TF.StartNew(() => Executor.Execute(op));
+            if (!Executor.AcceptingJobs) return;
+
+            var wc = new WaitCallback(_ => Executor.Execute(op));
+            ThreadPool.UnsafeQueueUserWorkItem(wc, null);
         }
 
         public void SwapExecutor(IExecutor executor)
         {
-            //Shut down the previous executor gracefully (in case there's thread-contention)
+            //Shut down the previous executor
             Executor.GracefulShutdown(TimeSpan.FromSeconds(3));
             Executor = executor;
         }
@@ -57,21 +46,12 @@ namespace Helios.Concurrency.Impl
 
         public Task GracefulShutdown(TimeSpan gracePeriod)
         {
-            Shutdown(gracePeriod);
-            return TaskRunner.Delay(gracePeriod);
+            return Executor.GracefulShutdown(gracePeriod);
         }
 
         public void Stop()
         {
             Executor.Shutdown();
-        }
-
-        #region IDisposable members
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
         }
 
         public void Dispose(bool isDisposing)
@@ -81,8 +61,6 @@ namespace Helios.Concurrency.Impl
                 if (isDisposing)
                 {
                     Executor.Shutdown();
-                    var disposableScheduler = TF.Scheduler as IDisposable;
-                    disposableScheduler.NotNull(d => d.Dispose()); //collect the threads
                 }
             }
 
@@ -91,9 +69,15 @@ namespace Helios.Concurrency.Impl
 
         public IFiber Clone()
         {
-            if(NumThreads == 0)
-                return new ThreadPoolFiber(Executor.Clone());
-            return new ThreadPoolFiber(Executor.Clone(), NumThreads);
+            return new SynchronousFiber(Executor.Clone());
+        }
+
+        #region IDisposable members
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         #endregion
