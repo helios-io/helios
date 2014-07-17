@@ -15,16 +15,17 @@ namespace Helios.Concurrency.Impl
         public SynchronousFiber(IExecutor executor)
         {
             Executor = executor ?? new BasicExecutor();
+            Running = true;
         }
 
         public IExecutor Executor { get; private set; }
 
-        public bool Running { get { return Executor.AcceptingJobs; } }
+        public bool Running { get; set; }
         public bool WasDisposed { get; private set; }
 
         public void Add(Action op)
         {
-            if(Executor.AcceptingJobs)
+            if(Running)
                 Executor.Execute(op);
         }
 
@@ -37,6 +38,7 @@ namespace Helios.Concurrency.Impl
 
         public void Shutdown(TimeSpan gracePeriod)
         {
+            Running = false;
             Executor.Shutdown(gracePeriod);
         }
 

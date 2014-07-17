@@ -54,14 +54,15 @@ namespace Helios.Reactor.Udp
             var receiveState = (NetworkState)ar.AsyncState;
             try
             {
-                if (!receiveState.Socket.Connected)
+                var received = receiveState.Socket.EndReceiveFrom(ar, ref RemoteEndPoint);
+                if (!receiveState.Socket.Connected || received == 0)
                 {
                     var connection = SocketMap[receiveState.RemoteHost];
                     CloseConnection(connection);
                     return;
                 }
 
-                var received = receiveState.Socket.EndReceiveFrom(ar, ref RemoteEndPoint);
+                
                 var remoteAddress = (IPEndPoint)RemoteEndPoint;
 
                 if (receiveState.RemoteHost.IsEmpty())

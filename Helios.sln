@@ -107,7 +107,4 @@ Global
 		{B4483775-BF67-4963-8A12-70145DA3136D} = {CDCC7F36-83CF-430B-86CF-46CDF610301F}
 		{4F89F69D-F12C-4754-BAB8-67582908F7DE} = {CDCC7F36-83CF-430B-86CF-46CDF610301F}
 	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 EndGlobal

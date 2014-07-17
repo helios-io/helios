@@ -78,14 +78,16 @@ namespace Helios.Reactor.Tcp
             var receiveState = (NetworkState)ar.AsyncState;
             try
             {
-                if (!receiveState.Socket.Connected)
+                var received = receiveState.Socket.EndReceive(ar);
+
+                if (!receiveState.Socket.Connected || received == 0)
                 {
                     var connection = SocketMap[receiveState.RemoteHost];
                     CloseConnection(connection);
                     return;
                 }
 
-                var received = receiveState.Socket.EndReceive(ar);
+                
                 receiveState.Buffer.WriteBytes(receiveState.RawBuffer, 0, received);
 
                 var adapter = SocketMap[receiveState.RemoteHost];

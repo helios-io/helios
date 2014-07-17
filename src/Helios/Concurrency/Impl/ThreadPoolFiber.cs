@@ -18,15 +18,16 @@ namespace Helios.Concurrency.Impl
         public ThreadPoolFiber(IExecutor executor)
         {
             Executor = executor;
+            Running = true;
         }
 
         public IExecutor Executor { get; private set; }
-        public bool Running { get { return Executor.AcceptingJobs; } }
+        public bool Running { get; set; }
         public bool WasDisposed { get; private set; }
 
         public void Add(Action op)
         {
-            if (!Executor.AcceptingJobs) return;
+            if (!Running) return;
 
             var wc = new WaitCallback(_ => Executor.Execute(op));
             ThreadPool.UnsafeQueueUserWorkItem(wc, null);

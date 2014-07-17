@@ -135,15 +135,15 @@ namespace Helios.Net.Connections
             var receiveState = (NetworkState) ar.AsyncState;
             try
             {
-                if (!receiveState.Socket.Connected)
+                var received = receiveState.Socket.EndReceive(ar);
+
+                if (!receiveState.Socket.Connected || received == 0)
                 {
                     Receiving = false;
-                    InvokeDisconnectIfNotNull(receiveState.RemoteHost, new HeliosConnectionException(ExceptionType.Closed));
-                    Dispose();
+                    Close(new HeliosConnectionException(ExceptionType.Closed));
                     return;
                 }
-
-                var received = receiveState.Socket.EndReceive(ar);
+                
                 receiveState.Buffer.WriteBytes(receiveState.RawBuffer, 0, received);
 
                 List<IByteBuf> decoded;
@@ -170,8 +170,7 @@ namespace Helios.Net.Connections
             catch (SocketException ex) //typically means that the socket is now closed
             {
                 Receiving = false;
-                InvokeDisconnectIfNotNull(receiveState.RemoteHost, new HeliosConnectionException(ExceptionType.Closed, ex));
-                Dispose();
+                Close(new HeliosConnectionException(ExceptionType.Closed, ex));
             }
         }
 
@@ -305,6 +304,11 @@ namespace Helios.Net.Connections
 
         public virtual void Dispose()
         {
+            try
+            {
+                Close();
+            }
+            catch { }
             Dispose(true);
             GC.SuppressFinalize(this);
         }

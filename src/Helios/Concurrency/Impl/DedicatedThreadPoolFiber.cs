@@ -29,6 +29,7 @@ namespace Helios.Concurrency.Impl
             numThreads.NotLessThan(1);
             _numThreads = numThreads;
             SpawnThreads(numThreads);
+            Running = true;
         }
 
         protected void SpawnThreads(int threadCount)
@@ -42,7 +43,7 @@ namespace Helios.Concurrency.Impl
                     foreach (var task in _blockingCollection.GetConsumingEnumerable())
                     {
                         Executor.Execute(task);
-                        if (!Executor.AcceptingJobs) break;
+                        if (!Executor.AcceptingJobs) return;
                     }
                 }) { IsBackground = true };
                 thread.Start();
@@ -55,11 +56,11 @@ namespace Helios.Concurrency.Impl
         public IExecutor Executor { get { return _executor; } set { _executor = value; } }
         public bool WasDisposed { get; private set; }
 
-        public bool Running { get { return Executor.AcceptingJobs; } }
+        public bool Running { get; set; }
 
         public void Add(Action op)
         {
-            if (Executor.AcceptingJobs)
+            if (Running)
                 _blockingCollection.Add(op);
         }
 
@@ -72,6 +73,7 @@ namespace Helios.Concurrency.Impl
 
         public void Shutdown(TimeSpan gracePeriod)
         {
+            Running = false;
             Executor.Shutdown(gracePeriod);
         }
 

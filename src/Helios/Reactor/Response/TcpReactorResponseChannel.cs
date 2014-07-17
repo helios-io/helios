@@ -43,17 +43,19 @@ namespace Helios.Reactor.Response
 
         protected override void BeginReceiveInternal()
         {
-            //Socket.BeginReceive()
+            
         }
 
         protected override void StopReceiveInternal()
         {
-            throw new NotImplementedException();
+            
         }
 
         public override void Send(NetworkData data)
         {
-            base.Send(data);
+            HasUnsentMessages = true;
+            SendQueue.Enqueue(data);
+            Schedule();
         }
 
         /// <summary>
