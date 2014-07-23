@@ -77,6 +77,7 @@ namespace Helios.RawUdpSocket
             {
                 AppendStatusText(string.Format("Received {0} bytes from {1}", incomingData.Length,
                     incomingData.RemoteHost));
+                AppendStatusText(Encoding.UTF8.GetString(incomingData.Buffer));
             }));
         }
 

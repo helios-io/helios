@@ -123,6 +123,10 @@ namespace Helios.Net.Connections
                 // ReSharper disable once PossibleNullReferenceException
                 Client.Client.Bind(Binding.ToEndPoint());
                 Local = ((IPEndPoint) Client.Client.LocalEndPoint).ToNode(TransportType.Udp);
+                if (NetworkEventLoop.Receive != null) //automatically start receiving
+                {
+                    BeginReceive();
+                }
             }
             catch (SocketException ex)
             {
@@ -234,6 +238,7 @@ namespace Helios.Net.Connections
         protected void InitClient()
         {
             Client = new UdpClient() { MulticastLoopback = false };
+            RemoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
         }
 
         protected void InitClient(UdpClient client)

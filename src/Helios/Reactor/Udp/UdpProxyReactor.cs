@@ -55,13 +55,15 @@ namespace Helios.Reactor.Udp
             try
             {
                 var received = receiveState.Socket.EndReceiveFrom(ar, ref RemoteEndPoint);
-                if (!receiveState.Socket.Connected || received == 0)
+                if (received == 0)
                 {
-                    var connection = SocketMap[receiveState.RemoteHost];
-                    CloseConnection(connection);
+                    if (SocketMap.ContainsKey(receiveState.RemoteHost))
+                    {
+                        var connection = SocketMap[receiveState.RemoteHost];
+                        CloseConnection(connection);
+                    }
                     return;
                 }
-
                 
                 var remoteAddress = (IPEndPoint)RemoteEndPoint;
 
@@ -116,7 +118,7 @@ namespace Helios.Reactor.Udp
             var clientSocket = SocketMap[destination];
             try
             {
-                if (clientSocket.WasDisposed || !clientSocket.Socket.Connected)
+                if (clientSocket.WasDisposed)
                 {
                     CloseConnection(clientSocket);
                     return;
@@ -148,13 +150,6 @@ namespace Helios.Reactor.Udp
             var receiveState = (NetworkState)ar.AsyncState;
             try
             {
-                if (!receiveState.Socket.Connected)
-                {
-                    var connection = SocketMap[receiveState.RemoteHost];
-                    CloseConnection(connection);
-                    return;
-                }
-
                 var bytesSent = receiveState.Socket.EndSend(ar);
                 receiveState.Buffer.SkipBytes(bytesSent);
 
