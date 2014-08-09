@@ -111,9 +111,17 @@ namespace Helios.Net
 
         public NetworkEventLoop Clone(bool shareFiber = false)
         {
+            NetworkEventLoop eventLoop;
             if(shareFiber)
-                return new NetworkEventLoop(new SharedFiber(Scheduler));
-            return new NetworkEventLoop(Scheduler.Clone());
+                eventLoop = new NetworkEventLoop(new SharedFiber(Scheduler));
+            else
+                eventLoop = new NetworkEventLoop(Scheduler.Clone());
+
+            eventLoop.Receive = Receive;
+            eventLoop.Connection = Connection;
+            eventLoop.Disconnection = Disconnection;
+
+            return eventLoop;
         }
 
         #endregion

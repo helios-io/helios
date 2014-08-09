@@ -32,10 +32,20 @@ namespace Helios.Reactor.Bootstrap
             return reactor;
         }
 
-        public IConnection NewConnection(INode localEndpoint, INode remoteEndpoint)
+        public IConnection NewConnection()
+        {
+            return NewConnection(Node.Any());
+        }
+
+        public IConnection NewConnection(INode localEndpoint)
         {
             var reactor = (ReactorBase)NewReactor(localEndpoint);
             return reactor.ConnectionAdapter;
+        }
+
+        public IConnection NewConnection(INode localEndpoint, INode remoteEndpoint)
+        {
+            return NewConnection(localEndpoint);
         }
     }
 }

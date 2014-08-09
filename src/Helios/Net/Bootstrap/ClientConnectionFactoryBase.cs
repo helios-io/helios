@@ -1,4 +1,5 @@
-﻿using Helios.Topology;
+﻿using System;
+using Helios.Topology;
 
 namespace Helios.Net.Bootstrap
 {
@@ -10,6 +11,16 @@ namespace Helios.Net.Bootstrap
         /// Spawns an <see cref="IConnection"/> object internally
         /// </summary>
         protected abstract IConnection CreateConnection(INode localEndpoint, INode remoteEndpoint);
+
+        public IConnection NewConnection()
+        {
+            throw new NotSupportedException("You must specify a remote endpoint for this connection");
+        }
+
+        public IConnection NewConnection(INode remoteEndpoint)
+        {
+            return NewConnection(Node.Any(), remoteEndpoint);
+        }
 
         public IConnection NewConnection(INode localEndpoint, INode remoteEndpoint)
         {

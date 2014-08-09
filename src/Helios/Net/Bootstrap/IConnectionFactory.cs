@@ -7,6 +7,10 @@ namespace Helios.Net.Bootstrap
     /// </summary>
     public interface IConnectionFactory
     {
+        IConnection NewConnection();
+
+        IConnection NewConnection(INode remoteEndpoint);
+
         IConnection NewConnection(INode localEndpoint, INode remoteEndpoint);
     }
 }
