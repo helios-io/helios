@@ -99,13 +99,17 @@ namespace Helios.Reactor.Tcp
                 {
                     var networkData = NetworkData.Create(receiveState.RemoteHost, message);
                     ReceivedData(networkData, adapter);
-                }
+                }                
 
                 //reuse the buffer
                 if (receiveState.Buffer.ReadableBytes == 0)
                     receiveState.Buffer.SetIndex(0, 0);
                 else
+                {
                     receiveState.Buffer.CompactIfNecessary();
+                    var postCompact = receiveState.Buffer;
+                }
+                    
 
                 //continue receiving in a loop
                 receiveState.Socket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ReceiveCallback, receiveState);

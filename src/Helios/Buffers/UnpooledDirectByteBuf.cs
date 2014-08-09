@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 
 namespace Helios.Buffers
 {
@@ -110,9 +111,11 @@ namespace Helios.Buffers
 
         public override IByteBuf Compact()
         {
-            _buffer.Compact();
+            var finalBytes = ReadBytes(ReadableBytes);
+            _buffer.SetIndex(0, 0);
+            SetIndex(0, 0);
+            WriteBytes(finalBytes);
             _internalNioBuffer = null;
-            SetIndex(0, _buffer.ReadableBytes);
             return this;
         }
 

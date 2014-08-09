@@ -47,7 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TcpReplyTests.cs" />
+    <Compile Include="ClientServerReplyTests.cs" />
     <Compile Include="TestKit\AssertExecutor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestKit\MultiNodeTest.cs" />

@@ -75,6 +75,10 @@ namespace Helios.Serialization
 
             var actualLengthFieldOffset = input.ReaderIndex + _lengthFieldOffset;
             var frameLength = GetUnadjustedFrameLength(input, actualLengthFieldOffset, _lengthFieldLength);
+            if (frameLength == 0)
+            {
+                var stop = true;
+            }
 
             if (frameLength < 0)
             {
@@ -115,6 +119,10 @@ namespace Helios.Serialization
             var frameLengthInt = (int) frameLength;
             if (input.ReadableBytes < frameLengthInt)
             {
+                
+                var unreadBytes = new byte[input.ReadableBytes];
+                input.GetBytes(input.ReaderIndex, unreadBytes, 0, input.ReadableBytes);
+                var lol = unreadBytes;
                 //need additional data from the network before we can finish decoding this message
                 return null;
             }
@@ -129,6 +137,10 @@ namespace Helios.Serialization
             //extract frame
             var readerIndex = input.ReaderIndex;
             var actualFrameLength = frameLengthInt - _initialBytesToStrip;
+            if (actualFrameLength == 0)
+            {
+                var stop = true;
+            }
             var frame = ExtractFrame(connection, input, readerIndex, actualFrameLength);
             input.SetReaderIndex(readerIndex + actualFrameLength);
             return frame;

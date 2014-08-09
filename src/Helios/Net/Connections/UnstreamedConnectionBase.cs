@@ -137,6 +137,11 @@ namespace Helios.Net.Connections
             {
                 var received = receiveState.Socket.EndReceive(ar);
 
+                if(received == receiveState.RawBuffer.Length)
+                {
+                    var stop = true;
+                }
+
                 if (!receiveState.Socket.Connected || received == 0)
                 {
                     Receiving = false;
