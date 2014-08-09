@@ -115,5 +115,21 @@ namespace Helios.Serialization
         {
             return new LengthFieldPrepender(_lengthFieldLength, _lengthIncludesLenghtFieldLength, _lengthAdjustment);
         }
+
+        #region Static methods
+
+        /// <summary>
+        /// Returns a default <see cref="LengthFieldPrepender"/> that uses a 4-byte header to describe the length of a frame
+        /// </summary>
+        public static LengthFieldPrepender Default
+        {
+            get
+            {
+                return new LengthFieldPrepender(4, false);
+            }
+        }
+
+        #endregion
+
     }
 }

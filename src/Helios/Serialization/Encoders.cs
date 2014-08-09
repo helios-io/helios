@@ -8,11 +8,22 @@
         /// <summary>
         /// The default decoder option
         /// </summary>
-        public static readonly IMessageDecoder DefaultDecoder = new LengthFieldFrameBasedDecoder(128000, 0, 4,0,4,true);
+        public static IMessageDecoder DefaultDecoder
+        {
+            get
+            {
+                return LengthFieldFrameBasedDecoder.Default;
+            }
+        }
+
+
 
         /// <summary>
         /// The default encoder option
         /// </summary>
-        public static readonly IMessageEncoder DefaultEncoder =new LengthFieldPrepender(4, false);
+        public static IMessageEncoder DefaultEncoder
+        {
+            get { return LengthFieldPrepender.Default; }
+        }
     }
 }

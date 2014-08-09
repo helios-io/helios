@@ -197,5 +197,21 @@ namespace Helios.Serialization
                 throw new TooLongFrameException(string.Format("Adjusted frame lenght exceeds {0} - discarding",
                     _maxFrameLength));
         }
+
+        #region Static methods
+
+        /// <summary>
+        /// Returns a default <see cref="LengthFieldFrameBasedDecoder"/> that uses a 4-byte header to describe the length of a frame
+        /// of up to 128k in size.
+        /// </summary>
+        public static LengthFieldFrameBasedDecoder Default
+        {
+            get
+            {
+                return new LengthFieldFrameBasedDecoder(128000, 0, 4, 0, 4, true);
+            }
+        }
+
+        #endregion
     }
 }

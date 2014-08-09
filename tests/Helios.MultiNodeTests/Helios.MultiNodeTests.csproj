@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{622145C4-0780-412C-9094-B57CEC84E216}</ProjectGuid>
+    <ProjectGuid>{9435B7DF-A2CB-4CA4-945C-B7E663019ACE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Helios.Tests</RootNamespace>
-    <AssemblyName>Helios.Tests</AssemblyName>
+    <RootNamespace>Helios.MultiNodeTests</RootNamespace>
+    <AssemblyName>Helios.MultiNodeTests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -32,9 +32,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    <Reference Include="Faker">
+      <HintPath>..\..\packages\faker-csharp.1.2.0\lib\net4\Faker.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -45,29 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Buffer\ByteBufferTests.cs" />
-    <Compile Include="Buffer\CircularByteBufTests.cs" />
-    <Compile Include="Buffer\UnpooledDirectByteBufferTests.cs" />
-    <Compile Include="Concurrency\DedicatedThreadFiberTests.cs" />
-    <Compile Include="Concurrency\SharedFiberTests.cs" />
-    <Compile Include="Concurrency\ThreadPoolFiberTests.cs" />
-    <Compile Include="DummyConnection.cs" />
-    <Compile Include="Eventing\SimpleEventBrokerTests.cs" />
-    <Compile Include="Net\MulticastHelperTests.cs" />
-    <Compile Include="Net\NodeUniquenessTests.cs" />
-    <Compile Include="Reactor\PortZeroTests.cs" />
-    <Compile Include="Net\TcpConnectionTests.cs" />
-    <Compile Include="Ops\BasicExecutorTests.cs" />
-    <Compile Include="Ops\NetworkEventLoopTests.cs" />
-    <Compile Include="Ops\TryCatchExecutorTests.cs" />
+    <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Serialization\LengthFieldEncodingTests.cs" />
-    <Compile Include="Topology\NodeTests.cs" />
-    <Compile Include="Topology\NodeUriTests.cs" />
-    <Compile Include="Util\Collections\CircularBufferTests.cs" />
-    <Compile Include="Util\Collections\ConcurrentCircularBufferTests.cs" />
-    <Compile Include="Util\Collections\ConcurrentFixedSizeStackTests.cs" />
-    <Compile Include="Util\TimedOps\ScheduledValueTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Helios\Helios.csproj">
@@ -76,13 +54,20 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <Folder Include="TCP\" />
+    <Folder Include="UDP\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Util\Concurrency\" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
