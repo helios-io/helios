@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Net;
 using Helios.MultiNodeTests.TestKit;
+using Helios.Net;
 using NUnit.Framework;
 
 namespace Helios.MultiNodeTests
@@ -75,6 +76,11 @@ namespace Helios.MultiNodeTests
         public override TransportType TransportType
         {
             get { return TransportType.Udp; }
+        }
+
+        public override IConnectionConfig Config
+        {
+            get { return base.Config.SetOption("receiveBufferSize", 1024*64); }
         }
     }
 }

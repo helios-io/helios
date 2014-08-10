@@ -137,7 +137,7 @@ namespace Helios.Net.Connections
             {
                 var received = receiveState.Socket.EndReceive(ar);
 
-                if(received == receiveState.RawBuffer.Length)
+                if (received == receiveState.RawBuffer.Length)
                 {
                     var stop = true;
                 }
@@ -148,7 +148,7 @@ namespace Helios.Net.Connections
                     Close(new HeliosConnectionException(ExceptionType.Closed));
                     return;
                 }
-                
+
                 receiveState.Buffer.WriteBytes(receiveState.RawBuffer, 0, received);
 
                 List<IByteBuf> decoded;
@@ -169,13 +169,24 @@ namespace Helios.Net.Connections
                 //continue receiving in a loop
                 if (Receiving)
                 {
-                    receiveState.Socket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
+                    receiveState.Socket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length,
+                        SocketFlags.None, ReceiveCallback, receiveState);
                 }
             }
             catch (SocketException ex) //typically means that the socket is now closed
             {
                 Receiving = false;
                 Close(new HeliosConnectionException(ExceptionType.Closed, ex));
+            }
+            catch (ObjectDisposedException ex) //socket was already disposed
+            {
+                Receiving = false;
+                InvokeDisconnectIfNotNull(RemoteHost,
+                    new HeliosConnectionException(ExceptionType.Closed, ex));
+            }
+            catch (Exception ex)
+            {
+                InvokeErrorIfNotNull(ex);
             }
         }
 

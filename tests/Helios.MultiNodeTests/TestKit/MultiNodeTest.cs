@@ -31,6 +31,8 @@ namespace Helios.MultiNodeTests.TestKit
 
         public virtual IByteBufAllocator Allocator { get { return UnpooledByteBufAllocator.Default; } }
 
+        public virtual IConnectionConfig Config { get { return new DefaultConnectionConfig(); } }
+
         private IConnectionFactory _clientConnectionFactory;
 
         [SetUp]
@@ -47,6 +49,7 @@ namespace Helios.MultiNodeTests.TestKit
                    .SetEncoder(Encoder)
                    .SetDecoder(Decoder)
                    .SetAllocator(Allocator)
+                   .SetConfig(Config)
                    .Build();
 
             _server = serverBootstrap.NewConnection(Node.Loopback());
@@ -57,6 +60,7 @@ namespace Helios.MultiNodeTests.TestKit
                 .SetEncoder(Encoder)
                 .SetDecoder(Decoder)
                 .SetAllocator(Allocator)
+                .SetConfig(Config)
                 .Build();
         }
 

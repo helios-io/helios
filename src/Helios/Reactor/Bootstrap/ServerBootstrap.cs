@@ -89,6 +89,12 @@ namespace Helios.Reactor.Bootstrap
             return this;
         }
 
+        public new ServerBootstrap SetConfig(IConnectionConfig config)
+        {
+            base.SetConfig(config);
+            return this;
+        }
+
         public new ServerBootstrap SetDecoder(IMessageDecoder decoder)
         {
             base.SetDecoder(decoder);

@@ -85,6 +85,12 @@ namespace Helios.Net.Bootstrap
             return this;
         }
 
+        public virtual AbstractBootstrap SetConfig(IConnectionConfig config)
+        {
+            Config = config;
+            return this;
+        }
+
         public virtual AbstractBootstrap SetOption(string optionKey, object optionValue)
         {
             Config = Config.SetOption(optionKey, optionValue);

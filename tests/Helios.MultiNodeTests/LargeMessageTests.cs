@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Faker;
 using Helios.MultiNodeTests.TestKit;
+using Helios.Net;
+using Helios.Serialization;
 using NUnit.Framework;
 
 namespace Helios.MultiNodeTests
@@ -23,6 +25,11 @@ namespace Helios.MultiNodeTests
         {
             var str = Faker.Generators.Strings.GenerateAlphaNumericString(byteSize/2, byteSize/2);
             return Encoding.Unicode.GetBytes(str);
+        }
+
+        public override IMessageDecoder Decoder
+        {
+            get { return new LengthFieldFrameBasedDecoder(1024*5000,0,4,0,4); }
         }
 
         [Test]
@@ -105,7 +112,7 @@ namespace Helios.MultiNodeTests
 
             //act
             Send(message);
-            WaitUntilNMessagesReceived(sends);
+            WaitUntilNMessagesReceived(sends, TimeSpan.FromSeconds(10));
 
             //assert
             Assert.AreEqual(0, ClientExceptions.Length, "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length);
@@ -127,7 +134,7 @@ namespace Helios.MultiNodeTests
         }
     }
 
-    [TestFixture]
+    [TestFixture(Ignore = true, IgnoreReason = "UDP can't handle such large packets at the protocol level")]
     public class UdpLargeMessageTests : LargeMessageTests
     {
         public override TransportType TransportType

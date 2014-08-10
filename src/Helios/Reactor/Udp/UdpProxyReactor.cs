@@ -106,6 +106,14 @@ namespace Helios.Reactor.Udp
                 var connection = SocketMap[receiveState.RemoteHost];
                 CloseConnection(ex, connection);
             }
+            catch (ObjectDisposedException ex)
+            {
+                if (SocketMap.ContainsKey(receiveState.RemoteHost))
+                {
+                    var connection = SocketMap[receiveState.RemoteHost];
+                    CloseConnection(ex, connection);
+                }
+            }
             catch (Exception ex)
             {
                 var connection = SocketMap[receiveState.RemoteHost];

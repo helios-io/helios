@@ -164,14 +164,26 @@ namespace Helios.Net.Connections
                 //continue receiving in a loop
                 if (Receiving)
                 {
-                    receiveState.Socket.BeginReceiveFrom(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, receiveState);
+                    receiveState.Socket.BeginReceiveFrom(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length,
+                        SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, receiveState);
                 }
             }
             catch (SocketException ex) //typically means that the socket is now closed
             {
                 Receiving = false;
-                InvokeDisconnectIfNotNull(NodeBuilder.FromEndpoint((IPEndPoint)RemoteEndpoint), new HeliosConnectionException(ExceptionType.Closed, ex));
+                InvokeDisconnectIfNotNull(NodeBuilder.FromEndpoint((IPEndPoint) RemoteEndpoint),
+                    new HeliosConnectionException(ExceptionType.Closed, ex));
                 Dispose();
+            }
+            catch (ObjectDisposedException ex)
+            {
+                Receiving = false;
+                InvokeDisconnectIfNotNull(NodeBuilder.FromEndpoint((IPEndPoint)RemoteEndpoint),
+                    new HeliosConnectionException(ExceptionType.Closed, ex));
+            }
+            catch (Exception ex)
+            {
+                InvokeErrorIfNotNull(ex);
             }
         }
 

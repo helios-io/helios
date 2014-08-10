@@ -51,6 +51,12 @@ namespace Helios.Net.Bootstrap
             return this;
         }
 
+        public new ClientBootstrap SetConfig(IConnectionConfig config)
+        {
+            base.SetConfig(config);
+            return this;
+        }
+
         public new ClientBootstrap SetTransport(TransportType type)
         {
             base.SetTransport(type);

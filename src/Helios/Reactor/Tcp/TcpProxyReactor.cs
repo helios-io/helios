@@ -87,7 +87,7 @@ namespace Helios.Reactor.Tcp
                     return;
                 }
 
-                
+
                 receiveState.Buffer.WriteBytes(receiveState.RawBuffer, 0, received);
 
                 var adapter = SocketMap[receiveState.RemoteHost];
@@ -99,7 +99,7 @@ namespace Helios.Reactor.Tcp
                 {
                     var networkData = NetworkData.Create(receiveState.RemoteHost, message);
                     ReceivedData(networkData, adapter);
-                }                
+                }
 
                 //reuse the buffer
                 if (receiveState.Buffer.ReadableBytes == 0)
@@ -109,13 +109,22 @@ namespace Helios.Reactor.Tcp
                     receiveState.Buffer.CompactIfNecessary();
                     var postCompact = receiveState.Buffer;
                 }
-                    
+
 
                 //continue receiving in a loop
-                receiveState.Socket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
+                receiveState.Socket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length,
+                    SocketFlags.None, ReceiveCallback, receiveState);
 
             }
             catch (SocketException ex) //node disconnected
+            {
+                if (SocketMap.ContainsKey(receiveState.RemoteHost))
+                {
+                    var connection = SocketMap[receiveState.RemoteHost];
+                    CloseConnection(ex, connection);
+                }
+            }
+            catch (ObjectDisposedException ex)
             {
                 if (SocketMap.ContainsKey(receiveState.RemoteHost))
                 {
