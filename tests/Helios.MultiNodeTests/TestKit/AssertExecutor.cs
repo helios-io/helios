@@ -14,15 +14,13 @@ namespace Helios.MultiNodeTests.TestKit
     /// </summary>
     public class AssertExecutor : IExecutor
     {
-        private readonly ConcurrentCircularBuffer<Exception> _exceptions = new ConcurrentCircularBuffer<Exception>(100);
-
-        public Exception[] Exceptions { get { return _exceptions.ToArray(); } }
+        public readonly ConcurrentCircularBuffer<Exception> Exceptions = new ConcurrentCircularBuffer<Exception>(100);
 
         private readonly IExecutor _internalExecutor;
 
         public AssertExecutor()
         {
-            _internalExecutor = new TryCatchExecutor(exception => _exceptions.Add(exception));
+            _internalExecutor = new TryCatchExecutor(exception => Exceptions.Add(exception));
         }
 
         public bool AcceptingJobs { get { return _internalExecutor.AcceptingJobs; } }

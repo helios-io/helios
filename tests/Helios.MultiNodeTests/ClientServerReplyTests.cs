@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Net;
-using System.Runtime.Remoting;
-using System.Text;
-using System.Threading.Tasks;
 using Helios.MultiNodeTests.TestKit;
-using Helios.Net;
 using NUnit.Framework;
 
 namespace Helios.MultiNodeTests
@@ -19,7 +13,7 @@ namespace Helios.MultiNodeTests
         public void Should_receive_reply_from_server_200b_messages()
         {
             //arrange
-            StartServer((data, channel) => channel.Send(new NetworkData() { Buffer = data.Buffer, Length = data.Length, RemoteHost = channel.Local})); //echo
+            StartServer(); //uses an "echo server" callback
             StartClient();
             var messageLength = 200;
             var sends = 3;
@@ -29,22 +23,23 @@ namespace Helios.MultiNodeTests
             {
                 Send(new byte[messageLength]);
             }
-            WaitForDelivery();
+            WaitUntilNMessagesReceived(sends);
 
             //assert
+            Assert.AreEqual(0, ClientExceptions.Length, "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length);
+            Assert.AreEqual(0, ServerExceptions.Length, "Did not expect to find any exceptions on Server, instead found: {0}", ServerExceptions.Length);
             Assert.AreEqual(sends, ClientSendBuffer.Count);
             Assert.AreEqual(sends, ClientReceiveBuffer.Count);
             var outsizedMessages = ClientReceiveBuffer.Select(x => x.Length != messageLength).ToList();
             Assert.IsTrue(ClientReceiveBuffer.DequeueAll().All(x => x.Length == messageLength));
-            Assert.AreEqual(0, ClientExceptions.Length);
-            Assert.AreEqual(0, ServerExceptions.Length);
+            
         }
 
         [Test]
         public void Should_receive_reply_from_server_MAX_200b_messages()
         {
             //arrange
-            StartServer((data, channel) => channel.Send(new NetworkData() {Buffer = data.Buffer, Length = data.Length, RemoteHost = channel.Local})); //echo
+            StartServer(); //echo
             StartClient();
             var messageLength = 200;
             var sends = BufferSize;
@@ -54,15 +49,14 @@ namespace Helios.MultiNodeTests
             {
                 Send(new byte[messageLength]);
             }
-            WaitForDelivery();
+            WaitUntilNMessagesReceived(sends);
 
             //assert
+            Assert.AreEqual(0, ClientExceptions.Length, "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length);
+            Assert.AreEqual(0, ServerExceptions.Length, "Did not expect to find any exceptions on Server, instead found: {0}", ServerExceptions.Length);
             Assert.AreEqual(sends, ClientSendBuffer.Count);
             Assert.AreEqual(sends, ClientReceiveBuffer.Count);
-            var outsizedMessages = ClientReceiveBuffer.Where(x => x.Length != messageLength).ToList();
             Assert.IsTrue(ClientReceiveBuffer.DequeueAll().All(x => x.Length == messageLength));
-            Assert.AreEqual(0, ClientExceptions.Length);
-            Assert.AreEqual(0, ServerExceptions.Length);
         }
     }
 

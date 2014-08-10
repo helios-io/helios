@@ -25,19 +25,13 @@ namespace Helios.MultiNodeTests.TestKit
 
         public virtual int BufferSize { get { return 1024; } }
 
-        public virtual IMessageEncoder Encoder { get { return Encoders.DefaultEncoder;} }
+        public virtual IMessageEncoder Encoder { get { return Encoders.DefaultEncoder; } }
 
         public virtual IMessageDecoder Decoder { get { return Encoders.DefaultDecoder; } }
 
         public virtual IByteBufAllocator Allocator { get { return UnpooledByteBufAllocator.Default; } }
 
-        public AtomicCounter PendingMessages;
-
-        public AtomicCounter ReceivedMessages;
-
         private IConnectionFactory _clientConnectionFactory;
-
-        public bool AllMessagesReceived { get { return PendingMessages.Current == ReceivedMessages.Current && PendingMessages.Current > 0; } }
 
         [SetUp]
         public void SetUp()
@@ -64,9 +58,6 @@ namespace Helios.MultiNodeTests.TestKit
                 .SetDecoder(Decoder)
                 .SetAllocator(Allocator)
                 .Build();
-
-            PendingMessages = new AtomicCounter(0);
-            ReceivedMessages = new AtomicCounter(0);
         }
 
         [TearDown]
@@ -78,6 +69,14 @@ namespace Helios.MultiNodeTests.TestKit
             _server = null;
         }
 
+        protected void StartServer()
+        {
+            StartServer((data, channel) =>
+            {
+                channel.Send(new NetworkData() { Buffer = data.Buffer, Length = data.Length, RemoteHost = channel.RemoteHost });
+            });
+        }
+
         /// <summary>
         /// Used to start the server with a specific receive data callback
         /// </summary>
@@ -85,22 +84,26 @@ namespace Helios.MultiNodeTests.TestKit
         {
             _server.Receive += (data, channel) =>
             {
-                ReceivedMessages.GetAndIncrement();
                 callback(data, channel);
             };
             _server.OnConnection += (address, channel) =>
             {
                 channel.BeginReceive();
             };
+            _server.OnError += (exception, connection) => _serverExecutor.Exceptions.Add(exception);
             _server.Open();
         }
 
         protected void StartClient()
         {
-            if(!_server.IsOpen()) throw new HeliosException("Server is not started yet. Cannot start client yet.");
+            if (!_server.IsOpen()) throw new HeliosException("Server is not started yet. Cannot start client yet.");
             _client = _clientConnectionFactory.NewConnection(_server.Local);
-            _client.Receive += (data, channel) => ClientReceiveBuffer.Add(data);
+            _client.Receive += (data, channel) =>
+            {
+                ClientReceiveBuffer.Add(data);
+            };
             _client.OnConnection += (address, channel) => channel.BeginReceive();
+            _client.OnError += (exception, connection) => _clientExecutor.Exceptions.Add(exception);
             _client.Open();
         }
 
@@ -110,22 +113,22 @@ namespace Helios.MultiNodeTests.TestKit
                 StartClient();
             var networkData = NetworkData.Create(_server.Local, data, data.Length);
             ClientSendBuffer.Add(networkData);
-            PendingMessages.GetAndIncrement();
             _client.Send(networkData);
         }
 
-        protected void WaitForDelivery()
+        protected void WaitUntilNMessagesReceived(int count)
         {
-            WaitForDelivery(TimeSpan.FromSeconds(2));
+            WaitUntilNMessagesReceived(count, TimeSpan.FromSeconds(5));
         }
 
-        protected void WaitForDelivery(TimeSpan timeout)
+
+        protected void WaitUntilNMessagesReceived(int count, TimeSpan timeout)
         {
-            SpinWait.SpinUntil(() => AllMessagesReceived, timeout);
+            SpinWait.SpinUntil(() => ClientReceiveBuffer.Count >= count, timeout);
         }
 
-        protected Exception[] ClientExceptions { get { return _clientExecutor.Exceptions; } }
-        protected Exception[] ServerExceptions { get { return _serverExecutor.Exceptions; } }
+        protected Exception[] ClientExceptions { get { return _clientExecutor.Exceptions.ToArray(); } }
+        protected Exception[] ServerExceptions { get { return _serverExecutor.Exceptions.ToArray(); } }
 
         private AssertExecutor _clientExecutor;
         private AssertExecutor _serverExecutor;

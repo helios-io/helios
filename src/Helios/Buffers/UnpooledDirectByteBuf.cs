@@ -111,10 +111,18 @@ namespace Helios.Buffers
 
         public override IByteBuf Compact()
         {
-            var finalBytes = ReadBytes(ReadableBytes);
-            _buffer.SetIndex(0, 0);
-            SetIndex(0, 0);
-            WriteBytes(finalBytes);
+            if (ReadableBytes > 0)
+            {
+                var finalBytes = ReadBytes(ReadableBytes);
+                _buffer.SetIndex(0, 0);
+                SetIndex(0, 0);
+                WriteBytes(finalBytes);
+            }
+            else
+            {
+                SetIndex(0, 0);
+            }
+            
             _internalNioBuffer = null;
             return this;
         }
