@@ -76,7 +76,7 @@ namespace Helios.Serialization
             var actualLengthFieldOffset = input.ReaderIndex + _lengthFieldOffset;
             var frameLength = GetUnadjustedFrameLength(input, actualLengthFieldOffset, _lengthFieldLength);
 
-            if (frameLength <= 0)
+            if (frameLength < 0)
             {
                 input.SkipBytes(_lengthFieldEndOffset);
                 throw new CorruptedFrameException(string.Format("negative or zero pre-adjustment length field: " + frameLength));

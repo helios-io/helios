@@ -102,7 +102,6 @@ namespace Helios.Tests.Serialization
         }
 
         [Test]
-        [ExpectedException(typeof(CorruptedFrameException))]
         public void Should_throw_exception_when_decoding_zero_frameLength()
         {
             var binaryContent1 = Encoding.UTF8.GetBytes("somebytes");
@@ -112,7 +111,7 @@ namespace Helios.Tests.Serialization
 
             List<IByteBuf> decodedMessages;
             Decoder.Decode(TestConnection, buffer, out decodedMessages);
-
+            Assert.Pass("Helios should be in byte disacarding mode now");
         }
 
         #endregion
