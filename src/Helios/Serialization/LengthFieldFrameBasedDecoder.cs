@@ -83,7 +83,7 @@ namespace Helios.Serialization
             if (frameLength < 0)
             {
                 input.SkipBytes(_lengthFieldEndOffset);
-                throw new CorruptedFrameException(string.Format("negative pre-adjustment lenght field: " + frameLength));
+                throw new CorruptedFrameException(string.Format("negative pre-adjustment length field: " + frameLength));
             }
 
             frameLength += _lengthAdjustment + _lengthFieldEndOffset;
