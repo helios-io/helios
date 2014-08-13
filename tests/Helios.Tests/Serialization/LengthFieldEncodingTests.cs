@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using Helios.Buffers;
+using Helios.Exceptions;
 using Helios.Net;
 using Helios.Serialization;
 using Helios.Topology;
@@ -84,6 +85,34 @@ namespace Helios.Tests.Serialization
             Assert.IsTrue(binaryContent1.SequenceEqual(decodedMessages[0].ToArray()));
             Assert.IsTrue(binaryContent2.SequenceEqual(decodedMessages[1].ToArray()));
             Assert.IsTrue(binaryContent3.SequenceEqual(decodedMessages[2].ToArray()));
+        }
+
+        [Test]
+        [ExpectedException(typeof(CorruptedFrameException))]
+        public void Should_throw_exception_when_decoding_negative_frameLength()
+        {
+            var binaryContent1 = Encoding.UTF8.GetBytes("somebytes");
+            var buffer = ByteBuffer.AllocateDirect(100)
+                .WriteInt((-1)*binaryContent1.Length) //make the frame length negative
+                .WriteBytes(binaryContent1);
+
+            List<IByteBuf> decodedMessages;
+            Decoder.Decode(TestConnection, buffer, out decodedMessages);
+            
+        }
+
+        [Test]
+        [ExpectedException(typeof(CorruptedFrameException))]
+        public void Should_throw_exception_when_decoding_zero_frameLength()
+        {
+            var binaryContent1 = Encoding.UTF8.GetBytes("somebytes");
+            var buffer = ByteBuffer.AllocateDirect(100)
+                .WriteInt(0) //make the frame length negative
+                .WriteBytes(binaryContent1);
+
+            List<IByteBuf> decodedMessages;
+            Decoder.Decode(TestConnection, buffer, out decodedMessages);
+
         }
 
         #endregion

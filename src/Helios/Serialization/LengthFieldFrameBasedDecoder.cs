@@ -75,15 +75,11 @@ namespace Helios.Serialization
 
             var actualLengthFieldOffset = input.ReaderIndex + _lengthFieldOffset;
             var frameLength = GetUnadjustedFrameLength(input, actualLengthFieldOffset, _lengthFieldLength);
-            if (frameLength == 0)
-            {
-                var stop = true;
-            }
 
-            if (frameLength < 0)
+            if (frameLength <= 0)
             {
                 input.SkipBytes(_lengthFieldEndOffset);
-                throw new CorruptedFrameException(string.Format("negative pre-adjustment length field: " + frameLength));
+                throw new CorruptedFrameException(string.Format("negative or zero pre-adjustment length field: " + frameLength));
             }
 
             frameLength += _lengthAdjustment + _lengthFieldEndOffset;
@@ -137,10 +133,6 @@ namespace Helios.Serialization
             //extract frame
             var readerIndex = input.ReaderIndex;
             var actualFrameLength = frameLengthInt - _initialBytesToStrip;
-            if (actualFrameLength == 0)
-            {
-                var stop = true;
-            }
             var frame = ExtractFrame(connection, input, readerIndex, actualFrameLength);
             input.SetReaderIndex(readerIndex + actualFrameLength);
             return frame;
@@ -162,10 +154,10 @@ namespace Helios.Serialization
                     framelength = buf.GetByte(offset);
                     break;
                 case 2:
-                    framelength = buf.GetUnsignedShort(offset);
+                    framelength = buf.GetShort(offset);
                     break;
                 case 4:
-                    framelength = buf.GetUnsignedInt(offset);
+                    framelength = buf.GetInt(offset);
                     break;
                 case 8:
                     framelength = buf.GetLong(offset);
