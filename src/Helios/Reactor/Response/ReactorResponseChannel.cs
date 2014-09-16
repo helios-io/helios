@@ -86,10 +86,10 @@ namespace Helios.Reactor.Response
         public bool Receiving { get { return _reactor.IsActive; } }
         public bool IsOpen()
         {
-            return Socket.Connected;
+            return Socket != null && Socket.Connected;
         }
 
-        public int Available { get { return Socket.Available; } }
+        public int Available { get { return Socket == null ? 0 : Socket.Available; } }
         public int MessagesInSendQueue { get { return 0; } }
 
         public Task<bool> OpenAsync()
