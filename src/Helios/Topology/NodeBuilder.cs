@@ -51,42 +51,6 @@ namespace Helios.Topology
         }
 
         /// <summary>
-        /// Add a machine name to an INode instance
-        /// </summary>
-        /// <param name="n">A valid INode instance</param>
-        /// <param name="machineName">the name of this machine</param>
-        /// <returns>A valid INode instance with the machine name set</returns>
-        public static INode MachineName(this INode n, string machineName)
-        {
-            n.MachineName = machineName;
-            return n;
-        }
-
-        /// <summary>
-        /// Add an OS name and version to an INode instance
-        /// </summary>
-        /// <param name="n">A valid INode instance</param>
-        /// <param name="osName">The name and version of the host operating system</param>
-        /// <returns>A valid INode instance with the OS name and version set</returns>
-        public static INode OperatingSystem(this INode n, string osName)
-        {
-            n.OS = osName;
-            return n;
-        }
-
-        /// <summary>
-        /// Add the version # of the service being used to an INode instance
-        /// </summary>
-        /// <param name="n">A valid INode instance</param>
-        /// <param name="serviceVersion">The version # of the service this node belongs to</param>
-        /// <returns>A valid INode instance with the service version # set</returns>
-        public static INode WithVersion(this INode n, string serviceVersion)
-        {
-            n.ServiceVersion = serviceVersion;
-            return n;
-        }
-
-        /// <summary>
         /// Adds a capability to a given INode instance
         /// </summary>
         /// <param name="n">A valid INode instance</param>
@@ -107,18 +71,6 @@ namespace Helios.Topology
         public static INode WithTransportType(this INode n, TransportType transportType)
         {
             n.TransportType = transportType;
-            return n;
-        }
-
-        /// <summary>
-        /// Add a JSON blob to a node's metadata
-        /// </summary>
-        /// <param name="n">A valid INode instance</param>
-        /// <param name="customData">A JSON-string representing a blob of custom data about this node</param>
-        /// <returns>A valid node</returns>
-        public static INode WithCustomData(this INode n, string customData)
-        {
-            n.CustomData = customData;
             return n;
         }
 

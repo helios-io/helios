@@ -21,19 +21,6 @@ namespace Helios.Topology
         public IPAddress Host { get; set; }
 
         /// <summary>
-        /// The name of this machine
-        /// </summary>
-        public string MachineName { get; set; }
-
-        public string OS { get; set; }
-        public string ServiceVersion { get; set; }
-
-        /// <summary>
-        /// A JSON blob representing arbitrary data about this node
-        /// </summary>
-        public string CustomData { get; set; }
-
-        /// <summary>
         /// The port number of this node
         /// </summary>
         public int Port { get; set; }
@@ -74,9 +61,7 @@ namespace Helios.Topology
         {
             return new Node()
             {
-                CustomData = CustomData.NotNull(s => (string) s.Clone()),
                 Host = new IPAddress(Host.GetAddressBytes()),
-                MachineName = MachineName.NotNull(s => (string) s.Clone()),
                 Port = Port,
                 TransportType = TransportType
             };
