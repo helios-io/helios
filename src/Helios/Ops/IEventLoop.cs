@@ -12,10 +12,5 @@ namespace Helios.Ops
         /// Was this event loop disposed?
         /// </summary>
         bool WasDisposed { get; }
-
-        /// <summary>
-        /// Return the next executor in the chain
-        /// </summary>
-        IExecutor Next();
     }
 }

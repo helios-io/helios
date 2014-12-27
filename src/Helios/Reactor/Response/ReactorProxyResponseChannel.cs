@@ -20,7 +20,7 @@ namespace Helios.Reactor.Response
         {
         }
 
-        public override void Configure(IConnectionConfig config)
+        public override void Configure(IHeliosConfig config)
         {
             
         }

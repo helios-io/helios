@@ -89,7 +89,7 @@ namespace Helios.Reactor.Bootstrap
             return this;
         }
 
-        public new ServerBootstrap SetConfig(IConnectionConfig config)
+        public new ServerBootstrap SetConfig(IHeliosConfig config)
         {
             base.SetConfig(config);
             return this;

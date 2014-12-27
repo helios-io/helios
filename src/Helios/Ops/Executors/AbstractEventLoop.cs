@@ -83,11 +83,6 @@ namespace Helios.Ops.Executors
 
         public bool WasDisposed { get; private set; }
 
-        /// <summary>
-        /// Returns a new <see cref="IEventLoop"/> that can be chained after this one
-        /// </summary>
-        public abstract IExecutor Next();
-
         #region IDisposable
 
         public void Dispose()

@@ -54,7 +54,7 @@ namespace Helios.Tests
             throw new NotImplementedException();
         }
 
-        public void Configure(IConnectionConfig config)
+        public void Configure(IHeliosConfig config)
         {
             throw new NotImplementedException();
         }

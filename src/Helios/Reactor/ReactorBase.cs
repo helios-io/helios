@@ -72,7 +72,7 @@ namespace Helios.Reactor
         public abstract bool IsActive { get; protected set; }
         public bool WasDisposed { get; protected set; }
 
-        public abstract void Configure(IConnectionConfig config);
+        public abstract void Configure(IHeliosConfig config);
 
         public void Start()
         {
@@ -308,7 +308,7 @@ namespace Helios.Reactor
                 return TaskRunner.Run(() => true);
             }
 
-            public void Configure(IConnectionConfig config)
+            public void Configure(IHeliosConfig config)
             {
                 _reactor.Configure(config);
             }

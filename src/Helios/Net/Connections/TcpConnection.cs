@@ -161,7 +161,7 @@ namespace Helios.Net.Connections
         }
 #endif
 
-        public override void Configure(IConnectionConfig config)
+        public override void Configure(IHeliosConfig config)
         {
             if (config.HasOption<int>("receiveBufferSize"))
                 ReceiveBufferSize = config.GetOption<int>("receiveBufferSize");

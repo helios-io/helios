@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using Helios.Util.Collections;
+using Helios.Channel;
+using Helios.Net;
 
-namespace Helios.Net
+namespace Helios
 {
     /// <summary>
-    /// Interface used to help configure <see cref="IConnection"/> instances
+    /// Interface used to help configure different types of Helios objects, including <see cref="IConnection"/> 
+    /// and <see cref="IChannel"/> instances
     /// </summary>
-    public interface IConnectionConfig
+    public interface IHeliosConfig
     {
         /// <summary>
         /// Set an option for this configuration.
@@ -16,8 +17,8 @@ namespace Helios.Net
         /// </summary>
         /// <param name="optionKey">The name of the option.</param>
         /// <param name="optionValue">The value of the option.</param>
-        /// <returns>the <see cref="IConnectionConfig"/> with this option set</returns>
-        IConnectionConfig SetOption(string optionKey, object optionValue);
+        /// <returns>the <see cref="IHeliosConfig"/> with this option set</returns>
+        IHeliosConfig SetOption(string optionKey, object optionValue);
 
         /// <summary>
         /// Checks to see if we have a set option of this value in the dictionary
@@ -50,41 +51,5 @@ namespace Helios.Net
         T GetOption<T>(string optionKey);
 
         IList<KeyValuePair<string, object>> Options { get; }
-    }
-
-    /// <summary>
-    /// Configuration class for <see cref="IConnection"/> objects
-    /// </summary>
-    public class DefaultConnectionConfig : IConnectionConfig
-    {
-        private readonly Dictionary<string, object> _options = new Dictionary<string, object>();
-
-        public IConnectionConfig SetOption(string optionKey, object optionValue)
-        {
-            _options.AddOrSet(optionKey, optionValue);
-            return this;
-        }
-
-        public bool HasOption(string optionKey)
-        {
-            return _options.ContainsKey(optionKey);
-        }
-
-        public bool HasOption<T>(string optionKey)
-        {
-            return _options.ContainsKey(optionKey) && _options[optionKey] is T;
-        }
-
-        public object GetOption(string optionKey)
-        {
-            return _options.GetOrDefault(optionKey);
-        }
-
-        public T GetOption<T>(string optionKey)
-        {
-            return _options.GetOrDefault<string,T>(optionKey);
-        }
-
-        public IList<KeyValuePair<string, object>> Options { get { return _options.ToList(); } }
     }
 }

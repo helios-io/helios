@@ -90,7 +90,7 @@ namespace Helios.Net.Connections
         [Obsolete("No longer supported")]
         public int MessagesInSendQueue { get { return 0; } }
         public abstract Task<bool> OpenAsync();
-        public abstract void Configure(IConnectionConfig config);
+        public abstract void Configure(IHeliosConfig config);
 
         public abstract void Open();
         public void BeginReceive()

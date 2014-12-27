@@ -51,7 +51,7 @@ namespace Helios.Net.Bootstrap
             return this;
         }
 
-        public new ClientBootstrap SetConfig(IConnectionConfig config)
+        public new ClientBootstrap SetConfig(IHeliosConfig config)
         {
             base.SetConfig(config);
             return this;

@@ -26,7 +26,7 @@ namespace Helios.Reactor.Udp
 
         public override bool IsActive { get; protected set; }
 
-        public override void Configure(IConnectionConfig config)
+        public override void Configure(IHeliosConfig config)
         {
             if (config.HasOption<int>("receiveBufferSize"))
                 Listener.ReceiveBufferSize = config.GetOption<int>("receiveBufferSize");

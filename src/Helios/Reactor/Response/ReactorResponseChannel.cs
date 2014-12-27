@@ -98,7 +98,7 @@ namespace Helios.Reactor.Response
             return TaskRunner.Run(() => true);
         }
 
-        public abstract void Configure(IConnectionConfig config);
+        public abstract void Configure(IHeliosConfig config);
 
         public void Open()
         {

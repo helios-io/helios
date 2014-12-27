@@ -59,7 +59,7 @@ namespace Helios.Reactor
 
         bool WasDisposed { get; }
 
-        void Configure(IConnectionConfig config);
+        void Configure(IHeliosConfig config);
 
         void Start();
 

@@ -95,8 +95,8 @@ namespace Helios.Net
         /// <summary>
         /// Configures this transport using the provided option
         /// </summary>
-        /// <param name="config">a <see cref="IConnectionConfig"/> instance with the appropriate configuration options</param>
-        void Configure(IConnectionConfig config);
+        /// <param name="config">a <see cref="IHeliosConfig"/> instance with the appropriate configuration options</param>
+        void Configure(IHeliosConfig config);
 
         void Open();
 

@@ -43,7 +43,7 @@ namespace Helios.Net.Bootstrap
         /// <summary>
         /// Configuration to be used with the
         /// </summary>
-        protected IConnectionConfig Config { get; set; }
+        protected IHeliosConfig Config { get; set; }
 
         protected TransportType Type { get; set; }
 
@@ -85,7 +85,7 @@ namespace Helios.Net.Bootstrap
             return this;
         }
 
-        public virtual AbstractBootstrap SetConfig(IConnectionConfig config)
+        public virtual AbstractBootstrap SetConfig(IHeliosConfig config)
         {
             Config = config;
             return this;

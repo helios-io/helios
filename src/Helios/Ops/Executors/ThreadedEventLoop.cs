@@ -22,10 +22,5 @@ namespace Helios.Ops.Executors
         {
             return new ThreadedEventLoop(Scheduler.Clone());
         }
-
-        public override IExecutor Next()
-        {
-            return new ThreadedEventLoop(Scheduler);
-        }
     }
 }

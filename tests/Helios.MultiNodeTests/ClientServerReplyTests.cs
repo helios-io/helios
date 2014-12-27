@@ -78,7 +78,7 @@ namespace Helios.MultiNodeTests
             get { return TransportType.Udp; }
         }
 
-        public override IConnectionConfig Config
+        public override IHeliosConfig Config
         {
             get { return base.Config.SetOption("receiveBufferSize", 1024*64); }
         }
