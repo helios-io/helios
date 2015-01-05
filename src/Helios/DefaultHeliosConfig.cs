@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Helios.Util.Collections;
 
-namespace Helios.Net
+namespace Helios
 {
     /// <summary>
-    /// Configuration class for <see cref="IConnection"/> objects
+    /// Default <see cref="IHeliosConfig"/> implementation.
     /// </summary>
-    public class DefaultConnectionConfig : IHeliosConfig
+    public class DefaultHeliosConfig : IHeliosConfig
     {
         private readonly Dictionary<string, object> _options = new Dictionary<string, object>();
 

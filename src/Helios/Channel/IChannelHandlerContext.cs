@@ -29,20 +29,37 @@
         #region Event invokers - used to propagate network events to the next IChannelHandler in the IChannelPipeline
 
         /// <summary>
-        /// Signal to the next <see cref="IChannelHandler"/> in the <see cref="IChannelPipeline"/> that there's data to be read
-        /// in the processing of this request.
+        /// Invoke the <see cref="IChannelHandler.ChannelRead(IChannelHandlerContext, object)"/> method of the the next 
+        /// <see cref="IChannelHandler"/> in the <see cref="IChannelPipeline"/>.
         /// </summary>
         /// <param name="message">The data to be read by the next <see cref="IChannelHandler"/>.</param>
-        /// <returns>An updated <see cref="IChannelHandlerContext"/>.</returns>
         IChannelHandlerContext FireChannelRead(object message);
 
         /// <summary>
-        /// Signal to the next <see cref="IChannelHandler"/> in the <see cref="IChannelPipeline"/> that a new user-defined
-        /// event has occurred. Built-in <see cref="IChannelHandler"/> instances typically do not handle this event.
+        /// Invoke the <see cref="IChannelHandler.UserEventTriggered(IChannelHandlerContext, object)"/> method of the the next 
+        /// <see cref="IChannelHandler"/> in the <see cref="IChannelPipeline"/>.
+        /// 
+        /// Built-in <see cref="IChannelHandler"/> instances typically do not handle this event, given that it deals exclusively
+        /// with user-defined events.
         /// </summary>
         /// <param name="message">The data to be read by the next <see cref="IChannelHandler"/>.</param>
-        /// <returns>An updated <see cref="IChannelHandlerContext"/>.</returns>
         IChannelHandlerContext FireUserEvent(object message);
+
+        #endregion
+
+        #region Transport methods
+
+        /// <summary>
+        /// Request to read data from the <see cref="IChannel"/> into memory.
+        /// 
+        /// Triggers an <see cref="IChannelHandler.ChannelRead(IChannelHandlerContext, object)"/> event if data was read
+        /// from the underlying <see cref="IChannel"/> and triggers a <see cref="IChannelHandler.ChannelReadComplete(IChannelHandlerContext)"/> so
+        /// the handler can decide to continue reading. If there's a pending read operation already, this method does nothing.
+        /// 
+        /// This will result in having the <see cref="IChannelHandler.Read(IChannelHandlerContext)"/> method of the next <see cref="IChannelHandler"/> in the 
+        /// <see cref="IChannelPipeline"/> of the <see cref="IChannel"/> called.
+        /// </summary>
+        IChannelHandlerContext Read();
 
         #endregion
     }

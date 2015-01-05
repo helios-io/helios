@@ -11,7 +11,7 @@ namespace Helios.Net.Bootstrap
     {
         protected AbstractBootstrap()
         {
-            Config = new DefaultConnectionConfig();
+            Config = new DefaultHeliosConfig();
             Encoder = Encoders.DefaultEncoder;
             Decoder = Encoders.DefaultDecoder;
             Allocator = UnpooledByteBufAllocator.Default;

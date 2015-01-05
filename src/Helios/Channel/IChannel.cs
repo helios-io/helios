@@ -20,5 +20,10 @@ namespace Helios.Channel
         /// The pipeline of <see cref="IChannelHandler"/> instances used to process inbound and outbound messages on this <see cref="IChannel"/>
         /// </summary>
         IChannelPipeline Pipeline { get; }
+
+        /// <summary>
+        /// Determines if this <see cref="IChannel"/> can currently be written to.
+        /// </summary>
+        bool IsWritable { get; }
     }
 }
