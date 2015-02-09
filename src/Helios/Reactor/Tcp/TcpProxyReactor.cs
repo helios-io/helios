@@ -69,7 +69,15 @@ namespace Helios.Reactor.Tcp
             var responseChannel = new TcpReactorResponseChannel(this, newSocket, EventLoop.Clone(ProxiesShareFiber));
             SocketMap.Add(node, responseChannel);
             NodeConnected(node, responseChannel);
-            newSocket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
+            try
+            {
+                newSocket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None,
+                    ReceiveCallback, receiveState);
+            }
+            catch (SocketException ex) //error attempting to receive on the socket
+            {
+                CloseConnection(ex, responseChannel);
+            }
             Listener.BeginAccept(AcceptCallback, null); //accept more connections
         }
 

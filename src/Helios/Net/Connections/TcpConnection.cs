@@ -89,8 +89,16 @@ namespace Helios.Net.Connections
 
         public override bool IsOpen()
         {
-            if (_client == null) return false;
-            return _client.Connected;
+            var client = _client;
+            if (client == null) return false;
+            try
+            {
+                return client.Connected;
+            }
+            catch //supress exceptions for when the socket disconnect spins
+            {
+                return false;
+            }
         }
 
         public override int Available
