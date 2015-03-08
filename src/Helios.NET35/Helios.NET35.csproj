@@ -375,6 +375,7 @@
     <Folder Include="Reactor\Udp\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Helios.NET35.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

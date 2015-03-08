@@ -11,7 +11,7 @@ namespace Helios.MultiNodeTests
     {
 
         [Test]
-        public void Should_receive_reply_from_server_200b_messages()
+        public virtual void Should_receive_reply_from_server_200b_messages()
         {
             //arrange
             StartServer(); //uses an "echo server" callback
@@ -37,7 +37,7 @@ namespace Helios.MultiNodeTests
         }
 
         [Test]
-        public void Should_receive_reply_from_server_MAX_200b_messages()
+        public virtual void Should_receive_reply_from_server_MAX_200b_messages()
         {
             //arrange
             StartServer(); //echo
@@ -81,6 +81,12 @@ namespace Helios.MultiNodeTests
         public override IConnectionConfig Config
         {
             get { return base.Config.SetOption("receiveBufferSize", 1024*64); }
+        }
+
+        [Ignore("UDP has unreliable delivery")]
+        public override void Should_receive_reply_from_server_MAX_200b_messages()
+        {
+            base.Should_receive_reply_from_server_MAX_200b_messages();
         }
     }
 }
