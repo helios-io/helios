@@ -14,7 +14,7 @@ namespace Helios.Net.Connections
 {
     public class TcpConnection : UnstreamedConnectionBase
     {
-        protected TcpClient _client;
+        protected Socket _client;
 
         public TcpConnection(NetworkEventLoop eventLoop, INode node, TimeSpan timeout, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base(eventLoop, node, timeout, encoder, decoder, allocator, bufferSize)
@@ -28,13 +28,13 @@ namespace Helios.Net.Connections
             InitClient();
         }
 
-        public TcpConnection(TcpClient client, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        public TcpConnection(Socket client, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base(bufferSize)
         {
             InitClient(client);
         }
 
-        public TcpConnection(TcpClient client, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        public TcpConnection(Socket client, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base(bufferSize)
         {
             InitClient(client);
@@ -47,8 +47,8 @@ namespace Helios.Net.Connections
 
         public override bool Blocking
         {
-            get { return _client.Client.Blocking; }
-            set { _client.Client.Blocking = value; }
+            get { return _client.Blocking; }
+            set { _client.Blocking = value; }
         }
 
         public bool NoDelay
@@ -83,14 +83,22 @@ namespace Helios.Net.Connections
 
         public bool KeepAlive
         {
-            get { return ((int)_client.Client.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive) == 1); }
-            set { _client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, value ? 1 : 0); }
+            get { return ((int)_client.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive) == 1); }
+            set { _client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, value ? 1 : 0); }
         }
 
         public override bool IsOpen()
         {
-            if (_client == null) return false;
-            return _client.Connected;
+            var client = _client;
+            if (client == null) return false;
+            try
+            {
+                return client.Connected;
+            }
+            catch //supress exceptions for when the socket disconnect spins
+            {
+                return false;
+            }
         }
 
         public override int Available
@@ -134,19 +142,22 @@ namespace Helios.Net.Connections
             if (_client == null)
                 InitClient();
 
+            var connectTask = Task.Factory.FromAsync(
+                (callback, state) => _client.BeginConnect(RemoteHost.Host, RemoteHost.Port, callback, state),
+                result => _client.EndConnect(result),
+                TaskCreationOptions.None
+                );
 
-            return await _client.ConnectAsync(RemoteHost.Host, RemoteHost.Port)
-                .ContinueWith(x =>
+            return await connectTask.ContinueWith(x =>
+            {
+                var result = x.IsCompleted && !x.IsFaulted && !x.IsCanceled;
+                if (result)
                 {
-                    var result = x.IsCompleted && !x.IsFaulted && !x.IsCanceled;
-                    if (result)
-                    {
-                        SetLocal(_client);
-                        InvokeConnectIfNotNull(RemoteHost);
-                    }
-                    return result;
-                },
-                    TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously);
+                    SetLocal(_client);
+                    InvokeConnectIfNotNull(RemoteHost);
+                }
+                return result;
+            }, TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously);
         }
 #endif
 
@@ -212,8 +223,8 @@ namespace Helios.Net.Connections
 
         protected override void BeginReceiveInternal()
         {
-            var receiveState = CreateNetworkState(_client.Client, RemoteHost);
-            _client.Client.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
+            var receiveState = CreateNetworkState(_client, RemoteHost);
+            _client.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
         }
 
 
@@ -254,7 +265,7 @@ namespace Helios.Net.Connections
                     var bytesSent = 0;
                     while (bytesSent < bytesToSend.Length)
                     {
-                        bytesSent += _client.Client.Send(bytesToSend, bytesSent, bytesToSend.Length - bytesSent,
+                        bytesSent += _client.Send(bytesToSend, bytesSent, bytesToSend.Length - bytesSent,
                             SocketFlags.None);
                     }
 
@@ -291,25 +302,24 @@ namespace Helios.Net.Connections
 
         #endregion
 
-        private void InitClient(TcpClient client)
+        private void InitClient(Socket client)
         {
             _client = client;
             _client.NoDelay = true;
             _client.ReceiveTimeout = Timeout.Seconds;
             _client.SendTimeout = Timeout.Seconds;
             _client.ReceiveBufferSize = BufferSize;
-            var ipAddress = (IPEndPoint)_client.Client.RemoteEndPoint;
+            var ipAddress = (IPEndPoint)_client.RemoteEndPoint;
             RemoteHost = Binding = NodeBuilder.FromEndpoint(ipAddress);
-            Local = NodeBuilder.FromEndpoint((IPEndPoint)_client.Client.LocalEndPoint);
+            Local = NodeBuilder.FromEndpoint((IPEndPoint)_client.LocalEndPoint);
         }
 
         private void InitClient()
         {
-            _client = new TcpClient()
+            _client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
             {
                 ReceiveTimeout = Timeout.Seconds,
                 SendTimeout = Timeout.Seconds,
-                Client = { NoDelay = true },
                 ReceiveBufferSize = BufferSize
             };
             RemoteHost = Binding;
@@ -319,9 +329,9 @@ namespace Helios.Net.Connections
         /// After a TCP connection is successfully established, set the value of the local node
         /// to whatever port / IP was assigned.
         /// </summary>
-        protected void SetLocal(TcpClient client)
+        protected void SetLocal(Socket client)
         {
-            var localEndpoint = (IPEndPoint)client.Client.LocalEndPoint;
+            var localEndpoint = (IPEndPoint)client.LocalEndPoint;
             Local = NodeBuilder.FromEndpoint(localEndpoint);
         }
     }
