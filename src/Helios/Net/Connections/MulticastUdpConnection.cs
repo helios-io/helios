@@ -23,7 +23,7 @@ namespace Helios.Net.Connections
         {
         }
 
-        public MulticastUdpConnection(UdpClient client, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator)
+        public MulticastUdpConnection(Socket client, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator)
             : base(client)
         {
             InitMulticastClient();
@@ -32,7 +32,7 @@ namespace Helios.Net.Connections
             Allocator = allocator;
         }
 
-        public MulticastUdpConnection(UdpClient client) : this(client, Encoders.DefaultEncoder, Encoders.DefaultDecoder, UnpooledByteBufAllocator.Default)
+        public MulticastUdpConnection(Socket client) : this(client, Encoders.DefaultEncoder, Encoders.DefaultDecoder, UnpooledByteBufAllocator.Default)
         {
         }
 
@@ -43,7 +43,10 @@ namespace Helios.Net.Connections
             if(Client == null)
                 InitClient();
 // ReSharper disable once PossibleNullReferenceException
-            Client.JoinMulticastGroup(MulticastAddress.Host);
+            if (Client.AddressFamily == AddressFamily.InterNetwork)
+                Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(MulticastAddress.Host));
+            else
+                Client.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, new IPv6MulticastOption(MulticastAddress.Host));
         }
     }
 }

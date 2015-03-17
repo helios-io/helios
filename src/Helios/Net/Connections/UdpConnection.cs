@@ -19,7 +19,7 @@ namespace Helios.Net.Connections
     /// </summary>
     public class UdpConnection : UnstreamedConnectionBase
     {
-        protected UdpClient Client;
+        protected Socket Client;
         protected EndPoint RemoteEndpoint;
 
         public UdpConnection(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator)
@@ -34,7 +34,7 @@ namespace Helios.Net.Connections
             InitClient();
         }
 
-        public UdpConnection(UdpClient client, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator)
+        public UdpConnection(Socket client, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator)
         {
             InitClient(client);
             Encoder = encoder;
@@ -42,7 +42,7 @@ namespace Helios.Net.Connections
             Allocator = allocator;
         }
 
-        public UdpConnection(UdpClient client)
+        public UdpConnection(Socket client)
             : this(client, Encoders.DefaultEncoder, Encoders.DefaultDecoder, UnpooledByteBufAllocator.Default)
         {
         }
@@ -56,8 +56,8 @@ namespace Helios.Net.Connections
 
         public override bool Blocking
         {
-            get { return Client.Client.Blocking; }
-            set { Client.Client.Blocking = value; }
+            get { return Client.Blocking; }
+            set { Client.Blocking = value; }
         }
         public override bool IsOpen()
         {
@@ -90,13 +90,13 @@ namespace Helios.Net.Connections
         public override void Configure(IConnectionConfig config)
         {
             if (config.HasOption<int>("receiveBufferSize"))
-                Client.Client.ReceiveBufferSize = config.GetOption<int>("receiveBufferSize");
+                Client.ReceiveBufferSize = config.GetOption<int>("receiveBufferSize");
             if (config.HasOption<int>("sendBufferSize"))
-                Client.Client.SendBufferSize = config.GetOption<int>("sendBufferSize");
+                Client.SendBufferSize = config.GetOption<int>("sendBufferSize");
             if (config.HasOption<bool>("reuseAddress"))
-                Client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, config.GetOption<bool>("reuseAddress"));
+                Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, config.GetOption<bool>("reuseAddress"));
             if (config.HasOption<bool>("keepAlive"))
-                Client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, config.GetOption<bool>("keepAlive"));
+                Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, config.GetOption<bool>("keepAlive"));
         }
 
         public override void Open()
@@ -121,8 +121,8 @@ namespace Helios.Net.Connections
             try
             {
                 // ReSharper disable once PossibleNullReferenceException
-                Client.Client.Bind(Binding.ToEndPoint());
-                Local = ((IPEndPoint) Client.Client.LocalEndPoint).ToNode(TransportType.Udp);
+                Client.Bind(Binding.ToEndPoint());
+                Local = ((IPEndPoint) Client.LocalEndPoint).ToNode(TransportType.Udp);
                 if (NetworkEventLoop.Receive != null) //automatically start receiving
                 {
                     BeginReceive();
@@ -136,8 +136,8 @@ namespace Helios.Net.Connections
 
         protected override void BeginReceiveInternal()
         {
-            var receiveState = CreateNetworkState(Client.Client, RemoteHost);
-            Client.Client.BeginReceiveFrom(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, receiveState);
+            var receiveState = CreateNetworkState(Client, RemoteHost);
+            Client.BeginReceiveFrom(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, receiveState);
         }
 
         protected override void ReceiveCallback(IAsyncResult ar)
@@ -209,7 +209,7 @@ namespace Helios.Net.Connections
         {
             try
             {
-                if (Client.Client == null || WasDisposed)
+                if (Client == null || WasDisposed)
                 {
                     Close();
                     return;
@@ -225,7 +225,7 @@ namespace Helios.Net.Connections
                     var bytesSent = 0;
                     while (bytesSent < bytesToSend.Length)
                     {
-                        bytesSent += Client.Client.SendTo(bytesToSend, bytesSent, bytesToSend.Length - bytesSent,
+                        bytesSent += Client.SendTo(bytesToSend, bytesSent, bytesToSend.Length - bytesSent,
                             SocketFlags.None, destination.ToEndPoint());
                     }
                     
@@ -249,14 +249,14 @@ namespace Helios.Net.Connections
 
         protected void InitClient()
         {
-            Client = new UdpClient() { MulticastLoopback = false };
+            Client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp) { MulticastLoopback = false };
             RemoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
         }
 
-        protected void InitClient(UdpClient client)
+        protected void InitClient(Socket client)
         {
             Client = client;
-            var ipAddress = (IPEndPoint)Client.Client.RemoteEndPoint;
+            var ipAddress = (IPEndPoint)Client.RemoteEndPoint;
             Local = Binding = NodeBuilder.FromEndpoint(ipAddress);
             RemoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
         }
