@@ -15,7 +15,7 @@ namespace Helios.Concurrency.Impl
         private readonly int _numThreads;
         private List<Thread> _threads;
 
-        private readonly BlockingCollection<Action> _blockingCollection = new BlockingCollection<Action>(25000);
+        private readonly BlockingCollection<Action> _blockingCollection = new BlockingCollection<Action>(250000);
 
         public DedicatedThreadPoolFiber(int numThreads)
             : this(new BasicExecutor(), numThreads)
