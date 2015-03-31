@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
@@ -10,6 +11,7 @@ using Helios.Exceptions;
 using Helios.Ops;
 using Helios.Serialization;
 using Helios.Topology;
+using Helios.Tracing;
 using Helios.Util;
 using Helios.Util.Collections;
 using Helios.Util.TimedOps;
@@ -24,7 +26,7 @@ namespace Helios.Net.Connections
 
     public abstract class UnstreamedConnectionBase : IConnection
     {
-        protected ConcurrentCircularBuffer<NetworkData> SendQueue = new ConcurrentCircularBuffer<NetworkData>(100, Int32.MaxValue);
+        protected ConcurrentQueue<NetworkData> SendQueue = new ConcurrentQueue<NetworkData>();
         protected int Throughput = 10;
         protected int IsIdle = SendBufferProcessingStatus.Idle; //1 for busy, 0 for idle
         protected volatile bool HasUnsentMessages;
@@ -140,12 +142,13 @@ namespace Helios.Net.Connections
                 if (!receiveState.Socket.Connected || received == 0)
                 {
                     Receiving = false;
+                    HeliosTrace.Instance.TcpClientReceiveFailure();
                     Close(new HeliosConnectionException(ExceptionType.Closed));
                     return;
                 }
 
                 receiveState.Buffer.WriteBytes(receiveState.RawBuffer, 0, received);
-
+                HeliosTrace.Instance.TcpClientReceive(received);
                 List<IByteBuf> decoded;
                 Decoder.Decode(this, receiveState.Buffer, out decoded);
 
@@ -167,20 +170,24 @@ namespace Helios.Net.Connections
                     receiveState.Socket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length,
                         SocketFlags.None, ReceiveCallback, receiveState);
                 }
+                HeliosTrace.Instance.TcpClientReceiveSuccess();
             }
             catch (SocketException ex) //typically means that the socket is now closed
             {
+                HeliosTrace.Instance.TcpClientReceiveFailure();
                 Receiving = false;
                 Close(new HeliosConnectionException(ExceptionType.Closed, ex));
             }
             catch (ObjectDisposedException ex) //socket was already disposed
             {
+                HeliosTrace.Instance.TcpClientReceiveFailure();
                 Receiving = false;
                 InvokeDisconnectIfNotNull(RemoteHost,
                     new HeliosConnectionException(ExceptionType.Closed, ex));
             }
             catch (Exception ex)
             {
+                HeliosTrace.Instance.TcpClientReceiveFailure();
                 InvokeErrorIfNotNull(ex);
             }
         }
@@ -273,7 +280,7 @@ namespace Helios.Net.Connections
             var left = Throughput;
 
             NetworkData message;
-            while (SendQueue.TryTake(out message))
+            while (SendQueue.TryDequeue(out message))
             {
                 SendInternal(message.Buffer, 0, message.Length, message.RemoteHost);
                 left--;

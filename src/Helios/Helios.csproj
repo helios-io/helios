@@ -54,6 +54,10 @@
     <Compile Include="Concurrency\Impl\SharedFiber.cs" />
     <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />
     <Compile Include="Exceptions\EncodingExceptions.cs" />
+    <Compile Include="Tracing\Impl\HeliosCounterTraceWriter.cs" />
+    <Compile Include="Tracing\HeliosTrace.cs" />
+    <Compile Include="Tracing\IHeliosTraceWriter.cs" />
+    <Compile Include="Tracing\Impl\NoOpHeliosTraceWriter.cs" />
     <Compile Include="Util\ByteArrayExtensions.cs" />
     <Compile Include="Buffers\AbstractByteBuf.cs" />
     <Compile Include="Buffers\ByteBuffer.cs" />

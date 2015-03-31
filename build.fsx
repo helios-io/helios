@@ -116,19 +116,27 @@ module Nuget =
                         "Helios"
                         "Helios.NET40"]
         | "Helios.NET35" -> ["Helios.NET35"]
-        | _ -> []
+        | e -> [e]
 
     let getProjectBinFolders project =
         match project with
         | "Helios" -> "lib/net45"
         | "Helios.NET40" -> "lib/net40"
         | "Helios.NET35" -> "lib/net35"
-        | _ -> ""
+        | _ -> "lib/net45"
 
     // selected nuget description
     let description project =
         match project with
         | _ -> description
+
+     // add Helios dependency for other projects
+    let getHeliosDependency project =
+        match project with
+        | "Helios" -> []
+        | "Helios.NET40" -> []
+        | "Helios.NET35" -> []
+        | _ -> ["Helios", release.NugetVersion]
 
 open Nuget
 
@@ -164,7 +172,7 @@ let createNugetPackages _ =
        
         let packages = projectDir @@ "packages.config"        
         let packageDependencies = if (fileExists packages) then (getDependencies packages) else []
-        let dependencies = packageDependencies
+        let dependencies = packageDependencies @ getHeliosDependency project
         let releaseVersion = release.NugetVersion
 
         let pack outputDir symbolPackage =

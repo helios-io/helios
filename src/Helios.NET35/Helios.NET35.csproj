@@ -307,6 +307,18 @@
     <Compile Include="..\Helios\Topology\NodeUri.cs">
       <Link>Topology\NodeUri.cs</Link>
     </Compile>
+    <Compile Include="..\Helios\Tracing\HeliosTrace.cs">
+      <Link>Tracing\HeliosTrace.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Tracing\IHeliosTraceWriter.cs">
+      <Link>Tracing\IHeliosTraceWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Tracing\Impl\HeliosCounterTraceWriter.cs">
+      <Link>Tracing\Impl\HeliosCounterTraceWriter.cs</Link>
+    </Compile>
+    <Compile Include="..\Helios\Tracing\Impl\NoOpHeliosTraceWriter.cs">
+      <Link>Tracing\Impl\NoOpHeliosTraceWriter.cs</Link>
+    </Compile>
     <Compile Include="..\Helios\Util\AtomicCounters.cs">
       <Link>Util\AtomicCounters.cs</Link>
     </Compile>
