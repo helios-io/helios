@@ -95,7 +95,7 @@ namespace Helios.Net.Connections
             {
                 return client.Connected;
             }
-            catch //supress exceptions for when the socket disconnect spins
+            catch //suppress exceptions for when the socket disconnect spins
             {
                 return false;
             }

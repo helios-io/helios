@@ -6,7 +6,7 @@ namespace Helios.Util.Collections
     public interface ICircularBuffer<T> : IProducerConsumerCollection<T>
     {
         /// <summary>
-        /// The absolute maximum size of the ciruclar buffer
+        /// The absolute maximum size of the circular buffer
         /// </summary>
         int MaxCapacity { get; }
 

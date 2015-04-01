@@ -29,7 +29,7 @@ namespace Helios.Topology
         public string ServiceVersion { get; set; }
 
         /// <summary>
-        /// A JSON blob representing arbtirary data about this node
+        /// A JSON blob representing arbitrary data about this node
         /// </summary>
         public string CustomData { get; set; }
 

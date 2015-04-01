@@ -36,7 +36,7 @@ namespace Helios.Util.Collections
         }
 
         /// <summary>
-        /// Thesize of the buffer
+        /// The size of the buffer
         /// </summary>
         protected int InternalCapacity;
 
@@ -88,7 +88,7 @@ namespace Helios.Util.Collections
         /// Grow the capacity by a power of two, so we aren't having to constantly expand it over and over again
         /// during periods of sustained writes.
         /// </summary>
-        /// <param name="minNewCapacity">The minimum additional space we need to accomodiate</param>
+        /// <param name="minNewCapacity">The minimum additional space we need to accommodate</param>
         protected int CalculateNewCapacity(int minNewCapacity)
         {
             var maxCapacity = MaxCapacity;
@@ -136,7 +136,7 @@ namespace Helios.Util.Collections
         }
 
         /// <summary>
-        /// Expands the circular buffer to accomodate additional space
+        /// Expands the circular buffer to accommodate additional space
         /// </summary>
         public virtual void Expand(int newSize)
         {

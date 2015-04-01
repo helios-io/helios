@@ -165,7 +165,7 @@ namespace Helios.Net
         public Socket Socket { get; private set; }
 
         /// <summary>
-        /// The remote host on the other end ofthe connection
+        /// The remote host on the other end of the connection
         /// </summary>
         public INode RemoteHost { get; set; }
 

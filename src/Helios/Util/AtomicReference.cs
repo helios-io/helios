@@ -52,7 +52,7 @@ namespace Helios.Util
         /// If <see cref="Value"/> equals <see cref="expected"/>, then set the Value to
         /// <see cref="newValue"/>.
         /// 
-        /// Returns true if <see cref="newValue"/> was set, false otherise.
+        /// Returns true if <see cref="newValue"/> was set, false otherwise.
         /// </summary>
         public bool CompareAndSet(T expected, T newValue)
         {

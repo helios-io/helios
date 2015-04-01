@@ -3,7 +3,7 @@
 namespace Helios.Buffers
 {
     /// <summary>
-    /// Dervied buffer that forwards requests to the original underlying buffer
+    /// Derived buffer that forwards requests to the original underlying buffer
     /// </summary>
     public class DuplicateByteBuf : AbstractByteBuf
     {

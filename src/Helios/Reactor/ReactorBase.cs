@@ -137,7 +137,7 @@ namespace Helios.Reactor
         /// network is injected into this method via the <see cref="NetworkData"/> data type.
         /// </summary>
         /// <param name="availableData">Data available from the network, including a response address</param>
-        /// <param name="responseChannel">Available channel for handling network respones</param>
+        /// <param name="responseChannel">Available channel for handling network response</param>
         protected virtual void ReceivedData(NetworkData availableData, ReactorResponseChannel responseChannel)
         {
             if (EventLoop.Receive != null)

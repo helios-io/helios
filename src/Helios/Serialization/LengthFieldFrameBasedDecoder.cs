@@ -116,7 +116,7 @@ namespace Helios.Serialization
                 return null;
             }
 
-            // never overflows bceause it's less than _maxFrameLength
+            // never overflows because it's less than _maxFrameLength
             var frameLengthInt = (int) frameLength;
             if (input.ReadableBytes < frameLengthInt)
             {

@@ -36,7 +36,7 @@ namespace Helios.Concurrency
         void Shutdown(TimeSpan gracePeriod);
 
         /// <summary>
-        /// Shuts down this fiber within the alloted timeframe and provides a task that can be waited on during the interim
+        /// Shuts down this fiber within the allotted timeframe and provides a task that can be waited on during the interim
         /// </summary>
         /// <param name="gracePeriod">The amount of time given for currently executing tasks to complete</param>
         Task GracefulShutdown(TimeSpan gracePeriod);
