@@ -23,7 +23,16 @@ namespace Helios.MultiNodeTests.TestKit
     {
         public abstract TransportType TransportType { get; }
 
+        /// <summary>
+        /// Disables message capture and resorts to just using counters
+        /// </summary>
+        public virtual bool HighPerformance { get { return false; } }        
+
         public virtual int BufferSize { get { return 1024; } }
+
+        public AtomicCounter ClientReceived { get; protected set; }
+
+        public AtomicCounter ServerReceived { get; protected set; }
 
         public virtual IMessageEncoder Encoder { get { return Encoders.DefaultEncoder; } }
 
@@ -38,9 +47,15 @@ namespace Helios.MultiNodeTests.TestKit
         [SetUp]
         public void SetUp()
         {
-            ClientSendBuffer = new ConcurrentCircularBuffer<NetworkData>(BufferSize);
-            ClientReceiveBuffer = new ConcurrentCircularBuffer<NetworkData>(BufferSize);
-            ServerReceiveBuffer = new ConcurrentCircularBuffer<NetworkData>(BufferSize);
+            if (!HighPerformance)
+            {
+                ClientSendBuffer = new ConcurrentCircularBuffer<NetworkData>(BufferSize);
+                ClientReceiveBuffer = new ConcurrentCircularBuffer<NetworkData>(BufferSize);
+                ServerReceiveBuffer = new ConcurrentCircularBuffer<NetworkData>(BufferSize);
+            }
+            ClientReceived = new AtomicCounter(0);
+            ServerReceived = new AtomicCounter(0);
+           
 
             _clientExecutor = new AssertExecutor();
             _serverExecutor = new AssertExecutor();
@@ -79,7 +94,11 @@ namespace Helios.MultiNodeTests.TestKit
         {
             StartServer((data, channel) =>
             {
-                ServerReceiveBuffer.Add(data);
+                if (!HighPerformance)
+                {
+                    ServerReceiveBuffer.Add(data);
+                }
+                ServerReceived.GetAndIncrement();
                 channel.Send(new NetworkData() { Buffer = data.Buffer, Length = data.Length, RemoteHost = channel.RemoteHost });
             });
         }
@@ -107,7 +126,11 @@ namespace Helios.MultiNodeTests.TestKit
             _client = _clientConnectionFactory.NewConnection(_server.Local);
             _client.Receive += (data, channel) =>
             {
-                ClientReceiveBuffer.Add(data);
+                if (!HighPerformance)
+                {
+                    ClientReceiveBuffer.Add(data);
+                }
+                ClientReceived.GetAndIncrement();
             };
             _client.OnConnection += (address, channel) => channel.BeginReceive();
             _client.OnError += (exception, connection) => _clientExecutor.Exceptions.Add(exception);
@@ -119,7 +142,8 @@ namespace Helios.MultiNodeTests.TestKit
             if (_client == null)
                 StartClient();
             var networkData = NetworkData.Create(_server.Local, data, data.Length);
-            ClientSendBuffer.Add(networkData);
+            if(!HighPerformance)
+                ClientSendBuffer.Add(networkData);
             _client.Send(networkData);
         }
 
@@ -131,7 +155,7 @@ namespace Helios.MultiNodeTests.TestKit
 
         protected void WaitUntilNMessagesReceived(int count, TimeSpan timeout)
         {
-            SpinWait.SpinUntil(() => ClientReceiveBuffer.Count >= count, timeout);
+            SpinWait.SpinUntil(() => ClientReceived.Current >= count, timeout);
         }
 
         protected Exception[] ClientExceptions { get { return _clientExecutor.Exceptions.ToArray(); } }
