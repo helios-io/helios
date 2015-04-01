@@ -112,6 +112,7 @@ namespace Helios.Reactor.Tcp
                 {
                     var networkData = NetworkData.Create(receiveState.RemoteHost, message);
                     ReceivedData(networkData, adapter);
+					HeliosTrace.Instance.TcpInboundReceiveSuccess();
                 }
 
                 //reuse the buffer
@@ -127,8 +128,6 @@ namespace Helios.Reactor.Tcp
                 //continue receiving in a loop
                 receiveState.Socket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length,
                     SocketFlags.None, ReceiveCallback, receiveState);
-
-                HeliosTrace.Instance.TcpInboundReceiveSuccess();
 
             }
             catch (SocketException ex) //node disconnected

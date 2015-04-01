@@ -41,14 +41,19 @@ namespace Helios.Tracing
         void TcpClientReceive(int payloadLength);
 
         /// <summary>
-        /// Recorded a successful TCP send operation.
+        /// Recorded a successful TCP receive operation.
         /// </summary>
         void TcpClientReceiveSuccess();
 
         /// <summary>
-        /// Recorded an unsuccessful TCP send operation.
+        /// Recorded an unsuccessful TCP receive operation.
         /// </summary>
         void TcpClientReceiveFailure();
+
+		/// <summary>
+		/// Queued an outbound send on an outbound TCP connection
+		/// </summary>
+		void TcpClientSendQueued();
 
         #endregion
 
@@ -88,14 +93,19 @@ namespace Helios.Tracing
         void TcpInboundReceive(int payloadLength);
 
         /// <summary>
-        /// Recorded a successful TCP send operation.
+        /// Recorded a successful TCP receive operation.
         /// </summary>
         void TcpInboundReceiveSuccess();
 
         /// <summary>
-        /// Recorded an unsuccessful TCP send operation.
+        /// Recorded an unsuccessful TCP receive operation.
         /// </summary>
         void TcpInboundReceiveFailure();
+
+		/// <summary>
+		/// Queued an outbound reply on an inbound TCP connection
+		/// </summary>
+		void TcpInboundSendQueued();
 
         #endregion
 

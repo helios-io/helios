@@ -4,7 +4,7 @@ using Microsoft.Diagnostics.Tracing;
 namespace Helios.ETW
 {
     [EventSource(Name = "HeliosTrace")]
-    public sealed class HeliosEtwTraceWriter : EventSource, IHeliosTraceWriter
+	public sealed class HeliosEtwTraceWriter : EventSource, IHeliosTraceWriter
     {
         private HeliosEtwTraceWriter() { }
 
@@ -171,5 +171,17 @@ namespace Helios.ETW
         {
             WriteEvent(27);
         }
+
+		[Event(28)]
+		public void TcpClientSendQueued ()
+		{
+			WriteEvent (28);
+		}
+
+		[Event(29)]
+		public void TcpInboundSendQueued ()
+		{
+			WriteEvent (29);
+		}
     }
 }

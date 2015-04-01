@@ -3,7 +3,7 @@ namespace Helios.Tracing.Impl
     /// <summary>
     /// The default <see cref="IHeliosTraceWriter"/> implementation. Doesn't do anything.
     /// </summary>
-    internal class NoOpHeliosTraceWriter : IHeliosTraceWriter
+	internal class NoOpHeliosTraceWriter : IHeliosTraceWriter
     {
         public void TcpClientConnectSuccess()
         {
@@ -49,6 +49,16 @@ namespace Helios.Tracing.Impl
         {
             
         }
+
+		public void TcpClientSendQueued ()
+		{
+
+		}
+
+		public void TcpInboundSendQueued ()
+		{
+
+		}
 
         public void TcpInboundAcceptFailure(string reason)
         {
