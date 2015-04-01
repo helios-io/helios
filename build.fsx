@@ -68,13 +68,20 @@ Target "Build" (fun _ ->
     |> ignore
 )
 
+Target "BuildMono" <| fun _ ->
+
+    !!"Helios.sln"
+    |> MSBuild "" "Rebuild" [("Configuration","Release Mono")]
+    |> ignore
+
+
 //--------------------------------------------------------------------------------
 // Copy the build output to bin directory
 //--------------------------------------------------------------------------------
 
 Target "CopyOutput" (fun _ ->    
     let copyOutput project =
-        let src = "src" @@ project @@ @"bin\release\"
+        let src = "src" @@ project @@ "bin" @@ "Release" 
         let dst = binDir @@ project
         CopyDir dst src allFiles
     [ "Helios"
@@ -85,6 +92,7 @@ Target "CopyOutput" (fun _ ->
 )
 
 Target "BuildRelease" DoNothing
+Target "BuildReleaseMono" DoNothing
 
 //--------------------------------------------------------------------------------
 // Tests targets
@@ -97,7 +105,6 @@ Target "RunTests" <| fun _ ->
         {p with 
             DisableShadowCopy = true;
             OutputFile = testOutput + "TestResults.xml" })
-
 
 //--------------------------------------------------------------------------------
 // Clean test output
@@ -120,10 +127,10 @@ module Nuget =
 
     let getProjectBinFolders project =
         match project with
-        | "Helios" -> "lib/net45"
-        | "Helios.NET40" -> "lib/net40"
-        | "Helios.NET35" -> "lib/net35"
-        | _ -> "lib/net45"
+        | "Helios" -> "lib" @@ "net45"
+        | "Helios.NET40" -> "lib" @@ "net40"
+        | "Helios.NET35" -> "lib" @@ "net35"
+        | _ -> "lib" @@ "net45"
 
     // selected nuget description
     let description project =
@@ -196,7 +203,7 @@ let createNugetPackages _ =
         // Copy dll, pdb and xml to libdir = workingDir/lib/net45/
         for bin in getProjectBinaries project do
             printfn "Handling nuget for %s" bin
-            let releaseDir = "src" @@ bin @@ "bin\Release"
+            let releaseDir = "src" @@ bin @@ "bin" @@ "Release"
             printfn "Copying binaries from %s" releaseDir
             let libDir = workingDir @@ getProjectBinFolders bin
             printfn "Creating output directory %s" libDir
@@ -338,13 +345,19 @@ Target "HelpNuget" <| fun _ ->
 //  Target dependencies
 //--------------------------------------------------------------------------------
 
+Target "Mono" DoNothing
 Target "All" DoNothing
 
 // build dependencies
 "Clean" ==> "AssemblyInfo" ==> "Build" ==> "CopyOutput" ==> "BuildRelease"
+"Clean" ==> "AssemblyInfo" ==> "BuildMono" ==> "CopyOutput" ==> "BuildReleaseMono"
 
 // tests dependencies
 "CleanTests" ==> "RunTests"
+
+ // Mono
+"BuildReleaseMono" ==> "Mono"
+//"RunTests"==> "Mono"
 
 // nuget dependencies
 

@@ -123,7 +123,6 @@ namespace Helios.Serialization
                 
                 var unreadBytes = new byte[input.ReadableBytes];
                 input.GetBytes(input.ReaderIndex, unreadBytes, 0, input.ReadableBytes);
-                var lol = unreadBytes;
                 //need additional data from the network before we can finish decoding this message
                 return null;
             }

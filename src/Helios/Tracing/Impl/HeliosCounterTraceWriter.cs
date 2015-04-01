@@ -20,6 +20,7 @@ namespace Helios.Tracing
             public AtomicCounter TcpClientReceiveCounter = new AtomicCounter(0);
             public AtomicCounter TcpClientReceiveSuccessCounter = new AtomicCounter(0);
             public AtomicCounter TcpClientReceiveFailureCounter = new AtomicCounter(0);
+			public AtomicCounter TcpClientSendQueuedCounter = new AtomicCounter(0);
             public AtomicCounter TcpInboundAcceptSuccessCounter = new AtomicCounter(0);
             public AtomicCounter TcpInboundAcceptFailureCounter = new AtomicCounter(0);
             public AtomicCounter TcpInboundClientSendCounter = new AtomicCounter(0);
@@ -28,6 +29,7 @@ namespace Helios.Tracing
             public AtomicCounter TcpInboundReceiveCounter = new AtomicCounter(0);
             public AtomicCounter TcpInboundReceiveSuccessCounter = new AtomicCounter(0);
             public AtomicCounter TcpInboundReceiveFailureCounter = new AtomicCounter(0);
+			public AtomicCounter TcpInboundSendQueuedCounter = new AtomicCounter(0);
             public AtomicCounter UdpClientSendCounter = new AtomicCounter(0);
             public AtomicCounter UdpClientSendSuccessCounter = new AtomicCounter(0);
             public AtomicCounter UdpClientSendFailureCounter = new AtomicCounter(0);
@@ -93,7 +95,7 @@ namespace Helios.Tracing
         public void TcpInboundAcceptSuccess()
         {
             Counter.TcpInboundAcceptSuccessCounter.GetAndIncrement();
-        }
+		}
 
         public void TcpInboundAcceptFailure(string reason)
         {
@@ -104,6 +106,16 @@ namespace Helios.Tracing
         {
             Counter.TcpInboundClientSendCounter.GetAndIncrement();
         }
+
+		public void TcpClientSendQueued ()
+		{
+			Counter.TcpClientSendQueuedCounter.GetAndIncrement();
+		}
+
+		public void TcpInboundSendQueued ()
+		{
+			Counter.TcpInboundSendQueuedCounter.GetAndIncrement ();
+		}
 
         public void TcpInboundSendSuccess()
         {
