@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Helios.Buffers;
 using Helios.Net;
+using Helios.Tracing;
 
 namespace Helios.Serialization
 {
@@ -70,6 +71,7 @@ namespace Helios.Serialization
 
             var networkData = NetworkData.Create(data.RemoteHost, newData, _lengthIncludesLenghtFieldLength ? length : length + _lengthFieldLength);
             encoded.Add(networkData);
+            HeliosTrace.Instance.EncodeSuccess();
         }
 
         public override void Encode(IConnection connection, IByteBuf buffer, out List<IByteBuf> encoded)
@@ -109,6 +111,7 @@ namespace Helios.Serialization
             }
             sourceByteBuf.WriteBytes(buffer);
             encoded.Add(sourceByteBuf);
+            HeliosTrace.Instance.EncodeSuccess();
         }
 
         public override IMessageEncoder Clone()

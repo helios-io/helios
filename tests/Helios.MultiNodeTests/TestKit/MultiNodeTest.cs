@@ -40,6 +40,8 @@ namespace Helios.MultiNodeTests.TestKit
         {
             ClientSendBuffer = new ConcurrentCircularBuffer<NetworkData>(BufferSize);
             ClientReceiveBuffer = new ConcurrentCircularBuffer<NetworkData>(BufferSize);
+            ServerReceiveBuffer = new ConcurrentCircularBuffer<NetworkData>(BufferSize);
+
             _clientExecutor = new AssertExecutor();
             _serverExecutor = new AssertExecutor();
             var serverBootstrap = new ServerBootstrap()
@@ -77,6 +79,7 @@ namespace Helios.MultiNodeTests.TestKit
         {
             StartServer((data, channel) =>
             {
+                ServerReceiveBuffer.Add(data);
                 channel.Send(new NetworkData() { Buffer = data.Buffer, Length = data.Length, RemoteHost = channel.RemoteHost });
             });
         }
@@ -140,6 +143,8 @@ namespace Helios.MultiNodeTests.TestKit
         protected ConcurrentCircularBuffer<NetworkData> ClientSendBuffer { get; private set; }
 
         protected ConcurrentCircularBuffer<NetworkData> ClientReceiveBuffer { get; private set; }
+
+        protected ConcurrentCircularBuffer<NetworkData> ServerReceiveBuffer { get; private set; }
 
         private IConnection _client;
 

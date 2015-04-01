@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -9,6 +10,7 @@ using Helios.Concurrency;
 using Helios.Net;
 using Helios.Net.Connections;
 using Helios.Topology;
+using Helios.Tracing;
 using Helios.Util.Collections;
 using Helios.Util.TimedOps;
 
@@ -21,7 +23,7 @@ namespace Helios.Reactor.Response
     /// </summary>
     public class TcpReactorResponseChannel : ReactorResponseChannel
     {
-        protected ConcurrentCircularBuffer<NetworkData> SendQueue = new ConcurrentCircularBuffer<NetworkData>(10, 1500);
+        protected ConcurrentQueue<NetworkData> SendQueue = new ConcurrentQueue<NetworkData>();
         protected int Throughput = 10;
         protected int IsIdle = SendBufferProcessingStatus.Idle; //1 for busy, 0 for idle
         protected volatile bool HasUnsentMessages;
@@ -85,7 +87,7 @@ namespace Helios.Reactor.Response
             var left = Throughput;
 
             NetworkData message;
-            while (SendQueue.TryTake(out message))
+            while (SendQueue.TryDequeue(out message))
             {
                 SendInternal(message.Buffer, 0, message.Length, message.RemoteHost);
                 left--;
@@ -132,15 +134,18 @@ namespace Helios.Reactor.Response
                         bytesSent += Socket.Send(bytesToSend, bytesSent, bytesToSend.Length - bytesSent,
                             SocketFlags.None);
                     }
-
+                    HeliosTrace.Instance.TcpInboundClientSend(bytesSent);
+                    HeliosTrace.Instance.TcpInboundSendSuccess();
                 }
             }
             catch (SocketException ex)
             {
+                HeliosTrace.Instance.TcpClientSendFailure();
                 Close();
             }
             catch (Exception ex)
             {
+                HeliosTrace.Instance.TcpClientSendFailure();
                 InvokeErrorIfNotNull(ex);
             }
         }

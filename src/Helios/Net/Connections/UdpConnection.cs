@@ -7,6 +7,7 @@ using Helios.Buffers;
 using Helios.Exceptions;
 using Helios.Serialization;
 using Helios.Topology;
+using Helios.Tracing;
 using Helios.Util.Concurrency;
 
 namespace Helios.Net.Connections
@@ -149,6 +150,8 @@ namespace Helios.Net.Connections
                 receiveState.Buffer.WriteBytes(receiveState.RawBuffer, 0, buffSize);
                 receiveState.RemoteHost = ((IPEndPoint) RemoteEndpoint).ToNode(TransportType.Udp);
 
+                HeliosTrace.Instance.UdpClientReceive(buffSize);
+
                 List<IByteBuf> decoded;
                 Decoder.Decode(this, receiveState.Buffer, out decoded);
 
@@ -167,9 +170,12 @@ namespace Helios.Net.Connections
                     receiveState.Socket.BeginReceiveFrom(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length,
                         SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, receiveState);
                 }
+
+                HeliosTrace.Instance.UdpClientReceiveSuccess();
             }
             catch (SocketException ex) //typically means that the socket is now closed
             {
+                HeliosTrace.Instance.UdpClientReceiveFailure();
                 Receiving = false;
                 InvokeDisconnectIfNotNull(NodeBuilder.FromEndpoint((IPEndPoint) RemoteEndpoint),
                     new HeliosConnectionException(ExceptionType.Closed, ex));
@@ -177,12 +183,14 @@ namespace Helios.Net.Connections
             }
             catch (ObjectDisposedException ex)
             {
+                HeliosTrace.Instance.UdpClientReceiveFailure();
                 Receiving = false;
                 InvokeDisconnectIfNotNull(NodeBuilder.FromEndpoint((IPEndPoint)RemoteEndpoint),
                     new HeliosConnectionException(ExceptionType.Closed, ex));
             }
             catch (Exception ex)
             {
+                HeliosTrace.Instance.UdpClientReceiveFailure();
                 InvokeErrorIfNotNull(ex);
             }
         }
@@ -211,6 +219,7 @@ namespace Helios.Net.Connections
             {
                 if (Client == null || WasDisposed)
                 {
+                    HeliosTrace.Instance.UdpClientSendFailure();
                     Close();
                     return;
                 }
@@ -228,15 +237,18 @@ namespace Helios.Net.Connections
                         bytesSent += Client.SendTo(bytesToSend, bytesSent, bytesToSend.Length - bytesSent,
                             SocketFlags.None, destination.ToEndPoint());
                     }
-                    
+                    HeliosTrace.Instance.UdpClientSend(bytesSent);
+                    HeliosTrace.Instance.UdpClientSendSuccess();
                 }
             }
             catch (SocketException ex)
             {
+                HeliosTrace.Instance.UdpClientSendFailure();
                 Close(ex);
             }
             catch (Exception ex)
             {
+                HeliosTrace.Instance.UdpClientSendFailure();
                 InvokeErrorIfNotNull(ex);
             }
         }

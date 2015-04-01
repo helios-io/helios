@@ -8,6 +8,7 @@ using Helios.Net;
 using Helios.Reactor.Response;
 using Helios.Serialization;
 using Helios.Topology;
+using Helios.Tracing;
 
 namespace Helios.Reactor.Tcp
 {
@@ -62,15 +63,26 @@ namespace Helios.Reactor.Tcp
 
         private void AcceptCallback(IAsyncResult ar)
         {
-            var newSocket = Listener.EndAccept(ar);
-            var node = NodeBuilder.FromEndpoint((IPEndPoint)newSocket.RemoteEndPoint);
+            try
+            {
+                var newSocket = Listener.EndAccept(ar);
+                var node = NodeBuilder.FromEndpoint((IPEndPoint) newSocket.RemoteEndPoint);
 
-            var receiveState = CreateNetworkState(newSocket, node);
-            var responseChannel = new TcpReactorResponseChannel(this, newSocket, EventLoop.Clone(ProxiesShareFiber));
-            SocketMap.Add(node, responseChannel);
-            NodeConnected(node, responseChannel);
-            newSocket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
-            Listener.BeginAccept(AcceptCallback, null); //accept more connections
+                HeliosTrace.Instance.TcpInboundAcceptSuccess();
+
+                var receiveState = CreateNetworkState(newSocket, node);
+                var responseChannel = new TcpReactorResponseChannel(this, newSocket, EventLoop.Clone(ProxiesShareFiber));
+                SocketMap.Add(node, responseChannel);
+                NodeConnected(node, responseChannel);
+                newSocket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None,
+                    ReceiveCallback, receiveState);
+                Listener.BeginAccept(AcceptCallback, null); //accept more connections
+            }
+            catch (Exception ex)
+            {
+                HeliosTrace.Instance.TcpInboundAcceptFailure(ex.Message);
+                throw;
+            }
         }
 
         private void ReceiveCallback(IAsyncResult ar)
@@ -82,6 +94,7 @@ namespace Helios.Reactor.Tcp
 
                 if (!receiveState.Socket.Connected || received == 0)
                 {
+                    HeliosTrace.Instance.TcpInboundReceiveFailure();
                     var connection = SocketMap[receiveState.RemoteHost];
                     CloseConnection(connection);
                     return;
@@ -89,7 +102,7 @@ namespace Helios.Reactor.Tcp
 
 
                 receiveState.Buffer.WriteBytes(receiveState.RawBuffer, 0, received);
-
+                HeliosTrace.Instance.TcpInboundReceive(received);
                 var adapter = SocketMap[receiveState.RemoteHost];
 
                 List<IByteBuf> decoded;
@@ -115,6 +128,8 @@ namespace Helios.Reactor.Tcp
                 receiveState.Socket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length,
                     SocketFlags.None, ReceiveCallback, receiveState);
 
+                HeliosTrace.Instance.TcpInboundReceiveSuccess();
+
             }
             catch (SocketException ex) //node disconnected
             {
@@ -123,6 +138,7 @@ namespace Helios.Reactor.Tcp
                     var connection = SocketMap[receiveState.RemoteHost];
                     CloseConnection(ex, connection);
                 }
+                HeliosTrace.Instance.TcpInboundReceiveFailure();
             }
             catch (ObjectDisposedException ex)
             {
@@ -131,6 +147,7 @@ namespace Helios.Reactor.Tcp
                     var connection = SocketMap[receiveState.RemoteHost];
                     CloseConnection(ex, connection);
                 }
+                HeliosTrace.Instance.TcpInboundReceiveFailure();
             }
             catch (Exception ex)
             {
@@ -139,6 +156,7 @@ namespace Helios.Reactor.Tcp
                     var connection = SocketMap[receiveState.RemoteHost];
                     OnErrorIfNotNull(ex, connection);
                 }
+                HeliosTrace.Instance.TcpInboundReceiveFailure();
             }
         }
 
@@ -163,17 +181,25 @@ namespace Helios.Reactor.Tcp
                 clientSocket.Encoder.Encode(ConnectionAdapter, buf, out encodedMessages);
                 foreach (var message in encodedMessages)
                 {
-                    var state = CreateNetworkState(clientSocket.Socket, destination, message,0);
-                    clientSocket.Socket.BeginSend(message.ToArray(), 0, message.ReadableBytes, SocketFlags.None,
-                        SendCallback, state);
+                    var bytesToSend = message.ToArray();
+                    var bytesSent = 0;
+                    while (bytesSent < bytesToSend.Length)
+                    {
+                        bytesSent += clientSocket.Socket.Send(bytesToSend, bytesSent, bytesToSend.Length - bytesSent,
+                            SocketFlags.None);
+                    }
+                    HeliosTrace.Instance.TcpInboundClientSend(bytesSent);
+                    HeliosTrace.Instance.TcpInboundSendSuccess();
                 }
             }
             catch (SocketException ex)
             {
+                HeliosTrace.Instance.TcpClientSendFailure();
                 CloseConnection(ex, clientSocket);
             }
             catch (Exception ex)
             {
+                HeliosTrace.Instance.TcpClientSendFailure();
                 OnErrorIfNotNull(ex, clientSocket);
             }
         }
@@ -210,43 +236,6 @@ namespace Helios.Reactor.Tcp
         internal override void CloseConnection(IConnection remoteHost)
         {
             CloseConnection(null, remoteHost);
-        }
-
-        private void SendCallback(IAsyncResult ar)
-        {
-            var receiveState = (NetworkState)ar.AsyncState;
-            try
-            {
-                if (!receiveState.Socket.Connected)
-                {
-                    var connection = SocketMap[receiveState.RemoteHost];
-                    CloseConnection(connection);
-                    return;
-                }
-
-                var bytesSent = receiveState.Socket.EndSend(ar);
-                receiveState.Buffer.SkipBytes(bytesSent);
-
-                if(receiveState.Buffer.ReadableBytes > 0) //need to send again
-                    receiveState.Socket.BeginSend(receiveState.Buffer.ToArray(), 0, receiveState.Buffer.ReadableBytes, SocketFlags.None,
-                   SendCallback, receiveState);
-            }
-            catch (SocketException ex) //node disconnected
-            {
-                if (SocketMap.ContainsKey(receiveState.RemoteHost))
-                {
-                    var connection = SocketMap[receiveState.RemoteHost];
-                    CloseConnection(ex, connection);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (SocketMap.ContainsKey(receiveState.RemoteHost))
-                {
-                    var connection = SocketMap[receiveState.RemoteHost];
-                    OnErrorIfNotNull(ex, connection);
-                }
-            }
         }
 
         #region IDisposable Members

@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Exceptions;
 using Helios.Serialization;
 using Helios.Topology;
+using Helios.Tracing;
 using Helios.Util.Concurrency;
 
 namespace Helios.Net.Connections
@@ -206,15 +206,18 @@ namespace Helios.Net.Connections
                 try
                 {
                     _client.EndConnect(ar);
+                    HeliosTrace.Instance.TcpClientConnectSuccess();
                 }
                 catch (SocketException ex)
                 {
+                    HeliosTrace.Instance.TcpClientConnectFailure(ex.Message);
                     throw new HeliosConnectionException(ExceptionType.NotOpen, ex);
                 }
             }
             else
             {
                 _client.Close();
+                HeliosTrace.Instance.TcpClientConnectFailure("Timed out on connect");
                 throw new HeliosConnectionException(ExceptionType.TimedOut, "Timed out on connect");
             }
             SetLocal(_client);
@@ -268,15 +271,18 @@ namespace Helios.Net.Connections
                         bytesSent += _client.Send(bytesToSend, bytesSent, bytesToSend.Length - bytesSent,
                             SocketFlags.None);
                     }
-
+                    HeliosTrace.Instance.TcpClientSend(bytesSent);
+                    HeliosTrace.Instance.TcpClientSendSuccess();
                 }
             }
             catch (SocketException ex)
             {
+                HeliosTrace.Instance.TcpClientSendFailure();
                 Close(ex);
             }
             catch (Exception ex)
             {
+                HeliosTrace.Instance.TcpClientSendFailure();
                 InvokeErrorIfNotNull(ex);
             }
         }

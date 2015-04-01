@@ -4,6 +4,7 @@ using Helios.Buffers;
 using Helios.Exceptions;
 using Helios.Net;
 using Helios.Topology;
+using Helios.Tracing;
 
 namespace Helios.Serialization
 {
@@ -50,6 +51,7 @@ namespace Helios.Serialization
             while (obj != null)
             {
                 decoded.Add(obj);
+                HeliosTrace.Instance.DecodeSucccess(1);
                 obj = Decode(connection, buffer);
             } 
         }
@@ -99,13 +101,16 @@ namespace Helios.Serialization
                 {
                     // buffer contains more bytes than the frameLength so we can discard all now
                     input.SkipBytes((int) frameLength);
+                    HeliosTrace.Instance.DecodeMalformedBytes((int)frameLength);
                 }
                 else
                 {
                     //Enter discard mode and discard everything receive so far
                     _discardingTooLongFrame = true;
                     _bytesToDiscard = discard;
+                    HeliosTrace.Instance.DecodeMalformedBytes(input.ReadableBytes);
                     input.SkipBytes(input.ReadableBytes);
+                    
                 }
                 FailIfNecessary(true);
                 return null;
@@ -126,6 +131,7 @@ namespace Helios.Serialization
             if (_initialBytesToStrip > frameLengthInt)
             {
                 input.SkipBytes(frameLengthInt);
+                HeliosTrace.Instance.DecodeFailure();
                 throw new CorruptedFrameException(string.Format("Adjusted frame lenght ({0}) is less than initialBytesToStrip: {1}", frameLength, _initialBytesToStrip));
             }
             input.SkipBytes(_initialBytesToStrip);
@@ -194,12 +200,20 @@ namespace Helios.Serialization
 
         private void Fail(long frameLength)
         {
-            if (frameLength > 0)
-                throw new TooLongFrameException(string.Format("Adjusted frame length exceeds {0}: {1} - discarded",
-                    _maxFrameLength, frameLength));
-            else
-                throw new TooLongFrameException(string.Format("Adjusted frame lenght exceeds {0} - discarding",
-                    _maxFrameLength));
+            try
+            {
+                if (frameLength > 0)
+                    throw new TooLongFrameException(string.Format("Adjusted frame length exceeds {0}: {1} - discarded",
+                        _maxFrameLength, frameLength));
+                else
+                    throw new TooLongFrameException(string.Format("Adjusted frame lenght exceeds {0} - discarding",
+                        _maxFrameLength));
+            }
+            catch
+            {
+                HeliosTrace.Instance.DecodeFailure();
+                throw;
+            }
         }
 
         #region Static methods
