@@ -13,9 +13,7 @@ namespace Helios.Concurrency.Impl
     public class DedicatedThreadPoolFiber : IFiber
     {
         private readonly int _numThreads;
-        private List<Thread> _threads;
-
-        private readonly BlockingCollection<Action> _blockingCollection = new BlockingCollection<Action>(250000);
+        private DedicatedThreadPool _threadPool;
 
         public DedicatedThreadPoolFiber(int numThreads)
             : this(new BasicExecutor(), numThreads)
@@ -28,28 +26,8 @@ namespace Helios.Concurrency.Impl
             numThreads.NotNegative();
             numThreads.NotLessThan(1);
             _numThreads = numThreads;
-            SpawnThreads(numThreads);
+            _threadPool = new DedicatedThreadPool(new DedicatedThreadPoolSettings(numThreads));
             Running = true;
-        }
-
-        protected void SpawnThreads(int threadCount)
-        {
-            _threads = new List<Thread>(threadCount);
-            for (var i = 0; i < threadCount; i++)
-            {
-
-                var thread = new Thread(_ =>
-                {
-                    foreach (var task in _blockingCollection.GetConsumingEnumerable())
-                    {
-                        Executor.Execute(task);
-                        if (!Executor.AcceptingJobs) return;
-                    }
-                }) { IsBackground = true };
-                thread.Start();
-                _threads.Add(thread);
-            }
-
         }
 
         private volatile IExecutor _executor;
@@ -61,7 +39,7 @@ namespace Helios.Concurrency.Impl
         public void Add(Action op)
         {
             if (Running)
-                _blockingCollection.Add(op);
+                _threadPool.QueueUserWorkItem(() => Executor.Execute(op));
         }
 
         public void SwapExecutor(IExecutor executor)
@@ -80,11 +58,12 @@ namespace Helios.Concurrency.Impl
         public Task GracefulShutdown(TimeSpan gracePeriod)
         {
             Shutdown(gracePeriod);
-            return TaskRunner.Delay(gracePeriod);
+            return TaskRunner.Delay(gracePeriod).ContinueWith(tr => Stop());
         }
 
         public void Stop()
         {
+            _threadPool.Dispose();
             Executor.Shutdown();
         }
 
@@ -102,8 +81,8 @@ namespace Helios.Concurrency.Impl
             {
                 if (isDisposing)
                 {
+                    _threadPool.Dispose();
                     Shutdown(TimeSpan.Zero);
-                    _threads = null;
                 }
             }
 

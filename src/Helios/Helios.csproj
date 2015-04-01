@@ -71,6 +71,7 @@
     <Compile Include="Concurrency\Impl\SharedFiber.cs" />
     <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />
     <Compile Include="Exceptions\EncodingExceptions.cs" />
+    <Compile Include="Helios.Concurrency.DedicatedThreadPool.cs" />
     <Compile Include="Tracing\Impl\HeliosCounterTraceWriter.cs" />
     <Compile Include="Tracing\HeliosTrace.cs" />
     <Compile Include="Tracing\IHeliosTraceWriter.cs" />
@@ -195,6 +196,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Helios.nuspec" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

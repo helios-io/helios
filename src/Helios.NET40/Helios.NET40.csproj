@@ -151,6 +151,9 @@
     <Compile Include="..\Helios\Exceptions\HeliosNodeException.cs">
       <Link>Exceptions\HeliosNodeException.cs</Link>
     </Compile>
+    <Compile Include="..\Helios\Helios.Concurrency.DedicatedThreadPool.cs">
+      <Link>Helios.Concurrency.DedicatedThreadPool.cs</Link>
+    </Compile>
     <Compile Include="..\Helios\HeliosException.cs">
       <Link>HeliosException.cs</Link>
     </Compile>

@@ -15,7 +15,7 @@ namespace Helios.Benchmark.DedicatedThreadFiber
             for (int i = 0; i < generations; i++)
             {
                 var workItems = 10000 * (int)Math.Pow(10, i);
-                Console.WriteLine("Comparing Helios.Concurrency.DedicatedThreadPool vs Helios.Concurrency.DedicatedThreadFiber for {0} items", workItems);
+                Console.WriteLine("Comparing Systsem.Threading.ThreadPool vs Helios.Concurrency.DedicatedThreadFiber for {0} items", workItems);
                 Console.WriteLine("DedicatedThreadFiber.NumThreads: {0}", threadCount);
 
                 Console.WriteLine("System.Threading.ThreadPool");
