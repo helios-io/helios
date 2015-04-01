@@ -3,7 +3,7 @@
 namespace Helios.Util.TimedOps
 {
     /// <summary>
-    /// Import of the scala.concurrenct.duration.Deadline class
+    /// Import of the scala.concurrent.duration.Deadline class
     /// </summary>
     public class Deadline
     {

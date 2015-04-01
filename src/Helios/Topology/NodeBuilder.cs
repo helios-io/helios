@@ -63,7 +63,7 @@ namespace Helios.Topology
         }
 
         /// <summary>
-        /// Add an OS name and verison to an INode instance
+        /// Add an OS name and version to an INode instance
         /// </summary>
         /// <param name="n">A valid INode instance</param>
         /// <param name="osName">The name and version of the host operating system</param>

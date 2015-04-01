@@ -73,7 +73,7 @@ namespace Helios.Buffers
         bool IsWritable();
 
         /// <summary>
-        /// Returns true if and only if the buffer has enough <see cref="Capacity"/> to accomodate <see cref="size"/> additional bytes.
+        /// Returns true if and only if the buffer has enough <see cref="Capacity"/> to accommodate <see cref="size"/> additional bytes.
         /// </summary>
         /// <param name="size">The number of additional elements we would like to write.</param>
         bool IsWritable(int size);
@@ -418,10 +418,10 @@ namespace Helios.Buffers
 
         /// <summary>
         /// Transfers bytes from this buffer's data into the specified destination buffer
-        /// starting at the curent <see cref="ReaderIndex"/> until the destination becomes
+        /// starting at the current <see cref="ReaderIndex"/> until the destination becomes
         /// non-writable and increases the <see cref="ReaderIndex"/> by the number of transferred bytes.
         /// </summary>
-        /// <exception cref="IndexOutOfRangeException">if <see cref="destination.WritableBytes"/> is greaer than <see cref="ReadableBytes"/>.</exception>
+        /// <exception cref="IndexOutOfRangeException">if <see cref="destination.WritableBytes"/> is greater than <see cref="ReadableBytes"/>.</exception>
         IByteBuf ReadBytes(IByteBuf destination);
 
         IByteBuf ReadBytes(IByteBuf destination, int length);

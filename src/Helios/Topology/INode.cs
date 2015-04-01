@@ -26,7 +26,7 @@ namespace Helios.Topology
         string MachineName { get; set; }
 
         /// <summary>
-        /// OS name and version of this macine
+        /// OS name and version of this machine
         /// </summary>
         string OS { get; set; }
 
@@ -36,7 +36,7 @@ namespace Helios.Topology
         string ServiceVersion { get; set; }
 
         /// <summary>
-        /// A JSON blob representing arbtirary data about this node
+        /// A JSON blob representing arbitrary data about this node
         /// </summary>
         string CustomData { get; set; }
 

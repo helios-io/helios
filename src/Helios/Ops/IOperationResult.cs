@@ -30,7 +30,7 @@ namespace Helios.Ops
         DateTimeOffset Generated { get; }
 
         /// <summary>
-        /// A list of errors that occured during the operation
+        /// A list of errors that occurred during the operation
         /// </summary>
         IDictionary<string, object> Errors { get; }
     }
