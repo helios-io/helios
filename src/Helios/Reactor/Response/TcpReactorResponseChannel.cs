@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using Helios.Buffers;
+using Helios.Concurrency;
 using Helios.Net;
 using Helios.Topology;
 using Helios.Tracing;
@@ -44,7 +45,7 @@ namespace Helios.Reactor.Response
         public override void Send(NetworkData data)
         {
 			HeliosTrace.Instance.TcpInboundSendQueued ();
-			EventLoop.Execute (() => SendInternal (data.Buffer, 0, data.Length, data.RemoteHost));
+			SendInternal (data.Buffer, 0, data.Length, data.RemoteHost);
         }
 
         private void SendInternal(byte[] buffer, int index, int length, INode remoteHost)
