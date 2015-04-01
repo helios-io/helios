@@ -62,7 +62,7 @@ namespace Helios.Benchmark.TCPThroughput
             {
                 Send(message);
             }
-            WaitUntilNMessagesReceived(sends);
+            WaitUntilNMessagesReceived(sends, TimeSpan.FromMinutes(3)); //set a really long timeout, just in case
 
         }
     }
