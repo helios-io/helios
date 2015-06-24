@@ -68,13 +68,6 @@ Target "Build" (fun _ ->
     |> ignore
 )
 
-Target "BuildMono" <| fun _ ->
-
-    !!"Helios.sln"
-    |> MSBuild "" "Rebuild" [("Configuration","Release Mono")]
-    |> ignore
-
-
 //--------------------------------------------------------------------------------
 // Copy the build output to bin directory
 //--------------------------------------------------------------------------------
@@ -350,19 +343,18 @@ Target "All" DoNothing
 
 // build dependencies
 "Clean" ==> "AssemblyInfo" ==> "Build" ==> "CopyOutput" ==> "BuildRelease"
-"Clean" ==> "AssemblyInfo" ==> "BuildMono" ==> "CopyOutput" ==> "BuildReleaseMono"
 
 // tests dependencies
 "CleanTests" ==> "RunTests"
-
- // Mono
-"BuildReleaseMono" ==> "Mono"
-//"RunTests"==> "Mono"
 
 // nuget dependencies
 
 "BuildRelease" ==> "All"
 "RunTests" ==> "All"
 "Nuget" ==> "All"
+
+Target "AllTests" DoNothing //used for Mono builds, due to Mono 4.0 bug with FAKE / NuGet https://github.com/fsharp/fsharp/issues/427
+"BuildRelease" ==> "AllTests"
+"RunTests" ==> "AllTests"
 
 RunTargetOrDefault "Help"
