@@ -49,7 +49,7 @@ Target "RestorePackages" (fun _ ->
 // Clean build results
 
 Target "Clean" (fun _ ->
-    CleanDir binDir
+    DeleteDir binDir
 )
 
 //--------------------------------------------------------------------------------
@@ -355,6 +355,7 @@ Target "All" DoNothing
 
 // tests dependencies
 "CleanTests" ==> "RunTests"
+"CleanNuget" ==> "BuildRelease" ==> "Nuget"
 
 // nuget dependencies
 
