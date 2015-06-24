@@ -38,10 +38,10 @@ let nugetExe = FullName @".nuget\NuGet.exe"
 
 open Fake.RestorePackageHelper
 Target "RestorePackages" (fun _ -> 
-     "Helios.sln"
+     "./Helios.sln"
      |> RestoreMSSolutionPackages (fun p ->
          { p with
-             OutputPath = "./src/packages"
+             OutputPath = "./packages"
              Retries = 4 })
  )
 
