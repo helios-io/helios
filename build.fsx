@@ -36,11 +36,20 @@ let nugetDir = binDir @@ "nuget"
 let workingDir = binDir @@ "build"
 let nugetExe = FullName @".nuget\NuGet.exe"
 
+open Fake.RestorePackageHelper
+Target "RestorePackages" (fun _ -> 
+     "./Helios.sln"
+     |> RestoreMSSolutionPackages (fun p ->
+         { p with
+             OutputPath = "./packages"
+             Retries = 4 })
+ )
+
 //--------------------------------------------------------------------------------
 // Clean build results
 
 Target "Clean" (fun _ ->
-    CleanDir binDir
+    DeleteDir binDir
 )
 
 //--------------------------------------------------------------------------------
@@ -67,13 +76,6 @@ Target "Build" (fun _ ->
     |> MSBuildRelease "" "Rebuild"
     |> ignore
 )
-
-Target "BuildMono" <| fun _ ->
-
-    !!"Helios.sln"
-    |> MSBuild "" "Rebuild" [("Configuration","Release Mono")]
-    |> ignore
-
 
 //--------------------------------------------------------------------------------
 // Copy the build output to bin directory
@@ -157,19 +159,25 @@ Target "CleanNuget" (fun _ ->
 // Pack nuget for all projects
 // Publish to nuget.org if nugetkey is specified
 
-
 let createNugetPackages _ =
+    let mutable dirName = 1
     let removeDir dir = 
         let del _ = 
             DeleteDir dir
             not (directoryExists dir)
         runWithRetries del 3 |> ignore
 
+    let getDirName workingDir dirCount =
+        workingDir + dirCount.ToString()
+
+    CleanDir workingDir
+
     ensureDirectory nugetDir
     for nuspec in !! "src/**/*.nuspec" do
+        let ourWorkingDir = getDirName workingDir dirName
         printfn "Creating nuget packages for %s" nuspec
         
-        CleanDir workingDir
+        ensureDirectory ourWorkingDir
 
         let project = Path.GetFileNameWithoutExtension nuspec 
         let projectDir = Path.GetDirectoryName nuspec
@@ -195,7 +203,7 @@ let createNugetPackages _ =
                         Version = releaseVersion
                         Tags = tags |> String.concat " "
                         OutputPath = outputDir
-                        WorkingDir = workingDir
+                        WorkingDir = ourWorkingDir
                         SymbolPackage = symbolPackage
                         Dependencies = dependencies })
                 nuspec
@@ -205,7 +213,7 @@ let createNugetPackages _ =
             printfn "Handling nuget for %s" bin
             let releaseDir = "src" @@ bin @@ "bin" @@ "Release"
             printfn "Copying binaries from %s" releaseDir
-            let libDir = workingDir @@ getProjectBinFolders bin
+            let libDir = ourWorkingDir @@ getProjectBinFolders bin
             printfn "Creating output directory %s" libDir
             ensureDirectory libDir
             !! (releaseDir @@ bin + ".dll")
@@ -214,7 +222,7 @@ let createNugetPackages _ =
             |> CopyFiles libDir
 
         // Copy all src-files (.cs and .fs files) to workingDir/src
-        let nugetSrcDir = workingDir @@ @"src/"
+        let nugetSrcDir = ourWorkingDir @@ @"src/"
         // CreateDir nugetSrcDir
 
         let isCs = hasExt ".cs"
@@ -231,7 +239,8 @@ let createNugetPackages _ =
         // Uses the files we copied to workingDir and outputs to nugetdir
         pack nugetDir NugetSymbolPackage.Nuspec
         
-        removeDir workingDir
+        //removeDir ourWorkingDir
+        dirName <- dirName + 1
 
 let publishNugetPackages _ = 
     let rec publishPackage url accessKey trialsLeft packageFile =
@@ -349,20 +358,20 @@ Target "Mono" DoNothing
 Target "All" DoNothing
 
 // build dependencies
-"Clean" ==> "AssemblyInfo" ==> "Build" ==> "CopyOutput" ==> "BuildRelease"
-"Clean" ==> "AssemblyInfo" ==> "BuildMono" ==> "CopyOutput" ==> "BuildReleaseMono"
+"Clean" ==> "AssemblyInfo" ==> "RestorePackages" ==> "Build" ==> "CopyOutput" ==> "BuildRelease"
 
 // tests dependencies
 "CleanTests" ==> "RunTests"
-
- // Mono
-"BuildReleaseMono" ==> "Mono"
-//"RunTests"==> "Mono"
+"CleanNuget" ==> "BuildRelease" ==> "Nuget"
 
 // nuget dependencies
 
 "BuildRelease" ==> "All"
 "RunTests" ==> "All"
 "Nuget" ==> "All"
+
+Target "AllTests" DoNothing //used for Mono builds, due to Mono 4.0 bug with FAKE / NuGet https://github.com/fsharp/fsharp/issues/427
+"BuildRelease" ==> "AllTests"
+"RunTests" ==> "AllTests"
 
 RunTargetOrDefault "Help"

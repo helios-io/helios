@@ -11,7 +11,7 @@ popd  > /dev/null
 
 mono $SCRIPT_PATH/.nuget/NuGet.exe update -self
 
-mono $SCRIPT_PATH/.nuget/NuGet.exe install FAKE -OutputDirectory $SCRIPT_PATH/packages -ExcludeVersion -Version 3.4.1
+mono $SCRIPT_PATH/.nuget/NuGet.exe install FAKE -OutputDirectory $SCRIPT_PATH/packages -ExcludeVersion -Version 3.28.8
 
 if ! [ -e $SCRIPT_PATH/packages/SourceLink.Fake/tools/SourceLink.fsx ] ; then
 	mono $SCRIPT_PATH/.nuget/NuGet.exe install SourceLink.Fake -OutputDirectory $SCRIPT_PATH/packages -ExcludeVersion
