@@ -36,6 +36,15 @@ let nugetDir = binDir @@ "nuget"
 let workingDir = binDir @@ "build"
 let nugetExe = FullName @".nuget\NuGet.exe"
 
+open Fake.RestorePackageHelper
+Target "RestorePackages" (fun _ -> 
+     "Helios.sln"
+     |> RestoreMSSolutionPackages (fun p ->
+         { p with
+             OutputPath = "./src/packages"
+             Retries = 4 })
+ )
+
 //--------------------------------------------------------------------------------
 // Clean build results
 
@@ -342,7 +351,7 @@ Target "Mono" DoNothing
 Target "All" DoNothing
 
 // build dependencies
-"Clean" ==> "AssemblyInfo" ==> "Build" ==> "CopyOutput" ==> "BuildRelease"
+"Clean" ==> "AssemblyInfo" ==> "RestorePackages" ==> "Build" ==> "CopyOutput" ==> "BuildRelease"
 
 // tests dependencies
 "CleanTests" ==> "RunTests"
