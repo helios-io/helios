@@ -40,7 +40,7 @@ namespace Helios.MultiNodeTests.TestKit
 
         public virtual IByteBufAllocator Allocator { get { return UnpooledByteBufAllocator.Default; } }
 
-        public virtual IHeliosConfig Config { get { return new DefaultConnectionConfig(); } }
+        public virtual IHeliosConfig Config { get { return new DefaultHeliosConfig(); } }
 
         private IConnectionFactory _clientConnectionFactory;
 
