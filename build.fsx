@@ -38,10 +38,10 @@ let nugetExe = FullName @".nuget\NuGet.exe"
 
 open Fake.RestorePackageHelper
 Target "RestorePackages" (fun _ -> 
-     "./src/Helios.sln"
+     "./Helios.sln"
      |> RestoreMSSolutionPackages (fun p ->
          { p with
-             OutputPath = "./src/packages"
+             OutputPath = "./packages"
              Retries = 4 })
  )
 
@@ -72,7 +72,7 @@ Target "AssemblyInfo" (fun _ ->
 // Build the solution
 
 Target "Build" (fun _ ->
-    !!"src/Helios.sln"
+    !!"Helios.sln"
     |> MSBuildRelease "" "Rebuild"
     |> ignore
 )
@@ -86,7 +86,9 @@ Target "CopyOutput" (fun _ ->
         let src = "src" @@ project @@ "bin" @@ "Release" 
         let dst = binDir @@ project
         CopyDir dst src allFiles
-    [ "core/Helios"
+    [ "Helios"
+      "Helios.NET35"
+      "Helios.NET40"
     ]
     |> List.iter copyOutput
 )
@@ -98,7 +100,7 @@ Target "BuildReleaseMono" DoNothing
 // Tests targets
 //--------------------------------------------------------------------------------
 Target "RunTests" <| fun _ ->
-    let nunitAssemblies = !! "src/tests/**/bin/Release/*.Tests.dll" ++ "src/tests/**/bin/Release/Helios.MultiNodeTests.dll"
+    let nunitAssemblies = !! "tests/**/bin/Release/*.Tests.dll" ++ "tests/**/bin/Release/Helios.MultiNodeTests.dll"
 
     mkdir testOutput
     nunitAssemblies |> NUnit(fun p -> 
