@@ -90,6 +90,7 @@
     <Compile Include="Util\Concurrency\TaskRunner.cs" />
     <Compile Include="Util\FlagsHelper.cs" />
     <Compile Include="Util\Guard.cs" />
+    <Compile Include="Util\MonotonicClock.cs" />
     <Compile Include="Util\NullGuard.cs" />
     <Compile Include="Util\CollectionBuilder.cs" />
     <Compile Include="Util\ThreadLocalRandom.cs" />
