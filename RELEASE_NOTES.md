@@ -1,6 +1,3 @@
-#### 2.0.0 Jul 01 2015
-Place-holder for Helios 2.0
-
 #### 1.4.0 Apr 01 2015
 Major update to Helios designed to help support [Akka.NET v1](http://getakka.net/).
 
