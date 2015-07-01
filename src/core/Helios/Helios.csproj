@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{FCC26FA6-1B8E-413D-ACA5-A25B9C6459A1}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Helios</RootNamespace>
+    <AssemblyName>Helios</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Mono|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug Mono|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="Buffers\AbstractByteBufAllocator.cs" />
+    <Compile Include="Buffers\ByteBufferUtil.cs" />
+    <Compile Include="Buffers\DuplicateByteBuf.cs" />
+    <Compile Include="Buffers\EmptyByteBuf.cs" />
+    <Compile Include="Buffers\Unpooled.cs" />
+    <Compile Include="Buffers\UnpooledByteBufAllocator.cs" />
+    <Compile Include="Helios.Concurrency.DedicatedThreadPool.cs" />
+    <Compile Include="Util\ByteArrayExtensions.cs" />
+    <Compile Include="Buffers\AbstractByteBuf.cs" />
+    <Compile Include="Buffers\ByteBuffer.cs" />
+    <Compile Include="Buffers\IByteBuf.cs" />
+    <Compile Include="Buffers\IByteBufAllocator.cs" />
+    <Compile Include="Buffers\IReferenceCounted.cs" />
+    <Compile Include="Buffers\UnpooledDirectByteBuf.cs" />
+    <Compile Include="HeliosException.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util\AtomicCounters.cs" />
+    <Compile Include="Util\AtomicReference.cs" />
+    <Compile Include="Util\Collections\CircularBuffer.cs" />
+    <Compile Include="Util\Collections\CollectionExtensions.cs" />
+    <Compile Include="Util\Collections\ConcurrentCircularBuffer.cs" />
+    <Compile Include="Util\Collections\ConcurrentFixedSizeStack.cs" />
+    <Compile Include="Util\Collections\DictionaryExtensions.cs" />
+    <Compile Include="Util\Collections\FixedSizeStack.cs" />
+    <Compile Include="Util\Collections\ICircularBuffer.cs" />
+    <Compile Include="Util\Collections\IFixedSizeStack.cs" />
+    <Compile Include="Util\Concurrency\TaskRunner.cs" />
+    <Compile Include="Util\FlagsHelper.cs" />
+    <Compile Include="Util\Guard.cs" />
+    <Compile Include="Util\NullGuard.cs" />
+    <Compile Include="Util\CollectionBuilder.cs" />
+    <Compile Include="Util\ThreadLocalRandom.cs" />
+    <Compile Include="Util\TimedOps\Deadline.cs" />
+    <Compile Include="Util\TimedOps\ScheduledValue.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Helios.nuspec" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
