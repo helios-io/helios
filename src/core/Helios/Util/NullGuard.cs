@@ -14,6 +14,12 @@ namespace Helios.Util
                 throw new ArgumentNullException("obj");
         }
 
+        public static void NotNullOrEmtpy(this string obj)
+        {
+            if(string.IsNullOrEmpty(obj))
+                throw new ArgumentNullException("obj");
+        }
+
         public static TOut NotNull<TIn, TOut>(this TIn obj, Func<TIn, TOut> nextOp)
             where TOut : class
             where TIn : class

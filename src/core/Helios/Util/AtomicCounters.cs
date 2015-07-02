@@ -43,8 +43,6 @@ namespace Helios.Util
 
     /// <summary>
     /// Class used for atomic counters and increments.
-    /// 
-    /// Used inside the <see cref="FSM{TS,TD}"/> and in parts of Akka.Remote.
     /// </summary>
     public class AtomicCounter
     {
