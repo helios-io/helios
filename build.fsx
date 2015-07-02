@@ -41,7 +41,7 @@ Target "RestorePackages" (fun _ ->
      "./src/Helios.sln"
      |> RestoreMSSolutionPackages (fun p ->
          { p with
-             OutputPath = "./src/packages"
+             OutputPath = "./packages"
              Retries = 4 })
  )
 
