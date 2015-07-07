@@ -67,6 +67,7 @@
   <ItemGroup>
     <Compile Include="Buffer\ByteBufferTests.cs" />
     <Compile Include="Buffer\UnpooledDirectByteBufferTests.cs" />
+    <Compile Include="Channel\ChannelOptionTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\Collections\CircularBufferTests.cs" />
     <Compile Include="Util\Collections\ConcurrentCircularBufferTests.cs" />
