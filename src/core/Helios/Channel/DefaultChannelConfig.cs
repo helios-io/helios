@@ -9,7 +9,9 @@ namespace Helios.Channel
     /// </summary>
     public class DefaultChannelConfig : IChannelConfig
     {
-// ReSharper disable once InconsistentNaming
+        private static readonly IRecvByteBufAllocator DEFAULT_RCVBUF_ALLOCATOR = AdaptiveRecvByteBufAllocator.Default;
+
+        // ReSharper disable once InconsistentNaming
         private const int DEFAULT_CONNECT_TIMEOUT = 30000; //30s
 
         protected readonly IChannel Channel;
@@ -19,6 +21,7 @@ namespace Helios.Channel
         private volatile int _maxMessagesPerRead;
         private volatile int _writeSpinCount = 16;
         private volatile IByteBufAllocator _allocator = UnpooledByteBufAllocator.Default;
+        private volatile IRecvByteBufAllocator _recvAllocator = DEFAULT_RCVBUF_ALLOCATOR;
         private volatile bool _autoRead = true;
         private volatile int _writeBufferHighWaterMark = 64 * 1024;
         private volatile int _writeBufferLowWaterMark = 32 * 1024;
@@ -48,7 +51,7 @@ namespace Helios.Channel
 
         public T GetOption<T>(ChannelOption<T> option)
         {
-            if(option == null)
+            if (option == null)
                 throw new ArgumentNullException("option");
             if (option == ChannelOption.CONNECT_TIMEOUT_MILLIS)
                 return (T)(object)ConnectTimeoutMillis;
@@ -56,9 +59,10 @@ namespace Helios.Channel
                 return (T) (object) MaxMessagesPerRead;
             if (option == ChannelOption.WRITE_SPIN_COUNT)
                 return (T) (object) WriteSpinCount;
-            if(option == ChannelOption.ALLOCATOR)
+            if (option == ChannelOption.ALLOCATOR)
                 return (T)(object)Allocator;
-            //TODO: RCVBUF_ALLOCATOR
+            if (option == ChannelOption.RCVBUF_ALLOCATOR)
+                return (T) RecvAllocator;
             if (option == ChannelOption.AUTO_READ)
                 return (T) (object) AutoRead;
             if (option == ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK)
@@ -88,7 +92,10 @@ namespace Helios.Channel
             {
                 SetAllocator((IByteBufAllocator) value);
             }
-            //TODO: RCVBUF_ALLOCATOR
+            else if (option == ChannelOption.RCVBUF_ALLOCATOR)
+            {
+                SetRecvAllocator((IRecvByteBufAllocator) value);
+            }
             else if (option == ChannelOption.AUTO_READ)
             {
                 SetAutoRead((bool) (object) value);
@@ -162,9 +169,22 @@ namespace Helios.Channel
 
         public IChannelConfig SetAllocator(IByteBufAllocator allocator)
         {
-            if(allocator == null)
+            if (allocator == null)
                 throw new ArgumentNullException("allocator");
             _allocator = allocator;
+            return this;
+        }
+
+        public IRecvByteBufAllocator RecvAllocator
+        {
+            get { return _recvAllocator; }
+        }
+
+        public IChannelConfig SetRecvAllocator(IRecvByteBufAllocator allocator)
+        {
+            if (allocator == null)
+                throw new ArgumentNullException("allocator");
+            _recvAllocator = allocator;
             return this;
         }
 

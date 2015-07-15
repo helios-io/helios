@@ -62,9 +62,11 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Buffers\AbstractByteBufAllocator.cs" />
+    <Compile Include="Buffers\AdaptiveRecvByteBufAllocator.cs" />
     <Compile Include="Buffers\ByteBufferUtil.cs" />
     <Compile Include="Buffers\DuplicateByteBuf.cs" />
     <Compile Include="Buffers\EmptyByteBuf.cs" />
+    <Compile Include="Buffers\FixedRecvByteBufAllocator.cs" />
     <Compile Include="Buffers\Unpooled.cs" />
     <Compile Include="Buffers\UnpooledByteBufAllocator.cs" />
     <Compile Include="Channel\ChannelOption.cs" />
@@ -73,6 +75,7 @@
     <Compile Include="Channel\IChannelConfig.cs" />
     <Compile Include="Channel\IChannelPipeline.cs" />
     <Compile Include="Channel\IEventLoop.cs" />
+    <Compile Include="Channel\IRecvByteBufAllocator.cs" />
     <Compile Include="Helios.Concurrency.DedicatedThreadPool.cs" />
     <Compile Include="Util\ByteArrayExtensions.cs" />
     <Compile Include="Buffers\AbstractByteBuf.cs" />
