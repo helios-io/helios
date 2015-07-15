@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Buffer\AdaptiveRecvByteBufAllocatorTests.cs" />
     <Compile Include="Buffer\ByteBufferTests.cs" />
     <Compile Include="Buffer\UnpooledDirectByteBufferTests.cs" />
     <Compile Include="Channel\ChannelOptionTests.cs" />
@@ -86,6 +87,9 @@
       <Project>{fcc26fa6-1b8e-413d-aca5-a25b9c6459a1}</Project>
       <Name>Helios</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

@@ -129,7 +129,19 @@ namespace Helios.Channel
         /// <returns>An updated config object.</returns>
         IChannelConfig SetAllocator(IByteBufAllocator allocator);
 
-        //TODO: RecvByteBufAllocator
+        /// <summary>
+        /// Return the <see cref="IRecvByteBufAllocator"/> which is used by the channel
+        /// to allocate receive buffers
+        /// </summary>
+        IRecvByteBufAllocator RecvAllocator { get; }
+
+        /// <summary>
+        /// Set the <see cref="IRecvByteBufAllocator"/> which is used by the channel
+        /// to allocate receive buffers.
+        /// </summary>
+        /// <param name="allocator">The allocator instance.</param>
+        /// <returns>An updated config object.</returns>
+        IChannelConfig SetRecvAllocator(IRecvByteBufAllocator allocator);
 
         /// <summary>
         /// Returns <c>true</c> if and only if <see cref="ChannelHandlerContext.Read"/> will be invoked automatically

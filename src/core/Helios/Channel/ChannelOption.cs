@@ -68,8 +68,8 @@ namespace Helios.Channel
 
         // ReSharper disable InconsistentNaming
         public static readonly ChannelOption<IByteBufAllocator> ALLOCATOR = ValueOf("ALLOCATOR");
-
-        //TODO: RCVBUFF_ALLOCATOR
+        public static readonly ChannelOption<IRecvByteBufAllocator> RCVBUF_ALLOCATOR = ValueOf("RCVBUF_ALLOCATOR");
+        
         //TODO: MESSAGE_SIZE_ESTIMATOR
 
         public static readonly ChannelOption<int> CONNECT_TIMEOUT_MILLIS = ValueOf("CONNECT_TIMEOUT_MILLIS");
