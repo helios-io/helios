@@ -20,10 +20,19 @@ let tags = ["socket";"sockets";"helios";"UDP";"TCP";"Netty";"reactor"]
 let configuration = "Release"
 
 // Read release notes and version
-
-let release =
+let parsedRelease =
     File.ReadLines "RELEASE_NOTES.md"
     |> ReleaseNotesHelper.parseReleaseNotes
+
+let envBuildNumber = System.Environment.GetEnvironmentVariable("BUILD_NUMBER")
+let buildNumber = if String.IsNullOrWhiteSpace(envBuildNumber) then "0" else envBuildNumber
+
+let version = parsedRelease.AssemblyVersion + "." + buildNumber
+let preReleaseVersion = version + "-beta"
+
+let isUnstableDocs = hasBuildParam "unstable"
+let isPreRelease = hasBuildParam "nugetprerelease"
+let release = if isPreRelease then ReleaseNotesHelper.ReleaseNotes.New(version, version + "-beta", parsedRelease.Notes) else parsedRelease
 
 
 //--------------------------------------------------------------------------------
