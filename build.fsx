@@ -68,7 +68,7 @@ Target "Clean" (fun _ ->
 open AssemblyInfoFile
 
 Target "AssemblyInfo" (fun _ ->
-    let version = release.AssemblyVersion + ".0"
+    let version = release.AssemblyVersion
 
     CreateCSharpAssemblyInfoWithConfig "src/SharedAssemblyInfo.cs" [
         Attribute.Company company
