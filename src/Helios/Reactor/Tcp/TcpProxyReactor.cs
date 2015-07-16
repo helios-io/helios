@@ -81,7 +81,6 @@ namespace Helios.Reactor.Tcp
             catch (Exception ex)
             {
                 HeliosTrace.Instance.TcpInboundAcceptFailure(ex.Message);
-                throw;
             }
         }
 
