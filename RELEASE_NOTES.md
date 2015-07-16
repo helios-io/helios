@@ -1,3 +1,6 @@
+#### 1.4.1 Jul 07 2015
+Bugfix - we no longer throw exceptions upon shutting down TCP reactors.
+
 #### 1.4.0 Apr 01 2015
 Major update to Helios designed to help support [Akka.NET v1](http://getakka.net/).
 
