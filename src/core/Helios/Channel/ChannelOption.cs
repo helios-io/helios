@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Helios.Buffers;
+using Helios.Util;
+using System;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.NetworkInformation;
-using Helios.Buffers;
-using Helios.Util;
 
 namespace Helios.Channel
 {
@@ -69,8 +69,7 @@ namespace Helios.Channel
         // ReSharper disable InconsistentNaming
         public static readonly ChannelOption<IByteBufAllocator> ALLOCATOR = ValueOf("ALLOCATOR");
         public static readonly ChannelOption<IRecvByteBufAllocator> RCVBUF_ALLOCATOR = ValueOf("RCVBUF_ALLOCATOR");
-        
-        //TODO: MESSAGE_SIZE_ESTIMATOR
+        public static readonly ChannelOption<IMessageSizeEstimator> MESSAGE_SIZE_ESTIMATOR = ValueOf("MESSAGE_SIZE_ESTIMATOR");
 
         public static readonly ChannelOption<int> CONNECT_TIMEOUT_MILLIS = ValueOf("CONNECT_TIMEOUT_MILLIS");
         public static readonly ChannelOption<int> MAX_MESSAGES_PER_READ = ValueOf("MAX_MESSAGES_PER_READ");
@@ -111,7 +110,8 @@ namespace Helios.Channel
     /// </summary>
     public sealed class ChannelOption<T> : AbstractConstant
     {
-        public ChannelOption(int id, string name) : base(id, name, typeof(T))
+        public ChannelOption(int id, string name)
+            : base(id, name, typeof(T))
         {
         }
 
@@ -121,7 +121,7 @@ namespace Helios.Channel
         /// <param name="value">The value that will be set for this option.</param>
         public void Validate(T value)
         {
-            if(value == null)
+            if (value == null)
                 throw new ArgumentNullException("value");
         }
 

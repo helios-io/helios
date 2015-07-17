@@ -71,10 +71,12 @@
     <Compile Include="Buffers\UnpooledByteBufAllocator.cs" />
     <Compile Include="Channel\ChannelOption.cs" />
     <Compile Include="Channel\DefaultChannelConfig.cs" />
+    <Compile Include="Channel\DefaultMessageSizeEstimator.cs" />
     <Compile Include="Channel\IChannel.cs" />
     <Compile Include="Channel\IChannelConfig.cs" />
     <Compile Include="Channel\IChannelPipeline.cs" />
     <Compile Include="Channel\IEventLoop.cs" />
+    <Compile Include="Channel\IMessageSizeEstimator.cs" />
     <Compile Include="Channel\IRecvByteBufAllocator.cs" />
     <Compile Include="Helios.Concurrency.DedicatedThreadPool.cs" />
     <Compile Include="Util\ByteArrayExtensions.cs" />

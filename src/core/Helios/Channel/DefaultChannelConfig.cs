@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Helios.Buffers;
+using System;
 using System.Collections.Generic;
-using Helios.Buffers;
 
 namespace Helios.Channel
 {
@@ -10,18 +10,21 @@ namespace Helios.Channel
     public class DefaultChannelConfig : IChannelConfig
     {
         private static readonly IRecvByteBufAllocator DEFAULT_RCVBUF_ALLOCATOR = AdaptiveRecvByteBufAllocator.Default;
+        private static readonly IMessageSizeEstimator DEFAULT_MSG_SIZE_ESTIMATOR = DefaultMessageSizeEstimator.Default;
 
         // ReSharper disable once InconsistentNaming
         private const int DEFAULT_CONNECT_TIMEOUT = 30000; //30s
 
         protected readonly IChannel Channel;
 
+        private volatile IByteBufAllocator _allocator = UnpooledByteBufAllocator.Default;
+        private volatile IRecvByteBufAllocator _recvAllocator = DEFAULT_RCVBUF_ALLOCATOR;
+        private volatile IMessageSizeEstimator _msgSizeEstimator = DEFAULT_MSG_SIZE_ESTIMATOR;
+
         private IDictionary<ChannelOption<object>, object> _options;
         private volatile int _connectTimeoutMillis = DEFAULT_CONNECT_TIMEOUT;
         private volatile int _maxMessagesPerRead;
         private volatile int _writeSpinCount = 16;
-        private volatile IByteBufAllocator _allocator = UnpooledByteBufAllocator.Default;
-        private volatile IRecvByteBufAllocator _recvAllocator = DEFAULT_RCVBUF_ALLOCATOR;
         private volatile bool _autoRead = true;
         private volatile int _writeBufferHighWaterMark = 64 * 1024;
         private volatile int _writeBufferLowWaterMark = 32 * 1024;
@@ -56,20 +59,21 @@ namespace Helios.Channel
             if (option == ChannelOption.CONNECT_TIMEOUT_MILLIS)
                 return (T)(object)ConnectTimeoutMillis;
             if (option == ChannelOption.MAX_MESSAGES_PER_READ)
-                return (T) (object) MaxMessagesPerRead;
+                return (T)(object)MaxMessagesPerRead;
             if (option == ChannelOption.WRITE_SPIN_COUNT)
-                return (T) (object) WriteSpinCount;
+                return (T)(object)WriteSpinCount;
             if (option == ChannelOption.ALLOCATOR)
                 return (T)(object)Allocator;
             if (option == ChannelOption.RCVBUF_ALLOCATOR)
-                return (T) RecvAllocator;
+                return (T)RecvAllocator;
             if (option == ChannelOption.AUTO_READ)
-                return (T) (object) AutoRead;
+                return (T)(object)AutoRead;
             if (option == ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK)
-                return (T) (object) WriteBufferHighWaterMark;
+                return (T)(object)WriteBufferHighWaterMark;
             if (option == ChannelOption.WRITE_BUFFER_LOW_WATER_MARK)
                 return (T)(object)WriteBufferLowWaterMark;
-            //TODO: MESSAGE_SIZE_ESTIMATOR
+            if (option == ChannelOption.MESSAGE_SIZE_ESTIMATOR)
+                return (T)MessageSizeEstimator;
             return default(T);
         }
 
@@ -82,33 +86,36 @@ namespace Helios.Channel
             }
             else if (option == ChannelOption.MAX_MESSAGES_PER_READ)
             {
-                SetMaxMessagesPerRead((int) (object) value);
+                SetMaxMessagesPerRead((int)(object)value);
             }
             else if (option == ChannelOption.WRITE_SPIN_COUNT)
             {
-                SetWriteSpinCount((int) (object) value);
+                SetWriteSpinCount((int)(object)value);
             }
             else if (option == ChannelOption.ALLOCATOR)
             {
-                SetAllocator((IByteBufAllocator) value);
+                SetAllocator((IByteBufAllocator)value);
             }
             else if (option == ChannelOption.RCVBUF_ALLOCATOR)
             {
-                SetRecvAllocator((IRecvByteBufAllocator) value);
+                SetRecvAllocator((IRecvByteBufAllocator)value);
             }
             else if (option == ChannelOption.AUTO_READ)
             {
-                SetAutoRead((bool) (object) value);
+                SetAutoRead((bool)(object)value);
             }
             else if (option == ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK)
             {
-                SetWriteBufferHighWaterMark((int) (object) value);
+                SetWriteBufferHighWaterMark((int)(object)value);
             }
             else if (option == ChannelOption.WRITE_BUFFER_LOW_WATER_MARK)
             {
-                SetWriteBufferLowWaterMark((int) (object) value);
+                SetWriteBufferLowWaterMark((int)(object)value);
             }
-            //TODO: MESSAGE_SIZE_ESTIMATOR
+            else if (option == ChannelOption.MESSAGE_SIZE_ESTIMATOR)
+            {
+                SetMessageSizeEstimator((IMessageSizeEstimator)value);
+            }
             else
             {
                 return false;
@@ -118,7 +125,7 @@ namespace Helios.Channel
 
         protected void Validate<T>(ChannelOption<T> option, T value)
         {
-            if(option == null)
+            if (option == null)
                 throw new ArgumentNullException("option");
             option.Validate(value);
         }
@@ -130,7 +137,7 @@ namespace Helios.Channel
 
         public IChannelConfig SetConnectTimeoutMillis(int connectTimeoutMillis)
         {
-            if(connectTimeoutMillis < 0)
+            if (connectTimeoutMillis < 0)
                 throw new ArgumentOutOfRangeException("connectTimeoutMillis", "connectTimeoutMillis: " + connectTimeoutMillis + " (expected >= 0)");
             _connectTimeoutMillis = connectTimeoutMillis;
             return this;
@@ -157,7 +164,7 @@ namespace Helios.Channel
         public IChannelConfig SetWriteSpinCount(int spinCount)
         {
             if (spinCount <= 0)
-                throw new ArgumentOutOfRangeException("spinCount", "spinCount: " +spinCount + " (expected > 0)");
+                throw new ArgumentOutOfRangeException("spinCount", "spinCount: " + spinCount + " (expected > 0)");
             _writeSpinCount = spinCount;
             return this;
         }
@@ -224,11 +231,11 @@ namespace Helios.Channel
             if (writeBufferHighWaterMark < WriteBufferLowWaterMark)
             {
                 throw new ArgumentOutOfRangeException("writeBufferHighWaterMark", "writeBufferHighWaterMark cannot be less than" +
-                                                                                  "writeBufferLowWaterMark (" + WriteBufferLowWaterMark + "): " 
+                                                                                  "writeBufferLowWaterMark (" + WriteBufferLowWaterMark + "): "
                                                                                   + writeBufferHighWaterMark);
             }
 
-            if(writeBufferHighWaterMark < 0)
+            if (writeBufferHighWaterMark < 0)
                 throw new ArgumentOutOfRangeException("writeBufferHighWaterMark", "writeBufferHighWaterMark must be >= 0");
             _writeBufferHighWaterMark = writeBufferHighWaterMark;
             return this;
@@ -244,13 +251,29 @@ namespace Helios.Channel
             if (_writeBufferLowWaterMark > _writeBufferHighWaterMark)
             {
                 throw new ArgumentOutOfRangeException("writeBufferLowWaterMark", "writeBufferLowWaterMark cannot be greater than " +
-                                                                                 "writeBufferHighWaterMark ("+ WriteBufferHighWaterMark + "): " +
+                                                                                 "writeBufferHighWaterMark (" + WriteBufferHighWaterMark + "): " +
                                                                                  writeBufferLowWaterMark);
             }
 
-            if(writeBufferLowWaterMark < 0)
+            if (writeBufferLowWaterMark < 0)
                 throw new ArgumentOutOfRangeException("writeBufferLowWaterMark", "writeBufferLowWaterMark must be >= 0");
             _writeBufferLowWaterMark = writeBufferLowWaterMark;
+            return this;
+        }
+
+        public IMessageSizeEstimator MessageSizeEstimator
+        {
+            get { return _msgSizeEstimator; }
+        }
+
+        public IChannelConfig SetMessageSizeEstimator(IMessageSizeEstimator estimator)
+        {
+            if (estimator == null)
+            {
+                throw new ArgumentNullException("estimator");
+            }
+
+            _msgSizeEstimator = estimator;
             return this;
         }
     }
