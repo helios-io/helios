@@ -24,7 +24,7 @@ let parsedRelease =
     File.ReadLines "RELEASE_NOTES.md"
     |> ReleaseNotesHelper.parseReleaseNotes
 
-let envBuildNumber = System.Environment.GetEnvironmentVariable("BUILD_NUMBER")
+let envBuildNumber = System.Environment.GetEnvironmentVariable("APPVEYOR_BUILD_NUMBER")
 let buildNumber = if String.IsNullOrWhiteSpace(envBuildNumber) then "0" else envBuildNumber
 
 let version = parsedRelease.AssemblyVersion + "." + buildNumber
@@ -197,7 +197,7 @@ let createNugetPackages _ =
         let packages = projectDir @@ "packages.config"        
         let packageDependencies = if (fileExists packages) then (getDependencies packages) else []
         let dependencies = packageDependencies @ getHeliosDependency project
-        let releaseVersion = release.NugetVersion
+        let releaseVersion = release.NugetVersion + "." + buildNumber
 
         let pack outputDir symbolPackage =
             NuGetHelper.NuGet
