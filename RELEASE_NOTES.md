@@ -1,3 +1,6 @@
+#### 1.4.2 Dec 12 2015
+Bugfixed - fixed an issue with `NoOpDecoder` where it wouldn't properly drain incoming `IByteBuffer` instances.
+
 #### 1.4.1 Jul 07 2015
 Bugfix - we no longer throw exceptions upon shutting down TCP reactors.
 
