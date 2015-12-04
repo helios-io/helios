@@ -37,7 +37,9 @@ namespace Helios.Serialization
     {
         public override void Decode(IConnection connection, IByteBuf buffer, out List<IByteBuf> decoded)
         {
-            decoded = new List<IByteBuf>() {buffer};
+            var outBuffer = connection.Allocator.Buffer(buffer.ReadableBytes);
+            buffer.ReadBytes(outBuffer);
+            decoded = new List<IByteBuf>() {outBuffer};
         }
 
         public override IMessageDecoder Clone()

@@ -156,6 +156,11 @@ namespace Helios.Net.Connections
                     SetLocal(_client);
                     InvokeConnectIfNotNull(RemoteHost);
                 }
+				else
+				{	// JKH = because I want to know if my BeginConnect has failed
+					if(x.IsFaulted)
+						InvokeDisconnectIfNotNull(RemoteHost, new HeliosConnectionException(ExceptionType.NotOpen, x.Exception.Flatten()));
+				}
                 return result;
             }, TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously);
         }
@@ -211,14 +216,21 @@ namespace Helios.Net.Connections
                 catch (SocketException ex)
                 {
                     HeliosTrace.Instance.TcpClientConnectFailure(ex.Message);
-                    throw new HeliosConnectionException(ExceptionType.NotOpen, ex);
+					// JKH = because I want to know if my BeginConnect has failed and because when I use BeginConnect I cannot catch this throw and it litters my Debug window
+					HeliosConnectionException rethrow = new HeliosConnectionException(ExceptionType.NotOpen, ex);
+					InvokeDisconnectIfNotNull(RemoteHost, rethrow);
+					return;
+                    //throw rethrow;	using BeginConnect, I cannot catch this throw...
                 }
             }
             else
             {
                 _client.Close();
                 HeliosTrace.Instance.TcpClientConnectFailure("Timed out on connect");
-                throw new HeliosConnectionException(ExceptionType.TimedOut, "Timed out on connect");
+				// JKH = because I want to know if my BeginConnect has failed
+				HeliosConnectionException rethrow = new HeliosConnectionException(ExceptionType.TimedOut, "Timed out on connect");
+				InvokeDisconnectIfNotNull(RemoteHost, rethrow);
+                throw rethrow;
             }
             SetLocal(_client);
             InvokeConnectIfNotNull(RemoteHost);
