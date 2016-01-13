@@ -242,9 +242,16 @@ namespace Helios.Reactor.Tcp
         {
             if (!WasDisposed && disposing && Listener != null)
             {
-                Stop();
-                Listener.Dispose();
-                EventLoop.Dispose();
+                try
+                {
+                    Stop();
+                    Listener.Dispose();
+                    EventLoop.Dispose();
+                }
+                catch
+                {
+                    // shutting down - we don't care about exceptions here
+                }
             }
             IsActive = false;
             WasDisposed = true;

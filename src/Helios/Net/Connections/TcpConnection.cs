@@ -309,9 +309,16 @@ namespace Helios.Net.Connections
                 {
                     if (_client != null)
                     {
-                        ((IDisposable)_client).Dispose();
-                        _client = null;
-                        EventLoop.Dispose();
+                        try
+                        {
+                            ((IDisposable) _client).Dispose();
+                            _client = null;
+                            EventLoop.Dispose();
+                        }
+                        catch
+                        {
+                            // shutting down, we don't care about errors
+                        }
                     }
                 }
             }
