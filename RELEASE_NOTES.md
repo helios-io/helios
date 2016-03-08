@@ -1,3 +1,6 @@
+#### 1.4.3 Jan 12 2016
+Bugfix - no longer allow any throws when disposing a TCP connection or reactor.
+
 #### 1.4.2 Dec 12 2015
 Bugfixed - fixed an issue with `NoOpDecoder` where it wouldn't properly drain incoming `IByteBuffer` instances.
 
