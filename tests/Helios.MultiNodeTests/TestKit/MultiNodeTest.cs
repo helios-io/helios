@@ -108,10 +108,7 @@ namespace Helios.MultiNodeTests.TestKit
         /// </summary>
         protected void StartServer(ReceivedDataCallback callback)
         {
-            _server.Receive += (data, channel) =>
-            {
-                callback(data, channel);
-            };
+            _server.Receive += callback;
             _server.OnConnection += (address, channel) =>
             {
                 channel.BeginReceive();
