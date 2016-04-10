@@ -34,6 +34,7 @@ Thumbs.db
 obj/
 [Rr]elease*/
 _ReSharper*/
+[Pp]erf[Rr]esult*
 [Tt]est[Rr]esult*
 
 # Mono
