@@ -10,10 +10,5 @@ namespace Helios.Tests.Util.Collections
         {
             return new ConcurrentCircularBuffer<T>(capacity);
         }
-
-        protected override ICircularBuffer<T> GetBuffer<T>(int capacity, int maxCapacity)
-        {
-            return new ConcurrentCircularBuffer<T>(capacity,maxCapacity);
-        }
     }
 }
