@@ -65,7 +65,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Buffer\ByteBufferTests.cs" />
-    <Compile Include="Buffer\CircularByteBufTests.cs" />
     <Compile Include="Buffer\UnpooledDirectByteBufferTests.cs" />
     <Compile Include="Concurrency\DedicatedThreadFiberTests.cs" />
     <Compile Include="Concurrency\SharedFiberTests.cs" />
