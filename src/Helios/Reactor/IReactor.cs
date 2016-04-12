@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using Helios.Buffers;
+using Helios.Channels;
 using Helios.Net;
 using Helios.Serialization;
 using Helios.Topology;

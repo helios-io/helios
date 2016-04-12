@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Helios.Net;
 using Helios.Util.Collections;
 
-namespace Helios.Net
+namespace Helios.Channels
 {
     /// <summary>
     /// Interface used to help configure <see cref="IConnection"/> instances

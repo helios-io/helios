@@ -180,15 +180,6 @@
     <Compile Include="..\Helios\Net\Bootstrap\UdpConnectionFactory.cs">
       <Link>Net\Bootstrap\UdpConnectionFactory.cs</Link>
     </Compile>
-    <Compile Include="..\Helios\Net\Clustering\ClusterManagerFactory.cs">
-      <Link>Net\Clustering\ClusterManagerFactory.cs</Link>
-    </Compile>
-    <Compile Include="..\Helios\Net\Clustering\RoundRobinClusterManager.cs">
-      <Link>Net\Clustering\RoundRobinClusterManager.cs</Link>
-    </Compile>
-    <Compile Include="..\Helios\Net\Clustering\SingleNodeClusterManager.cs">
-      <Link>Net\Clustering\SingleNodeClusterManager.cs</Link>
-    </Compile>
     <Compile Include="..\Helios\Net\ConnectionConfig.cs">
       <Link>Net\ConnectionConfig.cs</Link>
     </Compile>
@@ -236,21 +227,6 @@
     </Compile>
     <Compile Include="..\Helios\Net\NetworkEventLoop.cs">
       <Link>Net\NetworkEventLoop.cs</Link>
-    </Compile>
-    <Compile Include="..\Helios\Net\Providers\ConnectionProviderBase.cs">
-      <Link>Net\Providers\ConnectionProviderBase.cs</Link>
-    </Compile>
-    <Compile Include="..\Helios\Net\Providers\ConnectionProviderFactory.cs">
-      <Link>Net\Providers\ConnectionProviderFactory.cs</Link>
-    </Compile>
-    <Compile Include="..\Helios\Net\Providers\ConnectionProviderType.cs">
-      <Link>Net\Providers\ConnectionProviderType.cs</Link>
-    </Compile>
-    <Compile Include="..\Helios\Net\Providers\KeyedConnectionProviderBase.cs">
-      <Link>Net\Providers\KeyedConnectionProviderBase.cs</Link>
-    </Compile>
-    <Compile Include="..\Helios\Net\Providers\PooledKeyedConnectionProvider.cs">
-      <Link>Net\Providers\PooledKeyedConnectionProvider.cs</Link>
     </Compile>
     <Compile Include="..\Helios\Net\SystemAddressHelper.cs">
       <Link>Net\SystemAddressHelper.cs</Link>
