@@ -63,7 +63,6 @@
     </Compile>
     <Compile Include="Buffers\AbstractByteBufAllocator.cs" />
     <Compile Include="Buffers\ByteBufferUtil.cs" />
-    <Compile Include="Buffers\CircularByteBuf.cs" />
     <Compile Include="Buffers\DuplicateByteBuf.cs" />
     <Compile Include="Buffers\EmptyByteBuf.cs" />
     <Compile Include="Buffers\Unpooled.cs" />
@@ -197,6 +196,7 @@
   <ItemGroup>
     <None Include="Helios.nuspec" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

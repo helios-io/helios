@@ -3,11 +3,11 @@ using System.Threading;
 using Helios.Exceptions;
 using Helios.Net;
 using Helios.Topology;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.Tests.Net
 {
-    [TestFixture]
+    
     public class TcpConnectionTests
     {
         #region Setup / Teardown
@@ -16,7 +16,7 @@ namespace Helios.Tests.Net
         #region Tests
 
         //[ExpectedException(typeof(HeliosConnectionException))]
-        [Test]
+        [Fact]
         public void Should_throw_exception_when_connecting_to_unreachable_node()
         {
             //arrange

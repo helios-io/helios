@@ -23,25 +23,7 @@ namespace Helios.Util
             Array.Copy(array, index, result, 0, length);
             return result;
         }
-
-        public static byte[] Slice(this ICircularBuffer<byte> array, int length)
-        {
-            if (array == null) throw new ArgumentNullException("array");
-            if (length > array.Size) throw new ArgumentOutOfRangeException("length", string.Format("length({0}) cannot be longer than Array.length({1})", length, array.Size));
-            var result = new byte[length];
-            array.DirectBufferRead(result);
-            return result;
-        }
-
-        public static byte[] Slice(this ICircularBuffer<byte> array, int index, int length)
-        {
-            if (array == null) throw new ArgumentNullException("array");
-            if (index + length > array.Size) throw new ArgumentOutOfRangeException("length", string.Format("index: ({0}), length({1}) index + length cannot be longer than Array.length({2})", index, length, array.Size));
-            var result = new byte[length];
-            array.DirectBufferRead(index, result, 0, length);
-            return result;
-        }
-
+       
         public static void SetRange(this byte[] array, int index, byte[] src)
         {
             SetRange(array, index, src, 0, src.Length);

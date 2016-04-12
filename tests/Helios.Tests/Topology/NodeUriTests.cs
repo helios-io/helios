@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Net;
 using Helios.Topology;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.Tests.Topology
 {
-    [TestFixture]
+    
     public class NodeUriTests
     {
         #region Setup / Teardown
@@ -16,7 +16,7 @@ namespace Helios.Tests.Topology
 
         #region Tests
 
-        [Test]
+        [Fact]
         public void Should_convert_valid_tcp_INode_to_NodeUri()
         {
             //arrange
@@ -27,13 +27,13 @@ namespace Helios.Tests.Topology
             var nodeUri = new NodeUri(testNode);
 
             //assert
-            Assert.AreEqual(testNode.Port, nodeUri.Port);
-            Assert.AreEqual(testNode.Host.ToString(), nodeUri.Host);
-            Assert.AreEqual("tcp", nodeUri.Scheme);
-            Assert.IsTrue(nodeUri.IsLoopback);
+            Assert.Equal(testNode.Port, nodeUri.Port);
+            Assert.Equal(testNode.Host.ToString(), nodeUri.Host);
+            Assert.Equal("tcp", nodeUri.Scheme);
+            Assert.True(nodeUri.IsLoopback);
         }
 
-        [Test]
+        [Fact]
         public void Should_convert_valid_tcp_NodeUri_to_INode()
         {
             //arrange
@@ -44,13 +44,13 @@ namespace Helios.Tests.Topology
             var node = NodeUri.GetNodeFromUri(nodeUri);
 
             //assert
-            Assert.IsNotNull(node);
-            Assert.AreEqual(nodeUri.Host, node.Host.ToString());
-            Assert.AreEqual(nodeUri.Port, node.Port);
-            Assert.AreEqual(nodeUri.Scheme, NodeUri.GetProtocolStringForTransportType(node.TransportType));
+            Assert.NotNull(node);
+            Assert.Equal(nodeUri.Host, node.Host.ToString());
+            Assert.Equal(nodeUri.Port, node.Port);
+            Assert.Equal(nodeUri.Scheme, NodeUri.GetProtocolStringForTransportType(node.TransportType));
         }
 
-        [Test]
+        [Fact]
         public void Should_convert_valid_UDP_INode_to_NodeUri()
         {
             //arrange
@@ -61,14 +61,14 @@ namespace Helios.Tests.Topology
             var nodeUri = new NodeUri(testNode);
 
             //assert
-            Assert.AreEqual(testNode.Port, nodeUri.Port);
-            Assert.AreEqual(testNode.Host.ToString(), nodeUri.Host);
-            Assert.AreEqual("udp", nodeUri.Scheme);
-            Assert.IsTrue(nodeUri.IsLoopback);
+            Assert.Equal(testNode.Port, nodeUri.Port);
+            Assert.Equal(testNode.Host.ToString(), nodeUri.Host);
+            Assert.Equal("udp", nodeUri.Scheme);
+            Assert.True(nodeUri.IsLoopback);
         }
         
 
-        [Test]
+        [Fact]
         public void Should_convert_valid_UDP_NodeUri_to_INode()
         {
             //arrange
@@ -79,10 +79,10 @@ namespace Helios.Tests.Topology
             var node = NodeUri.GetNodeFromUri(nodeUri);
 
             //assert
-            Assert.IsNotNull(node);
-            Assert.AreEqual(nodeUri.Host, node.Host.ToString());
-            Assert.AreEqual(nodeUri.Port, node.Port);
-            Assert.AreEqual(nodeUri.Scheme, NodeUri.GetProtocolStringForTransportType(node.TransportType));
+            Assert.NotNull(node);
+            Assert.Equal(nodeUri.Host, node.Host.ToString());
+            Assert.Equal(nodeUri.Port, node.Port);
+            Assert.Equal(nodeUri.Scheme, NodeUri.GetProtocolStringForTransportType(node.TransportType));
         }
 
         #endregion

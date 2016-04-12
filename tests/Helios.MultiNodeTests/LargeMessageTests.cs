@@ -8,14 +8,14 @@ using Faker;
 using Helios.MultiNodeTests.TestKit;
 using Helios.Net;
 using Helios.Serialization;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.MultiNodeTests
 {
     /// <summary>
     /// Tests to see how Helios can handle large messages
     /// </summary>
-    [TestFixture]
+    
     public abstract class LargeMessageTests : MultiNodeTest
     {
         /// <summary>
@@ -32,7 +32,7 @@ namespace Helios.MultiNodeTests
             get { return new LengthFieldFrameBasedDecoder(1024*5000,0,4,0,4); }
         }
 
-        [Test]
+        [Fact]
         public void Should_send_and_receive_10kb_Message()
         {
             //arrange
@@ -46,16 +46,16 @@ namespace Helios.MultiNodeTests
             WaitUntilNMessagesReceived(sends);
 
             //assert
-            Assert.AreEqual(0, ClientExceptions.Length, "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length);
-            Assert.AreEqual(0, ServerExceptions.Length, "Did not expect to find any exceptions on Server, instead found: {0}", ServerExceptions.Length);
-            Assert.AreEqual(sends, ClientSendBuffer.Count);
-            Assert.AreEqual(sends, ClientReceiveBuffer.Count);
+            Assert.Equal(0, ClientExceptions.Length);
+            Assert.Equal(0, ServerExceptions.Length);
+            Assert.Equal(sends, ClientSendBuffer.Count);
+            Assert.Equal(sends, ClientReceiveBuffer.Count);
 
             var deliveredMessage = ClientReceiveBuffer.Dequeue();
-            Assert.IsTrue(message.SequenceEqual(deliveredMessage.Buffer));
+            Assert.True(message.SequenceEqual(deliveredMessage.Buffer));
         }
 
-        [Test]
+        [Fact]
         public void Should_send_and_receive_40kb_Message()
         {
             //arrange
@@ -69,16 +69,16 @@ namespace Helios.MultiNodeTests
             WaitUntilNMessagesReceived(sends);
 
             //assert
-            Assert.AreEqual(0, ClientExceptions.Length, "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length);
-            Assert.AreEqual(0, ServerExceptions.Length, "Did not expect to find any exceptions on Server, instead found: {0}", ServerExceptions.Length);
-            Assert.AreEqual(sends, ClientSendBuffer.Count);
-            Assert.AreEqual(sends, ClientReceiveBuffer.Count);
+            Assert.Equal(0, ClientExceptions.Length);
+            Assert.Equal(0, ServerExceptions.Length);
+            Assert.Equal(sends, ClientSendBuffer.Count);
+            Assert.Equal(sends, ClientReceiveBuffer.Count);
 
             var deliveredMessage = ClientReceiveBuffer.Dequeue();
-            Assert.IsTrue(message.SequenceEqual(deliveredMessage.Buffer));
+            Assert.True(message.SequenceEqual(deliveredMessage.Buffer));
         }
 
-        [Test]
+        [Fact]
         public void Should_send_and_receive_64kb_Message()
         {
             //arrange
@@ -92,16 +92,16 @@ namespace Helios.MultiNodeTests
             WaitUntilNMessagesReceived(sends);
 
             //assert
-            Assert.AreEqual(0, ClientExceptions.Length, "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length);
-            Assert.AreEqual(0, ServerExceptions.Length, "Did not expect to find any exceptions on Server, instead found: {0}", ServerExceptions.Length);
-            Assert.AreEqual(sends, ClientSendBuffer.Count);
-            Assert.AreEqual(sends, ClientReceiveBuffer.Count);
+            Assert.Equal(0, ClientExceptions.Length);
+            Assert.Equal(0, ServerExceptions.Length);
+            Assert.Equal(sends, ClientSendBuffer.Count);
+            Assert.Equal(sends, ClientReceiveBuffer.Count);
 
             var deliveredMessage = ClientReceiveBuffer.Dequeue();
-            Assert.IsTrue(message.SequenceEqual(deliveredMessage.Buffer));
+            Assert.True(message.SequenceEqual(deliveredMessage.Buffer));
         }
 
-        [Test]
+        [Fact]
         public void Should_send_and_receive_4000kb_Message()
         {
             //arrange
@@ -115,17 +115,17 @@ namespace Helios.MultiNodeTests
             WaitUntilNMessagesReceived(sends, TimeSpan.FromSeconds(10));
 
             //assert
-            Assert.AreEqual(0, ClientExceptions.Length, "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length);
-            Assert.AreEqual(0, ServerExceptions.Length, "Did not expect to find any exceptions on Server, instead found: {0}", ServerExceptions.Length);
-            Assert.AreEqual(sends, ClientSendBuffer.Count);
-            Assert.AreEqual(sends, ClientReceiveBuffer.Count);
+            Assert.Equal(0, ClientExceptions.Length);
+            Assert.Equal(0, ServerExceptions.Length);
+            Assert.Equal(sends, ClientSendBuffer.Count);
+            Assert.Equal(sends, ClientReceiveBuffer.Count);
 
             var deliveredMessage = ClientReceiveBuffer.Dequeue();
-            Assert.IsTrue(message.SequenceEqual(deliveredMessage.Buffer));
+            Assert.True(message.SequenceEqual(deliveredMessage.Buffer));
         }
     }
 
-    [TestFixture]
+    
     public class TcpLargeMessageTests : LargeMessageTests
     {
         public override TransportType TransportType
@@ -134,12 +134,11 @@ namespace Helios.MultiNodeTests
         }
     }
 
-    [TestFixture(Ignore = true, IgnoreReason = "UDP can't handle such large packets at the protocol level")]
-    public class UdpLargeMessageTests : LargeMessageTests
-    {
-        public override TransportType TransportType
-        {
-            get { return TransportType.Udp; }
-        }
-    }
+    //public class UdpLargeMessageTests : LargeMessageTests
+    //{
+    //    public override TransportType TransportType
+    //    {
+    //        get { return TransportType.Udp; }
+    //    }
+    //}
 }

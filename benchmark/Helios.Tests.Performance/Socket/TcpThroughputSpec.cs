@@ -32,7 +32,6 @@ namespace Helios.Tests.Performance.Socket
         [PerfSetup]
         public void PerfSetUp(BenchmarkContext context)
         {
-            SetUp();
             benchmarkCounter = context.GetCounter(MessagesReceivedCounter);
             StartServer((data, channel) =>
             {

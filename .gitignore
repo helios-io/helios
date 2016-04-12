@@ -1,6 +1,9 @@
 # Build output
 build*/
 
+# FAKE output
+.fake/
+
 #Ruby
 Gemfile.lock
 

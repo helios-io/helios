@@ -18,3 +18,4 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("523dc8d0-1200-4c1e-b50c-9140bd6748c9")]
+[assembly: InternalsVisibleTo("Helios.FsCheck.Tests")]

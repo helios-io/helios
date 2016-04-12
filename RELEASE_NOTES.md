@@ -1,3 +1,6 @@
+#### 1.5 April 12 2016
+Major performance and stability rewrite of Helios, including breaking API changes.
+
 #### 1.4.2 Dec 12 2015
 Bugfixed - fixed an issue with `NoOpDecoder` where it wouldn't properly drain incoming `IByteBuffer` instances.
 

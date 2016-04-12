@@ -19,8 +19,8 @@ namespace Helios.Tests.Performance.Collections
         private const int ItemCount = 1000;
         private const int ResizedItemCount = 10*ItemCount;
 
-        private CircularBuffer<int> circularBuffer = new CircularBuffer<int>(ItemCount, ResizedItemCount);
-        private ConcurrentCircularBuffer<int> concurrentCircularBuffer = new ConcurrentCircularBuffer<int>(ItemCount, ResizedItemCount);
+        private CircularBuffer<int> circularBuffer = new CircularBuffer<int>(ItemCount);
+        private ConcurrentCircularBuffer<int> concurrentCircularBuffer = new ConcurrentCircularBuffer<int>(ItemCount);
         private ConcurrentQueue<int> concurrentQueue = new ConcurrentQueue<int>();
 
         [PerfSetup]

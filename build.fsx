@@ -98,8 +98,6 @@ Target "CopyOutput" (fun _ ->
         let dst = binDir @@ project
         CopyDir dst src allFiles
     [ "Helios"
-      "Helios.NET35"
-      "Helios.NET40"
     ]
     |> List.iter copyOutput
 )
@@ -145,14 +143,17 @@ Target "CleanPerf" <| fun _ ->
 //--------------------------------------------------------------------------------
 // Tests targets
 //--------------------------------------------------------------------------------
+open Fake.Testing
 Target "RunTests" <| fun _ ->
-    let nunitAssemblies = !! "tests/**/bin/Release/*.Tests.dll" ++ "tests/**/bin/Release/Helios.MultiNodeTests.dll"
+    let xunitTestAssemblies = !! "tests/**/bin/Release/*.Tests.dll" ++ "tests/**/bin/Release/Helios.MultiNodeTests.dll"
 
     mkdir testOutput
-    nunitAssemblies |> NUnit(fun p -> 
-        {p with 
-            DisableShadowCopy = true;
-            OutputFile = testOutput + "TestResults.xml" })
+    let xunitToolPath = findToolInSubPath "xunit.console.exe" "packages/xunit.runner.console*/tools"
+    printfn "Using XUnit runner: %s" xunitToolPath
+    xUnit2
+        (fun p -> { p with XmlOutputPath = Some (testOutput + @"\XUnitTestResults.xml"); HtmlOutputPath = Some (testOutput + @"\XUnitTestResults.HTML"); ToolPath = xunitToolPath; TimeOut = System.TimeSpan.FromMinutes 30.0; Parallel = ParallelMode.NoParallelization })
+
+        xunitTestAssemblies
 
 //--------------------------------------------------------------------------------
 // Clean test output
@@ -176,8 +177,6 @@ module Nuget =
     let getProjectBinFolders project =
         match project with
         | "Helios" -> "lib" @@ "net45"
-        | "Helios.NET40" -> "lib" @@ "net40"
-        | "Helios.NET35" -> "lib" @@ "net35"
         | _ -> "lib" @@ "net45"
 
     // selected nuget description
@@ -189,8 +188,6 @@ module Nuget =
     let getHeliosDependency project =
         match project with
         | "Helios" -> []
-        | "Helios.NET40" -> []
-        | "Helios.NET35" -> []
         | _ -> ["Helios", release.NugetVersion]
 
 open Nuget

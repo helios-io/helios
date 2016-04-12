@@ -9,11 +9,11 @@ using Helios.Exceptions;
 using Helios.Net;
 using Helios.Serialization;
 using Helios.Topology;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.Tests.Serialization
 {
-    [TestFixture]
+    
     public class LengthFieldEncodingTests
     {
         #region Setup / Teardown
@@ -23,8 +23,7 @@ namespace Helios.Tests.Serialization
         protected IMessageDecoder Decoder;
         protected IConnection TestConnection = new DummyConnection(UnpooledByteBufAllocator.Default);
 
-        [TestFixtureSetUp]
-        public void Setup()
+        public LengthFieldEncodingTests()
         {
             Encoder = new LengthFieldPrepender(LengthFieldLength);
             Decoder = new LengthFieldFrameBasedDecoder(2000,0,LengthFieldLength,0,LengthFieldLength);  //stip headers
@@ -34,7 +33,7 @@ namespace Helios.Tests.Serialization
 
         #region Tests
 
-        [Test]
+        [Fact]
         public void Should_encode_length_in_message()
         {
             var binaryContent = Encoding.UTF8.GetBytes("somebytes");
@@ -45,12 +44,12 @@ namespace Helios.Tests.Serialization
             Encoder.Encode(TestConnection, data, out encodedMessages);
 
             var encodedData = encodedMessages[0];
-            Assert.AreEqual(expectedBytes + 4, encodedData.ReadableBytes);
+            Assert.Equal(expectedBytes + 4, encodedData.ReadableBytes);
             var decodedLength = encodedData.ReadInt();
-            Assert.AreEqual(expectedBytes, decodedLength);
+            Assert.Equal(expectedBytes, decodedLength);
         }
 
-        [Test]
+        [Fact]
         public void Should_decode_single_lengthFramed_message()
         {
             var binaryContent = Encoding.UTF8.GetBytes("somebytes");
@@ -64,10 +63,10 @@ namespace Helios.Tests.Serialization
             List<IByteBuf> decodedMessages;
             Decoder.Decode(TestConnection, encodedMessages[0], out decodedMessages);
 
-            Assert.IsTrue(binaryContent.SequenceEqual(decodedMessages[0].ToArray()));
+            Assert.True(binaryContent.SequenceEqual(decodedMessages[0].ToArray()));
         }
 
-        [Test]
+        [Fact]
         public void Should_decoded_multiple_lengthFramed_messages()
         {
             var binaryContent1 = Encoding.UTF8.GetBytes("somebytes");
@@ -81,27 +80,28 @@ namespace Helios.Tests.Serialization
 
             List<IByteBuf> decodedMessages;
             Decoder.Decode(TestConnection, buffer, out decodedMessages);
-            Assert.AreEqual(3, decodedMessages.Count);
-            Assert.IsTrue(binaryContent1.SequenceEqual(decodedMessages[0].ToArray()));
-            Assert.IsTrue(binaryContent2.SequenceEqual(decodedMessages[1].ToArray()));
-            Assert.IsTrue(binaryContent3.SequenceEqual(decodedMessages[2].ToArray()));
+            Assert.Equal(3, decodedMessages.Count);
+            Assert.True(binaryContent1.SequenceEqual(decodedMessages[0].ToArray()));
+            Assert.True(binaryContent2.SequenceEqual(decodedMessages[1].ToArray()));
+            Assert.True(binaryContent3.SequenceEqual(decodedMessages[2].ToArray()));
         }
 
-        [Test]
-        [ExpectedException(typeof(CorruptedFrameException))]
+        [Fact]
         public void Should_throw_exception_when_decoding_negative_frameLength()
         {
-            var binaryContent1 = Encoding.UTF8.GetBytes("somebytes");
-            var buffer = ByteBuffer.AllocateDirect(100)
-                .WriteInt((-1)*binaryContent1.Length) //make the frame length negative
-                .WriteBytes(binaryContent1);
+            Assert.Throws<CorruptedFrameException>(() =>
+            {
+                var binaryContent1 = Encoding.UTF8.GetBytes("somebytes");
+                var buffer = ByteBuffer.AllocateDirect(100)
+                    .WriteInt((-1) * binaryContent1.Length) //make the frame length negative
+                    .WriteBytes(binaryContent1);
 
-            List<IByteBuf> decodedMessages;
-            Decoder.Decode(TestConnection, buffer, out decodedMessages);
-            
+                List<IByteBuf> decodedMessages;
+                Decoder.Decode(TestConnection, buffer, out decodedMessages);
+            });
         }
 
-        [Test]
+        [Fact]
         public void Should_throw_exception_when_decoding_zero_frameLength()
         {
             var binaryContent1 = Encoding.UTF8.GetBytes("somebytes");
@@ -111,7 +111,7 @@ namespace Helios.Tests.Serialization
 
             List<IByteBuf> decodedMessages;
             Decoder.Decode(TestConnection, buffer, out decodedMessages);
-            Assert.Pass("Helios should be in byte disacarding mode now");
+            //Assert.Pass("Helios should be in byte disacarding mode now");
         }
 
         #endregion

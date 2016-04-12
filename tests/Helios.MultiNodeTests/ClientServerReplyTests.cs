@@ -2,15 +2,14 @@
 using System.Net;
 using Helios.MultiNodeTests.TestKit;
 using Helios.Net;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.MultiNodeTests
 {
-    [TestFixture]
     public abstract class ClientServerReplyTests : MultiNodeTest
     {
 
-        [Test]
+        [Fact]
         public virtual void Should_receive_reply_from_server_200b_messages()
         {
             //arrange
@@ -27,16 +26,16 @@ namespace Helios.MultiNodeTests
             WaitUntilNMessagesReceived(sends);
 
             //assert
-            Assert.AreEqual(0, ClientExceptions.Length, "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length);
-            Assert.AreEqual(0, ServerExceptions.Length, "Did not expect to find any exceptions on Server, instead found: {0}", ServerExceptions.Length);
-            Assert.AreEqual(sends, ClientSendBuffer.Count);
-            Assert.AreEqual(sends, ClientReceiveBuffer.Count);
+            Assert.Equal(0, ClientExceptions.Length); // "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length
+            Assert.Equal(0, ServerExceptions.Length); // "Did not expect to find any exceptions on Server, instead found: {0}", ServerExceptions.Length)
+            Assert.Equal(sends, ClientSendBuffer.Count);
+            Assert.Equal(sends, ClientReceiveBuffer.Count);
             var outsizedMessages = ClientReceiveBuffer.Select(x => x.Length != messageLength).ToList();
-            Assert.IsTrue(ClientReceiveBuffer.DequeueAll().All(x => x.Length == messageLength));
+            Assert.True(ClientReceiveBuffer.DequeueAll().All(x => x.Length == messageLength));
             
         }
 
-        [Test]
+        [Fact]
         public virtual void Should_receive_reply_from_server_MAX_200b_messages()
         {
             //arrange
@@ -53,15 +52,14 @@ namespace Helios.MultiNodeTests
             WaitUntilNMessagesReceived(sends);
 
             //assert
-            Assert.AreEqual(0, ClientExceptions.Length, "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length);
-            Assert.AreEqual(0, ServerExceptions.Length, "Did not expect to find any exceptions on Server, instead found: {0}", ServerExceptions.Length);
-            Assert.AreEqual(sends, ClientSendBuffer.Count);
-            Assert.AreEqual(sends, ClientReceiveBuffer.Count);
-            Assert.IsTrue(ClientReceiveBuffer.DequeueAll().All(x => x.Length == messageLength));
+            Assert.Equal(0, ClientExceptions.Length); // "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length
+            Assert.Equal(0, ServerExceptions.Length); // "Did not expect to find any exceptions on Server, instead found: {0}", ServerExceptions.Length
+            Assert.Equal(sends, ClientSendBuffer.Count);
+            Assert.Equal(sends, ClientReceiveBuffer.Count);
+            Assert.True(ClientReceiveBuffer.DequeueAll().All(x => x.Length == messageLength));
         }
     }
 
-    [TestFixture]
     public class TcpClientServerReplyTests : ClientServerReplyTests
     {
         public override TransportType TransportType
@@ -70,7 +68,6 @@ namespace Helios.MultiNodeTests
         }
     }
 
-    [TestFixture]
     public class UdpClientServerReplyTests : ClientServerReplyTests
     {
         public override TransportType TransportType
@@ -83,7 +80,7 @@ namespace Helios.MultiNodeTests
             get { return base.Config.SetOption("receiveBufferSize", 1024*64); }
         }
 
-        [Ignore("UDP has unreliable delivery")]
+        [Fact(Skip = "UDP has unreliable delivery")]
         public override void Should_receive_reply_from_server_MAX_200b_messages()
         {
             base.Should_receive_reply_from_server_MAX_200b_messages();

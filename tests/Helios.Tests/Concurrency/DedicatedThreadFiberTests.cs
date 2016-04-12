@@ -1,14 +1,14 @@
 ﻿using System;
 using Helios.Concurrency;
 using Helios.Util;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.Tests.Concurrency
 {
-    [TestFixture]
+    
     public class DedicatedThreadFiberTests
     {
-        [Test]
+        [Fact]
         public void Should_use_multiple_threads_to_process_queue()
         {
             var atomicCounter = new AtomicCounter(0);
@@ -18,10 +18,10 @@ namespace Helios.Tests.Concurrency
                 fiber.Add(() => atomicCounter.GetAndIncrement());
             }
             fiber.GracefulShutdown(TimeSpan.FromSeconds(1)).Wait(); //wait for the fiber to finish
-            Assert.AreEqual(1000, atomicCounter.Current);
+            Assert.Equal(1000, atomicCounter.Current);
         }
 
-        [Test]
+        [Fact]
         public void Should_not_be_able_to_add_jobs_after_shutdown()
         {
             var atomicCounter = new AtomicCounter(0);
@@ -39,7 +39,7 @@ namespace Helios.Tests.Concurrency
             }
 
             //value should be equal to its pre-shutdown value
-            Assert.AreEqual(1000, atomicCounter.Current);
+            Assert.Equal(1000, atomicCounter.Current);
         }
     }
 }

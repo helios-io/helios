@@ -1,11 +1,10 @@
 ﻿using System.Linq;
 using System.Text;
 using Helios.Buffers;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.Tests.Buffer
 {
-    [TestFixture]
     public class ByteBufferTests
     {
         protected virtual IByteBuf GetBuffer(int initialCapacity, int maxCapacity)
@@ -20,51 +19,51 @@ namespace Helios.Tests.Buffer
 
         #region Data type tests
 
-        [Test]
+        [Fact]
         public void Should_add_byte_to_ByteBuffer()
         {
             var byteBuffer = GetBuffer(10, 10);
             byteBuffer.WriteByte(1).WriteByte(2);
-            Assert.AreEqual(2, byteBuffer.WriterIndex);
-            Assert.AreEqual((byte) 1, byteBuffer.ReadByte());
-            Assert.AreEqual((byte) 2, byteBuffer.ReadByte());
-            Assert.AreEqual(2, byteBuffer.ReaderIndex);
+            Assert.Equal(2, byteBuffer.WriterIndex);
+            Assert.Equal((byte) 1, byteBuffer.ReadByte());
+            Assert.Equal((byte) 2, byteBuffer.ReadByte());
+            Assert.Equal(2, byteBuffer.ReaderIndex);
         }
 
-        [Test]
+        [Fact]
         public void Should_add_short_to_ByteBuffer()
         {
             var byteBuffer = GetBuffer(10, 10);
             byteBuffer.WriteShort(1).WriteShort(2);
-            Assert.AreEqual(4, byteBuffer.WriterIndex);
-            Assert.AreEqual((short) 1, byteBuffer.ReadShort());
-            Assert.AreEqual((short) 2, byteBuffer.ReadShort());
-            Assert.AreEqual(4, byteBuffer.ReaderIndex);
+            Assert.Equal(4, byteBuffer.WriterIndex);
+            Assert.Equal((short) 1, byteBuffer.ReadShort());
+            Assert.Equal((short) 2, byteBuffer.ReadShort());
+            Assert.Equal(4, byteBuffer.ReaderIndex);
         }
 
-        [Test]
+        [Fact]
         public void Should_add_ushort_to_ByteBuffer()
         {
             var byteBuffer = GetBuffer(10, 10);
             byteBuffer.WriteShort(1).WriteShort(ushort.MaxValue);
-            Assert.AreEqual(4, byteBuffer.WriterIndex);
-            Assert.AreEqual((ushort) 1, byteBuffer.ReadUnsignedShort());
-            Assert.AreEqual(ushort.MaxValue, byteBuffer.ReadUnsignedShort());
-            Assert.AreEqual(4, byteBuffer.ReaderIndex);
+            Assert.Equal(4, byteBuffer.WriterIndex);
+            Assert.Equal((ushort) 1, byteBuffer.ReadUnsignedShort());
+            Assert.Equal(ushort.MaxValue, byteBuffer.ReadUnsignedShort());
+            Assert.Equal(4, byteBuffer.ReaderIndex);
         }
 
-        [Test]
+        [Fact]
         public void Should_add_int_to_ByteBuffer()
         {
             var byteBuffer = GetBuffer(10, 10);
             byteBuffer.WriteInt(int.MaxValue).WriteInt(int.MinValue);
-            Assert.AreEqual(8, byteBuffer.WriterIndex);
-            Assert.AreEqual(int.MaxValue, byteBuffer.ReadInt());
-            Assert.AreEqual(int.MinValue, byteBuffer.ReadInt());
-            Assert.AreEqual(8, byteBuffer.ReaderIndex);
+            Assert.Equal(8, byteBuffer.WriterIndex);
+            Assert.Equal(int.MaxValue, byteBuffer.ReadInt());
+            Assert.Equal(int.MinValue, byteBuffer.ReadInt());
+            Assert.Equal(8, byteBuffer.ReaderIndex);
         }
 
-        [Test]
+        [Fact]
         public void Should_add_uint_to_ByteBuffer()
         {
             var byteBuffer = GetBuffer(10, 10);
@@ -72,93 +71,93 @@ namespace Helios.Tests.Buffer
             {
                 byteBuffer.WriteInt((int) uint.MaxValue).WriteInt((int) uint.MinValue);
             }
-            Assert.AreEqual(8, byteBuffer.WriterIndex);
-            Assert.AreEqual(uint.MaxValue, byteBuffer.ReadUnsignedInt());
-            Assert.AreEqual(uint.MinValue, byteBuffer.ReadUnsignedInt());
-            Assert.AreEqual(8, byteBuffer.ReaderIndex);
+            Assert.Equal(8, byteBuffer.WriterIndex);
+            Assert.Equal(uint.MaxValue, byteBuffer.ReadUnsignedInt());
+            Assert.Equal(uint.MinValue, byteBuffer.ReadUnsignedInt());
+            Assert.Equal(8, byteBuffer.ReaderIndex);
         }
 
-        [Test]
+        [Fact]
         public void Should_add_long_to_ByteBuffer()
         {
             var byteBuffer = GetBuffer(16, 16);
             byteBuffer.WriteLong(long.MaxValue).WriteLong(long.MinValue);
-            Assert.AreEqual(16, byteBuffer.WriterIndex);
-            Assert.AreEqual(long.MaxValue, byteBuffer.ReadLong());
-            Assert.AreEqual(long.MinValue, byteBuffer.ReadLong());
-            Assert.AreEqual(16, byteBuffer.ReaderIndex);
+            Assert.Equal(16, byteBuffer.WriterIndex);
+            Assert.Equal(long.MaxValue, byteBuffer.ReadLong());
+            Assert.Equal(long.MinValue, byteBuffer.ReadLong());
+            Assert.Equal(16, byteBuffer.ReaderIndex);
         }
 
-        [Test]
+        [Fact]
         public void Should_add_char_to_ByteBuffer()
         {
             var byteBuffer = GetBuffer(10, 10);
             byteBuffer.WriteChar('a').WriteChar('c');
-            Assert.AreEqual(4, byteBuffer.WriterIndex);
-            Assert.AreEqual('a', byteBuffer.ReadChar());
-            Assert.AreEqual('c', byteBuffer.ReadChar());
-            Assert.AreEqual(4, byteBuffer.ReaderIndex);
+            Assert.Equal(4, byteBuffer.WriterIndex);
+            Assert.Equal('a', byteBuffer.ReadChar());
+            Assert.Equal('c', byteBuffer.ReadChar());
+            Assert.Equal(4, byteBuffer.ReaderIndex);
         }
 
-        [Test]
+        [Fact]
         public void Should_add_double_to_ByteBuffer()
         {
             var byteBuffer = GetBuffer(16, 16);
             byteBuffer.WriteDouble(12.123d).WriteDouble(double.MinValue);
-            Assert.AreEqual(16, byteBuffer.WriterIndex);
-            Assert.AreEqual(12.123d, byteBuffer.ReadDouble());
-            Assert.AreEqual(double.MinValue, byteBuffer.ReadDouble());
-            Assert.AreEqual(16, byteBuffer.ReaderIndex);
+            Assert.Equal(16, byteBuffer.WriterIndex);
+            Assert.Equal(12.123d, byteBuffer.ReadDouble());
+            Assert.Equal(double.MinValue, byteBuffer.ReadDouble());
+            Assert.Equal(16, byteBuffer.ReaderIndex);
         }
 
-        [Test]
+        [Fact]
         public void Should_add_byte_array_to_ByteBuffer()
         {
             var srcByteBuffer = Encoding.UTF8.GetBytes("hi there!");
             var byteBuffer = GetBuffer(1024);
             byteBuffer.WriteBytes(srcByteBuffer);
-            Assert.AreEqual(srcByteBuffer.Length, byteBuffer.WriterIndex);
+            Assert.Equal(srcByteBuffer.Length, byteBuffer.WriterIndex);
             var destinationBuffer = new byte[srcByteBuffer.Length];
             byteBuffer.ReadBytes(destinationBuffer);
-            Assert.IsTrue(srcByteBuffer.SequenceEqual(destinationBuffer));
-            Assert.AreEqual(srcByteBuffer.Length, byteBuffer.ReaderIndex);
+            Assert.True(srcByteBuffer.SequenceEqual(destinationBuffer));
+            Assert.Equal(srcByteBuffer.Length, byteBuffer.ReaderIndex);
         }
 
-        [Test]
+        [Fact]
         public void Should_copy_one_ByteBuffer_to_Another_ByteBuffer()
         {
             var originalBuffer = GetBuffer(1024);
             var destinationBuffer = GetBuffer(1024);
             originalBuffer.WriteBoolean(true).WriteLong(1000L).WriteChar('a').WriteDouble(12.13d);
             originalBuffer.ReadBytes(destinationBuffer, originalBuffer.ReadableBytes);
-            Assert.AreEqual(originalBuffer.WriterIndex, destinationBuffer.WriterIndex);
+            Assert.Equal(originalBuffer.WriterIndex, destinationBuffer.WriterIndex);
         }
 
         #endregion
 
         #region Capacity / Expanding
 
-        [Test]
+        [Fact]
         public void Should_expand_ByteBuffer()
         {
             var originalByteBuffer = GetBuffer(10, 100);
             originalByteBuffer.WriteInt(12).AdjustCapacity(20).WriteInt(4);
-            Assert.AreEqual(20, originalByteBuffer.Capacity);
-            Assert.AreEqual(12, originalByteBuffer.ReadInt());
-            Assert.AreEqual(4, originalByteBuffer.ReadInt());
+            Assert.Equal(20, originalByteBuffer.Capacity);
+            Assert.Equal(12, originalByteBuffer.ReadInt());
+            Assert.Equal(4, originalByteBuffer.ReadInt());
         }
 
-        [Test]
+        [Fact]
         public void Should_shrink_ByteBuffer()
         {
             var originalByteBuffer = GetBuffer(100, 100);
             originalByteBuffer.WriteInt(12).AdjustCapacity(50).WriteInt(4);
-            Assert.AreEqual(50, originalByteBuffer.Capacity);
-            Assert.AreEqual(12, originalByteBuffer.ReadInt());
-            Assert.AreEqual(4, originalByteBuffer.ReadInt());
+            Assert.Equal(50, originalByteBuffer.Capacity);
+            Assert.Equal(12, originalByteBuffer.ReadInt());
+            Assert.Equal(4, originalByteBuffer.ReadInt());
         }
 
-        [Test]
+        [Fact]
         public void Should_clone_ByteBuffer()
         {
             var expectedString = "THIS IS A STRING";
@@ -166,26 +165,26 @@ namespace Helios.Tests.Buffer
                 GetBuffer(100, 100).WriteInt(110).WriteBytes(Encoding.Unicode.GetBytes(expectedString));
             var clonedByteBuffer = originalByteBuffer.Duplicate();
             clonedByteBuffer.WriteBoolean(true).WriteDouble(-1113.4d);
-            Assert.AreEqual(110, originalByteBuffer.ReadInt());
-            Assert.AreEqual(110, clonedByteBuffer.ReadInt());
-            Assert.AreEqual(expectedString,
+            Assert.Equal(110, originalByteBuffer.ReadInt());
+            Assert.Equal(110, clonedByteBuffer.ReadInt());
+            Assert.Equal(expectedString,
                 Encoding.Unicode.GetString(originalByteBuffer.ReadBytes(expectedString.Length*2).ToArray()));
             var stringBuf = new byte[expectedString.Length*2];
             clonedByteBuffer.ReadBytes(stringBuf);
-            Assert.AreEqual(expectedString, Encoding.Unicode.GetString(stringBuf));
-            Assert.AreEqual(true, clonedByteBuffer.ReadBoolean());
-            Assert.AreEqual(-1113.4d, clonedByteBuffer.ReadDouble());
+            Assert.Equal(expectedString, Encoding.Unicode.GetString(stringBuf));
+            Assert.Equal(true, clonedByteBuffer.ReadBoolean());
+            Assert.Equal(-1113.4d, clonedByteBuffer.ReadDouble());
         }
 
-        [Test]
+        [Fact]
         public void Should_export_readable_bytes_ToArray()
         {
             var expectedString = "THIS IS A STRING";
             var originalByteBuffer =
                 GetBuffer(100, 100).WriteInt(110).WriteBytes(Encoding.Unicode.GetBytes(expectedString));
-            Assert.AreEqual(110, originalByteBuffer.ReadInt());
+            Assert.Equal(110, originalByteBuffer.ReadInt());
             var byteArray = originalByteBuffer.ToArray();
-            Assert.AreEqual(expectedString, Encoding.Unicode.GetString(byteArray));
+            Assert.Equal(expectedString, Encoding.Unicode.GetString(byteArray));
         }
 
         #endregion
@@ -198,7 +197,7 @@ namespace Helios.Tests.Buffer
         /// Compaction is a process that is designed to simply move the readable contents of the byte buffer to the front
         /// of the array - that we can continue to reuse bytebuffers continuously when reading from a socket.
         /// </summary>
-        [Test]
+        [Fact]
         public void Should_compact_buffer_without_data_loss()
         {
             var originalByteBuffer =
@@ -216,9 +215,9 @@ namespace Helios.Tests.Buffer
             //compact
             originalByteBuffer.CompactIfNecessary();
 
-            Assert.AreEqual(currentReadableBytes, originalByteBuffer.ReadableBytes);
-            Assert.AreEqual(0, originalByteBuffer.ReaderIndex);
-            Assert.IsTrue(currentWritableBytes < originalByteBuffer.WritableBytes);
+            Assert.Equal(currentReadableBytes, originalByteBuffer.ReadableBytes);
+            Assert.Equal(0, originalByteBuffer.ReaderIndex);
+            Assert.True(currentWritableBytes < originalByteBuffer.WritableBytes);
         }
 
         #endregion

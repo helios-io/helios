@@ -1,10 +1,10 @@
 ﻿using System.Net;
 using Helios.Topology;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.Tests.Topology
 {
-    [TestFixture]
+    
     public class NodeTests
     {
         #region Setup / Teardown
@@ -12,7 +12,7 @@ namespace Helios.Tests.Topology
 
         #region Tests
 
-        [Test]
+        [Fact]
         public void Should_resolve_localhost_hostname_to_IP()
         {
             //arrange
@@ -25,10 +25,10 @@ namespace Helios.Tests.Topology
             //act
 
             //assert
-            Assert.AreEqual(expectNode, testNode);
+            Assert.Equal(expectNode, testNode);
         }
 
-        [Test]
+        [Fact]
         public void Should_resolve_remote_hostname_to_IP()
         {
             //arrange
@@ -38,7 +38,7 @@ namespace Helios.Tests.Topology
             //act
 
             //assert
-            Assert.IsNotNull(testNode.Host);
+            Assert.NotNull(testNode.Host);
         }
 
         #endregion
