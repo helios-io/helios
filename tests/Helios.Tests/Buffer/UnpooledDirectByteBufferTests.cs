@@ -1,9 +1,8 @@
 using Helios.Buffers;
-using NUnit.Framework;
 
 namespace Helios.Tests.Buffer
 {
-    [TestFixture]
+    
     public class UnpooledDirectByteBufferTests : ByteBufferTests
     {
         protected override IByteBuf GetBuffer(int initialCapacity)

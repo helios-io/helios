@@ -14,12 +14,12 @@ using Helios.Serialization;
 using Helios.Topology;
 using Helios.Util;
 using Helios.Util.Collections;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.MultiNodeTests.TestKit
 {
-    [TestFixture]
-    public abstract class MultiNodeTest
+    
+    public abstract class MultiNodeTest : IDisposable
     {
         public abstract TransportType TransportType { get; }
 
@@ -44,8 +44,7 @@ namespace Helios.MultiNodeTests.TestKit
 
         private IConnectionFactory _clientConnectionFactory;
 
-        [SetUp]
-        public void SetUp()
+        protected MultiNodeTest()
         {
             if (!HighPerformance)
             {
@@ -81,7 +80,6 @@ namespace Helios.MultiNodeTests.TestKit
                 .Build();
         }
 
-        [TearDown]
         public void CleanUp()
         {
             _client.Close();
@@ -170,5 +168,9 @@ namespace Helios.MultiNodeTests.TestKit
         private IConnection _client;
 
         private IConnection _server;
+        public void Dispose()
+        {
+            CleanUp();
+        }
     }
 }

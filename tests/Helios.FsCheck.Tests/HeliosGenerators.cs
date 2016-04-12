@@ -9,14 +9,8 @@ namespace Helios.FsCheck.Tests
     {
         public static Arbitrary<CircularBuffer<T>> CreateCircularBuffer<T>()
         {
-            Func<CircularBuffer<T>> generator = () =>
-            {
-                var randomSize = ThreadLocalRandom.Current.Next(1, 10);
-                var buffer = new CircularBuffer<T>(randomSize);
-                return buffer;
-            };
-
-            return Arb.From(Gen.Fresh(generator));
+            var generator = Gen.Choose(1, 10).Select(i => new CircularBuffer<T>(i));
+            return Arb.From(generator);
         }
 
         public static Arbitrary<CircularBuffer<int>> CreateCircularBufferInt()

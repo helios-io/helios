@@ -4,11 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Helios.Ops;
 using Helios.Util;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.Tests.Ops
 {
-    [TestFixture]
+    
     public class NetworkEventLoopTests
     {
         #region Setup / Teardown
@@ -16,7 +16,7 @@ namespace Helios.Tests.Ops
 
         #region Tests
         
-        [Test]
+        [Fact]
         public void Should_be_able_to_change_NetworkEventLoop_error_handler_at_runtime()
         {
             var eventLoop = EventLoopFactory.CreateNetworkEventLoop();
@@ -40,8 +40,8 @@ namespace Helios.Tests.Ops
 
             backgroundProducer.Wait();
 
-            Assert.AreEqual(10, count.Current);
-            Assert.IsTrue(trappedException);
+            Assert.Equal(10, count.Current);
+            Assert.True(trappedException);
         }
 
         #endregion

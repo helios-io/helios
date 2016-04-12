@@ -2,7 +2,7 @@
 using System.Linq;
 using Helios.Ops.Executors;
 using Helios.Util;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.Tests.Ops
 {
@@ -10,7 +10,7 @@ namespace Helios.Tests.Ops
     {
         #region Setup / Teardown
 
-        public override void SetUp()
+        public TryCatchExecutorTests()
         {
             Executor = new TryCatchExecutor();
         }
@@ -19,7 +19,7 @@ namespace Helios.Tests.Ops
 
         #region Tests
 
-        [Test]
+        [Fact]
         public void Should_report_exception_when_thrown()
         {
             //arrange
@@ -32,10 +32,10 @@ namespace Helios.Tests.Ops
             Executor.Execute(exOperation);
 
             //assert
-            Assert.IsTrue(handledException);
+            Assert.True(handledException);
         }
 
-        [Test]
+        [Fact]
         public void Should_not_report_exception_when_not_thrown()
         {
             //arrange
@@ -49,11 +49,11 @@ namespace Helios.Tests.Ops
             Executor.Execute(exOperation);
 
             //assert
-            Assert.IsFalse(handledException);
-            Assert.IsTrue(called);
+            Assert.False(handledException);
+            Assert.True(called);
         }
 
-        [Test]
+        [Fact]
         public void Should_pipe_remaining_operations_when_exception_thrown()
         {
             //arrange
@@ -82,10 +82,10 @@ namespace Helios.Tests.Ops
             });
 
             //assert
-            Assert.IsFalse(wasCalled.All(x => x));
-            Assert.IsTrue(handledException);
-            Assert.IsTrue(remainingJobsCalled);
-            Assert.AreEqual(1, remainingJobsCount);
+            Assert.False(wasCalled.All(x => x));
+            Assert.True(handledException);
+            Assert.True(remainingJobsCalled);
+            Assert.Equal(1, remainingJobsCount);
         }
 
         #endregion

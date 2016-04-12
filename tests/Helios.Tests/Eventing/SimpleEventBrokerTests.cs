@@ -2,14 +2,14 @@
 using Helios.Eventing;
 using Helios.Eventing.Brokers;
 using Helios.Eventing.Subscriptions;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.Tests.Eventing
 {
     /// <summary>
     /// Tests for validating the approach of our SimpleEventBroker implementation
     /// </summary>
-    [TestFixture]
+    
     public class SimpleEventBrokerTests
     {
         #region Setup / Teardown
@@ -20,9 +20,7 @@ namespace Helios.Tests.Eventing
         {
             public bool ReceivedEvent { get; set; }
         }
-
-        [SetUp]
-        public void SetUp()
+        public SimpleEventBrokerTests()
         {
             eventBroker = new SimpleEventBroker<int, int>();
         }
@@ -31,7 +29,7 @@ namespace Helios.Tests.Eventing
 
         #region Tests
 
-        [Test(Description = "Should fire its notification event for when we successfully add / remove subscribers")]
+        [Fact()]
         public void Should_notify_changes_in_subscribers()
         {
             //arrange
@@ -56,11 +54,11 @@ namespace Helios.Tests.Eventing
             eventBroker.Unsubscribe(0, subscriber1.GetHashCode());
 
             //assert
-            Assert.AreEqual(0, subscriberCount);
-            Assert.AreEqual(2, changes);
+            Assert.Equal(0, subscriberCount);
+            Assert.Equal(2, changes);
         }
 
-        [Test(Description = "Should be able to notify all subscribers when an update happens to a topic")]
+        [Fact]
         public void Should_notify_subscribers()
         {
             //arrange
@@ -79,11 +77,11 @@ namespace Helios.Tests.Eventing
             eventBroker.InvokeEvent(0, this, new EventArgs());
 
             //assert
-            Assert.IsTrue(subscriber1.ReceivedEvent);
-            Assert.IsTrue(subscriber2.ReceivedEvent);
+            Assert.True(subscriber1.ReceivedEvent);
+            Assert.True(subscriber2.ReceivedEvent);
         }
 
-        [Test(Description = "Should only notify subscribers who are on the relevant topic")]
+        [Fact]
         public void Should_only_notify_subscribers_on_relevant_topic()
         {
             //arrange
@@ -121,11 +119,11 @@ namespace Helios.Tests.Eventing
             eventBroker.InvokeEvent(0, this, new EventArgs());
 
             //assert
-            Assert.AreEqual(3, invoked);
-            Assert.IsTrue(subscriber1.ReceivedEvent);
-            Assert.IsTrue(subscriber2.ReceivedEvent);
-            Assert.IsFalse(subscriber3.ReceivedEvent);
-            Assert.IsTrue(subscriber4.ReceivedEvent);
+            Assert.Equal(3, invoked);
+            Assert.True(subscriber1.ReceivedEvent);
+            Assert.True(subscriber2.ReceivedEvent);
+            Assert.False(subscriber3.ReceivedEvent);
+            Assert.True(subscriber4.ReceivedEvent);
         }
 
         #endregion

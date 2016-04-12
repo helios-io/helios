@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading;
 using Helios.Util.TimedOps;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.Tests.Util.TimedOps
 {
-    [TestFixture]
+    
     public class ScheduledValueTests
     {
         #region Setup / Teardown
@@ -13,7 +13,7 @@ namespace Helios.Tests.Util.TimedOps
 
         #region Tests
 
-        [Test]
+        [Fact]
         public void Should_not_have_IsScheduled_set()
         {
             //arrange
@@ -23,11 +23,11 @@ namespace Helios.Tests.Util.TimedOps
 
 
             //assert
-            Assert.IsFalse(scheduledSet.IsScheduled);
-            Assert.IsFalse(scheduledSet.WasSet);
+            Assert.False(scheduledSet.IsScheduled);
+            Assert.False(scheduledSet.WasSet);
         }
 
-        [Test]
+        [Fact]
         public void Should_schedule_future_set()
         {
             //arrange
@@ -35,16 +35,16 @@ namespace Helios.Tests.Util.TimedOps
 
             //act
             scheduledSet.Schedule(12, TimeSpan.FromSeconds(1));
-            Assert.IsTrue(scheduledSet.IsScheduled);
+            Assert.True(scheduledSet.IsScheduled);
             Thread.Sleep(TimeSpan.FromSeconds(2));
 
             //assert
-            Assert.AreEqual(12, scheduledSet.Value);
-            Assert.IsTrue(scheduledSet.WasSet);
-            Assert.IsFalse(scheduledSet.IsScheduled);
+            Assert.Equal(12, scheduledSet.Value);
+            Assert.True(scheduledSet.WasSet);
+            Assert.False(scheduledSet.IsScheduled);
         }
 
-        [Test]
+        [Fact]
         public void Should_cancel_scheduled_set()
         {
             //arrange
@@ -52,12 +52,12 @@ namespace Helios.Tests.Util.TimedOps
 
             //act
             scheduledSet.Schedule(12, TimeSpan.FromSeconds(1));
-            Assert.IsTrue(scheduledSet.IsScheduled);
+            Assert.True(scheduledSet.IsScheduled);
             scheduledSet.Cancel();
 
             //assert
-            Assert.IsFalse(scheduledSet.IsScheduled);
-            Assert.IsFalse(scheduledSet.WasSet);
+            Assert.False(scheduledSet.IsScheduled);
+            Assert.False(scheduledSet.WasSet);
         }
 
         #endregion

@@ -13,7 +13,7 @@ namespace Helios.Benchmark.TCPThroughput
         {
             HeliosTrace.SetWriter(HeliosCounterTraceWriter.Instance);
             var harness = new TcpHarness();
-            harness.SetUp();
+            //harness.SetUp();
             Console.WriteLine("Helios TCP Client --> Server Reliability benchmark");
             Console.WriteLine("TCP is a reliable protocol, so this should never be a problem. Buuuuuuuuut concurrent programming.");
             Console.WriteLine("Testing delivery rate of {0} messages round trip", harness.BufferSize);

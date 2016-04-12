@@ -23,7 +23,7 @@ namespace Helios.Benchmark.TCPThroughput
                 Console.WriteLine(TimeSpan.FromMilliseconds(
                     Enumerable.Range(0, 6).Select(_ =>
                     {
-                        test.SetUp();
+                        test = new TcpThroughputHarness();
                         var sw = Stopwatch.StartNew();
                         test.RunBenchmark(workItems);
                         var elapsed = sw.ElapsedMilliseconds;
