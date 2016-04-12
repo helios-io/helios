@@ -33,19 +33,5 @@ namespace Helios.Tests.Util.Collections
             Assert.IsFalse(byteArrayOne.SequenceEqual(availableBytes));
             Assert.IsTrue(byteArrayTwo.SequenceEqual(availableBytes));
         }
-
-        [Test]
-        public void CircularBuffer_should_keep_adding_elements_after_Max_Capacity()
-        {
-            var numbers = Enumerable.Range(1, 10000).ToList();
-            var finalNumbers = Enumerable.Range(9801, 200).ToList();
-            var buffer = GetBuffer<int>(5);
-            foreach (var number in numbers)
-            {
-                buffer.Enqueue(number);
-            }
-            var resultNumbers = buffer.DequeueAll();
-            Assert.IsTrue(finalNumbers.SequenceEqual(resultNumbers));
-        }
     }
 }

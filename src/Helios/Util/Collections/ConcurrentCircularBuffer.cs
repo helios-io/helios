@@ -122,7 +122,7 @@ namespace Helios.Util.Collections
                 var availabileItems = Math.Min(count, SizeUnsafe);
                 returnItems = new List<T>(availabileItems);
 
-                if (returnItems.Count == 0)
+                if (availabileItems == 0)
                     return returnItems;
 
                 for (var i = 0; i < availabileItems; i++)
