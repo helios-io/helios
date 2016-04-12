@@ -11,21 +11,11 @@ namespace Helios.Util.Collections
     /// <typeparam name="T">The type being stored in the circular buffer</typeparam>
     public class CircularBuffer<T> : ICircularBuffer<T>
     {
-        public CircularBuffer(T[] initialArray) : this(initialArray, initialArray.Length)
+        public CircularBuffer(int capacity)
         {
-        }
-
-        public CircularBuffer(T[] initialArray, int capacity)
-        {
-            Capacity = capacity;
             _head = 0;
             _tail = 0;
-            Buffer = initialArray;
-        }
-
-        public CircularBuffer(int capacity) : this(new T[capacity], capacity)
-        {
-
+            Buffer = new T[capacity];
         }
 
         /// <summary>
@@ -34,63 +24,42 @@ namespace Helios.Util.Collections
         private int _head;
 
         /// <summary>
+        /// FOR TESTING PURPOSES ONLY
+        /// </summary>
+        internal int Head => _head;
+
+        /// <summary>
         /// Back of the buffer
         /// </summary>
         private int _tail;
+
+        /// <summary>
+        /// FOR TESTING PURPOSES ONLY
+        /// </summary>
+        internal int Tail => _tail;
 
         /// <summary>
         /// The buffer itself
         /// </summary>
         protected T[] Buffer;
 
-        public int Capacity { get; }
+        public int Capacity => Buffer.Length;
 
-        public int Size => (_tail - _head + Capacity)%Capacity;
+        // We use an N+1 trick here to make sure we can distinguish full queues from empty ones
+        public int Size => _full ? Capacity : (_tail - _head + Capacity) % Capacity;
 
-        public int Head => _head % Capacity;
-        public int Tail => _tail % Capacity;
+        private bool _full = false;
 
         public virtual T Peek()
         {
-            if (Size == 0)
-                return default(T);
-            return Buffer[(_head % Capacity)];
-        }
-
-        /// <summary>
-        /// Checks an index relative to the <see cref="_head"/> to see if there's a set element there
-        /// </summary>
-        public bool IsElementAt(int index)
-        {
-            return ((_head + index) % Capacity) <= Size;
-        }
-
-        public T ElementAt(int index)
-        {
-            return Buffer[(_head + index) % Capacity];
-        }
-
-        /// <summary>
-        /// Sets an element at the specified position relative to <see cref="_head"/>
-        /// WITHOUT MODIFYING <see cref="_tail"/>
-        /// </summary>
-        /// <param name="element">The element we want to add at the specified <see cref="index"/></param>
-        /// <param name="index">The index relative to the front of the buffer where we want to add <see cref="element"/></param>
-        public void SetElementAt(T element, int index)
-        {
-            Buffer[(_head + index) % Capacity] = element;
-        }
-
-        public T this[int index]
-        {
-            get { return ElementAt(index); }
-            set { SetElementAt(value, index); }
+            return Buffer[_head];
         }
 
         public virtual void Enqueue(T obj)
         {
-            Buffer[_tail % Capacity] = obj;
-            _tail++;
+            _full = _full || _tail + 1 == Capacity; // leave FULL flag on
+            Buffer[_tail] = obj;
+            _tail = (_tail + 1) % Capacity;
         }
 
         public void Enqueue(T[] objs)
@@ -103,11 +72,9 @@ namespace Helios.Util.Collections
 
         public virtual T Dequeue()
         {
-            if (Size == 0)
-                return default(T);
-
-            var item = Buffer[_head % Capacity];
-            _head++;
+            _full = false; // full is always false as soon as we dequeue
+            var item = Buffer[_head];
+            _head = (_head + 1) % Capacity;
             return item;
         }
 
@@ -117,7 +84,7 @@ namespace Helios.Util.Collections
             var returnItems = new List<T>(availabileItems);
             for (var i = 0; i < availabileItems; i++, _head++)
             {
-                returnItems.Add(Buffer[_head % Capacity]);
+                returnItems.Add(Dequeue());
             }
 
             return returnItems;
@@ -198,11 +165,9 @@ namespace Helios.Util.Collections
             if (count > Size) //The maximum value of count is Size
                 count = Size;
 
-            var bufferBegin = Head;
-            for (var i = 0; i < count; i++, bufferBegin++, index++)
+            var bufferBegin = _head;
+            for (var i = 0; i < count; i++, bufferBegin = (bufferBegin+1) % Capacity, index++)
             {
-                if (bufferBegin == Capacity)
-                    bufferBegin = 0; //Jump to the front of the buffer
                 array[index] = Buffer[bufferBegin];
             }
         }
@@ -228,5 +193,10 @@ namespace Helios.Util.Collections
         public virtual object SyncRoot { get; private set; }
 
         public virtual bool IsSynchronized => false;
+
+        public override string ToString()
+        {
+            return $"CircularBuffer<{GetType()}>(Capacity = {Capacity})";
+        }
     }
 }
