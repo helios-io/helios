@@ -67,6 +67,7 @@
     <Compile Include="Buffers\EmptyByteBuf.cs" />
     <Compile Include="Buffers\Unpooled.cs" />
     <Compile Include="Buffers\UnpooledByteBufAllocator.cs" />
+    <Compile Include="Channels\ChannelHandlerAdapter.cs" />
     <Compile Include="Channels\DefaultConnectionConfig.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelHandler.cs" />
@@ -187,6 +188,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Helios.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Channels\Sockets\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace Helios.Channels
 {
+    /// <summary>
+    /// Defines the range of all possible operations that can be handled at each stage in the <see cref="IChannelPipeline"/>
+    /// </summary>
     public interface IChannelHandler
     {
         void ChannelRegistered(IChannelHandlerContext context);
