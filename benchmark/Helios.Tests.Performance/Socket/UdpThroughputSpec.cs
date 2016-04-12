@@ -1,8 +1,8 @@
-using System.Net;
+﻿using System.Net;
 
 namespace Helios.Tests.Performance.Socket
 {
-    public class TcpThroughputSpec : SocketThroughputSpec
+    public class UdpThroughputSpec : SocketThroughputSpec
     {
         public override TransportType TransportType
         {
