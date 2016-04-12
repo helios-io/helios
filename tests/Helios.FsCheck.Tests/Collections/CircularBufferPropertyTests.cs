@@ -56,7 +56,15 @@ namespace Helios.FsCheck.Tests.Collections
         public Property CircularBuffer_Model_Should_Pass()
         {
             Func<int> generator = () => ThreadLocalRandom.Current.Next();
-            var tests = new CircularBufferPropertyTests<int>(generator);
+            var tests = new CircularBufferPropertyTests<int>(generator, i => new CircularBuffer<int>(i));
+            return tests.ToProperty();
+        }
+
+        [Property(QuietOnSuccess = true, MaxTest = 1000)]
+        public Property ConcurrentCircularBuffer_Model_Should_Pass()
+        {
+            Func<int> generator = () => ThreadLocalRandom.Current.Next();
+            var tests = new CircularBufferPropertyTests<int>(generator, i => new ConcurrentCircularBuffer<int>(i));
             return tests.ToProperty();
         }
     }
@@ -73,46 +81,54 @@ namespace Helios.FsCheck.Tests.Collections
         public int Capacity { get; private set; }
     }
 
-    public class CircularBufferPropertyTests<T> : ICommandGenerator<CircularBuffer<T>, CModel<T>>
+    public class CircularBufferPropertyTests<T> : ICommandGenerator<ICircularBuffer<T>, CModel<T>>
 
     {
-
-
         public Func<T> Generator { get; }
 
-        public CircularBufferPropertyTests(Func<T> generator)
+        public Func<int, ICircularBuffer<T>> BufferFactory { get; }
+
+        public CircularBufferPropertyTests(Func<T> generator, Func<int, ICircularBuffer<T>> bufferFactory)
         {
             Generator = generator;
+            BufferFactory = bufferFactory;
         }
 
-        public Gen<Command<CircularBuffer<T>, CModel<T>>> Next(CModel<T> obj0)
+        public Gen<Command<ICircularBuffer<T>, CModel<T>>> Next(CModel<T> obj0)
         {
-            return Gen.Elements(new Command<CircularBuffer<T>, CModel<T>>[] { new Allocate(), new EnqueueNoWrapAround(Generator), new Dequeue(), new Size(), });
+            return Gen.Elements(new Command<ICircularBuffer<T>, CModel<T>>[] { new Allocate(BufferFactory), new EnqueueNoWrapAround(Generator), new EnqueueWithWrapAround(Generator), new Dequeue(), new Size(), new Clear(),  });
         }
 
-        public CircularBuffer<T> InitialActual => null; // no model yet - must be allocated as part of spec
+        public ICircularBuffer<T> InitialActual => null; // no model yet - must be allocated as part of spec
         public CModel<T> InitialModel => null; // no actual yet - must be allocated as part of spec
 
-        private class Allocate : Command<CircularBuffer<T>, CModel<T>>
+        private class Allocate : Command<ICircularBuffer<T>, CModel<T>>
         {
-            private readonly Lazy<int> ListSize = new Lazy<int>(() => ThreadLocalRandom.Current.Next(1, 10));
+            private readonly Lazy<int> _listSize = new Lazy<int>(() => ThreadLocalRandom.Current.Next(1, 10));
 
-            public override CircularBuffer<T> RunActual(CircularBuffer<T> obj0)
+            private readonly Func<int, ICircularBuffer<T>> _factory;
+
+            public Allocate(Func<int, ICircularBuffer<T>> factory)
+            {
+                _factory = factory;
+            }
+
+            public override ICircularBuffer<T> RunActual(ICircularBuffer<T> obj0)
             {
 
-                obj0 = new CircularBuffer<T>(ListSize.Value);
+                obj0 = _factory(_listSize.Value);
                 return obj0;
             }
 
             public override CModel<T> RunModel(CModel<T> obj0)
             {
-                obj0 = new CModel<T>(new List<T>(), ListSize.Value);
+                obj0 = new CModel<T>(new List<T>(), _listSize.Value);
                 return obj0;
             }
 
             public override string ToString()
             {
-                return $"new CircularBuffer{typeof(T)}({ListSize.Value})";
+                return $"new CircularBuffer{typeof(T)}({_listSize.Value})";
             }
 
             public override bool Pre(CModel<T> _arg1)
@@ -121,7 +137,7 @@ namespace Helios.FsCheck.Tests.Collections
             }
         }
 
-        private class EnqueueNoWrapAround : Command<CircularBuffer<T>, CModel<T>>
+        private class EnqueueNoWrapAround : Command<ICircularBuffer<T>, CModel<T>>
         {
             public EnqueueNoWrapAround(Func<T> generator)
             {
@@ -133,9 +149,9 @@ namespace Helios.FsCheck.Tests.Collections
 
             private readonly Lazy<T> _data;
 
-            public override CircularBuffer<T> RunActual(CircularBuffer<T> obj0)
+            public override ICircularBuffer<T> RunActual(ICircularBuffer<T> obj0)
             {
-                obj0.Add(_data.Value);
+                obj0.Enqueue(_data.Value);
                 return obj0;
             }
 
@@ -151,7 +167,7 @@ namespace Helios.FsCheck.Tests.Collections
                 return _arg1 != null && _arg1.Items.Count < _arg1.Items.Capacity;
             }
 
-            public override Property Post(CircularBuffer<T> _arg2, CModel<T> _arg3)
+            public override Property Post(ICircularBuffer<T> _arg2, CModel<T> _arg3)
             {
                 var cbTail = _arg2.ToArray().Last();
                 var modelTail = _arg3.Items.Last();
@@ -164,11 +180,11 @@ namespace Helios.FsCheck.Tests.Collections
 
             public override string ToString()
             {
-                return $"CircularBuffer<{typeof(T)}>.Enqueue({_data.Value})";
+                return $"CircularBuffer<{typeof(T)}>.EnqueueNoWrapAround({_data.Value})";
             }
         }
 
-        private class EnqueueWithWrapAround : Command<CircularBuffer<T>, CModel<T>>
+        private class EnqueueWithWrapAround : Command<ICircularBuffer<T>, CModel<T>>
         {
             public EnqueueWithWrapAround(Func<T> generator)
             {
@@ -180,9 +196,9 @@ namespace Helios.FsCheck.Tests.Collections
 
             private readonly Lazy<T> _data;
 
-            public override CircularBuffer<T> RunActual(CircularBuffer<T> obj0)
+            public override ICircularBuffer<T> RunActual(ICircularBuffer<T> obj0)
             {
-                obj0.Add(_data.Value);
+                obj0.Enqueue(_data.Value);
                 return obj0;
             }
 
@@ -194,11 +210,12 @@ namespace Helios.FsCheck.Tests.Collections
 
             public override bool Pre(CModel<T> _arg1)
             {
-                // ensure no wrap-around
-                return _arg1 != null && _arg1.Items.Count == _arg1.Items.Capacity;
+                return _arg1 != null // must have called allocate first
+                    && _arg1.Items.Any() // must have added at least 1 item to model
+                    && _arg1.Items.Count == _arg1.Items.Capacity; // model size must equal capacity (forces wrap-around)
             }
 
-            public override Property Post(CircularBuffer<T> _arg2, CModel<T> _arg3)
+            public override Property Post(ICircularBuffer<T> _arg2, CModel<T> _arg3)
             {
                 var cbTail = _arg2.ToArray().Last();
                 var modelTail = _arg3.Items.Last();
@@ -211,15 +228,15 @@ namespace Helios.FsCheck.Tests.Collections
 
             public override string ToString()
             {
-                return $"CircularBuffer<{typeof(T)}>.Enqueue({_data.Value})";
+                return $"CircularBuffer<{typeof(T)}>.EnqueueWithWrapAround({_data.Value})";
             }
         }
 
-        private class Dequeue : Command<CircularBuffer<T>, CModel<T>>
+        private class Dequeue : Command<ICircularBuffer<T>, CModel<T>>
         {
             private T dequeValue;
 
-            public override CircularBuffer<T> RunActual(CircularBuffer<T> obj0)
+            public override ICircularBuffer<T> RunActual(ICircularBuffer<T> obj0)
             {
                 dequeValue = obj0.Dequeue();
                 return obj0;
@@ -236,7 +253,7 @@ namespace Helios.FsCheck.Tests.Collections
                 return _arg1 != null && _arg1.Items.Any();
             }
 
-            public override Property Post(CircularBuffer<T> _arg2, CModel<T> _arg3)
+            public override Property Post(ICircularBuffer<T> _arg2, CModel<T> _arg3)
             {
                 return (_arg2.Skip(1).SequenceEqual(_arg3.Items.Skip(1))).ToProperty();
             }
@@ -247,9 +264,9 @@ namespace Helios.FsCheck.Tests.Collections
             }
         }
 
-        private class Size : Command<CircularBuffer<T>, CModel<T>>
+        private class Size : Command<ICircularBuffer<T>, CModel<T>>
         {
-            public override CircularBuffer<T> RunActual(CircularBuffer<T> obj0)
+            public override ICircularBuffer<T> RunActual(ICircularBuffer<T> obj0)
             {
                 return obj0;
             }
@@ -264,7 +281,7 @@ namespace Helios.FsCheck.Tests.Collections
                 return _arg1 != null;
             }
 
-            public override Property Post(CircularBuffer<T> _arg2, CModel<T> _arg3)
+            public override Property Post(ICircularBuffer<T> _arg2, CModel<T> _arg3)
             {
                 return (_arg2.Count == _arg3.Items.Count).ToProperty().Label($"Expected {_arg3.Items.Count}, got {_arg2.Count}");
             }
@@ -272,6 +289,36 @@ namespace Helios.FsCheck.Tests.Collections
             public override string ToString()
             {
                 return $"CircularBuffer<{typeof(T)}>.Size()";
+            }
+        }
+
+        private class Clear : Command<ICircularBuffer<T>, CModel<T>>
+        {
+            public override ICircularBuffer<T> RunActual(ICircularBuffer<T> obj0)
+            {
+                obj0.Clear();
+                return obj0;
+            }
+
+            public override CModel<T> RunModel(CModel<T> obj0)
+            {
+                obj0.Items.Clear();
+                return obj0;
+            }
+
+            public override bool Pre(CModel<T> _arg1)
+            {
+                return _arg1 != null;
+            }
+
+            public override Property Post(ICircularBuffer<T> _arg2, CModel<T> _arg3)
+            {
+                return (_arg2.Count == _arg3.Items.Count).ToProperty().Label($"Expected {_arg3.Items.Count}, got {_arg2.Count}");
+            }
+
+            public override string ToString()
+            {
+                return $"CircularBuffer<{typeof(T)}>.Clear()";
             }
         }
     }

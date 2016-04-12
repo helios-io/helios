@@ -82,7 +82,7 @@ namespace Helios.Util.Collections
         {
             var availabileItems = Math.Min(count, Size);
             var returnItems = new List<T>(availabileItems);
-            for (var i = 0; i < availabileItems; i++, _head++)
+            for (var i = 0; i < availabileItems; i++)
             {
                 returnItems.Add(Dequeue());
             }
@@ -104,6 +104,7 @@ namespace Helios.Util.Collections
         {
             _head = 0;
             _tail = 0;
+            _full = false;
         }
 
         public bool Contains(T item)
