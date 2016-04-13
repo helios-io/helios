@@ -405,21 +405,28 @@ namespace Helios.Concurrency
                 _thread = new Thread(() =>
                 {
                     CurrentWorker = this;
-
-                    foreach (var action in _workQueue.GetConsumingEnumerable())
+                    try
                     {
-                        try
+                        foreach (var action in _workQueue.GetConsumingEnumerable())
                         {
-                            //bail if shutdown has been requested
-                            if (_pool.ShutdownRequested) return;
-                            action();
-                        }
-                        catch (Exception ex)
-                        {
-                            Failover(true);
-                            return;
+                            try
+                            {
+                                //bail if shutdown has been requested
+                                if (_pool.ShutdownRequested) return;
+                                action();
+                            }
+                            catch (Exception ex)
+                            {
+                                Failover(true);
+                                return;
+                            }
                         }
                     }
+                    catch (ThreadAbortException)
+                    {
+                        return;
+                    }
+
                 })
                 {
                     IsBackground = _pool.Settings.ThreadType == ThreadType.Background
