@@ -124,6 +124,7 @@ Target "NBench" <| fun _ ->
         let args = new StringBuilder()
                 |> append assembly
                 |> append (sprintf "output-directory=\"%s\"" perfOutput)
+                |> append (sprintf "concurrent=\"%b\"" true)
                 |> toText
 
         let result = ExecProcess(fun info -> 

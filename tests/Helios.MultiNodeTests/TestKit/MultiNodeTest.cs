@@ -30,6 +30,8 @@ namespace Helios.MultiNodeTests.TestKit
 
         public virtual int BufferSize { get { return 1024; } }
 
+        public virtual int WorkerThreads { get { return 2; } }
+
         public AtomicCounter ClientReceived { get; protected set; }
 
         public AtomicCounter ServerReceived { get; protected set; }
@@ -61,6 +63,7 @@ namespace Helios.MultiNodeTests.TestKit
             var serverBootstrap = new ServerBootstrap()
                    .WorkerThreads(2)
                    .Executor(_serverExecutor)
+                   .WorkerThreads(WorkerThreads)
                    .SetTransport(TransportType)
                    .SetEncoder(Encoder)
                    .SetDecoder(Decoder)
@@ -72,6 +75,7 @@ namespace Helios.MultiNodeTests.TestKit
 
             _clientConnectionFactory = new ClientBootstrap()
                 .Executor(_clientExecutor)
+                .WorkerThreads(WorkerThreads)
                 .SetTransport(TransportType)
                 .SetEncoder(Encoder)
                 .SetDecoder(Decoder)
@@ -82,8 +86,8 @@ namespace Helios.MultiNodeTests.TestKit
 
         public void CleanUp()
         {
-            _client.Close();
-            _server.Close();
+            _client?.Close();
+            _server?.Close();
             _client = null;
             _server = null;
         }
