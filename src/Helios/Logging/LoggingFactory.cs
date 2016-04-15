@@ -17,7 +17,7 @@ namespace Helios.Logging
         static LoggingFactory NewDefaultFactory(string name)
         {
             var loggingFactory = new StandardOutLoggerFactory();
-            loggingFactory.NewInstance(name, typeof(LoggingFactory)).Debug("Using Standard Out as the default logging system.");
+            loggingFactory.NewInstance(name).Debug("Using Standard Out as the default logging system.");
             return loggingFactory;
         }
 
@@ -45,21 +45,21 @@ namespace Helios.Logging
             }
         }
 
-        protected abstract ILogger NewInstance(string name, Type source);
+        protected abstract ILogger NewInstance(string name, params LogLevel[] supportedLogLevels);
 
-        public static ILogger GetLogger<T>()
+        public static ILogger GetLogger<T>(params LogLevel[] supportedLogLevels)
         {
-            return GetInstance(typeof (T));
+            return GetInstance(typeof (T), supportedLogLevels);
         }
 
-        public static ILogger GetInstance(Type t)
+        public static ILogger GetInstance(Type t, params LogLevel[] supportedLogLevels)
         {
-            return GetInstance(t.FullName, t);
+            return GetInstance(t.FullName, supportedLogLevels);
         }
 
-        public static ILogger GetInstance(string name, Type t)
+        public static ILogger GetInstance(string name, params LogLevel[] supportedLogLevels)
         {
-            return DefaultFactory.NewInstance(name, t);
+            return DefaultFactory.NewInstance(name, supportedLogLevels);
         }
     }
 }

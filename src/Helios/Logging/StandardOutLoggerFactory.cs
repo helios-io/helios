@@ -7,9 +7,9 @@ namespace Helios.Logging
     /// </summary>
     public class StandardOutLoggerFactory : LoggingFactory
     {
-        protected override ILogger NewInstance(string name, Type source)
+        protected override ILogger NewInstance(string name, params LogLevel[] supportedLogLevels)
         {
-            return new StdOutLogger(name, source);
+            return new StdOutLogger(name );
         }
     }
 }

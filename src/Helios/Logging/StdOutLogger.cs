@@ -46,7 +46,7 @@ namespace Helios.Logging
         {
         }
 
-        public StdOutLogger(string logSource, Type logType, params LogLevel[] supportedLogLevels) : base(logSource, supportedLogLevels)
+        public StdOutLogger(string logSource, params LogLevel[] supportedLogLevels) : base(logSource, supportedLogLevels)
         {
         }
 
