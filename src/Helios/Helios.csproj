@@ -69,8 +69,10 @@
     <Compile Include="Buffers\UnpooledByteBufAllocator.cs" />
     <Compile Include="Channels\DefaultConnectionConfig.cs" />
     <Compile Include="Channels\Sockets\ISocketConnectionConfig.cs" />
+    <Compile Include="Concurrency\IEventExecutor.cs" />
     <Compile Include="Concurrency\Impl\SharedFiber.cs" />
     <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />
+    <Compile Include="Concurrency\IRunnable.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Logging\LogEvent.cs" />
     <Compile Include="Logging\LoggingAdapter.cs" />
