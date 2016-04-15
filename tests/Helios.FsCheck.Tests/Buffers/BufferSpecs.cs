@@ -20,7 +20,7 @@ namespace Helios.FsCheck.Tests.Buffers
         {
             var allocator = (IByteBufAllocator)Activator.CreateInstance(allocatorType);
 
-            Prop.ForAll<BufferOperations.IWrite[], BufferSize>((writes, size) =>
+            var writeReadConsitency = Prop.ForAll<BufferOperations.IWrite[], BufferSize>((writes, size) =>
             {
                 var buffer = allocator.Buffer(size.InitialSize, size.MaxSize);
                 var expectedValues = writes.Select(x => x.UntypedData).ToList();
@@ -33,8 +33,19 @@ namespace Helios.FsCheck.Tests.Buffers
                     actualValues.Add(read.Execute(buffer));
 
                 return expectedValues.SequenceEqual(actualValues, BufferOperations.Comparer).Label($"Expected: {string.Join(",", expectedValues)}; Got: {string.Join(",", actualValues)}");
-            }).Label("Writes then reads in same order should produce original input")
-            .QuickCheckThrowOnFailure();
+            }).Label("Writes then reads in same order should produce original input");
+
+            var writeIndexConsistency = Prop.ForAll<BufferOperations.IWrite[], BufferSize>((writes, size) =>
+            {
+                var writtenBytes = 0;
+                var buffer = allocator.Buffer(size.InitialSize, size.MaxSize);
+                foreach (var write in writes)
+                    writtenBytes += write.Execute(buffer);
+
+                return buffer.ReaderIndex == 0 && buffer.WriterIndex == writtenBytes;
+            }).Label("Buffer's writer index should match total number of written bytes");
+
+            writeReadConsitency.And(writeIndexConsistency).QuickCheckThrowOnFailure();
         }
     }
 }
