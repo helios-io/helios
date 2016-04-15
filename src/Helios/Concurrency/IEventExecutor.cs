@@ -44,7 +44,61 @@ namespace Helios.Concurrency
         /// </summary>
         bool IsTerminated { get; }
 
+        /// <summary>
+        /// Executes the <see cref="IRunnable"/>
+        /// </summary>
+        void Execute(IRunnable task);
 
+        /// <summary>
+        /// Executes the <see cref="Action"/>
+        /// </summary>
+        /// <param name="action">The delegate that will be invoked by the<see cref="IEventExecutor"/></param>
+        /// <param name="state">The state parameter used by the underlying delegate.</param>
+        void Execute(Action<object> action, object state);
+
+        /// <summary>
+        /// Executes the <see cref="Action"/>.
+        /// </summary>
+        /// <param name="action">The delegate that will be invoked by the<see cref="IEventExecutor"/></param>
+        void Execute(Action action);
+
+        /// <summary>
+        /// Executes the <see cref="Action"/>
+        /// </summary>
+        /// <param name="action">The delegate that will be invoked by the<see cref="IEventExecutor"/></param>
+        /// <param name="context">The context used by the underlying delegate.</param>
+        /// <param name="state">The state parameter used by the underlying delegate.</param>
+        void Execute(Action<object, object> action, object context, object state);
+
+        /// <summary>
+        /// Executes the given <see cref="Func{TResult}"/> and returns <see cref="Task{TResult}" /> indicating when the function is completed.
+        /// </summary>
+        Task<T> SubmitAsync<T>(Func<T> func);
+
+        /// <summary>
+        /// Executes the given <see cref="Func{TResult}"/> and returns <see cref="Task{TResult}" /> indicating when the function is completed.
+        /// </summary>
+        Task<T> SubmitAsync<T>(Func<T> func, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Executes the given <see cref="Func{TResult}"/> and returns <see cref="Task{TResult}" /> indicating when the function is completed.
+        /// </summary>
+        Task<T> SubmitAsync<T>(Func<object, T> func, object state);
+
+        /// <summary>
+        /// Executes the given <see cref="Func{TResult}"/> and returns <see cref="Task{TResult}" /> indicating when the function is completed.
+        /// </summary>
+        Task<T> SubmitAsync<T>(Func<object, T> func, object state, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Executes the given <see cref="Func{TResult}"/> and returns <see cref="Task{TResult}" /> indicating when the function is completed.
+        /// </summary>
+        Task<T> SubmitAsync<T>(Func<object, object, T> func, object context, object state);
+
+        /// <summary>
+        /// Executes the given <see cref="Func{TResult}"/> and returns <see cref="Task{TResult}" /> indicating when the function is completed.
+        /// </summary>
+        Task<T> SubmitAsync<T>(Func<object, object, T> func, object context, object state, CancellationToken cancellationToken);
 
         Task GracefulShutdownAsync();
 

@@ -69,10 +69,13 @@
     <Compile Include="Buffers\UnpooledByteBufAllocator.cs" />
     <Compile Include="Channels\DefaultConnectionConfig.cs" />
     <Compile Include="Channels\Sockets\ISocketConnectionConfig.cs" />
+    <Compile Include="Concurrency\AbstractEventExecutor.cs" />
+    <Compile Include="Concurrency\EventExecutorTaskScheduler.cs" />
     <Compile Include="Concurrency\IEventExecutor.cs" />
     <Compile Include="Concurrency\Impl\SharedFiber.cs" />
     <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />
     <Compile Include="Concurrency\IRunnable.cs" />
+    <Compile Include="Concurrency\SingleThreadEventExecutor.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Logging\LogEvent.cs" />
     <Compile Include="Logging\LoggingAdapter.cs" />
@@ -80,6 +83,7 @@
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\NoOpLogger.cs" />
     <Compile Include="Logging\StandardOutLoggerFactory.cs" />
+    <Compile Include="Util\MonotonicClock.cs" />
     <Compile Include="Util\StandardOutWriter.cs" />
     <Compile Include="Logging\StdOutLogger.cs" />
     <Compile Include="Net\NetworkData.cs" />
@@ -189,6 +193,7 @@
     <Compile Include="Util\CollectionBuilder.cs" />
     <Compile Include="Util\ThreadLocalRandom.cs" />
     <Compile Include="Util\TimedOps\Deadline.cs" />
+    <Compile Include="Util\TimedOps\PreciseDeadline.cs" />
     <Compile Include="Util\TimedOps\ScheduledValue.cs" />
   </ItemGroup>
   <ItemGroup>
