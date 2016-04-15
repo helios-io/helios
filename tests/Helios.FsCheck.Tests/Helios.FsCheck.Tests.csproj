@@ -60,6 +60,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Buffers\BufferGenerators.cs" />
     <Compile Include="Collections\CircularBufferPropertyTests.cs" />
     <Compile Include="HeliosGenerators.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

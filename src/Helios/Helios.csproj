@@ -74,6 +74,7 @@
     <Compile Include="Channels\IChannelHandlerContext.cs" />
     <Compile Include="Channels\IChannelHandlerInvoker.cs" />
     <Compile Include="Channels\IChannelPipeline.cs" />
+    <Compile Include="Channels\Sockets\ISocketConnectionConfig.cs" />
     <Compile Include="Concurrency\Impl\SharedFiber.cs" />
     <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />
     <Compile Include="Logging\ILogger.cs" />
@@ -197,9 +198,7 @@
   <ItemGroup>
     <None Include="Helios.nuspec" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Channels\Sockets\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
