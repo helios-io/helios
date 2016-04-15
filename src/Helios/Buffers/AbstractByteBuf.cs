@@ -521,7 +521,11 @@ namespace Helios.Buffers
 
         public IByteBuf WriteUnsignedShort(int value)
         {
-            throw new NotImplementedException();
+            unchecked
+            {
+                WriteShort((ushort) value);
+            }
+            return this;
         }
 
         public virtual IByteBuf WriteInt(int value)

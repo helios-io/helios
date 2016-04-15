@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using FsCheck;
 using Helios.Buffers;
 
@@ -58,16 +60,65 @@ namespace Helios.FsCheck.Tests.Buffers
             return Arb.From(seq);
         }
 
+        public static Arbitrary<BufferSize> BufferSize()
+        {
+            return Arb.From(Gen.Choose(10, 1024).Select(i => new BufferSize(i, Int32.MaxValue)));
+        }
+    }
+
+    public class BufferSize
+    {
+        public BufferSize(int initialSize, int maxSize)
+        {
+            InitialSize = initialSize;
+            MaxSize = maxSize;
+        }
+
+        public int InitialSize { get; }
+
+        public int MaxSize { get; }
+
+        public override string ToString()
+        {
+            return $"BufferSize(InitialSize = {InitialSize}, MaxSize = {MaxSize})";
+        }
+    }
+
+    public class BufferContentsComparer : IEqualityComparer<object>
+    {
+        public new bool Equals(object x, object y)
+        {
+            var bytes = x as byte[];
+            if (bytes != null && y is byte[])
+            {
+                var xBytes = bytes;
+                var yBytes = (byte[])y;
+                return xBytes.SequenceEqual(yBytes);
+            }
+
+            return x.Equals(y);
+        }
+
+        public int GetHashCode(object obj)
+        {
+            return obj.GetHashCode();
+        }
     }
 
     public class BufferOperations
     {
+        public static readonly BufferContentsComparer Comparer = new BufferContentsComparer();
+
         public interface IWrite
         {
+            object UntypedData { get; }
+
             /// <summary>
             /// Returns the number of bytes written.
             /// </summary>
             int Execute(IByteBuf buf);
+
+            IRead ToRead();
         }
 
         /// <summary>
@@ -83,6 +134,8 @@ namespace Helios.FsCheck.Tests.Buffers
 
             public T Data { get; private set; }
 
+            public object UntypedData => Data;
+
             /// <summary>
             /// Applies the write to the underlying <see cref="IByteBuf"/>
             /// </summary>
@@ -97,7 +150,12 @@ namespace Helios.FsCheck.Tests.Buffers
 
             protected abstract void ExecuteInternal(IByteBuf buf);
 
-            public abstract Read<T> ToRead();
+            public abstract IRead ToRead();
+
+            public override string ToString()
+            {
+                return $"Write<{typeof(T)}>({Data})";
+            }
         }
 
         public class WriteBoolean : Write<bool>
@@ -111,7 +169,7 @@ namespace Helios.FsCheck.Tests.Buffers
                 buf = buf.WriteBoolean(Data);
             }
 
-            public override Read<bool> ToRead()
+            public override IRead ToRead()
             {
                 return new ReadBoolean();
             }
@@ -128,7 +186,7 @@ namespace Helios.FsCheck.Tests.Buffers
                 buf = buf.WriteInt(Data);
             }
 
-            public override Read<int> ToRead()
+            public override IRead ToRead()
             {
                 return new ReadInt();
             }
@@ -145,7 +203,7 @@ namespace Helios.FsCheck.Tests.Buffers
                 buf = buf.WriteUnsignedInt(Data);
             }
 
-            public override Read<uint> ToRead()
+            public override IRead ToRead()
             {
                 return new ReadUInt();
             }
@@ -162,7 +220,7 @@ namespace Helios.FsCheck.Tests.Buffers
                 buf = buf.WriteShort(Data);
             }
 
-            public override Read<short> ToRead()
+            public override IRead ToRead()
             {
                 return new ReadShort();
             }
@@ -179,7 +237,7 @@ namespace Helios.FsCheck.Tests.Buffers
                 buf = buf.WriteUnsignedShort(Data);
             }
 
-            public override Read<ushort> ToRead()
+            public override IRead ToRead()
             {
                 return new ReadUShort();
             }
@@ -196,7 +254,7 @@ namespace Helios.FsCheck.Tests.Buffers
                 buf = buf.WriteLong(Data);
             }
 
-            public override Read<long> ToRead()
+            public override IRead ToRead()
             {
                 return new ReadLong();
             }
@@ -213,7 +271,7 @@ namespace Helios.FsCheck.Tests.Buffers
                 buf = buf.WriteDouble(Data);
             }
 
-            public override Read<double> ToRead()
+            public override IRead ToRead()
             {
                 return new ReadDouble();
             }
@@ -230,7 +288,7 @@ namespace Helios.FsCheck.Tests.Buffers
                 buf = buf.WriteByte(Data);
             }
 
-            public override Read<byte> ToRead()
+            public override IRead ToRead()
             {
                 return new ReadByte();
             }
@@ -247,9 +305,14 @@ namespace Helios.FsCheck.Tests.Buffers
                 buf = buf.WriteBytes(Data);
             }
 
-            public override Read<byte[]> ToRead()
+            public override IRead ToRead()
             {
                 return new ReadBytes(Data.Length);
+            }
+
+            public override string ToString()
+            {
+                return $"Write<byte[]>(Length = {Data.Length}, Data=[{string.Join("|", Data)}])";
             }
         }
 
@@ -264,7 +327,7 @@ namespace Helios.FsCheck.Tests.Buffers
                 buf = buf.WriteChar(Data);
             }
 
-            public override Read<char> ToRead()
+            public override IRead ToRead()
             {
                 return new ReadChar();
             }
@@ -282,6 +345,11 @@ namespace Helios.FsCheck.Tests.Buffers
             object IRead.Execute(IByteBuf buf)
             {
                 return Execute(buf);
+            }
+
+            public override string ToString()
+            {
+                return $"Read<{typeof(T)}>()";
             }
         }
 
@@ -320,7 +388,15 @@ namespace Helios.FsCheck.Tests.Buffers
 
             public override byte[] Execute(IByteBuf buf)
             {
-                return buf.ReadBytes(ByteLength).ToArray();
+                var readBuf = buf.ReadBytes(ByteLength);
+                if (readBuf.IsReadable())
+                    return readBuf.ToArray();
+                return new byte[0];
+            }
+
+            public override string ToString()
+            {
+                return $"Read<byte[]>(Length = {ByteLength})";
             }
         }
 
