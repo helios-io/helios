@@ -28,11 +28,6 @@ namespace Helios.Logging
         /// </summary>
         string LogSource { get; }
 
-        /// <summary>
-        /// The type of object producing the log messages
-        /// </summary>
-        Type LogType { get; }
-
         /// <summary>Logs a message with the Debug level.</summary>
         /// <param name="format">The format.</param>
         /// <param name="args">The arguments.</param>

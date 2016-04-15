@@ -42,32 +42,32 @@ namespace Helios.Logging
         /// </summary>
         public static bool UseColors { get; set; }
 
-        public StdOutLogger(string logSource, Type logType) : base(logSource, logType)
+        public StdOutLogger(string logSource) : base(logSource)
         {
         }
 
-        public StdOutLogger(string logSource, Type logType, params LogLevel[] supportedLogLevels) : base(logSource, logType, supportedLogLevels)
+        public StdOutLogger(string logSource, Type logType, params LogLevel[] supportedLogLevels) : base(logSource, supportedLogLevels)
         {
         }
 
-        protected override void DebugInternal(string message)
+        protected override void DebugInternal(Debug message)
         {
-            StandardOutWriter.WriteLine(message, DebugColor);
+            StandardOutWriter.WriteLine(message.ToString(), DebugColor);
         }
 
-        protected override void InfoInternal(string message)
+        protected override void InfoInternal(Info message)
         {
-            StandardOutWriter.WriteLine(message, InfoColor);
+            StandardOutWriter.WriteLine(message.ToString(), InfoColor);
         }
 
-        protected override void WarningInternal(string message)
+        protected override void WarningInternal(Warning message)
         {
-            StandardOutWriter.WriteLine(message, WarningColor);
+            StandardOutWriter.WriteLine(message.ToString(), WarningColor);
         }
 
-        protected override void ErrorInternal(string message)
+        protected override void ErrorInternal(Error message)
         {
-            StandardOutWriter.WriteLine(message, ErrorColor);
+            StandardOutWriter.WriteLine(message.ToString(), ErrorColor);
         }
     }
 }

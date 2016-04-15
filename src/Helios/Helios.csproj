@@ -77,8 +77,12 @@
     <Compile Include="Concurrency\Impl\SharedFiber.cs" />
     <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />
     <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Logging\LogEvent.cs" />
     <Compile Include="Logging\LoggingAdapter.cs" />
+    <Compile Include="Logging\LoggingFactory.cs" />
     <Compile Include="Logging\LogLevel.cs" />
+    <Compile Include="Logging\NoOpLogger.cs" />
+    <Compile Include="Logging\StandardOutLoggerFactory.cs" />
     <Compile Include="Util\StandardOutWriter.cs" />
     <Compile Include="Logging\StdOutLogger.cs" />
     <Compile Include="Net\NetworkData.cs" />

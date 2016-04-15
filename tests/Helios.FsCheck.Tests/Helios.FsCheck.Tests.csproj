@@ -63,6 +63,7 @@
     <Compile Include="Collections\CircularBufferPropertyTests.cs" />
     <Compile Include="HeliosGenerators.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestLogger.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Helios\Helios.csproj">

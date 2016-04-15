@@ -8,21 +8,21 @@
         /// <summary>
         /// The debug log level.
         /// </summary>
-        DebugLevel,
+        Debug,
 
         /// <summary>
         /// The information log level.
         /// </summary>
-        InfoLevel,
+        Info,
 
         /// <summary>
         /// The warning log level.
         /// </summary>
-        WarningLevel,
+        Warning,
 
         /// <summary>
         /// The error log level.
         /// </summary>
-        ErrorLevel,
+        Error,
     }
 }

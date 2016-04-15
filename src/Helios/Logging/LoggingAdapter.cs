@@ -17,20 +17,19 @@ namespace Helios.Logging
         /// <summary>
         /// All <see cref="LogLevel"/>s are enabled by default.
         /// </summary>
-        protected LoggingAdapter(string logSource, Type logType) : this(logSource, logType, LogLevel.DebugLevel, LogLevel.ErrorLevel, LogLevel.InfoLevel, LogLevel.WarningLevel) { }
+        protected LoggingAdapter(string logSource) : this(logSource, LogLevel.Debug, LogLevel.Error, LogLevel.Info, LogLevel.Warning) { }
 
-        protected LoggingAdapter(string logSource, Type logType, params LogLevel[] supportedLogLevels)
+        protected LoggingAdapter(string logSource, params LogLevel[] supportedLogLevels)
         {
             Contract.Requires(supportedLogLevels != null);
             LogSource = logSource;
-            LogType = logType;
             _supportedLogLevels = supportedLogLevels;
 
             // set all internal log levels
-            IsDebugEnabled = supportedLogLevels.Contains(LogLevel.DebugLevel);
-            IsErrorEnabled = supportedLogLevels.Contains(LogLevel.ErrorLevel);
-            IsWarningEnabled = supportedLogLevels.Contains(LogLevel.WarningLevel);
-            IsInfoEnabled = supportedLogLevels.Contains(LogLevel.InfoLevel);
+            IsDebugEnabled = supportedLogLevels.Contains(LogLevel.Debug);
+            IsErrorEnabled = supportedLogLevels.Contains(LogLevel.Error);
+            IsWarningEnabled = supportedLogLevels.Contains(LogLevel.Warning);
+            IsInfoEnabled = supportedLogLevels.Contains(LogLevel.Info);
         }
 
         public bool IsDebugEnabled { get; }
@@ -45,72 +44,59 @@ namespace Helios.Logging
         }
 
         public string LogSource { get; }
-        public Type LogType { get; }
 
         public void Debug(string format, params object[] args)
         {
             if (IsDebugEnabled)
-                DebugInternal(FormatLog(LogLevel.DebugLevel, format, args));
+                DebugInternal(new Debug(string.Format(format, args), LogSource));
         }
 
-        protected abstract void DebugInternal(string message);
+        protected abstract void DebugInternal(Debug message);
 
         public void Info(string format, params object[] args)
         {
             if (IsInfoEnabled)
-                InfoInternal(FormatLog(LogLevel.InfoLevel, format, args));
+                InfoInternal(new Info(string.Format(format, args), LogSource));
         }
 
-        protected abstract void InfoInternal(string message);
+        protected abstract void InfoInternal(Info message);
 
         public void Warning(string format, params object[] args)
         {
             if (IsWarningEnabled)
-                WarningInternal(FormatLog(LogLevel.WarningLevel, format, args));
+                WarningInternal(new Warning(string.Format(format, args), LogSource));
         }
 
-        protected abstract void WarningInternal(string message);
+        protected abstract void WarningInternal(Warning message);
 
         public void Error(string format, params object[] args)
         {
             if (IsErrorEnabled)
-                ErrorInternal(FormatLog(LogLevel.ErrorLevel, format, args));
+                ErrorInternal(new Error(string.Format(format, args), LogSource));
         }
 
         public void Error(Exception cause, string format, params object[] args)
         {
             if (IsErrorEnabled)
-                ErrorInternal(FormatLog(cause, LogLevel.ErrorLevel, format, args));
+                ErrorInternal(new Error(cause, string.Format(format, args), LogSource));
         }
 
-        private string FormatLog(LogLevel level, string format, params object[] args)
-        {
-            return
-                $"[{level}][{DateTime.UtcNow}][{Thread.CurrentThread.ManagedThreadId}][{LogSource}] {string.Format(format, args)}";
-        }
-
-        private string FormatLog(Exception ex, LogLevel level, string format, params object[] args)
-        {
-            return
-                $"[{level}][{DateTime.UtcNow}][{Thread.CurrentThread.ManagedThreadId}][{LogSource}] {string.Format(format, args)} {Environment.NewLine}Cause: {ex}";
-        }
-
-        protected abstract void ErrorInternal(string message);
+        protected abstract void ErrorInternal(Error message);
 
         public void Log(LogLevel logLevel, string format, params object[] args)
         {
             switch (logLevel)
             {
-                case LogLevel.InfoLevel:
+                case LogLevel.Info:
                     Info(format, args);
                     break;
-                case LogLevel.WarningLevel:
+                case LogLevel.Warning:
                     Warning(format, args);
                     break;
-                case LogLevel.ErrorLevel:
+                case LogLevel.Error:
                     Error(format, args);
                     break;
-                case LogLevel.DebugLevel:
+                case LogLevel.Debug:
                     Debug(format, args);
                     break;
             }
