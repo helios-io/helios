@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using FsCheck.Experimental;
 using Helios.Concurrency;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using FsCheck;
 
 namespace Helios.FsCheck.Tests.Concurrency
@@ -66,7 +68,13 @@ namespace Helios.FsCheck.Tests.Concurrency
         }
     }
 
-
+    /// <summary>
+    /// A note about this spec - it's designed to guarantee that the underlying <see cref="IEventExecutor"/> obeys FIFO order, at all times.
+    /// 
+    /// All of the operations we use to test, addition and subtraction, obey the commutative property. So all valid schedulings of those
+    /// operations will produce the same result. We designed the test this way to avoid having to exhaustively calculate all possible orderings
+    /// when interleaving multiple different types of operations.
+    /// </summary>
     public abstract class EventExecutorSpecBase : Machine<SpecCounter, CounterModel>
     {
         protected EventExecutorSpecBase(IEventExecutor executor)
@@ -74,7 +82,7 @@ namespace Helios.FsCheck.Tests.Concurrency
             Executor = executor;
         }
 
-        
+
 
         /// <summary>
         /// The <see cref="IEventExecutor"/> implementation that we will be testing. Created externally.
@@ -109,7 +117,7 @@ namespace Helios.FsCheck.Tests.Concurrency
 
             public override CounterModel Model()
             {
-                return new CounterModel(0,0, _executor);
+                return new CounterModel(0, 0, _executor);
             }
 
             public override string ToString()
@@ -136,11 +144,16 @@ namespace Helios.FsCheck.Tests.Concurrency
 
             public override Property Check(SpecCounter obj0, CounterModel obj1)
             {
-                var tasks = new List<Task>();
-                Func<object, SpecCounter> incrementFunc = o => obj0.IncrementBy((int) o);
-                foreach(var increment in Increments)
-                    tasks.Add(obj1.Executor.SubmitAsync(incrementFunc, increment));
-                if(!Task.WhenAll(tasks).Wait(200))
+                var tasks = new ConcurrentBag<Task>();
+                Func<object, SpecCounter> incrementFunc = o => obj0.IncrementBy((int)o);
+                var loopResult = Parallel.ForEach(Increments, inc =>
+                {
+                    tasks.Add(obj1.Executor.SubmitAsync(incrementFunc, inc));
+                });
+
+                SpinWait.SpinUntil(() => loopResult.IsCompleted, TimeSpan.FromMilliseconds(100));
+
+                if (!Task.WhenAll(tasks).Wait(200))
                     return false.ToProperty().Label($"TIMEOUT: {obj1.Executor} failed to execute {Increments.Length} within 200ms");
 
                 return (obj0.Value == obj1.NextValue).ToProperty().Label($"Actual counter value: [{obj0.Value}] should equal next predicted model value [{obj1.NextValue}]");
@@ -167,7 +180,7 @@ namespace Helios.FsCheck.Tests.Concurrency
             public override Property Check(SpecCounter obj0, CounterModel obj1)
             {
                 Func<SpecCounter> resetFunc = obj0.Reset;
-                if (!obj1.Executor.SubmitAsync(resetFunc).Wait(200)) 
+                if (!obj1.Executor.SubmitAsync(resetFunc).Wait(200))
                     return false.ToProperty().Label($"TIMEOUT: {obj1.Executor} failed to execute SpecCounter.Reset() within 200ms");
                 return (obj0.Value == obj1.NextValue).ToProperty().Label($"Actual counter value: [{obj0.Value}] should equal next predicted model value [{obj1.CurrentValue}]"); ;
             }
@@ -175,47 +188,6 @@ namespace Helios.FsCheck.Tests.Concurrency
             public override CounterModel Run(CounterModel obj0)
             {
                 return obj0.Next(0);
-            }
-        }
-
-        class InterleavedOperation : Operation<SpecCounter, CounterModel>
-        {
-            public InterleavedOperation(Operation<SpecCounter, CounterModel>[] operations)
-            {
-                Operations = operations;
-            }
-
-            private Operation<SpecCounter, CounterModel>[] Operations { get; }
-
-            private int ExpectedValue
-            {
-                get
-                {
-                    int currentDelta = 0;
-                    foreach (var op in Operations)
-                    {
-                        if (op is Increment)
-                        {
-                            currentDelta += ((Increment) (op)).ExpectedDiff;
-                        }
-                        else if (op is Reset)
-                        {
-                            currentDelta = 0;
-                        }
-                    }
-                    return currentDelta;
-                }
-                
-            }
-
-            public override Property Check(SpecCounter obj0, CounterModel obj1)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override CounterModel Run(CounterModel obj0)
-            {
-                throw new NotImplementedException();
             }
         }
 
