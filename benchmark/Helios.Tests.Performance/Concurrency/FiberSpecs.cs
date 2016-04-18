@@ -35,9 +35,7 @@ namespace Helios.Tests.Performance.Concurrency
         private void Operation()
         {
             _fiberThroughput.Increment();
-            var next = eventCount.GetAndIncrement() + 1;
-            if (next >= FiberOperations)
-                _resentEvent.Set();
+            eventCount.GetAndIncrement();
         }
 
         [PerfBenchmark(Description = "Test the throughput and memory footprint of Helios IFiber implementations using best practices",
@@ -52,7 +50,7 @@ namespace Helios.Tests.Performance.Concurrency
                 _fiber.Add(Operation);
                 ++i;
             }
-            _resentEvent.Wait(TimeSpan.FromSeconds(3));
+            SpinWait.SpinUntil(() => eventCount.Current >= FiberOperations, TimeSpan.FromSeconds(3));
         }
 
         [PerfBenchmark(Description = "Test the throughput and memory footprint of Helios IFiber implementations using not-so-great practices",
@@ -67,7 +65,7 @@ namespace Helios.Tests.Performance.Concurrency
                 _fiber.Add(() => Operation());
                 ++i;
             }
-            _resentEvent.Wait();
+            SpinWait.SpinUntil(() => eventCount.Current >= FiberOperations, TimeSpan.FromSeconds(3));
         }
 
         [PerfCleanup]

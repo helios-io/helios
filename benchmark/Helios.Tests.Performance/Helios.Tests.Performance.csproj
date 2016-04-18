@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collections\AllCollectionsSpec.cs" />
+    <Compile Include="Concurrency\EventExecutorSpecs.cs" />
     <Compile Include="Concurrency\FiberSpecs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Socket\SocketThroughputSpec.cs" />

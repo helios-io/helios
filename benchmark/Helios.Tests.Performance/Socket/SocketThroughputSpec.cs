@@ -43,7 +43,7 @@ namespace Helios.Tests.Performance.Socket
             message = new byte[MessageLength];
         }
 
-        [PerfBenchmark(Description = "Tests a full request/response sequence for 1000 messages", RunMode = RunMode.Iterations, NumberOfIterations = 13)]
+        [PerfBenchmark(Description = "Tests a full request/response sequence for 1000 messages", RunMode = RunMode.Iterations, NumberOfIterations = 13, Skip = "Debugging")]
         [CounterMeasurement(MessagesReceivedCounter)]
         [MemoryMeasurement(MemoryMetric.TotalBytesAllocated)]
         [GcMeasurement(GcMetric.TotalCollections, GcGeneration.AllGc)]
