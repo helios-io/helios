@@ -55,7 +55,7 @@ namespace Helios.Tests.Performance.Concurrency
         [PerfCleanup]
         public void CleanUp()
         {
-            _executor.GracefulShutdownAsync().Wait(TimeSpan.FromSeconds(10));
+            _executor.GracefulShutdownAsync();
         }
     }
 

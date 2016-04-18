@@ -76,6 +76,7 @@ namespace Helios.Concurrency
         }
 
         public abstract Task GracefulShutdownAsync(TimeSpan quietPeriod, TimeSpan timeout);
+        public abstract IEventExecutor Unwrap();
 
         #region Task queueing data structures
 

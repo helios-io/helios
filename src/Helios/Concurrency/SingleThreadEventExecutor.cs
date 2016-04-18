@@ -111,6 +111,11 @@ namespace Helios.Concurrency
             return TerminationTask;
         }
 
+        public override IEventExecutor Unwrap()
+        {
+            return this;
+        }
+
         private void Loop()
         {
             Task.Factory.StartNew(() =>
