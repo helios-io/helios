@@ -7,5 +7,6 @@ namespace Helios.Channels
 {
     public interface IChannel
     {
+        void Read();
     }
 }

@@ -71,6 +71,7 @@
     <Compile Include="Channels\ChannelOutboundBuffer.cs" />
     <Compile Include="Channels\DefaultConnectionConfig.cs" />
     <Compile Include="Channels\DefaultMessageSizeEstimator.cs" />
+    <Compile Include="Channels\FixedRecvByteBufAllocator.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelConfiguration.cs" />
     <Compile Include="Channels\IChannelHandlerInvoker.cs" />
