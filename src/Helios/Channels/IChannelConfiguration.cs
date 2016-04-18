@@ -17,6 +17,6 @@ namespace Helios.Channels
 
         IRecvByteBufAllocator RecvByteBufAllocator { get; set; }
 
-
+        IMessageSizeEstimator MessageSizeEstimator { get; set; }
     }
 }
