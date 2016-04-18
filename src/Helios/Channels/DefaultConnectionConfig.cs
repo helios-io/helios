@@ -6,7 +6,7 @@ using Helios.Util.Collections;
 namespace Helios.Channels
 {
     /// <summary>
-    /// Configuration class for <see cref="IConnection"/> objects
+    ///     Configuration class for <see cref="IConnection" /> objects
     /// </summary>
     public class DefaultConnectionConfig : IConnectionConfig
     {
@@ -35,7 +35,7 @@ namespace Helios.Channels
 
         public T GetOption<T>(string optionKey)
         {
-            return _options.GetOrDefault<string,T>(optionKey);
+            return _options.GetOrDefault<string, T>(optionKey);
         }
 
         public IList<KeyValuePair<string, object>> Options => _options.ToList();
