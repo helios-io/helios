@@ -26,7 +26,7 @@ namespace Helios.Concurrency
         private readonly ConcurrentQueue<IRunnable> _taskQueue = new ConcurrentQueue<IRunnable>();
         private Thread _workerThread;
         private readonly ManualResetEventSlim _emptyQueueEvent = new ManualResetEventSlim();
-        volatile int _runningState = 0;
+        volatile int _runningState = ST_NOT_STARTED;
         private readonly TaskCompletionSource<int> _terminationCompletionSource;
         private bool _disposed;
         private readonly TaskScheduler _scheduler;

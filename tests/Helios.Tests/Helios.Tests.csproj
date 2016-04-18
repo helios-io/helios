@@ -79,9 +79,7 @@
   <ItemGroup>
     <Compile Include="Buffer\ByteBufferTests.cs" />
     <Compile Include="Buffer\UnpooledDirectByteBufferTests.cs" />
-    <Compile Include="Concurrency\DedicatedThreadFiberTests.cs" />
-    <Compile Include="Concurrency\SharedFiberTests.cs" />
-    <Compile Include="Concurrency\ThreadPoolFiberTests.cs" />
+    <Compile Include="Concurrency\SingleThreadEventExecutorSpecs.cs" />
     <Compile Include="DummyConnection.cs" />
     <Compile Include="Eventing\SimpleEventBrokerTests.cs" />
     <Compile Include="Net\MulticastHelperTests.cs" />
