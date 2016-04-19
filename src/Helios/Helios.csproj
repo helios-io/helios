@@ -71,6 +71,7 @@
     <Compile Include="Channels\ChannelHandlerInvokerUtil.cs" />
     <Compile Include="Channels\ChannelOption.cs" />
     <Compile Include="Channels\ChannelOutboundBuffer.cs" />
+    <Compile Include="Channels\ChannelPipelineException.cs" />
     <Compile Include="Channels\DefaultChannelConfiguration.cs" />
     <Compile Include="Channels\DefaultChannelHandlerContext.cs" />
     <Compile Include="Channels\DefaultChannelPipeline.cs" />
@@ -110,6 +111,7 @@
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\NoOpLogger.cs" />
     <Compile Include="Logging\StandardOutLoggerFactory.cs" />
+    <Compile Include="Util\Concurrency\TaskEx.cs" />
     <Compile Include="Util\MonotonicClock.cs" />
     <Compile Include="Util\StandardOutWriter.cs" />
     <Compile Include="Logging\StdOutLogger.cs" />

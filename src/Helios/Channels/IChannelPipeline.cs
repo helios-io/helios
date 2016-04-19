@@ -17,14 +17,6 @@ namespace Helios.Channels
 
         IChannelPipeline AddLast(IChannelHandlerInvoker invoker, string name, IChannelHandler handler);
 
-        IChannelPipeline AddBefore(string baseName, string name, IChannelHandler handler);
-
-        IChannelPipeline AddBefore(IChannelHandlerInvoker invoker, string baseName, string name, IChannelHandler handler);
-
-        IChannelPipeline AddAfter(string baseName, string name, IChannelHandler handler);
-
-        IChannelPipeline AddAfter(IChannelHandlerInvoker invoker, string baseName, string name, IChannelHandler handler);
-
         IChannelPipeline AddFirst(params IChannelHandler[] handlers);
 
         IChannelPipeline AddFirst(IChannelHandlerInvoker invoker, params IChannelHandler[] handlers);
@@ -42,12 +34,6 @@ namespace Helios.Channels
         IChannelHandler RemoveFirst();
 
         IChannelHandler RemoveLast();
-
-        IChannelPipeline Replace(IChannelHandler oldHandler, string newName, IChannelHandler newHandler);
-
-        IChannelHandler Replace(string oldName, string newName, IChannelHandler newHandler);
-
-        T Replace<T>(string newName, IChannelHandler newHandler) where T : class, IChannelHandler;
 
         IChannelHandler First();
 
