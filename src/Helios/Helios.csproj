@@ -67,29 +67,15 @@
     <Compile Include="Buffers\EmptyByteBuf.cs" />
     <Compile Include="Buffers\Unpooled.cs" />
     <Compile Include="Buffers\UnpooledByteBufAllocator.cs" />
-    <Compile Include="Channels\AbstractChannel.cs" />
-    <Compile Include="Channels\AbstractChannelHandlerContext.cs" />
-    <Compile Include="Channels\ChannelHandlerInvokerUtil.cs" />
     <Compile Include="Channels\ChannelOption.cs" />
-    <Compile Include="Channels\ChannelOutboundBuffer.cs" />
-    <Compile Include="Channels\ChannelPipelineException.cs" />
     <Compile Include="Channels\ClosedChannelException.cs" />
     <Compile Include="Channels\ConnectException.cs" />
     <Compile Include="Channels\DefaultChannelConfiguration.cs" />
-    <Compile Include="Channels\DefaultChannelHandlerContext.cs" />
-    <Compile Include="Channels\DefaultChannelPipeline.cs" />
     <Compile Include="Channels\DefaultConnectionConfig.cs" />
     <Compile Include="Channels\DefaultMessageSizeEstimator.cs" />
-    <Compile Include="Channels\Embedded\EmbeddedEventLoop.cs" />
-    <Compile Include="Channels\Embedded\EmbeddedSocketAddress.cs" />
     <Compile Include="Channels\FixedRecvByteBufAllocator.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelConfiguration.cs" />
-    <Compile Include="Channels\IChannelHandler.cs" />
-    <Compile Include="Channels\IChannelHandlerContext.cs" />
-    <Compile Include="Channels\IChannelHandlerInvoker.cs" />
-    <Compile Include="Channels\IChannelPipeline.cs" />
-    <Compile Include="Channels\IChannelUnsafe.cs" />
     <Compile Include="Channels\IEventLoopGroup.cs" />
     <Compile Include="Channels\IMessageSizeEstimator.cs" />
     <Compile Include="Channels\IRecvByteBufAllocator.cs" />
@@ -234,7 +220,9 @@
   <ItemGroup>
     <None Include="Helios.nuspec" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Channels\Embedded\" />
+  </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
