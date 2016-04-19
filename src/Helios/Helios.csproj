@@ -105,6 +105,7 @@
     <Compile Include="Logging\StandardOutLoggerFactory.cs" />
     <Compile Include="Util\Concurrency\TaskEx.cs" />
     <Compile Include="Util\MonotonicClock.cs" />
+    <Compile Include="Util\ObjectPool.cs" />
     <Compile Include="Util\StandardOutWriter.cs" />
     <Compile Include="Logging\StdOutLogger.cs" />
     <Compile Include="Net\NetworkData.cs" />
