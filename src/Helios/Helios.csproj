@@ -80,6 +80,8 @@
     <Compile Include="Channels\DefaultChannelPipeline.cs" />
     <Compile Include="Channels\DefaultConnectionConfig.cs" />
     <Compile Include="Channels\DefaultMessageSizeEstimator.cs" />
+    <Compile Include="Channels\Embedded\EmbeddedEventLoop.cs" />
+    <Compile Include="Channels\Embedded\EmbeddedSocketAddress.cs" />
     <Compile Include="Channels\FixedRecvByteBufAllocator.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelConfiguration.cs" />
