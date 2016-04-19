@@ -67,9 +67,13 @@
     <Compile Include="Buffers\EmptyByteBuf.cs" />
     <Compile Include="Buffers\Unpooled.cs" />
     <Compile Include="Buffers\UnpooledByteBufAllocator.cs" />
+    <Compile Include="Channels\AbstractChannelHandlerContext.cs" />
+    <Compile Include="Channels\ChannelHandlerInvokerUtil.cs" />
     <Compile Include="Channels\ChannelOption.cs" />
     <Compile Include="Channels\ChannelOutboundBuffer.cs" />
     <Compile Include="Channels\DefaultChannelConfiguration.cs" />
+    <Compile Include="Channels\DefaultChannelHandlerContext.cs" />
+    <Compile Include="Channels\DefaultChannelPipeline.cs" />
     <Compile Include="Channels\DefaultConnectionConfig.cs" />
     <Compile Include="Channels\DefaultMessageSizeEstimator.cs" />
     <Compile Include="Channels\FixedRecvByteBufAllocator.cs" />
@@ -84,6 +88,8 @@
     <Compile Include="Channels\IMessageSizeEstimator.cs" />
     <Compile Include="Channels\IRecvByteBufAllocator.cs" />
     <Compile Include="Channels\IRecvByteBufferAllocatorHandle.cs" />
+    <Compile Include="Channels\PausableChannelEventExecutor.cs" />
+    <Compile Include="Channels\SkipAttribute.cs" />
     <Compile Include="Channels\Sockets\ISocketConnectionConfig.cs" />
     <Compile Include="Concurrency\AbstractEventExecutor.cs" />
     <Compile Include="Concurrency\EventExecutorTaskScheduler.cs" />
