@@ -137,52 +137,55 @@ namespace Helios.Channels
         public Task CloseCompletion => _closeTask.Task;
         public Task DeregisterAsync()
         {
-            throw new NotImplementedException();
+            eventLoop.RejectNewTasks();
+            return _pipeline.DeregisterAsync();
         }
 
-        public Task BindAsync(EndPoint localAddress)
+        public virtual Task BindAsync(EndPoint localAddress)
         {
-            throw new NotImplementedException();
+            return _pipeline.BindAsync(localAddress);
         }
 
-        public Task ConnectAsync(EndPoint remoteAddress)
+        public virtual Task ConnectAsync(EndPoint remoteAddress)
         {
-            throw new NotImplementedException();
+            return _pipeline.ConnectAsync(remoteAddress);
         }
 
-        public Task ConnectAsync(EndPoint remoteAddress, EndPoint localAddress)
+        public virtual Task ConnectAsync(EndPoint remoteAddress, EndPoint localAddress)
         {
-            throw new NotImplementedException();
+            return _pipeline.ConnectAsync(remoteAddress, localAddress);
         }
 
-        public Task DisconnectAsync()
+        public virtual Task DisconnectAsync()
         {
-            throw new NotImplementedException();
+            return _pipeline.DisconnectAsync();
         }
 
-        public Task CloseAsync()
+        public virtual Task CloseAsync()
         {
-            throw new NotImplementedException();
+            return _pipeline.CloseAsync();
         }
 
         public IChannel Read()
         {
-            throw new NotImplementedException();
+            _pipeline.Read();
+            return this;
         }
 
         public Task WriteAsync(object message)
         {
-            throw new NotImplementedException();
+            return _pipeline.WriteAsync(message);
         }
 
         public IChannel Flush()
         {
-            throw new NotImplementedException();
+            _pipeline.Flush();
+            return this;
         }
 
         public Task WriteAndFlushAsync(object message)
         {
-            throw new NotImplementedException();
+            return _pipeline.WriteAndFlushAsync(message);
         }
 
         /// <summary>
@@ -242,6 +245,18 @@ namespace Helios.Channels
         protected virtual object FilterOutboundMessage(object msg)
         {
             return msg;
+        }
+
+        internal IMessageSizeEstimatorHandle EstimatorHandle
+        {
+            get
+            {
+                if (_estimatorHandle == null)
+                {
+                    _estimatorHandle = Configuration.MessageSizeEstimator.NewHandle();
+                }
+                return _estimatorHandle;
+            }
         }
 
         #region AbstractUnsafe
@@ -324,12 +339,12 @@ namespace Helios.Channels
                     }
                     catch (Exception ex)
                     {
-                        Logger.Warn(
-                            string.Format("Force-closing a channel whose registration task was not accepted by an event loop: {0}", this.channel),
+                        Logger.Warning(
+                           "Force-closing a channel whose registration task was not accepted by an event loop: {0}", channel,
                             ex);
-                        this.CloseForcibly();
-                        this.channel.closeFuture.Complete();
-                        Util.SafeSetFailure(promise, ex, Logger);
+                        CloseForcibly();
+                        channel._closeTask.Complete();
+                        PromiseUtil.SafeSetFailure(promise, ex, Logger);
                     }
                 }
 
@@ -342,23 +357,23 @@ namespace Helios.Channels
                 {
                     // check if the channel is still open as it could be closed input the mean time when the register
                     // call was outside of the eventLoop
-                    if (!promise.setUncancellable() || !this.EnsureOpen(promise))
+                    if (!promise.SetUncancellable() || !this.EnsureOpen(promise))
                     {
-                        Util.SafeSetFailure(promise, ClosedChannelException, Logger);
+                        PromiseUtil.SafeSetFailure(promise, ClosedChannelException.Instance, Logger);
                         return;
                     }
                     bool firstRegistration = this.neverRegistered;
-                    this.channel.DoRegister();
-                    this.neverRegistered = false;
-                    this.channel.registered = true;
-                    this.channel.eventLoop.AcceptNewTasks();
-                    Util.SafeSetSuccess(promise, Logger);
-                    this.channel.pipeline.FireChannelRegistered();
+                    channel.DoRegister();
+                    neverRegistered = false;
+                    channel.registered = true;
+                    channel.eventLoop.AcceptNewTasks();
+                    PromiseUtil.SafeSetSuccess(promise, Logger);
+                    this.channel._pipeline.FireChannelRegistered();
                     // Only fire a channelActive if the channel has never been registered. This prevents firing
                     // multiple channel actives if the channel is deregistered and re-registered.
                     if (firstRegistration && this.channel.Active)
                     {
-                        this.channel.pipeline.FireChannelActive();
+                        this.channel._pipeline.FireChannelActive();
                     }
                 }
                 catch (Exception t)
