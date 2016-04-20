@@ -106,7 +106,7 @@ namespace Helios.Channels
             {
                 var bytes = TotalPendingWriteBytes - _writeBufferLowWaterMark;
                 if (bytes > 0)
-                    return IsWritable ? bytes : 0;
+                    return IsWritable ? 0 : bytes;
                 return 0;
             }
         }
@@ -138,6 +138,35 @@ namespace Helios.Channels
             }
 
             IncrementPendingOutboundBytes(size);
+        }
+
+        /// <summary>
+        /// Flush all current messages in the outbound buffer
+        /// </summary>
+        public void AddFlush()
+        {
+            var entry = _unflushedEntry;
+            if (entry != null)
+            {
+                if (_flushedEntry == null)
+                {
+                    _flushedEntry = entry;
+                }
+                do
+                {
+                    _flushed++;
+                    if (!entry.Promise.SetUncancellable())
+                    {
+                        // write was cancelled, so free up allocated memory and notify about the freed bytes
+                        var pending = entry.Cancel();
+                        DecrementPendingOutboundBytes(pending);
+                    }
+                    entry = entry.Next;
+                } while (entry != null);
+
+                // All flushed, so reset the unflushed entry
+                _unflushedEntry = null;
+            }
         }
 
         public bool Remove()
@@ -186,7 +215,7 @@ namespace Helios.Channels
             {
                 // todo: reference counting
                 PromiseUtil.SafeSetFailure(promise, cause, Logger);
-                DecrementPendingOutboundBytes(size, true);
+                DecrementPendingOutboundBytes(size, notifyWritability);
             }
 
             e.Recycle();

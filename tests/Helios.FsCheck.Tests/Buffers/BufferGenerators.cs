@@ -64,6 +64,20 @@ namespace Helios.FsCheck.Tests.Buffers
         {
             return Arb.From(Gen.Choose(10, 1024).Select(i => new BufferSize(i, Int32.MaxValue)));
         }
+
+        public static Arbitrary<IByteBuf> ByteBuf()
+        {
+            return Arb.From(Writes().Generator.Select(writes =>
+            {
+                const int initialCapacity = 1024;
+                var buf = UnpooledByteBufAllocator.Default.Buffer(initialCapacity, initialCapacity*4);
+                foreach (var write in writes)
+                {
+                    write.Execute(buf);
+                }
+                return buf;
+            }));
+        } 
     }
 
     public class BufferSize

@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="Buffers\BufferGenerators.cs" />
     <Compile Include="Buffers\BufferSpecs.cs" />
+    <Compile Include="Channels\ChannelOutboundBufferSpecs.cs" />
     <Compile Include="Collections\CircularBufferPropertyTests.cs" />
     <Compile Include="Concurrency\EventExecutorSpecBase.cs" />
     <Compile Include="Concurrency\ObjectPoolSpec.cs" />
@@ -79,6 +80,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
