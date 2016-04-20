@@ -64,6 +64,7 @@
     <Compile Include="Buffers\BufferSpecs.cs" />
     <Compile Include="Collections\CircularBufferPropertyTests.cs" />
     <Compile Include="Concurrency\EventExecutorSpecBase.cs" />
+    <Compile Include="Concurrency\ObjectPoolSpec.cs" />
     <Compile Include="Concurrency\SingleThreadEventExecutorSpec.cs" />
     <Compile Include="HeliosGenerators.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
