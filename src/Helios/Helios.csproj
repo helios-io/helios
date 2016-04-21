@@ -69,7 +69,10 @@
     <Compile Include="Buffers\UnpooledByteBufAllocator.cs" />
     <Compile Include="Channels\AbstractChannel.cs" />
     <Compile Include="Channels\AbstractChannelHandlerContext.cs" />
+    <Compile Include="Channels\ActionChannelInitializer.cs" />
+    <Compile Include="Channels\ChannelHandlerAdapter.cs" />
     <Compile Include="Channels\ChannelHandlerInvokerUtil.cs" />
+    <Compile Include="Channels\ChannelInitializer.cs" />
     <Compile Include="Channels\ChannelOption.cs" />
     <Compile Include="Channels\ChannelOutboundBuffer.cs" />
     <Compile Include="Channels\ChannelPipelineException.cs" />
@@ -80,6 +83,9 @@
     <Compile Include="Channels\DefaultChannelPipeline.cs" />
     <Compile Include="Channels\DefaultConnectionConfig.cs" />
     <Compile Include="Channels\DefaultMessageSizeEstimator.cs" />
+    <Compile Include="Channels\Embedded\EmbeddedChannel.cs" />
+    <Compile Include="Channels\Embedded\EmbeddedEventLoop.cs" />
+    <Compile Include="Channels\Embedded\EmbeddedSoceketAddress.cs" />
     <Compile Include="Channels\FixedRecvByteBufAllocator.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelConfiguration.cs" />
@@ -233,9 +239,7 @@
   <ItemGroup>
     <None Include="Helios.nuspec" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Channels\Embedded\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

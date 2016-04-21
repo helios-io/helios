@@ -151,27 +151,27 @@ namespace Helios.Channels
             return _pipeline.DeregisterAsync();
         }
 
-        public Task BindAsync(EndPoint localAddress)
+        public virtual Task BindAsync(EndPoint localAddress)
         {
             return _pipeline.BindAsync(localAddress);
         }
 
-        public Task ConnectAsync(EndPoint remoteAddress)
+        public virtual Task ConnectAsync(EndPoint remoteAddress)
         {
             return _pipeline.ConnectAsync(remoteAddress);
         }
 
-        public Task ConnectAsync(EndPoint remoteAddress, EndPoint localAddress)
+        public virtual Task ConnectAsync(EndPoint remoteAddress, EndPoint localAddress)
         {
             return _pipeline.ConnectAsync(remoteAddress, localAddress);
         }
 
-        public Task DisconnectAsync()
+        public virtual Task DisconnectAsync()
         {
             return _pipeline.DisconnectAsync();
         }
 
-        public Task CloseAsync()
+        public virtual Task CloseAsync()
         {
             return _pipeline.CloseAsync();
         }
