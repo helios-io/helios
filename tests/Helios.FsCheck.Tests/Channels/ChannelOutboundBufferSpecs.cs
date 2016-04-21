@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using FsCheck;
 using FsCheck.Xunit;
@@ -17,6 +18,87 @@ namespace Helios.FsCheck.Tests.Channels
     /// </summary>
     public class ChannelOutboundBufferSpecs
     {
+        #region TestChannel
+
+        class TestChannel : IChannel
+        {
+
+            public static readonly TestChannel Instance = new TestChannel();
+
+            private TestChannel()
+            {
+                Configuration = new DefaultChannelConfiguration(this);
+                Configuration.WriteBufferHighWaterMark = WriteHighWaterMark;
+                Configuration.WriteBufferLowWaterMark = WriteLowWaterMark;
+            }
+
+            public IByteBufAllocator Allocator { get; }
+            public IEventLoop EventLoop { get; }
+            public IChannel Parent { get; }
+            public bool DisconnectSupported { get; }
+            public bool Open { get; }
+            public bool Active { get; }
+            public bool Registered { get; }
+            public EndPoint LocalAddress { get; }
+            public EndPoint RemoteAddress { get; }
+            public bool IsWritable { get; }
+            public IChannelUnsafe Unsafe { get; }
+            public IChannelPipeline Pipeline { get; }
+            public IChannelConfiguration Configuration { get; }
+            public Task CloseCompletion { get; }
+            public Task DeregisterAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task DisconnectAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task CloseAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IChannel Read()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task WriteAsync(object message)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IChannel Flush()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task WriteAndFlushAsync(object message)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ConnectAsync(EndPoint remoteAddress, EndPoint localAddress)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ConnectAsync(EndPoint remoteAddress)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task BindAsync(EndPoint localAddress)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        #endregion
+
         public const int WriteLowWaterMark = 2048;
         public const int WriteHighWaterMark = WriteLowWaterMark*2;
 
@@ -29,7 +111,7 @@ namespace Helios.FsCheck.Tests.Channels
         public Property ChannelOutboundBuffer_must_always_correctly_report_writability_and_PendingBytes(IByteBuf[] writes)
         {
             bool writeable = true;
-            var buffer = new ChannelOutboundBuffer(WriteHighWaterMark, WriteLowWaterMark, () =>
+            var buffer = new ChannelOutboundBuffer(TestChannel.Instance, () =>
             {
                 writeable = !writeable; // toggle writeability
             });
@@ -91,7 +173,7 @@ namespace Helios.FsCheck.Tests.Channels
             if (writes.Length == 0) // skip any zero-length results
                 return true.ToProperty(); 
             bool writeable = true;
-            var buffer = new ChannelOutboundBuffer(WriteHighWaterMark, WriteLowWaterMark, () =>
+            var buffer = new ChannelOutboundBuffer(TestChannel.Instance, () =>
             {
                 writeable = !writeable; // toggle writeability
             });
@@ -125,7 +207,7 @@ namespace Helios.FsCheck.Tests.Channels
         {
             var tasks = new List<Task>();
             bool writeable = true;
-            var buffer = new ChannelOutboundBuffer(WriteHighWaterMark, WriteLowWaterMark, () =>
+            var buffer = new ChannelOutboundBuffer(TestChannel.Instance, () =>
             {
                 writeable = !writeable; // toggle writeability
             });
@@ -166,7 +248,7 @@ namespace Helios.FsCheck.Tests.Channels
         {
             var tasks = new List<Task>();
             bool writeable = true;
-            var buffer = new ChannelOutboundBuffer(WriteHighWaterMark, WriteLowWaterMark, () =>
+            var buffer = new ChannelOutboundBuffer(TestChannel.Instance, () =>
             {
                 writeable = !writeable; // toggle writeability
             });

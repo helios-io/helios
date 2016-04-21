@@ -16,8 +16,10 @@ namespace Helios.Channels
     {
         private static readonly ILogger Logger = LoggingFactory.GetLogger<ChannelOutboundBuffer>();
 
-        private readonly int _writeBufferHighWaterMark;
-        private readonly int _writeBufferLowWaterMark;
+        private int _writeBufferHighWaterMark => _channel.Configuration.WriteBufferHighWaterMark;
+        private int _writeBufferLowWaterMark => _channel.Configuration.WriteBufferLowWaterMark;
+
+        private IChannel _channel;
 
         /// <summary>
         ///     Callback used to indicate that the channel is going to become writeable or unwriteable
@@ -43,11 +45,10 @@ namespace Helios.Channels
 
         private volatile int _unwritable;
 
-        public ChannelOutboundBuffer(int writeBufferHighWaterMark, int writeBufferLowWaterMark,
+        public ChannelOutboundBuffer(IChannel channel,
             Action fireChannelWritabilityChanged)
         {
-            _writeBufferHighWaterMark = writeBufferHighWaterMark;
-            _writeBufferLowWaterMark = writeBufferLowWaterMark;
+            _channel = channel;
             _fireChannelWritabilityChanged = fireChannelWritabilityChanged;
         }
 
