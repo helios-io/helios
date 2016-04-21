@@ -66,7 +66,7 @@ namespace Helios.Channels
 
                 var next = _head.Next;
                 newContext.Prev = _head;
-                next.Next = next;
+                newContext.Next = next;
                 _head.Next = newContext;
                 next.Prev = newContext;
 

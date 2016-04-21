@@ -50,6 +50,10 @@
       <HintPath>..\..\packages\xunit.abstractions.2.0.0\lib\net35\xunit.abstractions.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="xunit.assert, Version=2.1.0.3179, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\xunit.assert.2.1.0\lib\dotnet\xunit.assert.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="xunit.core, Version=2.1.0.3179, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
       <HintPath>..\..\packages\xunit.extensibility.core.2.1.0\lib\dotnet\xunit.core.dll</HintPath>
       <Private>True</Private>
@@ -63,6 +67,9 @@
     <Compile Include="Buffers\BufferGenerators.cs" />
     <Compile Include="Buffers\BufferSpecs.cs" />
     <Compile Include="Channels\ChannelOutboundBufferSpecs.cs" />
+    <Compile Include="Channels\ChannelPipelineModels.cs" />
+    <Compile Include="Channels\ChannelPipelineSpecs.cs" />
+    <Compile Include="Channels\TestChannel.cs" />
     <Compile Include="Collections\CircularBufferPropertyTests.cs" />
     <Compile Include="Concurrency\EventExecutorSpecBase.cs" />
     <Compile Include="Concurrency\ObjectPoolSpec.cs" />
