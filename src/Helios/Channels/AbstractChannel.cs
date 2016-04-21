@@ -309,8 +309,7 @@ namespace Helios.Channels
                         channel.EventLoop.Execute(InvokeWritabilityChangedUnsafe, channel);
                     }
                 };
-                this.outboundBuffer = new ChannelOutboundBuffer(channel.Configuration.WriteBufferHighWaterMark, 
-                    channel.Configuration.WriteBufferLowWaterMark, InvokeWritabilityChanged);
+                this.outboundBuffer = new ChannelOutboundBuffer(channel, InvokeWritabilityChanged);
 
             }
 

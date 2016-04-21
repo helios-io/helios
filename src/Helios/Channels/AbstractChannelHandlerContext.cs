@@ -252,8 +252,8 @@ namespace Helios.Channels
 
         public IChannelHandlerContext FireChannelRead(object message)
         {
-            var next = FindContextOutbound();
-            next.Invoker.InvokeRead(next);
+            var next = FindContextInbound();
+            next.Invoker.InvokeChannelRead(next, message);
             return this;
         }
 
