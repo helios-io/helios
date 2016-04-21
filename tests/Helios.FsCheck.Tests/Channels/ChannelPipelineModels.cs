@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using FsCheck;
 using FsCheck.Experimental;
 using Helios.Channels;
@@ -20,7 +21,7 @@ namespace Helios.FsCheck.Tests.Channels
 
         public PipelineModelNode Clone()
         {
-            return new PipelineModelNode() { Handler = Handler, Next = Next, Name = Name, Previous = Previous};
+            return new PipelineModelNode() { Handler = Handler, Next = Next, Name = Name, Previous = Previous };
         }
     }
 
@@ -77,7 +78,7 @@ namespace Helios.FsCheck.Tests.Channels
                 next = next.Next;
                 current = clone;
             }
-            return new PipelineModel() {Head = newHead, Length = Length, Tail = current};
+            return new PipelineModel() { Head = newHead, Length = Length, Tail = current };
         }
 
         public static PipelineModel Fresh()
@@ -119,6 +120,17 @@ namespace Helios.FsCheck.Tests.Channels
             return model;
         }
 
+        public static PipelineModel RemoveHead(PipelineModel obj0)
+        {
+            var model = obj0.Clone();
+            var oldNext = model.Head.Next;
+            var newNext = oldNext.Next;
+            newNext.Previous = model.Head;
+            model.Head.Next = newNext;
+            model.Length--;
+            return model;
+        }
+
         public static PipelineModel AddToTail(PipelineModel obj0, PipelineModelNode newNode)
         {
             var model = obj0.Clone();
@@ -131,13 +143,25 @@ namespace Helios.FsCheck.Tests.Channels
             return model;
         }
 
+        public static PipelineModel RemoveTail(PipelineModel obj0)
+        {
+            var model = obj0.Clone();
+            var oldPrev = model.Tail.Previous;
+            var newPrev = oldPrev.Previous;
+            model.Tail.Previous = newPrev;
+            newPrev.Next = model.Tail;
+            model.Length--;
+            return model;
+        }
+
         public override Gen<Operation<IChannelPipeline, PipelineModel>> Next(PipelineModel obj0)
         {
-            return Gen.OneOf(AddFirst.AddFirstGen(), AddLast.AddLastGen());
+            return Gen.OneOf(AddFirst.AddFirstGen(), AddLast.AddLastGen(), 
+                RemoveFirst.RemoveFirstGen(), RemoveLast.RemoveLastGen(), ContainsAllModelHandlers.GenContainsAll());
         }
 
         public override Arbitrary<Setup<IChannelPipeline, PipelineModel>> Setup
-            => Arb.From(Gen.Fresh(() => (Setup<IChannelPipeline, PipelineModel>) new PipelineSetup()));
+            => Arb.From(Gen.Fresh(() => (Setup<IChannelPipeline, PipelineModel>)new PipelineSetup()));
 
         #region Commands
 
@@ -179,8 +203,8 @@ namespace Helios.FsCheck.Tests.Channels
 
             protected PipelineModelNode NewHandler()
             {
-                
-                var node = new PipelineModelNode() {Handler = Handler, Name = Name};
+
+                var node = new PipelineModelNode() { Handler = Handler, Name = Name };
                 return node;
             }
 
@@ -195,7 +219,7 @@ namespace Helios.FsCheck.Tests.Channels
                 return $"{GetType().Name}: {Handler}";
             }
 
-           
+
         }
 
         class AddFirst : AddHandler
@@ -255,6 +279,95 @@ namespace Helios.FsCheck.Tests.Channels
                 var newNode = NewHandler();
                 var model = AddToTail(obj0, newNode);
                 return model;
+            }
+        }
+
+        class RemoveFirst : Operation<IChannelPipeline, PipelineModel>
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineModel>> RemoveFirstGen()
+            {
+                return Gen.Constant((Operation<IChannelPipeline, PipelineModel>)new RemoveFirst());
+            }
+
+            public override Property Check(IChannelPipeline obj0, PipelineModel obj1)
+            {
+                var pipeline = obj0.RemoveFirst();
+                var pFirst = obj0.Skip(1).First(); //bypass the head node
+                var mFirst = obj1.Head.Next.Handler;
+                var pLength = obj0.Count();
+                return (pFirst == mFirst)
+                    .Label($"Expected tail of pipeline to be {mFirst}, was {pFirst}")
+                    .And(() => pLength == obj1.Length).Label($"Expected length of pipeline to be {obj1.Length}, was {pLength}");
+            }
+
+            public override bool Pre(PipelineModel _arg1)
+            {
+                return _arg1.Length > 3; // need to have at least 3
+            }
+
+            public override PipelineModel Run(PipelineModel obj0)
+            {
+                return RemoveHead(obj0);
+            }
+        }
+
+        class RemoveLast : Operation<IChannelPipeline, PipelineModel>
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineModel>> RemoveLastGen()
+            {
+                return Gen.Constant((Operation<IChannelPipeline, PipelineModel>)new RemoveLast());
+            }
+
+            public override Property Check(IChannelPipeline obj0, PipelineModel obj1)
+            {
+                var pipeline = obj0.RemoveLast();
+                var pFirst = obj0.Reverse().Skip(1).First(); //bypass the head node
+                var mFirst = obj1.Tail.Previous.Handler;
+                var pLength = obj0.Count();
+                return (pFirst == mFirst)
+                    .Label($"Expected tail of pipeline to be {mFirst}, was {pFirst}")
+                    .And(() => pLength == obj1.Length).Label($"Expected length of pipeline to be {obj1.Length}, was {pLength}");
+            }
+
+            public override bool Pre(PipelineModel _arg1)
+            {
+                return _arg1.Length > 3; // need to have at least 4
+            }
+
+            public override PipelineModel Run(PipelineModel obj0)
+            {
+                return RemoveTail(obj0);
+            }
+        }
+
+        class ContainsAllModelHandlers : Operation<IChannelPipeline, PipelineModel>
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineModel>> GenContainsAll()
+            {
+                return Gen.Constant((Operation<IChannelPipeline, PipelineModel>)new ContainsAllModelHandlers());
+            }
+
+            public override Property Check(IChannelPipeline obj0, PipelineModel obj1)
+            {
+                var pipeline = obj0 as DefaultChannelPipeline;
+                var head = obj1.Head;
+                var next = head.Next;
+                while (next != null && next != obj1.Tail)
+                {
+                    var inPipe = pipeline.Get(next.Name);
+                    if (inPipe != next.Handler)
+                    {
+                        return false.Label($"Expected to find handler {inPipe} in pipeline, but did not");
+                    }
+                    next = next.Next;
+
+                }
+                return true.ToProperty();
+            }
+
+            public override PipelineModel Run(PipelineModel obj0)
+            {
+                return obj0;
             }
         }
 

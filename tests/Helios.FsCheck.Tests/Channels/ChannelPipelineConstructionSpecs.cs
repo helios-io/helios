@@ -16,9 +16,9 @@ namespace Helios.FsCheck.Tests.Channels
     /// Test to validate that the <see cref="DefaultChannelPipeline"/> adds pipeline handlers
     /// to their correct and proper positions.
     /// </summary>
-    public class ChannelPipelineSpecs
+    public class ChannelPipelineConstructionSpecs
     {
-        public ChannelPipelineSpecs()
+        public ChannelPipelineConstructionSpecs()
         {
             Model = new ChannelPipelineStateMachine();
         }
@@ -59,6 +59,19 @@ namespace Helios.FsCheck.Tests.Channels
         }
 
         [Fact]
+        public void PipelineModel_should_no_longer_detect_named_nodes_added_to_head()
+        {
+            var namedChannel = new NamedChannelHandler("TEST");
+            var namedChannel2 = new NamedChannelHandler("TEST2");
+            var node = new PipelineModelNode() { Handler = namedChannel, Name = namedChannel.Name };
+            var pipelineModel = PipelineModel.Fresh();
+            pipelineModel = AddToHead(pipelineModel, node);
+            Assert.True(pipelineModel.Contains(node.Name));
+            pipelineModel = RemoveHead(pipelineModel);
+            Assert.False(pipelineModel.Contains(namedChannel.Name));
+        }
+
+        [Fact]
         public void PipelineModel_should_detect_named_nodes_added_to_tail()
         {
             var namedChannel = new NamedChannelHandler("TEST");
@@ -71,6 +84,18 @@ namespace Helios.FsCheck.Tests.Channels
             pipelineModel = AddToTail(pipelineModel, node2);
             Assert.True(pipelineModel.Contains(node.Name));
             Assert.True(pipelineModel.Contains(node2.Name));
+        }
+
+        [Fact]
+        public void PipelineModel_should_no_longer_detect_named_nodes_removed_from_tail()
+        {
+            var namedChannel = new NamedChannelHandler("TEST");
+            var node = new PipelineModelNode() { Handler = namedChannel, Name = namedChannel.Name };
+            var pipelineModel = PipelineModel.Fresh();
+            pipelineModel = AddToTail(pipelineModel, node);
+            Assert.True(pipelineModel.Contains(node.Name));
+            pipelineModel = RemoveTail(pipelineModel);
+            Assert.False(pipelineModel.Contains(namedChannel.Name));
         }
 
         [Property(QuietOnSuccess = true)]

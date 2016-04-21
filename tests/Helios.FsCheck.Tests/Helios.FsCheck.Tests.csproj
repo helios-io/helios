@@ -68,7 +68,7 @@
     <Compile Include="Buffers\BufferSpecs.cs" />
     <Compile Include="Channels\ChannelOutboundBufferSpecs.cs" />
     <Compile Include="Channels\ChannelPipelineModels.cs" />
-    <Compile Include="Channels\ChannelPipelineSpecs.cs" />
+    <Compile Include="Channels\ChannelPipelineConstructionSpecs.cs" />
     <Compile Include="Channels\TestChannel.cs" />
     <Compile Include="Collections\CircularBufferPropertyTests.cs" />
     <Compile Include="Concurrency\EventExecutorSpecBase.cs" />
