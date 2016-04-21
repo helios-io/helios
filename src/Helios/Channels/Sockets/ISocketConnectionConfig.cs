@@ -1,11 +1,11 @@
 ﻿namespace Helios.Channels.Sockets
 {
     /// <summary>
-    /// <see cref="IConnectionConfig"/> specific to sockets.
+    ///     <see cref="IConnectionConfig" /> specific to sockets.
     /// </summary>
     public interface ISocketConnectionConfig : IConnectionConfig
     {
-        int Linger { get; set;  }
+        int Linger { get; set; }
 
         int SendBufferSize { get; set; }
 

@@ -1,21 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Helios.Buffers;
 
 namespace Helios.Channels
 {
     /// <summary>
-    /// A strongly typed class representing a configuration option for a given channel.
+    ///     A strongly typed class representing a configuration option for a given channel.
     /// </summary>
     public abstract class ChannelOption
     {
         public static readonly ChannelOption<IByteBufAllocator> Allocator = new ChannelOption<IByteBufAllocator>();
-        public static readonly ChannelOption<IRecvByteBufAllocator> RcvbufAllocator = new ChannelOption<IRecvByteBufAllocator>();
-        public static readonly ChannelOption<IMessageSizeEstimator> MessageSizeEstimator = new ChannelOption<IMessageSizeEstimator>();
+
+        public static readonly ChannelOption<IRecvByteBufAllocator> RcvbufAllocator =
+            new ChannelOption<IRecvByteBufAllocator>();
+
+        public static readonly ChannelOption<IMessageSizeEstimator> MessageSizeEstimator =
+            new ChannelOption<IMessageSizeEstimator>();
 
         public static readonly ChannelOption<TimeSpan> ConnectTimeout = new ChannelOption<TimeSpan>();
         public static readonly ChannelOption<int> MaxMessagesPerRead = new ChannelOption<int>();
@@ -59,7 +59,7 @@ namespace Helios.Channels
 
         public override bool Set(IChannelConfiguration configuration, object value)
         {
-            return configuration.SetOption(this, (T)value);
+            return configuration.SetOption(this, (T) value);
         }
     }
 }

@@ -6,7 +6,6 @@ namespace Helios.Channels
     {
         public ConnectException(string s, Exception exception) : base(s, exception)
         {
-
         }
     }
 }

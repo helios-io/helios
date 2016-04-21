@@ -1,17 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Helios.Concurrency;
 
 namespace Helios.Channels
 {
-    abstract class PausableChannelEventExecutor : IPausableEventExecutor
+    internal abstract class PausableChannelEventExecutor : IPausableEventExecutor
     {
+        internal abstract IChannel Channel { get; }
+
+        public IEventExecutor Executor => this;
         public bool InEventLoop => Unwrap().InEventLoop;
+
         public bool IsInEventLoop(Thread thread)
         {
             return Unwrap().IsInEventLoop(thread);
@@ -21,6 +22,7 @@ namespace Helios.Channels
         public bool IsShuttingDown => Unwrap().IsShuttingDown;
         public bool IsShutDown => Unwrap().IsShutDown;
         public bool IsTerminated => Unwrap().IsTerminated;
+
         public void Execute(IRunnable task)
         {
             VerifyAcceptingNewTasks();
@@ -75,7 +77,8 @@ namespace Helios.Channels
             return Unwrap().SubmitAsync(func, context, state);
         }
 
-        public Task<T> SubmitAsync<T>(Func<object, object, T> func, object context, object state, CancellationToken cancellationToken)
+        public Task<T> SubmitAsync<T>(Func<object, object, T> func, object context, object state,
+            CancellationToken cancellationToken)
         {
             VerifyAcceptingNewTasks();
             return Unwrap().SubmitAsync(func, context, state, cancellationToken);
@@ -98,14 +101,10 @@ namespace Helios.Channels
 
         public abstract bool IsAcceptingNewTasks { get; }
 
-        internal abstract IChannel Channel { get; }
-
-        public IEventExecutor Executor => this;
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void VerifyAcceptingNewTasks()
+        private void VerifyAcceptingNewTasks()
         {
-            if (!this.IsAcceptingNewTasks)
+            if (!IsAcceptingNewTasks)
             {
                 throw RejectedTaskException.Instance;
             }

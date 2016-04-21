@@ -3,14 +3,26 @@
 namespace Helios.Channels
 {
     /// <summary>
-    /// A <see cref="IRecvByteBufAllocator"/> that always yields the same buffer size prediction;
-    /// ignores feedback from the I/O thread.
+    ///     A <see cref="IRecvByteBufAllocator" /> that always yields the same buffer size prediction;
+    ///     ignores feedback from the I/O thread.
     /// </summary>
     public sealed class FixedRecvByteBufAllocator : IRecvByteBufAllocator
     {
-        public static readonly FixedRecvByteBufAllocator Default = new FixedRecvByteBufAllocator(4 * 1024);
+        public static readonly FixedRecvByteBufAllocator Default = new FixedRecvByteBufAllocator(4*1024);
 
-        sealed class Handle : IRecvByteBufferAllocatorHandle
+        private readonly IRecvByteBufferAllocatorHandle _handle;
+
+        public FixedRecvByteBufAllocator(int bufferSize)
+        {
+            _handle = new Handle(bufferSize);
+        }
+
+        public IRecvByteBufferAllocatorHandle NewHandle()
+        {
+            return _handle;
+        }
+
+        private sealed class Handle : IRecvByteBufferAllocatorHandle
         {
             private readonly int _bufferSize;
 
@@ -33,18 +45,6 @@ namespace Helios.Channels
             {
                 // no-op
             }
-        }
-
-        private readonly IRecvByteBufferAllocatorHandle _handle;
-
-        public FixedRecvByteBufAllocator(int bufferSize)
-        {
-            _handle = new Handle(bufferSize);
-        }
-
-        public IRecvByteBufferAllocatorHandle NewHandle()
-        {
-            return _handle;
         }
     }
 }

@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Concurrency;
 using Helios.Logging;
@@ -12,42 +8,43 @@ using Helios.Util;
 namespace Helios.Channels
 {
     /// <summary>
-    /// Outbound buffer used to store messages queued for outbound delivery
-    /// on a given channel. These messages will be dequed and flushed to the
-    /// underlying socket or transport.
+    ///     Outbound buffer used to store messages queued for outbound delivery
+    ///     on a given channel. These messages will be dequed and flushed to the
+    ///     underlying socket or transport.
     /// </summary>
     public sealed class ChannelOutboundBuffer
     {
         private static readonly ILogger Logger = LoggingFactory.GetLogger<ChannelOutboundBuffer>();
 
-        private volatile int _unwritable;
-        private long _totalPendingSize;
-
         private readonly int _writeBufferHighWaterMark;
         private readonly int _writeBufferLowWaterMark;
 
-        private bool _inFail;
+        /// <summary>
+        ///     Callback used to indicate that the channel is going to become writeable or unwriteable
+        /// </summary>
+        private readonly Action _fireChannelWritabilityChanged;
 
         /// <summary>
-        /// Callback used to indicate that the channel is going to become writeable or unwriteable
+        ///     Number of flushed entries not yet written
         /// </summary>
-        private Action _fireChannelWritabilityChanged;
+        private int _flushed;
 
         // Entry(flushedEntry) --> ... Entry(unflushedEntry) --> ... Entry(tailEntry)
         //
         // The Entry that is the first in the linked-list structure that was flushed
         private Entry _flushedEntry;
-        // The Entry which is the first unflushed in the linked-list structure
-        private Entry _unflushedEntry;
+
+        private bool _inFail;
         // The Entry which represents the tail of the buffer
         private Entry _tailEntry;
+        private long _totalPendingSize;
+        // The Entry which is the first unflushed in the linked-list structure
+        private Entry _unflushedEntry;
 
-        /// <summary>
-        /// Number of flushed entries not yet written
-        /// </summary>
-        private int _flushed;
+        private volatile int _unwritable;
 
-        public ChannelOutboundBuffer(int writeBufferHighWaterMark, int writeBufferLowWaterMark, Action fireChannelWritabilityChanged)
+        public ChannelOutboundBuffer(int writeBufferHighWaterMark, int writeBufferLowWaterMark,
+            Action fireChannelWritabilityChanged)
         {
             _writeBufferHighWaterMark = writeBufferHighWaterMark;
             _writeBufferLowWaterMark = writeBufferLowWaterMark;
@@ -55,7 +52,7 @@ namespace Helios.Channels
         }
 
         /// <summary>
-        /// Return the current message to write or <c>null</c> if nothing was flushed before and so is ready to be written.
+        ///     Return the current message to write or <c>null</c> if nothing was flushed before and so is ready to be written.
         /// </summary>
         public object Current
         {
@@ -67,27 +64,27 @@ namespace Helios.Channels
         }
 
         /// <summary>
-        /// Returns <c>true</c> if 
+        ///     Returns <c>true</c> if
         /// </summary>
         public bool IsWritable => _unwritable == 0;
 
         /// <summary>
-        /// Returns the number of flushed messages
+        ///     Returns the number of flushed messages
         /// </summary>
         public int Count => _flushed;
 
         /// <summary>
-        /// Returns <c>true</c> if there are flushed messages in this buffer. <c>false</c> otherwise.
+        ///     Returns <c>true</c> if there are flushed messages in this buffer. <c>false</c> otherwise.
         /// </summary>
         public bool IsEmpty => _flushed == 0;
 
         /// <summary>
-        /// The total number of bytes waiting to be written
+        ///     The total number of bytes waiting to be written
         /// </summary>
         public long TotalPendingWriteBytes => Thread.VolatileRead(ref _totalPendingSize);
 
         /// <summary>
-        /// Number of bytes we can write before we become unwriteable
+        ///     Number of bytes we can write before we become unwriteable
         /// </summary>
         public long BytesBeforeUnwritable
         {
@@ -112,11 +109,11 @@ namespace Helios.Channels
         }
 
         /// <summary>
-        /// Add a given message to this <see cref="ChannelOutboundBuffer"/>.
+        ///     Add a given message to this <see cref="ChannelOutboundBuffer" />.
         /// </summary>
         /// <param name="message">The message that will be written.</param>
         /// <param name="size">The size of the message.</param>
-        /// <param name="promise">A <see cref="TaskCompletionSource"/> that will be set once message was written.</param>
+        /// <param name="promise">A <see cref="TaskCompletionSource" /> that will be set once message was written.</param>
         public void AddMessage(object message, int size, TaskCompletionSource promise)
         {
             var entry = Entry.NewInstance(message, size, Total(message), promise);
@@ -141,7 +138,7 @@ namespace Helios.Channels
         }
 
         /// <summary>
-        /// Flush all current messages in the outbound buffer
+        ///     Flush all current messages in the outbound buffer
         /// </summary>
         public void AddFlush()
         {
@@ -179,7 +176,7 @@ namespace Helios.Channels
             var msg = e.Message;
             var promise = e.Promise;
             var size = e.PendingSize;
-            
+
             RemoveEntry(e);
 
             if (!e.Cancelled)
@@ -245,7 +242,7 @@ namespace Helios.Channels
             if (size == 0)
                 return;
 
-            long newWriteBufferSize = Interlocked.Add(ref _totalPendingSize, size);
+            var newWriteBufferSize = Interlocked.Add(ref _totalPendingSize, size);
             if (newWriteBufferSize >= _writeBufferHighWaterMark)
             {
                 SetUnwritable();
@@ -261,7 +258,7 @@ namespace Helios.Channels
         {
             if (size == 0)
                 return;
-            long newWriteBufferSize = Interlocked.Add(ref _totalPendingSize, -size);
+            var newWriteBufferSize = Interlocked.Add(ref _totalPendingSize, -size);
             if (notifyWritability && (newWriteBufferSize == 0 || newWriteBufferSize <= _writeBufferLowWaterMark))
             {
                 SetWritable();
@@ -333,7 +330,7 @@ namespace Helios.Channels
                 _inFail = false;
             }
         }
-        
+
         internal void Close(ClosedChannelException cause)
         {
             if (_inFail)
@@ -369,20 +366,24 @@ namespace Helios.Channels
         }
 
         /// <summary>
-        /// Represents an entry inside the <see cref="ChannelOutboundBuffer"/>
+        ///     Represents an entry inside the <see cref="ChannelOutboundBuffer" />
         /// </summary>
-        sealed class Entry
+        private sealed class Entry
         {
-            private static readonly ThreadLocal<ObjectPool<Entry>> Pool = new ThreadLocal<ObjectPool<Entry>>(() => new ObjectPool<Entry>(() => new Entry()));
+            private static readonly ThreadLocal<ObjectPool<Entry>> Pool =
+                new ThreadLocal<ObjectPool<Entry>>(() => new ObjectPool<Entry>(() => new Entry()));
 
-            private Entry() { }
-
-            public long Total;
-            public int PendingSize;
+            public bool Cancelled;
             public object Message;
             public Entry Next; //linked list
+            public int PendingSize;
             public TaskCompletionSource Promise;
-            public bool Cancelled;
+
+            public long Total;
+
+            private Entry()
+            {
+            }
 
             public static Entry NewInstance(object message, int size, long total, TaskCompletionSource promise)
             {
@@ -399,7 +400,7 @@ namespace Helios.Channels
                 if (!Cancelled)
                 {
                     Cancelled = true;
-                    int pSize = PendingSize;
+                    var pSize = PendingSize;
 
                     // TODO: message reference counting (optional)
                     Message = Unpooled.Empty;

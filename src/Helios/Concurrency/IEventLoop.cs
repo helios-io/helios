@@ -11,8 +11,4 @@ namespace Helios.Concurrency
 
         new IEventLoop Unwrap();
     }
-
-    public interface IChannelHandlerInvoker
-    {
-    }
 }
