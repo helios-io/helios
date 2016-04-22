@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using FsCheck;
 using FsCheck.Experimental;
 using FSharpx;
+using Helios.Buffers;
 using Helios.Channels;
 using Microsoft.FSharp.Core;
 using Random = FsCheck.Random;
@@ -609,7 +611,11 @@ namespace Helios.FsCheck.Tests.Channels
 
         public static readonly Gen<Operation<IChannelPipeline, PipelineMutationModel>>[] InvocationHandlers =
         {
-            InvokeChannelInactive.GenChannelInactive(), InvokeChannelActive.GenChannelActive()
+            InvokeChannelInactive.GenInvocation(), InvokeChannelActive.GenInvocation(), InvokeChannelRead.GenInvocation(),
+            InvokeChannelReadComplete.GenInvocation(), InvokeChannelWritabilityChanged.GenInvocation(), InvokeBindAsync.GenInvocation(),
+            InvokeConnectAsync.GenInvocation(), InvokeDeregisterAsync.GenInvocation(), InvokeChannelRegistered.GenInvocation(),
+            InvokeChannelUnregistered.GenInvocation(), InvokeExceptionCaught.GenInvocation(), InvokeUserEventTriggered.GenInvocation(),
+            InvokeFlush.GenInvocation(), InvokeRead.GenInvocation(), InvokeWriteAsync.GenInvocation(), InvokeDisconnectAsync.GenInvocation()
         };
 
         public static readonly Gen<Operation<IChannelPipeline, PipelineMutationModel>>[] AllHandlers =
@@ -880,7 +886,7 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeChannelActive : ChannelInvocationBaseEvent
         {
-            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenChannelActive()
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>) new InvokeChannelActive());
             }
@@ -897,7 +903,7 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeChannelInactive : ChannelInvocationBaseEvent
         {
-            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenChannelInactive()
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>)new InvokeChannelInactive());
             }
@@ -909,6 +915,257 @@ namespace Helios.FsCheck.Tests.Channels
             protected override void ExecuteInternal(IChannelPipeline pipeline)
             {
                 pipeline.FireChannelInactive();
+            }
+        }
+
+        private class InvokeChannelRead : ChannelInvocationBaseEvent
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>)new InvokeChannelRead());
+            }
+
+            public InvokeChannelRead() : base(SupportedEvent.ChannelRead)
+            {
+            }
+
+            protected override void ExecuteInternal(IChannelPipeline pipeline)
+            {
+                pipeline.FireChannelRead(null);
+            }
+        }
+
+        private class InvokeChannelReadComplete : ChannelInvocationBaseEvent
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return
+                    Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>) new InvokeChannelReadComplete());
+            }
+
+            public InvokeChannelReadComplete() : base(SupportedEvent.ChannelReadComplete)
+            {
+            }
+
+            protected override void ExecuteInternal(IChannelPipeline pipeline)
+            {
+                pipeline.FireChannelReadComplete();
+            }
+        }
+
+        private class InvokeChannelWritabilityChanged : ChannelInvocationBaseEvent
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return
+                    Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>)new InvokeChannelWritabilityChanged());
+            }
+
+            public InvokeChannelWritabilityChanged() : base(SupportedEvent.ChannelWritabilityChanged)
+            {
+            }
+
+            protected override void ExecuteInternal(IChannelPipeline pipeline)
+            {
+                pipeline.FireChannelWritabilityChanged();
+            }
+        }
+
+        private class InvokeUserEventTriggered : ChannelInvocationBaseEvent
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return
+                    Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>)new InvokeUserEventTriggered());
+            }
+
+            public InvokeUserEventTriggered() : base(SupportedEvent.UserEventTriggered)
+            {
+            }
+
+            protected override void ExecuteInternal(IChannelPipeline pipeline)
+            {
+                pipeline.FireUserEventTriggered(null);
+            }
+        }
+
+        private class InvokeWriteAsync : ChannelInvocationBaseEvent
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return
+                    Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>)new InvokeWriteAsync());
+            }
+
+            public InvokeWriteAsync() : base(SupportedEvent.WriteAsync)
+            {
+            }
+
+            protected override void ExecuteInternal(IChannelPipeline pipeline)
+            {
+                pipeline.WriteAsync(Unpooled.Empty);
+            }
+        }
+
+        private class InvokeFlush : ChannelInvocationBaseEvent
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return
+                    Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>)new InvokeFlush());
+            }
+
+            public InvokeFlush() : base(SupportedEvent.Flush)
+            {
+            }
+
+            protected override void ExecuteInternal(IChannelPipeline pipeline)
+            {
+                pipeline.Flush();
+            }
+        }
+
+        private class InvokeBindAsync : ChannelInvocationBaseEvent
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return
+                    Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>)new InvokeBindAsync());
+            }
+
+            public InvokeBindAsync() : base(SupportedEvent.BindAsync)
+            {
+            }
+
+            protected override void ExecuteInternal(IChannelPipeline pipeline)
+            {
+                pipeline.BindAsync(null);
+            }
+        }
+
+        private class InvokeConnectAsync : ChannelInvocationBaseEvent
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return
+                    Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>)new InvokeConnectAsync());
+            }
+
+            public InvokeConnectAsync() : base(SupportedEvent.ConnectAsync)
+            {
+            }
+
+            protected override void ExecuteInternal(IChannelPipeline pipeline)
+            {
+                pipeline.ConnectAsync(null, null);
+            }
+        }
+
+        private class InvokeDisconnectAsync : ChannelInvocationBaseEvent
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return
+                    Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>)new InvokeDisconnectAsync());
+            }
+
+            public InvokeDisconnectAsync() : base(SupportedEvent.DisconnectAsync)
+            {
+            }
+
+            protected override void ExecuteInternal(IChannelPipeline pipeline)
+            {
+                pipeline.DisconnectAsync();
+            }
+        }
+
+        private class InvokeExceptionCaught : ChannelInvocationBaseEvent
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return
+                    Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>)new InvokeExceptionCaught());
+            }
+
+            public InvokeExceptionCaught() : base(SupportedEvent.ExceptionCaught)
+            {
+            }
+
+            protected override void ExecuteInternal(IChannelPipeline pipeline)
+            {
+                pipeline.FireExceptionCaught(new ApplicationException("test"));
+            }
+        }
+
+        private class InvokeDeregisterAsync : ChannelInvocationBaseEvent
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return
+                    Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>)new InvokeDeregisterAsync());
+            }
+
+            public InvokeDeregisterAsync() : base(SupportedEvent.DeregisterAsync)
+            {
+            }
+
+            protected override void ExecuteInternal(IChannelPipeline pipeline)
+            {
+                pipeline.DeregisterAsync();
+            }
+        }
+
+        private class InvokeRead : ChannelInvocationBaseEvent
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return
+                    Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>)new InvokeRead());
+            }
+
+            public InvokeRead() : base(SupportedEvent.Read)
+            {
+            }
+
+            protected override void ExecuteInternal(IChannelPipeline pipeline)
+            {
+                pipeline.Read();
+            }
+        }
+
+        private class InvokeChannelRegistered : ChannelInvocationBaseEvent
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return
+                    Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>)new InvokeChannelRegistered());
+            }
+
+            public InvokeChannelRegistered() : base(SupportedEvent.ChannelRegistered)
+            {
+            }
+
+            protected override void ExecuteInternal(IChannelPipeline pipeline)
+            {
+                pipeline.FireChannelRegistered();
+            }
+        }
+
+        private class InvokeChannelUnregistered : ChannelInvocationBaseEvent
+        {
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return
+                    Gen.Constant((Operation<IChannelPipeline, PipelineMutationModel>)new InvokeChannelUnregistered());
+            }
+
+            public InvokeChannelUnregistered() : base(SupportedEvent.ChannelUnregistered)
+            {
+            }
+
+            protected override void ExecuteInternal(IChannelPipeline pipeline)
+            {
+                pipeline.FireChannelUnregistered();
             }
         }
 
