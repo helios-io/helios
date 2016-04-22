@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Channels;
+using Helios.Channels.Embedded;
 using Helios.Concurrency;
 
 namespace Helios.FsCheck.Tests.Channels
@@ -22,6 +23,7 @@ namespace Helios.FsCheck.Tests.Channels
             Configuration = new DefaultChannelConfiguration(this);
             Configuration.WriteBufferHighWaterMark = ChannelOutboundBufferSpecs.WriteHighWaterMark;
             Configuration.WriteBufferLowWaterMark = ChannelOutboundBufferSpecs.WriteLowWaterMark;
+            EventLoop = new EmbeddedEventLoop();
         }
 
         public IByteBufAllocator Allocator { get; }
