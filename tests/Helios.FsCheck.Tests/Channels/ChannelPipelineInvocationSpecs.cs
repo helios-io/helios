@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using FsCheck;
 using FsCheck.Experimental;
 using FsCheck.Xunit;
@@ -18,6 +19,7 @@ namespace Helios.FsCheck.Tests.Channels
         public ChannelPipelineInvocationSpecs()
         {
             Model = new ChannelPipelineModel(true);
+            Arb.Register<AllEventsChannelHandler>();
         }
 
         public ChannelPipelineModel Model { get; }
@@ -28,11 +30,37 @@ namespace Helios.FsCheck.Tests.Channels
             return Model.ToProperty();
         }
 
+        [Property(QuietOnSuccess = true)]
+        public Property AllEventsChannelHandler_should_correctly_report_all_supported_events(SupportedEvent[] events)
+        {
+            var handler = new AllEventsChannelHandler("foo", events);
+            return events.All(x => handler.SupportsEvent(x)).ToProperty();
+        }
+
+        [Property(QuietOnSuccess = true)]
+        public Property DefaultNamedChannelHandler_should_not_support_any_events(SupportedEvent[] events)
+        {
+            var handler = new NamedChannelHandler("foo");
+            return events.All(x => !handler.SupportsEvent(x)).ToProperty();
+        }
+
         [Fact]
         public async Task ChannelPipeline_with_no_handlers_should_not_throw_on_invocation()
         {
             var pipeline = new DefaultChannelPipeline(TestChannel.Instance);
             await pipeline.BindAsync(null);
+        }
+
+        [Fact]
+        public void ChannelPipeline_should_invoke_HandlerAdded_to_recently_added_handler()
+        {
+            var pipeline = new DefaultChannelPipeline(TestChannel.Instance);
+            var handler = new AllEventsChannelHandler("test", new SupportedEvent[] { SupportedEvent.HandlerAdded });
+            ChannelPipelineModel.EventQueue.Clear();
+            pipeline.AddFirst(handler.Name, handler);
+            var head = ChannelPipelineModel.EventQueue.Dequeue();
+            Assert.Equal(handler.Name, head.Item1);
+            Assert.Equal(SupportedEvent.HandlerAdded, head.Item2);
         }
     }
 }

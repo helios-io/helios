@@ -96,6 +96,22 @@ namespace Helios.FsCheck.Tests.Channels
             Assert.False(pipelineModel.Contains(namedChannel.Name));
         }
 
+        //[Fact]
+        //public void PipelineModel_handler_debug()
+        //{
+        //    var pipelineModel = PipelineMutationModel.Fresh();
+        //    var pipeline = new DefaultChannelPipeline(TestChannel.Instance);
+        //    var namedChannel = new AllEventsChannelHandler("foo", new SupportedEvent[] { SupportedEvent.HandlerAdded });
+        //    var node = new PipelineModelNode() { Handler = namedChannel, Name = namedChannel.Name };
+          
+        //    var addLast = new AddLast(namedChannel);
+        //    addLast.Run(pipelineModel);
+        //    var predictedOutcome = pipelineModel.PredictedOutcome(SupportedEvent.HandlerAdded);
+        //    addLast.Check(pipeline, pipelineModel);
+        //    var actualOutcome = EventQueue;
+        //    Assert.Equal(predictedOutcome, actualOutcome);
+        //}
+
         [Property(QuietOnSuccess = true, MaxTest = 1000)]
         public Property ChannelPipeline_should_obey_mutation_model()
         {

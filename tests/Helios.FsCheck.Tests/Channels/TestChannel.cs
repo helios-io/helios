@@ -24,7 +24,7 @@ namespace Helios.FsCheck.Tests.Channels
                 var instance = new EmbeddedChannel();
                 instance.Configuration.WriteBufferHighWaterMark = ChannelOutboundBufferSpecs.WriteHighWaterMark;
                 instance.Configuration.WriteBufferLowWaterMark = ChannelOutboundBufferSpecs.WriteLowWaterMark;
-
+                
                 return instance;
             }
         }

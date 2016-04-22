@@ -11,7 +11,7 @@ namespace Helios.Channels.Embedded
 {
     sealed class EmbeddedEventLoop : AbstractEventExecutor, IChannelHandlerInvoker, IEventLoop
     {
-        readonly Queue<IRunnable> _tasks = new Queue<IRunnable>(2);
+        readonly Queue<IRunnable> _tasks = new Queue<IRunnable>(20);
 
         public IEventExecutor Executor
         {
