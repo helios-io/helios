@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using FsCheck;
 using FsCheck.Experimental;
+using FSharpx;
 using Helios.Channels;
 using Microsoft.FSharp.Core;
 using Random = FsCheck.Random;
+using Task = System.Threading.Tasks.Task;
 
 // ReSharper disable RedundantOverridenMember
 
@@ -142,7 +143,7 @@ namespace Helios.FsCheck.Tests.Channels
                 AllEventsChannelHandler.GenAllEventsHandler());
         }
 
-        public SupportedEvents Events { get; protected set; } = SupportedEvents.None;
+        public SupportedEvents Events { get; internal set; } = SupportedEvents.None;
 
         public NamedChannelHandler(string name)
         {
@@ -181,7 +182,7 @@ namespace Helios.FsCheck.Tests.Channels
 
         public override string ToString()
         {
-            
+
             return $"NamedChannelHandler(Name={Name}, Events={EventsStr})";
         }
 
@@ -386,19 +387,33 @@ namespace Helios.FsCheck.Tests.Channels
     public class AllEventsChannelHandler : NamedChannelHandler
     {
         public static readonly SupportedEvents[] AllValidEvents =
-            Enum.GetValues(typeof (SupportedEvents)).Cast<SupportedEvents>().Except(new [] {SupportedEvents.None }).ToArray();
+            Enum.GetValues(typeof(SupportedEvents)).Cast<SupportedEvents>().Except(new[] { SupportedEvents.None }).ToArray();
 
         public static Gen<SupportedEvents[]> GenEvents()
         {
             return Gen.ArrayOf(Gen.Elements(AllValidEvents));
         }
 
+        public static FSharpFunc<T2, TResult> Create<T2, TResult>(Func<T2, TResult> func)
+        {
+            Converter<T2, TResult> conv = input => func(input);
+            return FSharpFunc<T2, TResult>.FromConverter(conv);
+        }
+
+        public static FSharpFunc<T1, FSharpFunc<T2, TResult>> Create<T1, T2, TResult>(Func<T1, T2, TResult> func)
+        {
+            Converter<T1, FSharpFunc<T2, TResult>> conv = value1 =>
+         {
+             return Create<T2, TResult>(value2 => func(value1, value2));
+         };
+            return FSharpFunc<T1, FSharpFunc<T2, TResult>>.FromConverter(conv);
+        }
+
         public static Gen<NamedChannelHandler> GenAllEventsHandler()
         {
-            return GenEvents().Select(events =>
-            {
-                return CreateName().Select(name => (NamedChannelHandler)new AllEventsChannelHandler(name, events));
-            }).Eval(1000, Random.StdGen.NewStdGen(1,100));
+            Func<string, SupportedEvents[], NamedChannelHandler> producer = (s, e) => new AllEventsChannelHandler(s, e) as NamedChannelHandler;
+            var fsFunc = Create(producer);
+            return Gen.Map2(fsFunc, CreateName(), GenEvents());
         }
 
         public AllEventsChannelHandler(string name, SupportedEvents[] events) : base(name)
@@ -421,7 +436,7 @@ namespace Helios.FsCheck.Tests.Channels
 
         public override void ChannelActive(IChannelHandlerContext context)
         {
-           base.ChannelActive(context);
+            base.ChannelActive(context);
         }
 
         public override void ChannelInactive(IChannelHandlerContext context)
