@@ -714,7 +714,7 @@ namespace Helios.Channels
 
         #region Head and Tail context
 
-        private sealed class TailContext : AbstractChannelHandlerContext, IChannelHandler
+        internal sealed class TailContext : AbstractChannelHandlerContext, IChannelHandler
         {
             private static readonly int SkipFlags = CalculateSkipPropagationFlags(typeof (TailContext));
 
@@ -841,7 +841,7 @@ namespace Helios.Channels
             }
         }
 
-        private sealed class HeadContext : AbstractChannelHandlerContext, IChannelHandler
+        internal sealed class HeadContext : AbstractChannelHandlerContext, IChannelHandler
         {
             private static readonly int SkipFlags = CalculateSkipPropagationFlags(typeof (HeadContext));
 

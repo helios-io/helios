@@ -79,6 +79,7 @@
   <ItemGroup>
     <Compile Include="Buffer\ByteBufferTests.cs" />
     <Compile Include="Buffer\UnpooledDirectByteBufferTests.cs" />
+    <Compile Include="Channels\AbstractChannelHandlerContextSpecs.cs" />
     <Compile Include="Channels\Embedded\EmbeddedChannelTest.cs" />
     <Compile Include="Concurrency\SingleThreadEventExecutorSpecs.cs" />
     <Compile Include="DummyConnection.cs" />

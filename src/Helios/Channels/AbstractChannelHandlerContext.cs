@@ -84,7 +84,7 @@ namespace Helios.Channels
             return skipDirection == null ? 0 : skipDirection.Item1;
         }
 
-        protected static int CalculateSkipPropagationFlags(Type handlerType)
+        internal static int CalculateSkipPropagationFlags(Type handlerType)
         {
             var flags = 0;
 
@@ -319,7 +319,7 @@ namespace Helios.Channels
         public Task BindAsync(EndPoint localAddress)
         {
             var target = FindContextOutbound();
-            return target.BindAsync(localAddress);
+            return target.Invoker.InvokeBindAsync(target, localAddress);
         }
 
         public Task ConnectAsync(EndPoint remoteAddress)
