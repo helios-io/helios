@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using FsCheck;
 using FsCheck.Experimental;
 using FsCheck.Xunit;
 using Helios.Channels;
-using static Helios.FsCheck.Tests.Channels.ChannelPipelineStateMachine;
+using static Helios.FsCheck.Tests.Channels.ChannelPipelineModel;
 using Xunit;
 
 namespace Helios.FsCheck.Tests.Channels
@@ -20,10 +18,10 @@ namespace Helios.FsCheck.Tests.Channels
     {
         public ChannelPipelineConstructionSpecs()
         {
-            Model = new ChannelPipelineStateMachine();
+            Model = new ChannelPipelineModel();
         }
 
-        public ChannelPipelineStateMachine Model { get; }
+        public ChannelPipelineModel Model { get; }
 
         [Fact]
         public void ChannelPipeline_should_start_with_head_and_tail_handlers()
@@ -49,7 +47,7 @@ namespace Helios.FsCheck.Tests.Channels
             var namedChannel = new NamedChannelHandler("TEST");
             var namedChannel2 = new NamedChannelHandler("TEST2");
             var node = new PipelineModelNode() {Handler = namedChannel, Name = namedChannel.Name};
-            var pipelineModel = PipelineModel.Fresh();
+            var pipelineModel = PipelineMutationModel.Fresh();
             pipelineModel = AddToHead(pipelineModel, node);
             Assert.True(pipelineModel.Contains(node.Name));
             var node2 = new PipelineModelNode() { Handler = namedChannel2, Name = namedChannel2.Name };
@@ -64,7 +62,7 @@ namespace Helios.FsCheck.Tests.Channels
             var namedChannel = new NamedChannelHandler("TEST");
             var namedChannel2 = new NamedChannelHandler("TEST2");
             var node = new PipelineModelNode() { Handler = namedChannel, Name = namedChannel.Name };
-            var pipelineModel = PipelineModel.Fresh();
+            var pipelineModel = PipelineMutationModel.Fresh();
             pipelineModel = AddToHead(pipelineModel, node);
             Assert.True(pipelineModel.Contains(node.Name));
             pipelineModel = RemoveHead(pipelineModel);
@@ -77,7 +75,7 @@ namespace Helios.FsCheck.Tests.Channels
             var namedChannel = new NamedChannelHandler("TEST");
             var namedChannel2 = new NamedChannelHandler("TEST2");
             var node = new PipelineModelNode() { Handler = namedChannel, Name = namedChannel.Name };
-            var pipelineModel = PipelineModel.Fresh();
+            var pipelineModel = PipelineMutationModel.Fresh();
             pipelineModel = AddToTail(pipelineModel, node);
             Assert.True(pipelineModel.Contains(node.Name));
             var node2 = new PipelineModelNode() { Handler = namedChannel2, Name = namedChannel2.Name };
@@ -91,7 +89,7 @@ namespace Helios.FsCheck.Tests.Channels
         {
             var namedChannel = new NamedChannelHandler("TEST");
             var node = new PipelineModelNode() { Handler = namedChannel, Name = namedChannel.Name };
-            var pipelineModel = PipelineModel.Fresh();
+            var pipelineModel = PipelineMutationModel.Fresh();
             pipelineModel = AddToTail(pipelineModel, node);
             Assert.True(pipelineModel.Contains(node.Name));
             pipelineModel = RemoveTail(pipelineModel);

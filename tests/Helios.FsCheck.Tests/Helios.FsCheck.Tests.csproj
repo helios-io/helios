@@ -67,7 +67,8 @@
     <Compile Include="Buffers\BufferGenerators.cs" />
     <Compile Include="Buffers\BufferSpecs.cs" />
     <Compile Include="Channels\ChannelOutboundBufferSpecs.cs" />
-    <Compile Include="Channels\ChannelPipelineModels.cs" />
+    <Compile Include="Channels\ChannelPipelineInvocationModels.cs" />
+    <Compile Include="Channels\ChannelPipelineMutationModels.cs" />
     <Compile Include="Channels\ChannelPipelineConstructionSpecs.cs" />
     <Compile Include="Channels\TestChannel.cs" />
     <Compile Include="Collections\CircularBufferPropertyTests.cs" />
