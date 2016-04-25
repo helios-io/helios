@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO.Compression;
 using System.Linq;
 using Helios.Util;
 
@@ -22,6 +21,7 @@ namespace Helios.Buffers
         public abstract int Capacity { get; }
 
         public abstract IByteBuf AdjustCapacity(int newCapacity);
+        public abstract ByteOrder Endianness { get; }
 
         public int MaxCapacity { get; private set; }
         public abstract IByteBufAllocator Allocator { get; }

@@ -20,6 +20,18 @@ namespace Helios.Buffers
         /// </summary>
         IByteBuf AdjustCapacity(int newCapacity);
 
+        /// <summary>
+        /// The byte order of the buffer. <see cref="ByteOrder.LittleEndian"/> by default.
+        /// </summary>
+        ByteOrder Endianness { get; }
+
+        /// <summary>
+        /// Returns a 
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns></returns>
+        IByteBuf WithOrder(ByteOrder order);
+
         int MaxCapacity { get; }
 
         /// <summary>
@@ -518,11 +530,6 @@ namespace Helios.Buffers
         /// Unwraps a nested buffer
         /// </summary>
         IByteBuf Unwrap();
-
-        /// <summary>
-        /// Internal use only. Exposes the underlying NIO buffer.
-        /// </summary>
-        ByteBuffer InternalNioBuffer(int index, int length);
 
         /// <summary>
         /// Shifts all of the <see cref="ReadableBytes"/> to the front of the internal buffer

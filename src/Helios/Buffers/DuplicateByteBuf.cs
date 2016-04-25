@@ -5,7 +5,7 @@ namespace Helios.Buffers
     /// <summary>
     /// Derived buffer that forwards requests to the original underlying buffer
     /// </summary>
-    public class DuplicateByteBuf : AbstractByteBuf
+    public class DuplicateByteBuf : AbstractDerivedByteBuffer
     {
         private readonly IByteBuf _buffer;
 
@@ -26,6 +26,8 @@ namespace Helios.Buffers
         {
             return _buffer.AdjustCapacity(newCapacity);
         }
+
+        public override ByteOrder Endianness => _buffer.Endianness;
 
         public override IByteBufAllocator Allocator
         {
@@ -173,11 +175,6 @@ namespace Helios.Buffers
         public override IByteBuf Unwrap()
         {
             return _buffer;
-        }
-
-        public override ByteBuffer InternalNioBuffer(int index, int length)
-        {
-            return _buffer.InternalNioBuffer(index, length);
         }
 
         public override IByteBuf Compact()

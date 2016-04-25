@@ -24,6 +24,8 @@ namespace Helios.Buffers
             throw new NotSupportedException();
         }
 
+        public override ByteOrder Endianness => ByteOrder.LittleEndian;
+
         public override IByteBufAllocator Allocator
         {
             get { return _alloc; }

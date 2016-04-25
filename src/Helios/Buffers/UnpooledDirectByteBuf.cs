@@ -99,6 +99,8 @@ namespace Helios.Buffers
             return this;
         }
 
+        public override ByteOrder Endianness => ByteOrder.LittleEndian;
+
         public override IByteBufAllocator Allocator
         {
             get { return _alloc; }

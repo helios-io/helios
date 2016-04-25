@@ -62,6 +62,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Buffers\AbstractByteBufAllocator.cs" />
+    <Compile Include="Buffers\AbstractDerivedByteBuffer.cs" />
     <Compile Include="Buffers\ByteBufferUtil.cs" />
     <Compile Include="Buffers\ByteOrder.cs" />
     <Compile Include="Buffers\DuplicateByteBuf.cs" />
