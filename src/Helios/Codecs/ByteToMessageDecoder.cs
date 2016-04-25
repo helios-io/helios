@@ -1,6 +1,9 @@
-﻿using System.Diagnostics.Contracts;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using Helios.Buffers;
 using Helios.Channels;
+using Helios.Util;
 
 namespace Helios.Codecs
 {
@@ -41,7 +44,7 @@ namespace Helios.Codecs
             return cumulation;
         }
 
-        protected IByteBuf Cumulation;
+        private IByteBuf _cumulation;
         private Cumulator _cumulator = Merge;
         private bool _singleDecode;
         private bool _decodeWasNull;
@@ -82,6 +85,258 @@ namespace Helios.Codecs
         {
             Contract.Requires(discardAfterReads > 0);
             _discardAfterReads = discardAfterReads;
+        }
+
+        /// <summary>
+        /// Returns the internal cumulative buffer of this decoder. Use at your own risk.
+        /// </summary>
+        protected IByteBuf InternalBuffer
+        {
+            get
+            {
+                if (_cumulation != null)
+                    return _cumulation;
+                return Unpooled.Empty;
+            }
+        }
+
+        protected int ActualReadableBytes => InternalBuffer.ReadableBytes;
+
+        public override void HandlerRemoved(IChannelHandlerContext context)
+        {
+            var buf = InternalBuffer;
+            int readable = buf.ReadableBytes;
+            if (readable > 0)
+            {
+                var bytes = buf.ReadBytes(readable);
+                // todo: reference count release
+                context.FireChannelRead(bytes);
+            }
+            else
+            {
+                // todo: reference count release
+            }
+            _cumulation = null;
+            _numReads = 0;
+            context.FireChannelReadComplete();
+            HandlerRemovedInternal(context);
+        }
+
+        protected virtual void HandlerRemovedInternal(IChannelHandlerContext context) { }
+
+        public override void ChannelRead(IChannelHandlerContext context, object message)
+        {
+            if (message is IByteBuf)
+            {
+                RecyclableArrayList output = RecyclableArrayList.Take();
+                try
+                {
+                    var data = (IByteBuf) message;
+                    _first = _cumulation == null;
+                    if (_first)
+                    {
+                        _cumulation = data;
+                    }
+                    else
+                    {
+                        _cumulation = _cumulator(context.Allocator, _cumulation, data);
+                    }
+                    CallDecode(context, _cumulation, output);
+                }
+                catch (DecoderException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    throw new DecoderException(ex);
+                }
+                finally
+                {
+                    if (_cumulation != null && !_cumulation.IsReadable())
+                    {
+                        _numReads = 0;
+                        // TODO: release cumulation buffer
+                        _cumulation = null;
+                    } else if (++_numReads >= _discardAfterReads)
+                    {
+                        _numReads = 0;
+                        DiscardSomeReadBytes();
+                    }
+
+                    var size = output.Count;
+                    _decodeWasNull = size == 0;
+                    FireChannelRead(context, output, size);
+                    output.Return();
+                }
+            }
+            else
+            {
+                // not a byte buffer? then we can't handle it. Forward it along 
+                context.FireChannelRead(message);
+            }
+        }
+
+        public override void ChannelReadComplete(IChannelHandlerContext context)
+        {
+            _numReads = 0;
+            DiscardSomeReadBytes();
+            if (_decodeWasNull)
+            {
+                _decodeWasNull = false;
+                if (!context.Channel.Configuration.AutoRead)
+                {
+                    context.Read();
+                }
+            }
+            context.FireChannelReadComplete();
+        }
+
+        public override void ChannelInactive(IChannelHandlerContext context)
+        {
+            base.ChannelInactive(context);
+        }
+
+        private void ChannelInputClosed(IChannelHandlerContext context, bool callChannelInactive)
+        {
+            var output = RecyclableArrayList.Take();
+            try
+            {
+                if (_cumulation != null)
+                {
+                    CallDecode(context, _cumulation, output);
+                    DecodeLast(context, _cumulation, output);
+                }
+                else
+                {
+                    DecodeLast(context, Unpooled.Empty, output);
+                }
+            }
+            catch (DecoderException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new DecoderException(ex);
+            }
+            finally
+            {
+                try
+                {
+                    if (_cumulation != null)
+                    {
+                        // todo: reference count release
+                        _cumulation = null;
+                    }
+                    var size = output.Count;
+                    FireChannelRead(context, output, size);
+
+                    if (size > 0)
+                    {
+                        // Something was read, call FireChannelReadComplete()
+                        context.FireChannelReadComplete();
+                    }
+
+                    if (callChannelInactive)
+                    {
+                        context.FireChannelInactive();
+                    }
+                }
+                finally
+                {
+                    // recycle in all cases
+                    output.Return();
+                }
+            }
+        }
+
+        protected void DiscardSomeReadBytes()
+        {
+            if (_cumulation != null && !_first) //todo: reference counting
+            {
+                _cumulation.DiscardSomeReadBytes();
+            }
+        }
+
+        private static void FireChannelRead(IChannelHandlerContext context, IList<object> msgs, int numElements)
+        {
+            for (var i = 0; i < numElements; i++)
+                context.FireChannelRead(msgs[i]);
+        }
+
+        protected void CallDecode(IChannelHandlerContext context, IByteBuf input, IList<object> output)
+        {
+            try
+            {
+                while (input.IsReadable())
+                {
+                    var outSize = output.Count;
+                    if (outSize > 0)
+                    {
+                        FireChannelRead(context, output, outSize);
+                        output.Clear();
+
+                        // Check if this handler was removed before continuing with decoding
+                        // If it was removed, it is no longer safe to keep operating on the buffer
+                        if (context.Removed)
+                            break;
+                    }
+
+                    var oldInputLength = input.ReadableBytes;
+                    Decode(context, input, output);
+
+                    // Check if this handler was removed before continuing with decoding
+                    // If it was removed, it is no longer safe to keep operating on the buffer
+                    if (context.Removed)
+                        break;
+
+                    if (outSize == output.Count)
+                    {
+                        if (oldInputLength == input.ReadableBytes)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (oldInputLength == input.ReadableBytes)
+                    {
+                        throw new DecoderException($"{GetType()}.Decode() did not read anything but decoded a message.");
+                    }
+
+                    if (IsSingleDecode)
+                        break;
+                }
+            }
+            catch (DecoderException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new DecoderException(ex);
+            }
+        }
+
+        protected abstract void Decode(IChannelHandlerContext context, IByteBuf input, IList<object> output);
+
+        /// <summary>
+        /// Called one last time when the <see cref="IChannelHandlerContext"/> goes inactive, which means the
+        /// <see cref="IChannelHandler.ChannelInactive"/> was triggered.
+        /// 
+        /// By default this will jsut call <see cref="Decode"/> but sub-classes may override this for special cleanup operations.
+        /// </summary>
+        protected virtual void DecodeLast(IChannelHandlerContext context, IByteBuf input, IList<object> output)
+        {
+            if (input.IsReadable())
+            {
+                // Only call Decode if there is something left in the buffer to decode
+                Decode(context, input, output);
+            }
         }
     }
 }

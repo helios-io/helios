@@ -643,6 +643,13 @@ namespace Helios.Buffers
         }
 
         public abstract bool IsDirect { get; }
+
+        public IByteBuf Copy()
+        {
+            return Copy(ReaderIndex, ReadableBytes);
+        }
+        public abstract IByteBuf Copy(int index, int length);
+
         public virtual IByteBuf Duplicate()
         {
             return new DuplicateByteBuf(this);

@@ -165,6 +165,11 @@ namespace Helios.Buffers
             get { return _buffer.IsDirect; }
         }
 
+        public override IByteBuf Copy(int index, int length)
+        {
+            return _buffer.Copy(index, length);
+        }
+
         public override IByteBuf Unwrap()
         {
             return _buffer;

@@ -81,6 +81,7 @@
     <Compile Include="Buffer\UnpooledDirectByteBufferTests.cs" />
     <Compile Include="Channels\AbstractChannelHandlerContextSpecs.cs" />
     <Compile Include="Channels\Embedded\EmbeddedChannelTest.cs" />
+    <Compile Include="Codecs\ByteToMessageDecoderSpecs.cs" />
     <Compile Include="Concurrency\SingleThreadEventExecutorSpecs.cs" />
     <Compile Include="DummyConnection.cs" />
     <Compile Include="Eventing\SimpleEventBrokerTests.cs" />

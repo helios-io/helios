@@ -1,4 +1,5 @@
-﻿using Helios.Serialization;
+﻿using System;
+using Helios.Serialization;
 
 namespace Helios.Codecs
 {
@@ -8,6 +9,8 @@ namespace Helios.Codecs
     public class DecoderException : HeliosException
     {
         public DecoderException(string message) : base(message) { }
+
+        public DecoderException(Exception inner) : base("DecodingException", inner) { }
     }
 
     /// <summary>

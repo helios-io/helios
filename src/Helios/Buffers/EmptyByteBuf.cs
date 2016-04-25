@@ -104,6 +104,11 @@ namespace Helios.Buffers
             get { return true; }
         }
 
+        public override IByteBuf Copy(int index, int length)
+        {
+            return this;
+        }
+
         public override IByteBuf Unwrap()
         {
             return null;

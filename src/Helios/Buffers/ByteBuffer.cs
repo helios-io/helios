@@ -190,6 +190,13 @@ namespace Helios.Buffers
             get { return true; }
         }
 
+        public override IByteBuf Copy(int index, int length)
+        {
+            var buffer = new byte[Capacity];
+            Array.Copy(Buffer, ReaderIndex, buffer, 0, ReadableBytes);
+            return new ByteBuffer(buffer, Capacity, MaxCapacity).SetIndex(0, ReadableBytes);
+        }
+
         public override IByteBuf Unwrap()
         {
             return null;
@@ -212,16 +219,6 @@ namespace Helios.Buffers
             Buffer = buffer;
             SetIndex(0, ReadableBytes);
             return this;
-        }
-
-        /// <summary>
-        /// Duplicate for <see cref="ByteBuffer"/> instances actually creates a deep clone, rather than a proxy
-        /// </summary>
-        public IByteBuf DeepDuplicate()
-        {
-            var buffer = new byte[Capacity];
-            Array.Copy(Buffer, ReaderIndex, buffer, 0, ReadableBytes);
-            return new ByteBuffer(buffer, Capacity, MaxCapacity).SetIndex(ReaderIndex, WriterIndex);
         }
     }
 }

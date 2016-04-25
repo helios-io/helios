@@ -60,7 +60,7 @@ namespace Helios.Channels
         internal volatile AbstractChannelHandlerContext Next;
         internal volatile AbstractChannelHandlerContext Prev;
 
-        public IChannel Channel { get; }
+        public IChannel Channel => Pipeline.Channel();
         public IByteBufAllocator Allocator => Channel.Allocator;
 
         public IEventExecutor Executor
@@ -206,17 +206,19 @@ namespace Helios.Channels
             }
         }
 
+        public IChannelPipeline Pipeline { get; }
+
         public string Name { get; }
         public abstract IChannelHandler Handler { get; }
         public bool Removed { get; internal set; }
 
-        protected AbstractChannelHandlerContext(IChannelPipeline pipeline, IChannelHandlerInvoker invoker, string name,
+        protected AbstractChannelHandlerContext(DefaultChannelPipeline pipeline, IChannelHandlerInvoker invoker, string name,
             int skipPropagationFlags)
         {
             Contract.Requires(pipeline != null);
             Contract.Requires(name != null);
 
-            Channel = pipeline.Channel();
+            Pipeline = pipeline;
             _invoker = invoker;
             Name = name;
             SkipPropagationFlags = skipPropagationFlags;

@@ -497,7 +497,20 @@ namespace Helios.Buffers
         bool IsDirect { get; }
 
         /// <summary>
-        /// Creates a deep clone of the existing byte array and returns it
+        /// Create a full clone of the existing byte buffer.
+        /// </summary>
+        IByteBuf Copy();
+
+        /// <summary>
+        /// Copy a full clone for the specified segment of the current byte buffer.
+        /// </summary>
+        /// <param name="index">The starting read position</param>
+        /// <param name="length">The length of the buffer.</param>
+        /// <returns>A deep clone of the buffer at the specified length.</returns>
+        IByteBuf Copy(int index, int length);
+
+        /// <summary>
+        /// Creates a view of the current byte buffer. If you want a deep copy call <see cref="Copy"/> instead.
         /// </summary>
         IByteBuf Duplicate();
 

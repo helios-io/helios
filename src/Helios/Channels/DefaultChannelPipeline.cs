@@ -718,7 +718,7 @@ namespace Helios.Channels
         {
             private static readonly int SkipFlags = CalculateSkipPropagationFlags(typeof (TailContext));
 
-            public TailContext(IChannelPipeline pipeline) : base(pipeline, null, "null", SkipFlags)
+            public TailContext(DefaultChannelPipeline pipeline) : base(pipeline, null, "null", SkipFlags)
             {
             }
 

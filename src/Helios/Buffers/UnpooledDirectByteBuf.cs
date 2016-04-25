@@ -299,6 +299,22 @@ namespace Helios.Buffers
             get { return true; }
         }
 
+        public override IByteBuf Copy(int index, int length)
+        {
+            EnsureAccessible();
+            IByteBuf src;
+            try
+            {
+                src = (ByteBuffer)_buffer.Duplicate().Clear().SetReaderIndex(index);
+            }
+            catch (Exception)
+            {
+                throw new IndexOutOfRangeException("Too many bytes read - need:" + (index + length));
+            }
+
+            return AllocateDirect(MaxCapacity).WriteBytes(src, length);
+        }
+
         public override IByteBuf Unwrap()
         {
             return null;

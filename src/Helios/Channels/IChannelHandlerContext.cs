@@ -16,6 +16,8 @@ namespace Helios.Channels
 
         IChannelHandlerInvoker Invoker { get; }
 
+        IChannelPipeline Pipeline { get; }
+
         string Name { get; }
 
         IChannelHandler Handler { get; }
