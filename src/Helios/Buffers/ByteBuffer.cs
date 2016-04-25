@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Helios.Util;
 
 namespace Helios.Buffers
@@ -207,11 +209,13 @@ namespace Helios.Buffers
             return (ByteBuffer)(Duplicate()).Clear().SetIndex(index, length);
         }
 
+        [Obsolete]
         public override IByteBuf CompactIfNecessary()
         {
             return Compact();
         }
 
+        [Obsolete]
         public override IByteBuf Compact()
         {
             var buffer = new byte[Capacity];
@@ -220,5 +224,24 @@ namespace Helios.Buffers
             SetIndex(0, ReadableBytes);
             return this;
         }
+
+        private sealed class BufferEqualityComparer : IEqualityComparer<ByteBuffer>
+        {
+            public bool Equals(ByteBuffer x, ByteBuffer y)
+            {
+                if (ReferenceEquals(x, y)) return true;
+                if (ReferenceEquals(x, null)) return false;
+                if (ReferenceEquals(y, null)) return false;
+                if (x.GetType() != y.GetType()) return false;
+                return x.Buffer.SequenceEqual(y.Buffer);
+            }
+
+            public int GetHashCode(ByteBuffer obj)
+            {
+                return obj.Buffer.GetHashCode();
+            }
+        }
+
+        public static IEqualityComparer<ByteBuffer> BufferComparer { get; } = new BufferEqualityComparer();
     }
 }

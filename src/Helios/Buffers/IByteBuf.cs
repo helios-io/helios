@@ -530,6 +530,7 @@ namespace Helios.Buffers
         /// 
         /// Designed to work with frequently re-used buffers that are held for long periods of time.
         /// </summary>
+        [Obsolete]
         IByteBuf Compact();
 
         /// <summary>
@@ -538,6 +539,7 @@ namespace Helios.Buffers
         /// 
         /// Designed to work with frequently re-used buffers
         /// </summary>
+        [Obsolete]
         IByteBuf CompactIfNecessary();
     }
 }

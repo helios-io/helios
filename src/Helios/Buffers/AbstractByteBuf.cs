@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO.Compression;
+using System.Linq;
 using Helios.Util;
 
 namespace Helios.Buffers
@@ -745,5 +747,30 @@ namespace Helios.Buffers
         {
             //TODO: add reference counting in the future if applicable
         }
+
+        private sealed class ByteBufEqualityComparer : IEqualityComparer<IByteBuf>
+        {
+            public bool Equals(IByteBuf x, IByteBuf y)
+            {
+                if (ReferenceEquals(x, y)) return true;
+                if (ReferenceEquals(x, null)) return false;
+                if (ReferenceEquals(y, null)) return false;
+                if (x.ReadableBytes == 0 && y.ReadableBytes == 0) return true;
+                if (x.ReadableBytes != y.ReadableBytes) return false;
+
+                var readAllBytesX = x.ToArray();
+                var readAllBytesY = y.ToArray();
+                return readAllBytesX.SequenceEqual(readAllBytesY);
+            }
+
+            public int GetHashCode(IByteBuf obj)
+            {
+                return obj.GetHashCode();
+            }
+        }
+
+        private static readonly IEqualityComparer<IByteBuf> ByteBufComparerInstance = new ByteBufEqualityComparer();
+
+        public static IEqualityComparer<IByteBuf> ByteBufComparer => ByteBufComparerInstance;
     }
 }

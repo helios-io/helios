@@ -305,14 +305,16 @@ namespace Helios.Buffers
             IByteBuf src;
             try
             {
-                src = (ByteBuffer)_buffer.Duplicate().Clear().SetReaderIndex(index);
+                var originalLength = _buffer.WriterIndex;
+                
+                src = _buffer.Duplicate().Clear().SetReaderIndex(index).SetWriterIndex(index + length);
             }
             catch (Exception)
             {
                 throw new IndexOutOfRangeException("Too many bytes read - need:" + (index + length));
             }
 
-            return AllocateDirect(MaxCapacity).WriteBytes(src, length);
+            return AllocateDirect(Capacity).WriteBytes(src, length);
         }
 
         public override IByteBuf Unwrap()

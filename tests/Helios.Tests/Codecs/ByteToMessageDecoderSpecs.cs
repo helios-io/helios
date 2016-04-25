@@ -31,7 +31,9 @@ namespace Helios.Tests.Codecs
         {
             var ec = new EmbeddedChannel(new RemovedDecoder());
             var buf = Unpooled.WrappedBuffer(new char[] {'a', 'b', 'c'}.Select(Convert.ToByte).ToArray());
-            
+            ec.WriteInbound(buf.Copy());
+            IByteBuf b = ec.ReadInbound<IByteBuf>();
+            Assert.Equal(b, buf.SkipBytes(1), AbstractByteBuf.ByteBufComparer);
         }
     }
 }
