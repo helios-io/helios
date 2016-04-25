@@ -106,6 +106,7 @@
     <Compile Include="Channels\SkipAttribute.cs" />
     <Compile Include="Channels\Sockets\ISocketConnectionConfig.cs" />
     <Compile Include="Codecs\ByteToMessageDecoder.cs" />
+    <Compile Include="Codecs\MessageToMessageEncoder.cs" />
     <Compile Include="Concurrency\AbstractEventExecutor.cs" />
     <Compile Include="Concurrency\EventExecutorTaskScheduler.cs" />
     <Compile Include="Concurrency\IEventExecutor.cs" />

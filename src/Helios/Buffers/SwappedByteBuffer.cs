@@ -31,7 +31,7 @@ namespace Helios.Buffers
             return _buf.AdjustCapacity(newCapacity);
         }
 
-        public ByteOrder Endianness { get; }
+        public ByteOrder Endianness => _order;
 
         public int MaxCapacity
         {

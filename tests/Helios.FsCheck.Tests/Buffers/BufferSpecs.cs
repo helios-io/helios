@@ -122,7 +122,7 @@ namespace Helios.FsCheck.Tests.Buffers
                 {
                     actualValues.Add(read.Execute(buffer));
                     var reversedRead = read.Execute(swappedAgain);
-                    reversedValues.Add(reversedRead); //is byte[] ? ((byte[])reversedRead).Reverse().ToArray() : reversedRead
+                    reversedValues.Add(reversedRead); 
                 }
 
                 return expectedValues.SequenceEqual(actualValues, BufferOperations.Comparer)

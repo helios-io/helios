@@ -10,7 +10,7 @@ namespace Helios.Codecs
     {
         public DecoderException(string message) : base(message) { }
 
-        public DecoderException(Exception inner) : base("DecodingException", inner) { }
+        public DecoderException(Exception inner) : base("Exception occurred while decoding.", inner) { }
     }
 
     /// <summary>
@@ -18,6 +18,8 @@ namespace Helios.Codecs
     /// </summary>
     public class EncoderException : HeliosException
     {
+        public EncoderException(Exception inner) : base("Exception occurred while encoding.", inner) { }
+
         public EncoderException(string message) : base(message) { }
     }
 
