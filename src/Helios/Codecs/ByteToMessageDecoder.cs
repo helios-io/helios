@@ -194,7 +194,7 @@ namespace Helios.Codecs
 
         public override void ChannelInactive(IChannelHandlerContext context)
         {
-            base.ChannelInactive(context);
+            ChannelInputClosed(context, true);
         }
 
         private void ChannelInputClosed(IChannelHandlerContext context, bool callChannelInactive)
@@ -281,6 +281,8 @@ namespace Helios.Codecs
                         // If it was removed, it is no longer safe to keep operating on the buffer
                         if (context.Removed)
                             break;
+
+                        outSize = 0;
                     }
 
                     var oldInputLength = input.ReadableBytes;

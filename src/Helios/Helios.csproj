@@ -63,6 +63,7 @@
     </Compile>
     <Compile Include="Buffers\AbstractByteBufAllocator.cs" />
     <Compile Include="Buffers\ByteBufferUtil.cs" />
+    <Compile Include="Buffers\ByteOrder.cs" />
     <Compile Include="Buffers\DuplicateByteBuf.cs" />
     <Compile Include="Buffers\EmptyByteBuf.cs" />
     <Compile Include="Buffers\Unpooled.cs" />
