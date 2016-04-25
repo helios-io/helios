@@ -238,7 +238,7 @@ namespace Helios.Channels
             }
         }
 
-        private void IncrementPendingOutboundBytes(long size)
+        public void IncrementPendingOutboundBytes(long size)
         {
             if (size == 0)
                 return;
@@ -250,7 +250,7 @@ namespace Helios.Channels
             }
         }
 
-        private void DecrementPendingOutboundBytes(long size)
+        public void DecrementPendingOutboundBytes(long size)
         {
             DecrementPendingOutboundBytes(size, true);
         }

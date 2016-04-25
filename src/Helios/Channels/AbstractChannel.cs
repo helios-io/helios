@@ -18,7 +18,7 @@ namespace Helios.Channels
         private static readonly ILogger Logger = LoggingFactory.GetLogger<AbstractChannel>();
 
         private IMessageSizeEstimatorHandle _estimatorHandle;
-        protected IMessageSizeEstimatorHandle EstimatorHandle
+        internal IMessageSizeEstimatorHandle EstimatorHandle
         {
             get
             {

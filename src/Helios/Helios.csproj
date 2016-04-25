@@ -84,6 +84,7 @@
     <Compile Include="Channels\ConnectException.cs" />
     <Compile Include="Channels\DefaultChannelConfiguration.cs" />
     <Compile Include="Channels\DefaultChannelHandlerContext.cs" />
+    <Compile Include="Channels\DefaultChannelHandlerInvoker.cs" />
     <Compile Include="Channels\DefaultChannelPipeline.cs" />
     <Compile Include="Channels\DefaultConnectionConfig.cs" />
     <Compile Include="Channels\DefaultMessageSizeEstimator.cs" />
@@ -102,8 +103,10 @@
     <Compile Include="Channels\IMessageSizeEstimator.cs" />
     <Compile Include="Channels\IRecvByteBufAllocator.cs" />
     <Compile Include="Channels\IRecvByteBufferAllocatorHandle.cs" />
+    <Compile Include="Channels\MultithreadEventLoopGroup.cs" />
     <Compile Include="Channels\NotYetConnectedException.cs" />
     <Compile Include="Channels\PausableChannelEventExecutor.cs" />
+    <Compile Include="Channels\SingleThreadEventLoop.cs" />
     <Compile Include="Channels\SkipAttribute.cs" />
     <Compile Include="Channels\Sockets\ISocketConnectionConfig.cs" />
     <Compile Include="Codecs\ByteToMessageDecoder.cs" />
