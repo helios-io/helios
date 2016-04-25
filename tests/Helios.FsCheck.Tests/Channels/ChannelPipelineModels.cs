@@ -76,7 +76,7 @@ namespace Helios.FsCheck.Tests.Channels
                 }
             }
             return q;
-        } 
+        }
 
         public override string ToString()
         {
@@ -109,7 +109,7 @@ namespace Helios.FsCheck.Tests.Channels
                 next = next.Next;
                 current = clone;
             }
-            return new PipelineMutationModel() { Head = newHead, Length = Length, Tail = current, EventQueue = new Queue<Tuple<string, SupportedEvent>>()};
+            return new PipelineMutationModel() { Head = newHead, Length = Length, Tail = current, EventQueue = new Queue<Tuple<string, SupportedEvent>>() };
         }
 
         public static PipelineMutationModel Fresh()
@@ -118,7 +118,7 @@ namespace Helios.FsCheck.Tests.Channels
             var tail = new PipelineModelNode() { Handler = new NamedChannelHandler("TAIL"), Name = "TAIL" };
             head.Next = tail;
             tail.Previous = head;
-            return new PipelineMutationModel() { Length = 2, Head = head, Tail = tail, EventQueue = new Queue<Tuple<string, SupportedEvent>>()};
+            return new PipelineMutationModel() { Length = 2, Head = head, Tail = tail, EventQueue = new Queue<Tuple<string, SupportedEvent>>() };
         }
     }
 
@@ -169,7 +169,7 @@ namespace Helios.FsCheck.Tests.Channels
 
         public SupportedEvent Event { get; internal set; }
 
-        private SupportedEvent _lastFiredEvent = SupportedEvent.None;
+        public SupportedEvent LastFiredEvent { get; private set; } = SupportedEvent.None;
 
         /// <summary>
         /// NOTE: NOT AN IDEMPOTENT OPERATION. Clears the last fired event.
@@ -177,10 +177,10 @@ namespace Helios.FsCheck.Tests.Channels
         /// <param name="inputQueue">The queue we're going to input operations into</param>
         public void RecordLastFiredEvent(Queue<Tuple<string, SupportedEvent>> inputQueue)
         {
-            if (_lastFiredEvent != SupportedEvent.None)
+            if (LastFiredEvent != SupportedEvent.None)
             {
-                inputQueue.Enqueue(new Tuple<string,SupportedEvent>(Name, _lastFiredEvent));
-                _lastFiredEvent = SupportedEvent.None;
+                inputQueue.Enqueue(new Tuple<string, SupportedEvent>(Name, LastFiredEvent));
+                LastFiredEvent = SupportedEvent.None;
             }
         }
 
@@ -201,7 +201,7 @@ namespace Helios.FsCheck.Tests.Channels
         {
             if (SupportsEvent(e))
             {
-                _lastFiredEvent = e;
+                LastFiredEvent = e;
             }
         }
 
@@ -442,7 +442,7 @@ namespace Helios.FsCheck.Tests.Channels
         public static Arbitrary<SupportedEvent[]> ArbEvents()
         {
             return Arb.From(GenEvents());
-        } 
+        }
 
         public static FSharpFunc<T2, TResult> Create<T2, TResult>(Func<T2, TResult> func)
         {
@@ -662,7 +662,7 @@ namespace Helios.FsCheck.Tests.Channels
 
         public override Gen<Operation<IChannelPipeline, PipelineMutationModel>> Next(PipelineMutationModel obj0)
         {
-            if(!_supportsEventFiring)
+            if (!_supportsEventFiring)
                 return Gen.OneOf(MutationHandlers);
             return Gen.OneOf(AllHandlers);
         }
@@ -819,7 +819,7 @@ namespace Helios.FsCheck.Tests.Channels
 
             public override Property Check(IChannelPipeline obj0, PipelineMutationModel obj1)
             {
-                var pipeline = obj0.RemoveFirst();
+                var removed = obj0.RemoveFirst() as NamedChannelHandler;
                 var embeddedChannel = obj0.Channel() as EmbeddedChannel;
                 Contract.Assert(embeddedChannel != null);
                 embeddedChannel.RunPendingTasks(); // force the pipeline to run all scheduled tasks
@@ -831,7 +831,18 @@ namespace Helios.FsCheck.Tests.Channels
                     .And(() => pLength == obj1.Length)
                     .Label($"Expected length of pipeline to be {obj1.Length}, was {pLength}");
 
-                return CheckEventInQueue(mFirst, SupportedEvent.HandlerRemoved, prop, LastEventHistory(obj0));
+                /*
+                 * This one is weird, because we don't have a reference to the removed handler on the model anymore.
+                 * So we compare the result to what was expected from the handler instead. 
+                 */
+                if (removed != null && removed.SupportsEvent(SupportedEvent.HandlerRemoved))
+                {
+                    prop = prop.And(() => removed.LastFiredEvent == SupportedEvent.HandlerRemoved)
+                    .Label(
+                        $"Expected last fired property of handler to be {SupportedEvent.HandlerRemoved}, but was {removed.LastFiredEvent}");
+                }
+
+                return prop;
             }
 
             public override bool Pre(PipelineMutationModel _arg1)
@@ -854,7 +865,7 @@ namespace Helios.FsCheck.Tests.Channels
 
             public override Property Check(IChannelPipeline obj0, PipelineMutationModel obj1)
             {
-                var pipeline = obj0.RemoveLast();
+                var removed = obj0.RemoveLast() as NamedChannelHandler;
                 var embeddedChannel = obj0.Channel() as EmbeddedChannel;
                 Contract.Assert(embeddedChannel != null);
                 embeddedChannel.RunPendingTasks(); // force the pipeline to run all scheduled tasks
@@ -866,7 +877,18 @@ namespace Helios.FsCheck.Tests.Channels
                     .And(() => pLength == obj1.Length)
                     .Label($"Expected length of pipeline to be {obj1.Length}, was {pLength}");
 
-                return CheckEventInQueue(mFirst, SupportedEvent.HandlerRemoved, prop, LastEventHistory(obj0));
+                /*
+                 * This one is weird, because we don't have a reference to the removed handler on the model anymore.
+                 * So we compare the result to what was expected from the handler instead. 
+                 */
+                if (removed != null && removed.SupportsEvent(SupportedEvent.HandlerRemoved))
+                {
+                    prop = prop.And(() => removed.LastFiredEvent == SupportedEvent.HandlerRemoved)
+                    .Label(
+                        $"Expected last fired property of handler to be {SupportedEvent.HandlerRemoved}, but was {removed.LastFiredEvent}");
+                }
+
+                return prop;
             }
 
             public override bool Pre(PipelineMutationModel _arg1)
@@ -961,7 +983,7 @@ namespace Helios.FsCheck.Tests.Channels
         {
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
-                return Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeChannelActive());
+                return Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeChannelActive());
             }
 
             public InvokeChannelActive() : base(SupportedEvent.ChannelActive)
@@ -1013,7 +1035,7 @@ namespace Helios.FsCheck.Tests.Channels
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return
-                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeChannelReadComplete());
+                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeChannelReadComplete());
             }
 
             public InvokeChannelReadComplete() : base(SupportedEvent.ChannelReadComplete)

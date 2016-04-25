@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FsCheck;
 using FsCheck.Experimental;
@@ -60,6 +62,30 @@ namespace Helios.FsCheck.Tests.Channels
             var head = ChannelPipelineModel.LastEventHistory(pipeline).Dequeue();
             Assert.Equal(handler.Name, head.Item1);
             Assert.Equal(SupportedEvent.HandlerAdded, head.Item2);
+        }
+
+        [Fact]
+        public void ChannelPipeline_should_invoke_HandlerRemoved_to_removed_handler()
+        {
+            var pipeline = new DefaultChannelPipeline(TestChannel.Instance);
+            var handler = new AllEventsChannelHandler("test", new SupportedEvent[] { SupportedEvent.HandlerAdded, SupportedEvent.HandlerRemoved });
+
+            // add handler to pipeline first
+            pipeline.AddFirst(handler.Name, handler);
+            var head = ChannelPipelineModel.LastEventHistory(pipeline).Dequeue();
+
+            // verify that handler added events fired correctly
+            Assert.Equal(handler.Name, head.Item1);
+            Assert.Equal(SupportedEvent.HandlerAdded, head.Item2);
+
+            // remove handler from pipeline
+            var removed = pipeline.RemoveFirst();
+            Assert.Equal(handler, removed);
+
+            // verify that handler removed event fired correctly
+            var queue = new Queue<Tuple<string, SupportedEvent>>();
+            ((NamedChannelHandler) removed).RecordLastFiredEvent(queue);
+            Assert.Equal(SupportedEvent.HandlerRemoved, queue.Dequeue().Item2);
         }
     }
 }
