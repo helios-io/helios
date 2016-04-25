@@ -103,6 +103,7 @@
     <Compile Include="Channels\IMessageSizeEstimator.cs" />
     <Compile Include="Channels\IRecvByteBufAllocator.cs" />
     <Compile Include="Channels\IRecvByteBufferAllocatorHandle.cs" />
+    <Compile Include="Channels\IServerChannel.cs" />
     <Compile Include="Channels\MultithreadEventLoopGroup.cs" />
     <Compile Include="Channels\NotYetConnectedException.cs" />
     <Compile Include="Channels\PausableChannelEventExecutor.cs" />

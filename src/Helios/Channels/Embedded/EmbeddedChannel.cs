@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Helios.Concurrency;
 using Helios.Logging;
+using Helios.Util;
 using Helios.Util.Concurrency;
 using Debug = System.Diagnostics.Debug;
 
@@ -244,34 +245,40 @@ namespace Helios.Channels.Embedded
                 return IsNotEmpty(this.outboundMessages);
             }
 
-            //todo: RecyclableArrayList
-            List<Task> futures = new List<Task>(msgs.Length);
+            var futures = RecyclableArrayList.Take();
 
-            foreach (object m in msgs)
+            try
             {
-                if (m == null)
+                foreach (object m in msgs)
                 {
-                    break;
+                    if (m == null)
+                    {
+                        break;
+                    }
+                    futures.Add(this.WriteAsync(m));
                 }
-                futures.Add(this.WriteAsync(m));
+
+                this.Flush();
+
+                int size = futures.Count;
+                for (int i = 0; i < size; i++)
+                {
+                    Task future = (Task) futures[i];
+                    Debug.Assert(future.IsCompleted);
+                    if (future.Exception != null)
+                    {
+                        this.RecordException(future.Exception);
+                    }
+                }
+
+                this.RunPendingTasks();
+                this.CheckException();
+                return IsNotEmpty(this.outboundMessages);
             }
-
-            this.Flush();
-
-            int size = futures.Count;
-            for (int i = 0; i < size; i++)
+            finally
             {
-                Task future = futures[i];
-                Debug.Assert(future.IsCompleted);
-                if (future.Exception != null)
-                {
-                    this.RecordException(future.Exception);
-                }
+                futures.Return();
             }
-
-            this.RunPendingTasks();
-            this.CheckException();
-            return IsNotEmpty(this.outboundMessages);
         }
 
         void RecordException(Exception cause)

@@ -39,6 +39,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Channels\EmbeddedChannelPerfSpecs.cs" />
     <Compile Include="Collections\AllCollectionsSpec.cs" />
     <Compile Include="Concurrency\EventExecutorSpecs.cs" />
     <Compile Include="Concurrency\FiberSpecs.cs" />
