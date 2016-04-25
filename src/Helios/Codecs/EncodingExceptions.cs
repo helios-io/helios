@@ -26,7 +26,7 @@ namespace Helios.Codecs
     /// <summary>
     /// Exception class that is thrown by a <see cref="IMessageDecoder"/> when it encounters a frame that is longer than can be processed
     /// </summary>
-    public class TooLongFrameException : HeliosException
+    public class TooLongFrameException : DecoderException
     {
         public TooLongFrameException(string message) : base(message) { }
     }
