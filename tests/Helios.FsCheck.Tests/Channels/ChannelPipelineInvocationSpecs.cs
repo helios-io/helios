@@ -56,9 +56,8 @@ namespace Helios.FsCheck.Tests.Channels
         {
             var pipeline = new DefaultChannelPipeline(TestChannel.Instance);
             var handler = new AllEventsChannelHandler("test", new SupportedEvent[] { SupportedEvent.HandlerAdded });
-            ChannelPipelineModel.EventQueue.Clear();
             pipeline.AddFirst(handler.Name, handler);
-            var head = ChannelPipelineModel.EventQueue.Dequeue();
+            var head = ChannelPipelineModel.LastEventHistory(pipeline).Dequeue();
             Assert.Equal(handler.Name, head.Item1);
             Assert.Equal(SupportedEvent.HandlerAdded, head.Item2);
         }
