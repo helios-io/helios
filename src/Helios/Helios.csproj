@@ -67,6 +67,7 @@
     <Compile Include="Buffers\ByteOrder.cs" />
     <Compile Include="Buffers\DuplicateByteBuf.cs" />
     <Compile Include="Buffers\EmptyByteBuf.cs" />
+    <Compile Include="Buffers\SwappedByteBuffer.cs" />
     <Compile Include="Buffers\Unpooled.cs" />
     <Compile Include="Buffers\UnpooledByteBufAllocator.cs" />
     <Compile Include="Channels\AbstractChannel.cs" />

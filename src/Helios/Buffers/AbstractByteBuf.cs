@@ -23,6 +23,13 @@ namespace Helios.Buffers
         public abstract IByteBuf AdjustCapacity(int newCapacity);
         public abstract ByteOrder Endianness { get; }
 
+        public IByteBuf WithOrder(ByteOrder order)
+        {
+            if (order == Endianness)
+                return this;
+            return new SwappedByteBuffer(this);
+        }
+
         public int MaxCapacity { get; private set; }
         public abstract IByteBufAllocator Allocator { get; }
         public virtual int ReaderIndex { get; protected set; }
@@ -658,7 +665,6 @@ namespace Helios.Buffers
         }
 
         public abstract IByteBuf Unwrap();
-        public abstract ByteBuffer InternalNioBuffer(int index, int length);
         public abstract IByteBuf Compact();
         public abstract IByteBuf CompactIfNecessary();
 

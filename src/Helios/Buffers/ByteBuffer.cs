@@ -206,7 +206,7 @@ namespace Helios.Buffers
             return null;
         }
 
-        public override ByteBuffer InternalNioBuffer(int index, int length)
+        public ByteBuffer InternalNioBuffer(int index, int length)
         {
             return (ByteBuffer)(Duplicate()).Clear().SetIndex(index, length);
         }

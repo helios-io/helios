@@ -36,6 +36,8 @@ namespace Helios.Buffers
             return this.buf.AdjustCapacity(newCapacity);
         }
 
+        public ByteOrder Endianness { get; }
+
         public int MaxCapacity
         {
             get { return this.buf.MaxCapacity; }
@@ -527,10 +529,17 @@ namespace Helios.Buffers
             get { return this.buf.HasArray; }
         }
 
+        public byte[] InternalArray()
+        {
+            return buf.InternalArray();
+        }
+
         public byte[] ToArray()
         {
             return this.buf.ToArray().Reverse().ToArray();
         }
+
+        public bool IsDirect { get { return buf.IsDirect; } }
 
         public IByteBuf Duplicate()
         {
@@ -540,6 +549,16 @@ namespace Helios.Buffers
         public IByteBuf Unwrap()
         {
             return this.buf.Unwrap();
+        }
+
+        public IByteBuf Compact()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IByteBuf CompactIfNecessary()
+        {
+            throw new NotImplementedException();
         }
 
         public ByteOrder Order
