@@ -19,6 +19,22 @@ namespace Helios.FsCheck.Tests.Buffers
             return list;
         }
 
+        public static string PrintByteArray(byte[] bytes)
+        {
+            return "byte[" + string.Join("|", bytes) + "]";
+        }
+
+        public static object PrintByteBufferItem(object item)
+        {
+            if (item is byte[])
+            {
+                var bytes = item as byte[];
+                return PrintByteArray(bytes);
+            }
+
+            return item;
+        }
+
         public BufferSpecs()
         {
             Arb.Register(typeof (BufferGenerators));
@@ -76,6 +92,45 @@ namespace Helios.FsCheck.Tests.Buffers
             });
 
              writeReadConsitency.And(writeIndexConsistency).And(interleavedBehavior).QuickCheckThrowOnFailure();
+        }
+
+        [Theory]
+        [InlineData(typeof(UnpooledByteBufAllocator))]
+        public void Buffer_should_be_able_to_change_endianness_without_data_corruption(Type allocatorType)
+        {
+            var allocator = (IByteBufAllocator)Activator.CreateInstance(allocatorType);
+            var swappedWritesCanBeSwappedBack = Prop.ForAll<BufferOperations.IWrite[], BufferSize>((writes, size) =>
+            {
+                var buffer = allocator.Buffer(size.InitialSize, size.MaxSize).WithOrder(ByteOrder.LittleEndian);
+                var expectedValues = writes.Select(x => x.UntypedData).ToList();
+                var reads = writes.Select(x => x.ToRead());
+                foreach (var write in writes)
+                    write.Execute(buffer);
+
+                var swappedBuffer = buffer.Copy().WithOrder(ByteOrder.BigEndian); // have to guarantee different endianness than before, and on a fresh copy
+                Assert.NotSame(buffer, swappedBuffer);
+                foreach (var write in writes)
+                {
+                    write.Execute(swappedBuffer);
+                }
+
+                var actualValues = new List<object>();
+                var reversedValues = new List<object>();
+                var swappedAgain = swappedBuffer.WithOrder(ByteOrder.LittleEndian);
+                Assert.NotSame(buffer, swappedAgain); // should still be different copies
+                foreach (var read in reads)
+                {
+                    actualValues.Add(read.Execute(buffer));
+                    var reversedRead = read.Execute(swappedAgain);
+                    reversedValues.Add(reversedRead); //is byte[] ? ((byte[])reversedRead).Reverse().ToArray() : reversedRead
+                }
+
+                return expectedValues.SequenceEqual(actualValues, BufferOperations.Comparer)
+                .Label($"Expected: {string.Join(",", expectedValues)}; Got: {string.Join(",", actualValues)}")
+                .And(() => actualValues.SequenceEqual(reversedValues, BufferOperations.Comparer)).Label($"Expected swapped values to match original [{string.Join(",", actualValues.Select(PrintByteBufferItem))}], but were [{string.Join(",", actualValues.Select(PrintByteBufferItem))}]");
+            }).Label("Writes then reads against the reverse of the reverse should produce original input");
+
+            swappedWritesCanBeSwappedBack.QuickCheckThrowOnFailure();
         }
     }
 }
