@@ -132,6 +132,7 @@
     <Compile Include="Logging\LoggingFactory.cs" />
     <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Logging\NoOpLogger.cs" />
+    <Compile Include="Logging\NoOpLoggerFactory.cs" />
     <Compile Include="Logging\StandardOutLoggerFactory.cs" />
     <Compile Include="Util\Concurrency\TaskEx.cs" />
     <Compile Include="Util\MonotonicClock.cs" />
