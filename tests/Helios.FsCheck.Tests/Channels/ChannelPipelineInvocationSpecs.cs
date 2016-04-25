@@ -26,7 +26,7 @@ namespace Helios.FsCheck.Tests.Channels
 
         public ChannelPipelineModel Model { get; }
 
-        [Property(QuietOnSuccess = true, MaxTest = 10000, StartSize = 100)]
+        [Property(QuietOnSuccess = true)]
         public Property ChannelPipeline_should_obey_invocation_model()
         {
             return Model.ToProperty();
