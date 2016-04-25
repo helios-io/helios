@@ -12,6 +12,7 @@ namespace Helios.Buffers
     {
         private int _markedReaderIndex;
         private int _markedWriterIndex;
+        private SwappedByteBuffer _swapped;
 
         protected AbstractByteBuf(int maxCapacity)
         {
@@ -27,7 +28,12 @@ namespace Helios.Buffers
         {
             if (order == Endianness)
                 return this;
-            return new SwappedByteBuffer(this);
+            var swapped = _swapped;
+            if (_swapped == null)
+            {
+                _swapped = new SwappedByteBuffer(this);
+            }
+            return _swapped;
         }
 
         public int MaxCapacity { get; private set; }
