@@ -23,7 +23,7 @@ namespace Helios.Buffers
         /// <summary>
         /// The byte order of the buffer. <see cref="ByteOrder.LittleEndian"/> by default.
         /// </summary>
-        ByteOrder Endianness { get; }
+        ByteOrder Order { get; }
 
         /// <summary>
         /// Returns a 
@@ -493,8 +493,8 @@ namespace Helios.Buffers
         /// <summary>
         /// Grabs the underlying byte array for this buffer
         /// </summary>
-        /// <returns></returns>
-        byte[] InternalArray();
+        /// <value></value>
+        byte[] UnderlyingArray { get; }
 
         /// <summary>
         /// Converts the readable contents of the buffer into an array.
@@ -520,6 +520,14 @@ namespace Helios.Buffers
         /// <param name="length">The length of the buffer.</param>
         /// <returns>A deep clone of the buffer at the specified length.</returns>
         IByteBuf Copy(int index, int length);
+
+        IByteBuf Slice();
+
+        IByteBuf Slice(int index, int length);
+
+        int ArrayOffset { get; }
+
+        IByteBuf ReadSlice(int length);
 
         /// <summary>
         /// Creates a view of the current byte buffer. If you want a deep copy call <see cref="Copy"/> instead.

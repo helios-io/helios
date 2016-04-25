@@ -8,6 +8,8 @@ namespace Helios.Util
     /// </summary>
     public static class ByteArrayExtensions
     {
+        public static readonly byte[] Empty = new byte[0];
+
         public static byte[] Slice(this byte[] array, int length)
         {
             if(array == null) throw new ArgumentNullException("array");

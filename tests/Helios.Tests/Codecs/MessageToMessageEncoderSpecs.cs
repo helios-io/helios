@@ -11,7 +11,7 @@ namespace Helios.Tests.Codecs
     {
         private class ExceptionEncoder : MessageToMessageEncoder<object>
         {
-            protected override void Encode(IChannelHandlerContext context, object cast, IList<object> output)
+            protected override void Encode(IChannelHandlerContext context, object cast, List<object> output)
             {
                 throw new ApplicationException();
             }

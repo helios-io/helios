@@ -259,13 +259,13 @@ namespace Helios.Codecs
             }
         }
 
-        private static void FireChannelRead(IChannelHandlerContext context, IList<object> msgs, int numElements)
+        private static void FireChannelRead(IChannelHandlerContext context, List<object> msgs, int numElements)
         {
             for (var i = 0; i < numElements; i++)
                 context.FireChannelRead(msgs[i]);
         }
 
-        protected void CallDecode(IChannelHandlerContext context, IByteBuf input, IList<object> output)
+        protected void CallDecode(IChannelHandlerContext context, IByteBuf input, List<object> output)
         {
             try
             {
@@ -324,7 +324,7 @@ namespace Helios.Codecs
             }
         }
 
-        protected abstract void Decode(IChannelHandlerContext context, IByteBuf input, IList<object> output);
+        protected abstract void Decode(IChannelHandlerContext context, IByteBuf input, List<object> output);
 
         /// <summary>
         /// Called one last time when the <see cref="IChannelHandlerContext"/> goes inactive, which means the
@@ -332,7 +332,7 @@ namespace Helios.Codecs
         /// 
         /// By default this will jsut call <see cref="Decode"/> but sub-classes may override this for special cleanup operations.
         /// </summary>
-        protected virtual void DecodeLast(IChannelHandlerContext context, IByteBuf input, IList<object> output)
+        protected virtual void DecodeLast(IChannelHandlerContext context, IByteBuf input, List<object> output)
         {
             if (input.IsReadable())
             {

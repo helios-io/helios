@@ -67,6 +67,7 @@
     <Compile Include="Buffers\ByteOrder.cs" />
     <Compile Include="Buffers\DuplicateByteBuf.cs" />
     <Compile Include="Buffers\EmptyByteBuf.cs" />
+    <Compile Include="Buffers\SlicedByteBuffer.cs" />
     <Compile Include="Buffers\SwappedByteBuffer.cs" />
     <Compile Include="Buffers\Unpooled.cs" />
     <Compile Include="Buffers\UnpooledByteBufAllocator.cs" />
@@ -106,6 +107,8 @@
     <Compile Include="Channels\SkipAttribute.cs" />
     <Compile Include="Channels\Sockets\ISocketConnectionConfig.cs" />
     <Compile Include="Codecs\ByteToMessageDecoder.cs" />
+    <Compile Include="Codecs\LengthFieldFrameBasedDecoder.cs" />
+    <Compile Include="Codecs\LengthFieldPrepender.cs" />
     <Compile Include="Codecs\MessageToMessageEncoder.cs" />
     <Compile Include="Concurrency\AbstractEventExecutor.cs" />
     <Compile Include="Concurrency\EventExecutorTaskScheduler.cs" />

@@ -24,7 +24,7 @@ namespace Helios.Buffers
             throw new NotSupportedException();
         }
 
-        public override ByteOrder Endianness => ByteOrder.LittleEndian;
+        public override ByteOrder Order => ByteOrder.LittleEndian;
 
         public override IByteBufAllocator Allocator
         {
@@ -96,9 +96,9 @@ namespace Helios.Buffers
             get { return false; }
         }
 
-        public override byte[] InternalArray()
+        public override byte[] UnderlyingArray
         {
-            throw new NotSupportedException();
+            get { throw new NotSupportedException(); }
         }
 
         public override bool IsDirect
@@ -110,6 +110,8 @@ namespace Helios.Buffers
         {
             return this;
         }
+
+        public override int ArrayOffset => 0;
 
         public override IByteBuf Unwrap()
         {

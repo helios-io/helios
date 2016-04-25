@@ -99,7 +99,7 @@ namespace Helios.Buffers
             return this;
         }
 
-        public override ByteOrder Endianness => ByteOrder.LittleEndian;
+        public override ByteOrder Order => ByteOrder.LittleEndian;
 
         public override IByteBufAllocator Allocator
         {
@@ -178,7 +178,7 @@ namespace Helios.Buffers
             CheckDstIndex(index, length, dstIndex, destination.Capacity);
             if (destination.HasArray)
             {
-                GetBytes(index, destination.InternalArray(), dstIndex, length);
+                GetBytes(index, destination.UnderlyingArray, dstIndex, length);
             }
             else
             {
@@ -268,7 +268,7 @@ namespace Helios.Buffers
             CheckSrcIndex(index, length, srcIndex, src.Capacity);
             if (_buffer.HasArray)
             {
-                src.GetBytes(srcIndex, _buffer.InternalArray(), index, length);
+                src.GetBytes(srcIndex, _buffer.UnderlyingArray, index, length);
             }
             else
             {
@@ -291,9 +291,9 @@ namespace Helios.Buffers
             get { return false; }
         }
 
-        public override byte[] InternalArray()
+        public override byte[] UnderlyingArray
         {
-            throw new NotSupportedException("direct buffer");
+            get { throw new NotSupportedException("direct buffer"); }
         }
 
         public override bool IsDirect
@@ -318,6 +318,8 @@ namespace Helios.Buffers
 
             return AllocateDirect(Capacity).WriteBytes(src, length);
         }
+
+        public override int ArrayOffset => 0;
 
         public override IByteBuf Unwrap()
         {

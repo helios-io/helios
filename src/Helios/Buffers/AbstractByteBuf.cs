@@ -22,11 +22,11 @@ namespace Helios.Buffers
         public abstract int Capacity { get; }
 
         public abstract IByteBuf AdjustCapacity(int newCapacity);
-        public abstract ByteOrder Endianness { get; }
+        public abstract ByteOrder Order { get; }
 
         public IByteBuf WithOrder(ByteOrder order)
         {
-            if (order == Endianness)
+            if (order == Order)
                 return this;
             var swapped = _swapped;
             if (_swapped == null)
@@ -644,12 +644,19 @@ namespace Helios.Buffers
         }
 
         public abstract bool HasArray { get; }
-        public abstract byte[] InternalArray();
+        public abstract byte[] UnderlyingArray { get; }
+
         public virtual byte[] ToArray()
         {
+            var readableBytes = ReadableBytes;
+            if (readableBytes == 0)
+            {
+                return ByteArrayExtensions.Empty;
+            }
+
             if (HasArray)
             {
-                return InternalArray().Slice(ReaderIndex, ReadableBytes);
+                return UnderlyingArray.Slice(ArrayOffset + ReaderIndex, ReadableBytes);
             }
 
             var bytes = new byte[ReadableBytes];
@@ -664,6 +671,22 @@ namespace Helios.Buffers
             return Copy(ReaderIndex, ReadableBytes);
         }
         public abstract IByteBuf Copy(int index, int length);
+        public IByteBuf Slice()
+        {
+            return Slice(ReaderIndex, ReadableBytes);
+        }
+
+        public virtual IByteBuf Slice(int index, int length)
+        {
+            return new SlicedByteBuffer(this, index, length);
+        }
+
+        public abstract int ArrayOffset { get; }
+
+        public IByteBuf ReadSlice(int length)
+        {
+            throw new NotImplementedException();
+        }
 
         public virtual IByteBuf Duplicate()
         {

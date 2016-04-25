@@ -11,7 +11,7 @@ namespace Helios.Buffers
         public SwappedByteBuffer(IByteBuf buf)
         {
             _buf = buf;
-            if (buf.Endianness == ByteOrder.BigEndian)
+            if (buf.Order == ByteOrder.BigEndian)
             {
                 _order = ByteOrder.LittleEndian;
             }
@@ -30,8 +30,6 @@ namespace Helios.Buffers
         {
             return _buf.AdjustCapacity(newCapacity);
         }
-
-        public ByteOrder Endianness => _order;
 
         public int MaxCapacity
         {
@@ -526,9 +524,9 @@ namespace Helios.Buffers
             get { return _buf.HasArray; }
         }
 
-        public byte[] InternalArray()
+        public byte[] UnderlyingArray
         {
-            return _buf.InternalArray();
+            get { return _buf.UnderlyingArray; }
         }
 
         public byte[] ToArray()
@@ -537,6 +535,11 @@ namespace Helios.Buffers
         }
 
         public bool IsDirect { get { return _buf.IsDirect; } }
+
+        public IByteBuf ReadSlice(int length)
+        {
+            throw new NotImplementedException();
+        }
 
         public IByteBuf Duplicate()
         {
@@ -581,6 +584,19 @@ namespace Helios.Buffers
         {
             return _buf.Copy(index, length).WithOrder(Order);
         }
+
+        public IByteBuf Slice()
+        {
+            return _buf.Slice().WithOrder(Order);
+        }
+
+        public IByteBuf Slice(int index, int length)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int ArrayOffset { get; }
+
         public override string ToString()
         {
             return "Swapped(" + _buf + ")";

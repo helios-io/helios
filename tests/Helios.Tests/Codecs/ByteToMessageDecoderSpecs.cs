@@ -18,7 +18,7 @@ namespace Helios.Tests.Codecs
         {
             private bool _removed;
 
-            protected override void Decode(IChannelHandlerContext context, IByteBuf input, IList<object> output)
+            protected override void Decode(IChannelHandlerContext context, IByteBuf input, List<object> output)
             {
                 Assert.False(_removed);
                 input.ReadByte();
@@ -41,7 +41,7 @@ namespace Helios.Tests.Codecs
         {
             private bool _removed;
 
-            protected override void Decode(IChannelHandlerContext context, IByteBuf input, IList<object> output)
+            protected override void Decode(IChannelHandlerContext context, IByteBuf input, List<object> output)
             {
                 Assert.False(_removed);
                 input.ReadByte();
@@ -69,7 +69,7 @@ namespace Helios.Tests.Codecs
         {
             public readonly object UpgradeMessage = new object();
 
-            protected override void Decode(IChannelHandlerContext context, IByteBuf input, IList<object> output)
+            protected override void Decode(IChannelHandlerContext context, IByteBuf input, List<object> output)
             {
                 Assert.Equal(Convert.ToByte('a'), input.ReadByte());
                 output.Add(UpgradeMessage);
@@ -113,7 +113,7 @@ namespace Helios.Tests.Codecs
 
         class LastEmptyBufferDecoder : ByteToMessageDecoder
         {
-            protected override void Decode(IChannelHandlerContext context, IByteBuf input, IList<object> output)
+            protected override void Decode(IChannelHandlerContext context, IByteBuf input, List<object> output)
             {
                 var readable = input.ReadableBytes;
                 Assert.True(readable > 0);
@@ -139,7 +139,7 @@ namespace Helios.Tests.Codecs
         {
             private bool _decodeLast;
 
-            protected override void Decode(IChannelHandlerContext context, IByteBuf input, IList<object> output)
+            protected override void Decode(IChannelHandlerContext context, IByteBuf input, List<object> output)
             {
                 var readable = input.ReadableBytes;
                 Assert.True(readable > 0);
@@ -148,7 +148,7 @@ namespace Helios.Tests.Codecs
                 output.Add(input.ReadBytes(_decodeLast ? readable : readable - 1)); // need to leave a byte leftover
             }
 
-            protected override void DecodeLast(IChannelHandlerContext context, IByteBuf input, IList<object> output)
+            protected override void DecodeLast(IChannelHandlerContext context, IByteBuf input, List<object> output)
             {
                 Assert.False(_decodeLast);
                 _decodeLast = true;

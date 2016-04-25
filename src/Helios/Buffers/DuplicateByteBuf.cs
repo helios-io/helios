@@ -27,7 +27,7 @@ namespace Helios.Buffers
             return _buffer.AdjustCapacity(newCapacity);
         }
 
-        public override ByteOrder Endianness => _buffer.Endianness;
+        public override ByteOrder Order => _buffer.Order;
 
         public override IByteBufAllocator Allocator
         {
@@ -157,9 +157,9 @@ namespace Helios.Buffers
             get { return _buffer.HasArray; }
         }
 
-        public override byte[] InternalArray()
+        public override byte[] UnderlyingArray
         {
-            return _buffer.InternalArray();
+            get { return _buffer.UnderlyingArray; }
         }
 
         public override bool IsDirect
@@ -171,6 +171,8 @@ namespace Helios.Buffers
         {
             return _buffer.Copy(index, length);
         }
+
+        public override int ArrayOffset => _buffer.ArrayOffset;
 
         public override IByteBuf Unwrap()
         {

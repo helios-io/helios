@@ -6,6 +6,7 @@ using Helios.Buffers;
 using Helios.Channels;
 using Helios.Concurrency;
 using Helios.Util;
+using Helios.Util.Concurrency;
 
 namespace Helios.Codecs
 {
@@ -52,13 +53,13 @@ namespace Helios.Codecs
                     return context.WriteAsync(message);
                 }
             }
-            catch (EncoderException)
+            catch (EncoderException ex)
             {
-                throw;
+                return TaskEx.FromException(ex);
             }
             catch (Exception ex)
             {
-                throw new EncoderException(ex);
+                return TaskEx.FromException(new EncoderException(ex));
             }
             finally
             {
@@ -90,6 +91,6 @@ namespace Helios.Codecs
            
         }
 
-        protected abstract void Encode(IChannelHandlerContext context, T cast, IList<object> output);
+        protected abstract void Encode(IChannelHandlerContext context, T cast, List<object> output);
     }
 }

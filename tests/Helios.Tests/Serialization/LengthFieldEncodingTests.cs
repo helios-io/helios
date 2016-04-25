@@ -26,7 +26,7 @@ namespace Helios.Tests.Serialization
 
         public LengthFieldEncodingTests()
         {
-            Encoder = new LengthFieldPrepender(LengthFieldLength);
+            Encoder = new Helios.Serialization.LengthFieldPrepender(LengthFieldLength);
             Decoder = new LengthFieldFrameBasedDecoder(2000,0,LengthFieldLength,0,LengthFieldLength);  //stip headers
         }
 
