@@ -124,6 +124,13 @@ namespace Helios.Buffers
         IByteBuf DiscardReadBytes();
 
         /// <summary>
+        /// Similar to <see cref="DiscardReadBytes"/> except that this method might discard some, all, or none of read bytes
+        /// depending on its internal implementation to reduce overall memory bandwidth consumption at the cost of potentially
+        /// additional total memory consumption.
+        /// </summary>
+        IByteBuf DiscardSomeReadBytes();
+
+        /// <summary>
         /// Makes sure the number of <see cref="WritableBytes"/> is equal to or greater than
         /// the specified value (<see cref="minWritableBytes"/>.) If there is enough writable bytes in this buffer,
         /// the method returns with no side effect. Otherwise, it raises an <see cref="ArgumentOutOfRangeException"/>.

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using Helios.Buffers;
+using Helios.Codecs;
 using Helios.Exceptions;
 using Helios.Net;
 using Helios.Serialization;

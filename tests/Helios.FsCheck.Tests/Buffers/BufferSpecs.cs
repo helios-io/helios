@@ -9,6 +9,16 @@ namespace Helios.FsCheck.Tests.Buffers
 {
     public class BufferSpecs
     {
+        public static List<List<T>> ChunkOps<T>(List<T> source, int chunkSize)
+        {
+            var list = new List<List<T>>();
+            for (var i = 0; i < source.Count; i = i + chunkSize)
+            {
+                list.Add(source.GetRange(i, Math.Min(chunkSize, source.Count - i)));
+            }
+            return list;
+        }
+
         public BufferSpecs()
         {
             Arb.Register(typeof (BufferGenerators));
@@ -45,7 +55,27 @@ namespace Helios.FsCheck.Tests.Buffers
                 return buffer.ReaderIndex == 0 && buffer.WriterIndex == writtenBytes;
             }).Label("Buffer's writer index should match total number of written bytes");
 
-            writeReadConsitency.And(writeIndexConsistency).QuickCheckThrowOnFailure();
+            var interleavedBehavior = Prop.ForAll<BufferOperations.IWrite[], BufferSize>((writes, size) =>
+            {
+                var writeStages = ChunkOps(writes.ToList(), 4);
+                var expectedValues = writes.Select(x => x.UntypedData).ToList();
+                var buffer = allocator.Buffer(size.InitialSize, size.MaxSize);
+                var actualValues = new List<object>();
+
+                foreach (var stage in writeStages)
+                {
+                    var reads = stage.Select(x => x.ToRead());
+                    foreach (var write in stage)
+                        write.Execute(buffer);
+
+                    foreach (var read in reads)
+                        actualValues.Add(read.Execute(buffer));
+                }
+
+                return expectedValues.SequenceEqual(actualValues, BufferOperations.Comparer).Label($"Expected: {string.Join(",", expectedValues)}; Got: {string.Join(",", actualValues)}");
+            });
+
+             writeReadConsitency.And(writeIndexConsistency).And(interleavedBehavior).QuickCheckThrowOnFailure();
         }
     }
 }

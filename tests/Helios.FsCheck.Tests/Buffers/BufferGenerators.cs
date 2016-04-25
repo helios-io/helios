@@ -53,10 +53,20 @@ namespace Helios.FsCheck.Tests.Buffers
             return Arb.Default.Char().Generator.Select(c => (BufferOperations.IWrite)(new BufferOperations.WriteChar(c)));
         }
 
+        public static Gen<BufferOperations.IWrite> DiscardReadBytes()
+        {
+            return Gen.Constant((BufferOperations.IWrite) new BufferOperations.DiscardReadBytes());
+        }
+
+        public static Gen<BufferOperations.IWrite> DiscardSomeReadBytes()
+        {
+            return Gen.Constant((BufferOperations.IWrite)new BufferOperations.DiscardSomeReadBytes());
+        }
+
         public static Arbitrary<BufferOperations.IWrite[]> Writes()
         {
             var seq = (Gen.Sequence<BufferOperations.IWrite>(WriteChar(), WriteInt(), WriteBool(), WriteByte(), WriteBytes(), WriteLong(),
-                    WriteShort(), WriteUInt(), WriteUShort()));
+                    WriteShort(), WriteUInt(), WriteUShort(), DiscardReadBytes(), DiscardSomeReadBytes()));
             return Arb.From(seq);
         }
 
@@ -347,6 +357,43 @@ namespace Helios.FsCheck.Tests.Buffers
             }
         }
 
+        /// <summary>
+        /// Not really a write operation, but we interleave it so as to verify the behavior following a few reads
+        /// </summary>
+        public class DiscardReadBytes : Write<byte>
+        {
+            public DiscardReadBytes() : base(0)
+            {
+            }
+
+            protected override void ExecuteInternal(IByteBuf buf)
+            {
+                buf.DiscardReadBytes();
+            }
+
+            public override IRead ToRead()
+            {
+                return new ReadNoOp();
+            }
+        }
+
+        public class DiscardSomeReadBytes : Write<byte>
+        {
+            public DiscardSomeReadBytes() : base(0)
+            {
+            }
+
+            protected override void ExecuteInternal(IByteBuf buf)
+            {
+                buf.DiscardSomeReadBytes();
+            }
+
+            public override IRead ToRead()
+            {
+                return new ReadNoOp();
+            }
+        }
+
         public interface IRead
         {
             object Execute(IByteBuf buf);
@@ -364,6 +411,17 @@ namespace Helios.FsCheck.Tests.Buffers
             public override string ToString()
             {
                 return $"Read<{typeof(T)}>()";
+            }
+        }
+
+        /// <summary>
+        /// Used for <see cref="IWrite"/> operations that don't actually modify the buffer
+        /// </summary>
+        public class ReadNoOp : Read<byte>
+        {
+            public override byte Execute(IByteBuf buf)
+            {
+                return 0;
             }
         }
 

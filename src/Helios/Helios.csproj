@@ -102,6 +102,7 @@
     <Compile Include="Channels\PausableChannelEventExecutor.cs" />
     <Compile Include="Channels\SkipAttribute.cs" />
     <Compile Include="Channels\Sockets\ISocketConnectionConfig.cs" />
+    <Compile Include="Codecs\ByteToMessageDecoder.cs" />
     <Compile Include="Concurrency\AbstractEventExecutor.cs" />
     <Compile Include="Concurrency\EventExecutorTaskScheduler.cs" />
     <Compile Include="Concurrency\IEventExecutor.cs" />
@@ -129,7 +130,7 @@
     <Compile Include="Net\NetworkData.cs" />
     <Compile Include="Net\NetworkDataExtensions.cs" />
     <Compile Include="Topology\EmptyNode.cs" />
-    <Compile Include="Exceptions\EncodingExceptions.cs" />
+    <Compile Include="Codecs\EncodingExceptions.cs" />
     <Compile Include="Helios.Concurrency.DedicatedThreadPool.cs" />
     <Compile Include="Topology\INode.cs" />
     <Compile Include="Topology\Node.cs" />

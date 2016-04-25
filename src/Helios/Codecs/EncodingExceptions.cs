@@ -1,6 +1,6 @@
 ﻿using Helios.Serialization;
 
-namespace Helios.Exceptions
+namespace Helios.Codecs
 {
     /// <summary>
     /// Exception thrown by a <see cref="IMessageDecoder"/> when encountering corrupt data
@@ -8,6 +8,14 @@ namespace Helios.Exceptions
     public class DecoderException : HeliosException
     {
         public DecoderException(string message) : base(message) { }
+    }
+
+    /// <summary>
+    /// Exception thrown by a <see cref="IMessageEncoder"/>
+    /// </summary>
+    public class EncoderException : HeliosException
+    {
+        public EncoderException(string message) : base(message) { }
     }
 
     /// <summary>

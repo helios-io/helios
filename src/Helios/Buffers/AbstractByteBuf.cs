@@ -131,6 +131,32 @@ namespace Helios.Buffers
             return this;
         }
 
+        public virtual IByteBuf DiscardSomeReadBytes()
+        {
+            EnsureAccessible();
+            if (ReaderIndex == 0) return this;
+
+            if (ReaderIndex == WriterIndex) // everything has been read
+            {
+                AdjustMarkers(ReaderIndex);
+                WriterIndex = ReaderIndex = 0;
+                return this;
+            }
+
+            unchecked
+            {
+                if (ReaderIndex >= Capacity >> 1)
+                {
+                    SetBytes(0, this, ReaderIndex, WriterIndex - ReaderIndex);
+                    WriterIndex -= ReaderIndex;
+                    AdjustMarkers(ReaderIndex);
+                    ReaderIndex = 0;
+                }
+            }
+
+            return this;
+        }
+
         public virtual IByteBuf EnsureWritable(int minWritableBytes)
         {
             if (minWritableBytes < 0)
