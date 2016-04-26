@@ -5,24 +5,23 @@ using Xunit;
 
 namespace Helios.Tests.Concurrency
 {
-    public class SingleThreadEventExecutorSpecs : IDisposable
+    public class SingleThreadEventExecutorSpecs
     {
         public static AtomicCounter ThreadNameCounter { get; } = new AtomicCounter(0);
-
-        public SingleThreadEventExecutorSpecs()
-        {
-            Executor = new SingleThreadEventExecutor("Foo" + ThreadNameCounter.GetAndIncrement(), TimeSpan.FromMilliseconds(100));
-        }
-
-        protected SingleThreadEventExecutor Executor { get; }
         
         [Fact]
         public void STE_should_complete_task_when_operation_is_completed()
         {
-            Func<bool> myFunc = () => true;
-            var task = Executor.SubmitAsync(myFunc);
-            Assert.True(task.Wait(200), "Should have completed task in under 200 milliseconds");
-            Assert.True(task.Result);
+            using (
+                var executor = new SingleThreadEventExecutor("Foo" + ThreadNameCounter.GetAndIncrement(),
+                    TimeSpan.FromMilliseconds(100)))
+            {
+                Func<bool> myFunc = () => true;
+                var task = executor.SubmitAsync(myFunc);
+                Assert.True(task.Wait(200), "Should have completed task in under 200 milliseconds");
+                Assert.True(task.Result);
+                executor.GracefulShutdownAsync();
+            }
         }
 
         class MyHook : IRunnable
@@ -38,15 +37,34 @@ namespace Helios.Tests.Concurrency
         [Fact]
         public void STE_should_run_shutdown_hooks()
         {
-            var hook = new MyHook();
-            Executor.AddShutdownHook(hook);
-            Assert.True(Executor.GracefulShutdownAsync().Wait(21000));
-            Assert.True(hook.WasExecuted);
+            using (
+                var executor = new SingleThreadEventExecutor("Foo" + ThreadLocalRandom.Current.Next(),
+                    TimeSpan.FromMilliseconds(100)))
+            {
+                var hook = new MyHook();
+                executor.AddShutdownHook(hook);
+                Func<bool> myFunc = () => true;
+                var task = executor.SubmitAsync(myFunc);
+                Assert.True(task.Wait(200), "Should have completed task in under 200 milliseconds");
+                Assert.True(task.Result);
+                executor.GracefulShutdownAsync().Wait();
+                Assert.True(hook.WasExecuted);
+            }
         }
 
-        public void Dispose()
+        [Fact]
+        public void STE_should_not_run_cancelled_shutdown_hooks()
         {
-            Executor.Dispose();
+            using (
+                var executor = new SingleThreadEventExecutor("Foo" + ThreadLocalRandom.Current.Next(),
+                    TimeSpan.FromMilliseconds(100)))
+            {
+                var hook = new MyHook();
+                executor.AddShutdownHook(hook);
+                executor.RemoveShutdownHook(hook);
+                executor.GracefulShutdownAsync().Wait();
+                Assert.False(hook.WasExecuted);
+            }
         }
     }
 }
