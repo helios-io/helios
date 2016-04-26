@@ -74,6 +74,11 @@
     <Compile Include="Channels\AbstractChannel.cs" />
     <Compile Include="Channels\AbstractChannelHandlerContext.cs" />
     <Compile Include="Channels\ActionChannelInitializer.cs" />
+    <Compile Include="Channels\Bootstrap\AbstractBootstrap.cs" />
+    <Compile Include="Channels\Bootstrap\Bootstrap.cs" />
+    <Compile Include="Channels\Bootstrap\DefaultNameResolver.cs" />
+    <Compile Include="Channels\Bootstrap\INameResolver.cs" />
+    <Compile Include="Channels\Bootstrap\ServerBootstrap.cs" />
     <Compile Include="Channels\ChannelHandlerAdapter.cs" />
     <Compile Include="Channels\ChannelHandlerInvokerUtil.cs" />
     <Compile Include="Channels\ChannelInitializer.cs" />
@@ -253,7 +258,9 @@
   <ItemGroup>
     <None Include="Helios.nuspec" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Channels\Local\" />
+  </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

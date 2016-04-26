@@ -229,7 +229,7 @@ namespace Helios.Channels.Bootstrap
             {
                 if (channel.Registered)
                 {
-                    channel.CloseAsync();
+                    await channel.CloseAsync();
                 }
                 else
                 {
@@ -303,68 +303,6 @@ namespace Helios.Channels.Bootstrap
         protected IDictionary<ChannelOption, object> Options()
         {
             return this._options;
-        }
-
-        // todo: attr
-        //Dictionary<AttributeKey, object> attrs()
-        //{
-        //    return this.attrs;
-        //}
-
-        public override string ToString()
-        {
-            StringBuilder buf = new StringBuilder()
-                .Append(this.GetType().Name)
-                .Append('(');
-            if (this._group != null)
-            {
-                buf.Append("group: ")
-                    .Append(this._group.GetType().Name)
-                    .Append(", ");
-            }
-            if (this._channelFactory != null)
-            {
-                buf.Append("channelFactory: ")
-                    .Append(this._channelFactory)
-                    .Append(", ");
-            }
-            if (this._localAddress != null)
-            {
-                buf.Append("localAddress: ")
-                    .Append(this._localAddress)
-                    .Append(", ");
-            }
-
-            buf.Append("options: ")
-                .Append(this._options.ToDebugString())
-                .Append(", ");
-
-            // todo: attr
-            //lock (this.attrs)
-            //{
-            //    if (!this.attrs.isEmpty())
-            //    {
-            //        buf.Append("attrs: ")
-            //            .Append(this.attrs)
-            //            .Append(", ");
-            //    }
-            //}
-            if (this._handler != null)
-            {
-                buf.Append("handler: ")
-                    .Append(this._handler)
-                    .Append(", ");
-            }
-            if (buf[buf.Length - 1] == '(')
-            {
-                buf.Append(')');
-            }
-            else
-            {
-                buf[buf.Length - 2] = ')';
-                buf.Length = buf.Length - 1;
-            }
-            return buf.ToString();
         }
     }
 }
