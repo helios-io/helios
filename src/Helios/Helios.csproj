@@ -73,6 +73,7 @@
     <Compile Include="Buffers\UnpooledByteBufAllocator.cs" />
     <Compile Include="Channels\AbstractChannel.cs" />
     <Compile Include="Channels\AbstractChannelHandlerContext.cs" />
+    <Compile Include="Channels\AbstractServerChannel.cs" />
     <Compile Include="Channels\ActionChannelInitializer.cs" />
     <Compile Include="Channels\Bootstrap\AbstractBootstrap.cs" />
     <Compile Include="Channels\Bootstrap\Bootstrap.cs" />
