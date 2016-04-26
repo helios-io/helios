@@ -43,7 +43,12 @@ namespace Helios.Channels
 
         string strVal;
 
-        protected AbstractChannel(IChannel parent)
+        protected AbstractChannel(IChannel parent) : this(DefaultChannelId.NewInstance(), parent)
+        {
+            
+        }
+
+        protected AbstractChannel(IChannelId id, IChannel parent)
         {
             Parent = parent;
             // ReSharper disable once VirtualMemberCallInContructor
@@ -56,6 +61,7 @@ namespace Helios.Channels
         /// </summary>
         protected abstract IChannelUnsafe NewUnsafe();
 
+        public IChannelId Id { get; }
         public IByteBufAllocator Allocator => Configuration.Allocator;
 
         public IEventLoop EventLoop
@@ -850,5 +856,15 @@ namespace Helios.Channels
         }
 
         #endregion
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return $"{GetType()}(Id={Id})";
+        }
     }
 }

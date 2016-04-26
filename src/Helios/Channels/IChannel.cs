@@ -7,6 +7,8 @@ namespace Helios.Channels
 {
     public interface IChannel
     {
+        IChannelId Id { get; }
+
         IByteBufAllocator Allocator { get; }
 
         IEventLoop EventLoop { get; }

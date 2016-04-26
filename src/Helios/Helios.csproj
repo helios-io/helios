@@ -90,18 +90,21 @@
     <Compile Include="Channels\DefaultChannelConfiguration.cs" />
     <Compile Include="Channels\DefaultChannelHandlerContext.cs" />
     <Compile Include="Channels\DefaultChannelHandlerInvoker.cs" />
+    <Compile Include="Channels\DefaultChannelId.cs" />
     <Compile Include="Channels\DefaultChannelPipeline.cs" />
     <Compile Include="Channels\DefaultConnectionConfig.cs" />
     <Compile Include="Channels\DefaultMessageSizeEstimator.cs" />
     <Compile Include="Channels\Embedded\EmbeddedChannel.cs" />
+    <Compile Include="Channels\Embedded\EmbeddedChannelId.cs" />
     <Compile Include="Channels\Embedded\EmbeddedEventLoop.cs" />
-    <Compile Include="Channels\Embedded\EmbeddedSoceketAddress.cs" />
+    <Compile Include="Channels\Embedded\EmbeddedSocketAddress.cs" />
     <Compile Include="Channels\FixedRecvByteBufAllocator.cs" />
     <Compile Include="Channels\IChannel.cs" />
     <Compile Include="Channels\IChannelConfiguration.cs" />
     <Compile Include="Channels\IChannelHandler.cs" />
     <Compile Include="Channels\IChannelHandlerContext.cs" />
     <Compile Include="Channels\IChannelHandlerInvoker.cs" />
+    <Compile Include="Channels\IChannelId.cs" />
     <Compile Include="Channels\IChannelPipeline.cs" />
     <Compile Include="Channels\IChannelUnsafe.cs" />
     <Compile Include="Channels\IEventLoopGroup.cs" />
@@ -109,6 +112,7 @@
     <Compile Include="Channels\IRecvByteBufAllocator.cs" />
     <Compile Include="Channels\IRecvByteBufferAllocatorHandle.cs" />
     <Compile Include="Channels\IServerChannel.cs" />
+    <Compile Include="Channels\Local\LocalAddress.cs" />
     <Compile Include="Channels\MultithreadEventLoopGroup.cs" />
     <Compile Include="Channels\NotYetConnectedException.cs" />
     <Compile Include="Channels\PausableChannelEventExecutor.cs" />
@@ -258,9 +262,7 @@
   <ItemGroup>
     <None Include="Helios.nuspec" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Channels\Local\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

@@ -50,7 +50,7 @@ namespace Helios.Channels.Embedded
         /// The <see cref="IChannelHandler"/>s that will be added to the <see cref="IChannelPipeline"/>
         /// </param>
         public EmbeddedChannel(params IChannelHandler[] handlers)
-            : base(null)
+            : base(EmbeddedChannelId.Instance, null)
         {
             this.config = new DefaultChannelConfiguration(this);
             if (handlers == null)
