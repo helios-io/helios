@@ -43,10 +43,14 @@ namespace Helios.Tests.Concurrency
             {
                 var hook = new MyHook();
                 executor.AddShutdownHook(hook);
+
+                // added a sanity check here to make sure that normal scheduled operations can run
                 Func<bool> myFunc = () => true;
                 var task = executor.SubmitAsync(myFunc);
                 Assert.True(task.Wait(200), "Should have completed task in under 200 milliseconds");
                 Assert.True(task.Result);
+                // end sanity check, begin actual test
+
                 executor.GracefulShutdownAsync().Wait();
                 Assert.True(hook.WasExecuted);
             }

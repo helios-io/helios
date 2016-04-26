@@ -117,12 +117,12 @@ namespace Helios.Channels.Embedded
 
         protected override EndPoint LocalAddressInternal
         {
-            get { return this.Active ? LOCAL_ADDRESS : null; }
+            get { return this.IsActive ? LOCAL_ADDRESS : null; }
         }
 
         protected override EndPoint RemoteAddressInternal
         {
-            get { return this.Active ? REMOTE_ADDRESS : null; }
+            get { return this.IsActive ? REMOTE_ADDRESS : null; }
         }
 
         protected override IChannelUnsafe NewUnsafe()
@@ -182,7 +182,7 @@ namespace Helios.Channels.Embedded
             get { return this.state != State.Closed; }
         }
 
-        public override bool Active
+        public override bool IsActive
         {
             get { return this.state == State.Active; }
         }

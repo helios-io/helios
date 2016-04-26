@@ -19,7 +19,7 @@ namespace Helios.Channels
 
         bool Open { get; }
 
-        bool Active { get; }
+        bool IsActive { get; }
 
         bool Registered { get; }
 

@@ -14,29 +14,36 @@ namespace Helios.Channels.Local
         private readonly IChannelConfiguration _config;
         private readonly Queue<object> _inboundBuffer = new Queue<object>();
 
-        private static readonly Func<Task, object, bool> ShutdownHook = (task, o) =>
+        private class ServerShutdownHook : IRunnable
         {
-            if (task.IsCanceled) return false;
-            var server = o as LocalServerChannel;
-            if (o == null)
-                return false;
-            server?.Unsafe.CloseAsync();
-            return true;
-        };
+            private readonly LocalServerChannel _channel;
+
+            public ServerShutdownHook(LocalServerChannel channel)
+            {
+                _channel = channel;
+            }
+
+            public void Run()
+            {
+                _channel.Unsafe.CloseAsync();
+            }
+        }
+
+        private readonly ServerShutdownHook _shutdownHook;
 
         private volatile int _state; // 0 - open, 1 - active, 2 - closed
         private volatile LocalAddress _localAddress;
         private volatile bool _acceptInProgress;
-        private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
 
         public LocalServerChannel()
         {
             _config = new DefaultChannelConfiguration(this);
+            _shutdownHook = new ServerShutdownHook(this);
         }
 
         public override bool DisconnectSupported { get { return false; } }
         public override bool Open { get { return _state < 2; } }
-        public override bool Active { get { return _state == 1; } }
+        public override bool IsActive { get { return _state == 1; } }
         public override IChannelConfiguration Configuration => _config;
         protected override bool IsCompatible(IEventLoop eventLoop)
         {
@@ -51,14 +58,12 @@ namespace Helios.Channels.Local
 
         protected override void DoRegister()
         {
-            // todo: termination hook support for single thread event executor
-            ((SingleThreadEventLoop) EventLoop).TerminationTask.ContinueWith(ShutdownHook, this, _cancellationToken.Token);
+            ((SingleThreadEventLoop) EventLoop).AddShutdownHook(_shutdownHook);
         }
 
         protected override void DoDeregister()
         {
-            // todo: termination hook support for single thread event executor
-            _cancellationToken.Cancel(); // cancel the shutdown task
+            ((SingleThreadEventLoop)EventLoop).RemoveShutdownHook(_shutdownHook);
         }
 
         protected override void DoClose()
@@ -92,9 +97,15 @@ namespace Helios.Channels.Local
             var pipeline = Pipeline;
             while (true)
             {
-                
+                if (inboundBuffer.Count == 0)
+                    break;
+                var msg = inboundBuffer.Dequeue();
+                pipeline.FireChannelRead(msg);
             }
+            pipeline.FireChannelReadComplete();
         }
+
+        
 
         public new LocalAddress LocalAddress
         {
@@ -107,5 +118,44 @@ namespace Helios.Channels.Local
         }
 
         protected override EndPoint LocalAddressInternal { get { return _localAddress;} }
+
+        private static readonly Action<object, object> ServeAction = (context, state) =>
+        {
+            var server = context as LocalServerChannel;
+            var child = state as LocalChannel;
+            server.Serve0(child);
+        };
+
+        public LocalChannel Serve(LocalChannel peer)
+        {
+            var child = new LocalChannel(this, peer);
+            if (EventLoop.InEventLoop)
+            {
+                Serve0(child);
+            }
+            else
+            {
+                EventLoop.Execute(ServeAction, this, child);
+            }
+            return child;
+        }
+
+        private void Serve0(LocalChannel child)
+        {
+            _inboundBuffer.Enqueue(child);
+            if (_acceptInProgress)
+            {
+                _acceptInProgress = false;
+                var pipeline = Pipeline;
+                while (true)
+                {
+                    if (_inboundBuffer.Count == 0)
+                        break;
+                    var m = _inboundBuffer.Dequeue();
+                    pipeline.FireChannelRead(m);
+                }
+                pipeline.FireChannelReadComplete();
+            }
+        }
     }
 }

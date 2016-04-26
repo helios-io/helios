@@ -78,7 +78,7 @@ namespace Helios.Channels
         public IChannel Parent { get; }
         public abstract bool DisconnectSupported { get; }
         public abstract bool Open { get; }
-        public abstract bool Active { get; }
+        public abstract bool IsActive { get; }
         public bool Registered => _registered;
 
         public EndPoint LocalAddress
@@ -393,7 +393,7 @@ namespace Helios.Channels
                     _channel._pipeline.FireChannelRegistered();
                     // Only fire a channelActive if the channel has never been registered. This prevents firing
                     // multiple channel actives if the channel is deregistered and re-registered.
-                    if (firstRegistration && this._channel.Active)
+                    if (firstRegistration && this._channel.IsActive)
                     {
                         _channel._pipeline.FireChannelActive();
                     }
@@ -416,7 +416,7 @@ namespace Helios.Channels
                 }
 
 
-                bool wasActive = this._channel.Active;
+                bool wasActive = this._channel.IsActive;
                 var promise = new TaskCompletionSource();
                 try
                 {
@@ -429,7 +429,7 @@ namespace Helios.Channels
                     return promise.Task;
                 }
 
-                if (!wasActive && _channel.Active)
+                if (!wasActive && _channel.IsActive)
                 {
                     InvokeLater(() => this._channel._pipeline.FireChannelActive());
                 }
@@ -454,7 +454,7 @@ namespace Helios.Channels
                     return promise.Task;
                 }
 
-                bool wasActive = this._channel.Active;
+                bool wasActive = this._channel.IsActive;
                 try
                 {
                     this._channel.DoDisconnect();
@@ -466,7 +466,7 @@ namespace Helios.Channels
                     return promise.Task;
                 }
 
-                if (wasActive && !this._channel.Active)
+                if (wasActive && !this._channel.IsActive)
                 {
                     this.InvokeLater(() => this._channel._pipeline.FireChannelInactive());
                 }
@@ -512,7 +512,7 @@ namespace Helios.Channels
                     return promise.Task;
                 }
 
-                bool wasActive = this._channel.Active;
+                bool wasActive = this._channel.IsActive;
                 ChannelOutboundBuffer buffer = this.outboundBuffer;
                 this.outboundBuffer = null; // Disallow adding any messages and flushes to outboundBuffer.
 
@@ -557,7 +557,7 @@ namespace Helios.Channels
 
             void FireChannelInactiveAndDeregister(bool wasActive)
             {
-                if (wasActive && !this._channel.Active)
+                if (wasActive && !this._channel.IsActive)
                 {
                     this.InvokeLater(() =>
                     {
@@ -630,7 +630,7 @@ namespace Helios.Channels
 
             public void BeginRead()
             {
-                if (!this._channel.Active)
+                if (!this._channel.IsActive)
                 {
                     return;
                 }
@@ -712,7 +712,7 @@ namespace Helios.Channels
                 this.inFlush0 = true;
 
                 // Mark all pending write requests as failure if the channel is inactive.
-                if (!this._channel.Active)
+                if (!this._channel.IsActive)
                 {
                     try
                     {

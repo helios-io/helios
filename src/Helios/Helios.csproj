@@ -75,6 +75,7 @@
     <Compile Include="Channels\AbstractChannelHandlerContext.cs" />
     <Compile Include="Channels\AbstractServerChannel.cs" />
     <Compile Include="Channels\ActionChannelInitializer.cs" />
+    <Compile Include="Channels\AlreadyConnectedException.cs" />
     <Compile Include="Channels\Bootstrap\AbstractBootstrap.cs" />
     <Compile Include="Channels\Bootstrap\Bootstrap.cs" />
     <Compile Include="Channels\Bootstrap\DefaultNameResolver.cs" />
@@ -113,7 +114,10 @@
     <Compile Include="Channels\IRecvByteBufAllocator.cs" />
     <Compile Include="Channels\IRecvByteBufferAllocatorHandle.cs" />
     <Compile Include="Channels\IServerChannel.cs" />
+    <Compile Include="Channels\ConnectionPendingException.cs" />
+    <Compile Include="Channels\ChannelException.cs" />
     <Compile Include="Channels\Local\LocalAddress.cs" />
+    <Compile Include="Channels\Local\LocalChannel.cs" />
     <Compile Include="Channels\Local\LocalChannelRegistry.cs" />
     <Compile Include="Channels\Local\LocalServerChannel.cs" />
     <Compile Include="Channels\MultithreadEventLoopGroup.cs" />
