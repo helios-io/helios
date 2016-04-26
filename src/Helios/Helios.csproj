@@ -115,6 +115,7 @@
     <Compile Include="Channels\IServerChannel.cs" />
     <Compile Include="Channels\Local\LocalAddress.cs" />
     <Compile Include="Channels\Local\LocalChannelRegistry.cs" />
+    <Compile Include="Channels\Local\LocalServerChannel.cs" />
     <Compile Include="Channels\MultithreadEventLoopGroup.cs" />
     <Compile Include="Channels\NotYetConnectedException.cs" />
     <Compile Include="Channels\PausableChannelEventExecutor.cs" />

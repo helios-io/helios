@@ -25,6 +25,25 @@ namespace Helios.Tests.Concurrency
             Assert.True(task.Result);
         }
 
+        class MyHook : IRunnable
+        {
+            public bool WasExecuted { get; private set; }
+
+            public void Run()
+            {
+                WasExecuted = true;
+            }
+        }
+
+        [Fact]
+        public void STE_should_run_shutdown_hooks()
+        {
+            var hook = new MyHook();
+            Executor.AddShutdownHook(hook);
+            Assert.True(Executor.GracefulShutdownAsync().Wait(21000));
+            Assert.True(hook.WasExecuted);
+        }
+
         public void Dispose()
         {
             Executor.Dispose();
