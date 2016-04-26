@@ -30,7 +30,7 @@ namespace Helios.Reactor
             Encoder = encoder;
             Allocator = allocator;
             LocalEndpoint = new IPEndPoint(localAddress, localPort);
-            Listener = new Socket(AddressFamily.InterNetwork, socketType, protocol);
+            Listener = new Socket(LocalEndpoint.AddressFamily, socketType, protocol);
             if (protocol == ProtocolType.Tcp)
             {
                 Transport = TransportType.Tcp;
