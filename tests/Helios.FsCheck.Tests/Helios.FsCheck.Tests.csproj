@@ -87,6 +87,7 @@
     <Compile Include="Channels\ChannelPipelineModels.cs" />
     <Compile Include="Channels\ChannelPipelineConstructionSpecs.cs" />
     <Compile Include="Channels\TestChannel.cs" />
+    <Compile Include="Codecs\LengthFrameEncodingSpecs.cs" />
     <Compile Include="Collections\CircularBufferPropertyTests.cs" />
     <Compile Include="Concurrency\EventExecutorSpecBase.cs" />
     <Compile Include="Concurrency\ObjectPoolSpec.cs" />
