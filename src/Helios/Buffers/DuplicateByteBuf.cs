@@ -192,15 +192,5 @@ namespace Helios.Buffers
             SetIndex(_buffer.ReaderIndex, _buffer.WriterIndex);
             return this;
         }
-
-        #region Conversion
-
-        public static implicit operator ByteBuffer(DuplicateByteBuf buf)
-        {
-            if (buf.Unwrap() is ByteBuffer) return (ByteBuffer)buf.Unwrap();
-            return null;
-        }
-
-        #endregion
     }
 }

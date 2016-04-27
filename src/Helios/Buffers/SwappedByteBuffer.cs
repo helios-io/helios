@@ -607,5 +607,50 @@ namespace Helios.Buffers
         {
             return "Swapped(" + _buf + ")";
         }
+
+        public int ReferenceCount
+        {
+            get { return _buf.ReferenceCount; }
+        }
+
+        public IReferenceCounted Retain()
+        {
+            return _buf.Retain();
+        }
+
+        public IReferenceCounted Retain(int increment)
+        {
+            return _buf.Retain(increment);
+        }
+
+        public IReferenceCounted Touch()
+        {
+            return _buf.Touch();
+        }
+
+        public IReferenceCounted Touch(object hint)
+        {
+            return _buf.Touch(hint);
+        }
+
+        public bool Release()
+        {
+            return _buf.Release();
+        }
+
+        public bool Release(int decrement)
+        {
+            return _buf.Release(decrement);
+        }
+
+        public override int GetHashCode()
+        {
+            return _buf.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return _buf.Equals(obj);
+        }
     }
 }

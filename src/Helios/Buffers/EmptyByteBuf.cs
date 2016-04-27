@@ -127,5 +127,36 @@ namespace Helios.Buffers
         {
             return this;
         }
+
+        public override int ReferenceCount { get { return 1; } }
+        public override IReferenceCounted Retain()
+        {
+            return this;
+        }
+
+        public override IReferenceCounted Retain(int increment)
+        {
+            return this;
+        }
+
+        public override IReferenceCounted Touch()
+        {
+            return this;
+        }
+
+        public override IReferenceCounted Touch(object hint)
+        {
+            return this;
+        }
+
+        public override bool Release()
+        {
+            return false;
+        }
+
+        public override bool Release(int decrement)
+        {
+            return false;
+        }
     }
 }

@@ -39,7 +39,7 @@ namespace Helios.Tests.Serialization
         {
             var binaryContent = Encoding.UTF8.GetBytes("somebytes");
             var expectedBytes = binaryContent.Length;
-            var data = ByteBuffer.AllocateDirect(expectedBytes).WriteBytes(binaryContent);
+            var data = Unpooled.Buffer(expectedBytes).WriteBytes(binaryContent);
 
             List<IByteBuf> encodedMessages;
             Encoder.Encode(TestConnection, data, out encodedMessages);
@@ -56,7 +56,7 @@ namespace Helios.Tests.Serialization
             var binaryContent = Encoding.UTF8.GetBytes("somebytes");
             var expectedBytes = binaryContent.Length;
 
-            var data = ByteBuffer.AllocateDirect(expectedBytes).WriteBytes(binaryContent);
+            var data = Unpooled.Buffer(expectedBytes).WriteBytes(binaryContent);
 
             List<IByteBuf> encodedMessages;
             Encoder.Encode(TestConnection, data, out encodedMessages);
@@ -74,7 +74,7 @@ namespace Helios.Tests.Serialization
             var binaryContent2 = Encoding.UTF8.GetBytes("moarbytes");
             var binaryContent3 = BitConverter.GetBytes(100034034L);
 
-            var buffer = ByteBuffer.AllocateDirect(100).WriteInt(binaryContent1.Length)
+            var buffer = Unpooled.Buffer(100).WriteInt(binaryContent1.Length)
                 .WriteBytes(binaryContent1).WriteInt(binaryContent2.Length).WriteBytes(binaryContent2)
                 .WriteInt(binaryContent3.Length).WriteBytes(binaryContent3);
 
@@ -93,7 +93,7 @@ namespace Helios.Tests.Serialization
             Assert.Throws<CorruptedFrameException>(() =>
             {
                 var binaryContent1 = Encoding.UTF8.GetBytes("somebytes");
-                var buffer = ByteBuffer.AllocateDirect(100)
+                var buffer = Unpooled.Buffer(100)
                     .WriteInt((-1) * binaryContent1.Length) //make the frame length negative
                     .WriteBytes(binaryContent1);
 
@@ -106,7 +106,7 @@ namespace Helios.Tests.Serialization
         public void Should_throw_exception_when_decoding_zero_frameLength()
         {
             var binaryContent1 = Encoding.UTF8.GetBytes("somebytes");
-            var buffer = ByteBuffer.AllocateDirect(100)
+            var buffer = Unpooled.Buffer(100)
                 .WriteInt(0) //make the frame length negative
                 .WriteBytes(binaryContent1);
 

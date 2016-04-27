@@ -37,7 +37,7 @@ namespace Helios.Channels
 
             public int Size(object obj)
             {
-                var byteBuf = obj as ByteBuffer;
+                var byteBuf = obj as IByteBuf;
                 if (byteBuf != null)
                 {
                     return byteBuf.ReadableBytes;

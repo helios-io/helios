@@ -12,7 +12,7 @@ namespace Helios.Buffers
     /// 
     /// * <see cref="ReaderIndex"/> LESS THAN OR EQUAL TO <see cref="WriterIndex"/> LESS THAN OR EQUAL TO <see cref="Capacity"/>.
     /// </summary>
-    public interface IByteBuf
+    public interface IByteBuf : IReferenceCounted
     {
         int Capacity { get; }
 

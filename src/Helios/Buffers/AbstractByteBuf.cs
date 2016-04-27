@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Helios.Util;
@@ -14,6 +15,15 @@ namespace Helios.Buffers
         private int _markedReaderIndex;
         private int _markedWriterIndex;
         private SwappedByteBuffer _swapped;
+        private static readonly bool _checkAccessible;
+
+        static AbstractByteBuf()
+        {
+            if (Debugger.IsAttached)
+            {
+                _checkAccessible = true;
+            }
+        }
 
         protected AbstractByteBuf(int maxCapacity)
         {
@@ -704,6 +714,13 @@ namespace Helios.Buffers
             return ByteBufferUtil.DecodeString(this, ReaderIndex, ReadableBytes, encoding);
         }
 
+        public override string ToString()
+        {
+            return
+                $"{GetType()}(Capacity={Capacity}, ReadableBytes={ReadableBytes}, " +
+                $"WritableBytes={WritableBytes}, ReaderIndex={ReaderIndex}, WriterIndex={WriterIndex})";
+        }
+
         protected void AdjustMarkers(int decrement)
         {
             var markedReaderIndex = _markedReaderIndex;
@@ -787,7 +804,10 @@ namespace Helios.Buffers
 
         protected void EnsureAccessible()
         {
-            //TODO: add reference counting in the future if applicable
+            if (_checkAccessible && ReferenceCount == 0)
+            {
+                throw new IllegalReferenceCountException(0);
+            }
         }
 
         private sealed class ByteBufEqualityComparer : IEqualityComparer<IByteBuf>
@@ -814,5 +834,12 @@ namespace Helios.Buffers
         private static readonly IEqualityComparer<IByteBuf> ByteBufComparerInstance = new ByteBufEqualityComparer();
 
         public static IEqualityComparer<IByteBuf> ByteBufComparer => ByteBufComparerInstance;
+        public abstract int ReferenceCount { get; }
+        public abstract IReferenceCounted Retain();
+        public abstract IReferenceCounted Retain(int increment);
+        public abstract IReferenceCounted Touch();
+        public abstract IReferenceCounted Touch(object hint);
+        public abstract bool Release();
+        public abstract bool Release(int decrement);
     }
 }

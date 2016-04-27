@@ -5,17 +5,11 @@ using Xunit;
 
 namespace Helios.Tests.Buffer
 {
-    public class ByteBufferTests
+    public abstract class ByteBufferTests
     {
-        protected virtual IByteBuf GetBuffer(int initialCapacity, int maxCapacity)
-        {
-            return ByteBuffer.AllocateDirect(initialCapacity, maxCapacity);
-        }
+        protected abstract IByteBuf GetBuffer(int initialCapacity, int maxCapacity);
 
-        protected virtual IByteBuf GetBuffer(int initialCapacity)
-        {
-            return ByteBuffer.AllocateDirect(initialCapacity);
-        }
+        protected abstract IByteBuf GetBuffer(int initialCapacity);
 
         #region Data type tests
 
