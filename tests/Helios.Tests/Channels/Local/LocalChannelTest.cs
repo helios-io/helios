@@ -80,6 +80,47 @@ namespace Helios.Tests.Channels.Local
             }
         }
 
+        [Fact]
+        public void LocalChannel_WriteAsync_should_fail_fast_on_closed_channel()
+        {
+            var cb = new ClientBootstrap();
+            var sb = new ServerBootstrap();
+
+            cb.Group(_group1).Channel<LocalChannel>().Handler(new TestHandler());
+
+            sb.Group(_group2).Channel<LocalServerChannel>().ChildHandler(new ActionChannelInitializer<LocalChannel>(
+                channel =>
+                {
+                    channel.Pipeline.AddLast(new TestHandler());
+                }));
+
+            IChannel sc = null;
+            IChannel cc = null;
+
+            try
+            {
+                // Start server
+                sc = sb.BindAsync(TEST_ADDRESS).Result;
+                var latch = new CountdownEvent(1);
+
+                // Connect to the server
+                cc = cb.ConnectAsync(sc.LocalAddress).Result;
+
+                // Close the channel and write something
+                cc.CloseAsync().Wait();
+                var ag = Assert.Throws<AggregateException>(() =>
+                {
+                    cc.WriteAndFlushAsync(new object()).Wait();
+                }).Flatten();
+                Assert.IsType<ClosedChannelException>(ag.InnerException);
+            }
+            finally
+            {
+                CloseChannel(cc);
+                CloseChannel(sc);
+            }
+        }
+
         private static void CloseChannel(IChannel cc)
         {
             cc?.CloseAsync().Wait();
