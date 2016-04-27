@@ -17,7 +17,7 @@ namespace Helios.Channels
 
         bool DisconnectSupported { get; }
 
-        bool Open { get; }
+        bool IsOpen { get; }
 
         bool IsActive { get; }
 

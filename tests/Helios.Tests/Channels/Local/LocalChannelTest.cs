@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Helios.Buffers;
 using Helios.Channels;
 using Helios.Channels.Local;
 using Helios.Channels.Bootstrap;
@@ -146,7 +147,7 @@ namespace Helios.Tests.Channels.Local
         }
 
         [Fact]
-        public void LocalServerChannel_should_close_channel_same_EventLoop()
+        public void LocalServerChannel_should_be_able_to_close_channel_on_same_EventLoop()
         {
             var latch = new CountdownEvent(1);
             var sb = new ServerBootstrap();
@@ -172,6 +173,182 @@ namespace Helios.Tests.Channels.Local
             {
                 CloseChannel(cc);
                 CloseChannel(sc);
+            }
+        }
+
+        private class ReadCountdown1 : ChannelHandlerAdapter
+        {
+            private readonly CountdownEvent _latch;
+            private readonly IByteBuf _expectedData;
+
+            public ReadCountdown1(CountdownEvent latch, IByteBuf expectedData)
+            {
+                _latch = latch;
+                _expectedData = expectedData;
+            }
+
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                if (AbstractByteBuf.ByteBufComparer.Equals(_expectedData, message as IByteBuf))
+                {
+                    // todo: reference counting
+                    _latch.Signal();
+                }
+                else
+                {
+                    base.ChannelRead(context, message);
+                }
+            }
+
+            public override void ChannelInactive(IChannelHandlerContext context)
+            {
+                _latch.Signal();
+                base.ChannelInactive(context);
+            }
+        }
+
+
+        [Fact]
+        public void LocalChannel_close_when_WritePromiseComplete_should_still_preserve_order()
+        {
+            var cb = new ClientBootstrap();
+            var sb = new ServerBootstrap();
+            var messageLatch = new CountdownEvent(2);
+            var data = Unpooled.WrappedBuffer(new byte[1024]);
+
+            try
+            {
+                cb.Group(_group1)
+                    .Channel<LocalChannel>()
+                    .Handler(new TestHandler());
+
+                sb.Group(_group2)
+                    .Channel<LocalServerChannel>()
+                    .ChildHandler(new ReadCountdown1(messageLatch, data));
+
+                IChannel sc = null;
+                IChannel cc = null;
+
+                try
+                {
+                    // Start server
+                    sc = sb.BindAsync(TEST_ADDRESS).Result;
+
+                    // Connect to server
+                    cc = cb.ConnectAsync(sc.LocalAddress).Result;
+
+                    var ccCpy = cc;
+
+                    // Make sure a write operation is executed in the eventloop
+                    cc.Pipeline.LastContext().Executor.Execute(() =>
+                    {
+                        // todo: reference counting
+                        ccCpy.WriteAndFlushAsync(data.Duplicate()).ContinueWith(tr =>
+                        {
+                            ccCpy.Pipeline.LastContext().CloseAsync();
+                        });
+                    });
+
+                    messageLatch.Wait(TimeSpan.FromSeconds(5));
+                    Assert.True(messageLatch.IsSet);
+                    Assert.False(cc.IsOpen);
+                }
+                finally
+                {
+                    CloseChannel(sc);
+                    CloseChannel(cc);
+                }
+            }
+            finally
+            {
+                // todo: referencing counting
+            }
+        }
+
+        private class ReadCountdown2 : ChannelHandlerAdapter
+        {
+            private readonly CountdownEvent _latch;
+            private readonly IByteBuf _expectedData1;
+            private readonly IByteBuf _expectedData2;
+
+            public ReadCountdown2(CountdownEvent latch, IByteBuf expectedData1, IByteBuf expectedData2)
+            {
+                _latch = latch;
+                _expectedData1 = expectedData1;
+                _expectedData2 = expectedData2;
+            }
+
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                var count = _latch.CurrentCount;
+                if ((AbstractByteBuf.ByteBufComparer.Equals(_expectedData1, message as IByteBuf) && count == 2)
+                    || (AbstractByteBuf.ByteBufComparer.Equals(_expectedData2, message as IByteBuf) && count == 1))
+                {
+                    // todo: reference counting
+                    _latch.Signal();
+                }
+                else
+                {
+                    base.ChannelRead(context, message);
+                }
+            }
+        }
+
+        [Fact]
+        public void LocalChannel_write_when_WritePromiseComplete_should_still_preserve_order()
+        {
+            var cb = new ClientBootstrap();
+            var sb = new ServerBootstrap();
+            var messageLatch = new CountdownEvent(2);
+            var data1 = Unpooled.WrappedBuffer(new byte[1024]);
+            var data2 = Unpooled.WrappedBuffer(new byte[512]);
+
+            try
+            {
+                cb.Group(_group1)
+                    .Channel<LocalChannel>()
+                    .Handler(new TestHandler());
+
+                sb.Group(_group2)
+                    .Channel<LocalServerChannel>()
+                    .ChildHandler(new ReadCountdown2(messageLatch, data1, data2));
+
+                IChannel sc = null;
+                IChannel cc = null;
+
+                try
+                {
+                    // Start server
+                    sc = sb.BindAsync(TEST_ADDRESS).Result;
+
+                    // Connect to server
+                    cc = cb.ConnectAsync(sc.LocalAddress).Result;
+
+                    var ccCpy = cc;
+
+                    // Make sure a write operation is executed in the eventloop
+                    cc.Pipeline.LastContext().Executor.Execute(() =>
+                    {
+                        // todo: reference counting
+                        ccCpy.WriteAndFlushAsync(data1.Duplicate()).ContinueWith(tr =>
+                        {
+                            // todo: reference counting
+                            ccCpy.WriteAndFlushAsync(data2.Duplicate());
+                        });
+                    });
+
+                    messageLatch.Wait(TimeSpan.FromSeconds(5));
+                    Assert.True(messageLatch.IsSet);
+                }
+                finally
+                {
+                    CloseChannel(sc);
+                    CloseChannel(cc);
+                }
+            }
+            finally
+            {
+                // todo: referencing counting
             }
         }
 

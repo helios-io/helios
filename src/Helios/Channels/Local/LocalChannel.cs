@@ -104,7 +104,7 @@ namespace Helios.Channels.Local
         }
 
         public override bool DisconnectSupported { get { return true; } }
-        public override bool Open { get { return _state != State.Closed; } }
+        public override bool IsOpen { get { return _state != State.Closed; } }
         public override bool IsActive { get { return _state == State.Connected; } }
 
         public new LocalServerChannel Parent { get { return base.Parent as LocalServerChannel; } }

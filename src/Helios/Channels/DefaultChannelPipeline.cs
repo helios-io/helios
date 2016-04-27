@@ -273,7 +273,7 @@ namespace Helios.Channels
         {
             _head.FireChannelUnregistered();
 
-            if (!Channel().Open)
+            if (!Channel().IsOpen)
             {
                 Destroy();
             }

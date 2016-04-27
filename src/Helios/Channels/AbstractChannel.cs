@@ -79,7 +79,7 @@ namespace Helios.Channels
 
         public IChannel Parent { get; }
         public abstract bool DisconnectSupported { get; }
-        public abstract bool Open { get; }
+        public abstract bool IsOpen { get; }
         public abstract bool IsActive { get; }
         public bool Registered => _registered;
 
@@ -412,7 +412,7 @@ namespace Helios.Channels
             public Task BindAsync(EndPoint localAddress)
             {
                 // todo: cancellation support
-                if ( /*!promise.setUncancellable() || */!_channel.Open)
+                if ( /*!promise.setUncancellable() || */!_channel.IsOpen)
                 {
                     return CreateClosedChannelExceptionTask();
                 }
@@ -718,7 +718,7 @@ namespace Helios.Channels
                 {
                     try
                     {
-                        if (this._channel.Open)
+                        if (this._channel.IsOpen)
                         {
                             outboundBuffer.FailFlushed(NotYetConnectedException.Instance, true);
                         }
@@ -751,7 +751,7 @@ namespace Helios.Channels
 
             protected bool EnsureOpen(TaskCompletionSource promise)
             {
-                if (this._channel.Open)
+                if (this._channel.IsOpen)
                 {
                     return true;
                 }
@@ -767,7 +767,7 @@ namespace Helios.Channels
 
             protected void CloseIfClosed()
             {
-                if (this._channel.Open)
+                if (this._channel.IsOpen)
                 {
                     return;
                 }

@@ -42,7 +42,7 @@ namespace Helios.Channels.Local
         }
 
         public override bool DisconnectSupported { get { return false; } }
-        public override bool Open { get { return _state < 2; } }
+        public override bool IsOpen { get { return _state < 2; } }
         public override bool IsActive { get { return _state == 1; } }
         public override IChannelConfiguration Configuration => _config;
         protected override bool IsCompatible(IEventLoop eventLoop)

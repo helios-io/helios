@@ -177,7 +177,7 @@ namespace Helios.Channels.Embedded
             }
         }
 
-        public override bool Open
+        public override bool IsOpen
         {
             get { return this.state != State.Closed; }
         }
@@ -340,7 +340,7 @@ namespace Helios.Channels.Embedded
         /// </summary>
         protected void EnsureOpen()
         {
-            if (!this.Open)
+            if (!this.IsOpen)
             {
                 this.RecordException(ClosedChannelException.Instance);
                 this.CheckException();
