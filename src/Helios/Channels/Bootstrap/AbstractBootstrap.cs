@@ -144,7 +144,7 @@ namespace Helios.Channels.Bootstrap
         /// <summary>
         /// Create a new {@link Channel} and register it with an {@link EventLoop}.
         /// </summary>
-        public Task Register()
+        public Task<IChannel> Register()
         {
             this.Validate();
             return this.InitAndRegisterAsync();

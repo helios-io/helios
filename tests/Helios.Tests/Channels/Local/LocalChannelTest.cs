@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,8 +9,11 @@ using Helios.Buffers;
 using Helios.Channels;
 using Helios.Channels.Local;
 using Helios.Channels.Bootstrap;
+using Helios.Concurrency;
 using Helios.Logging;
+using Helios.Util;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Helios.Tests.Channels.Local
 {
@@ -349,6 +353,310 @@ namespace Helios.Tests.Channels.Local
             finally
             {
                 // todo: referencing counting
+            }
+        }
+
+        private class ReadCountdown3 : ChannelHandlerAdapter
+        {
+            private readonly CountdownEvent _latch;
+            private readonly IByteBuf _expectedData;
+
+            public ReadCountdown3(CountdownEvent latch, IByteBuf expectedData)
+            {
+                _latch = latch;
+                _expectedData = expectedData;
+            }
+
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                if (AbstractByteBuf.ByteBufComparer.Equals(_expectedData, message as IByteBuf))
+                {
+                    // todo: reference counting
+                    _latch.Signal();
+                }
+                else
+                {
+                    base.ChannelRead(context, message);
+                }
+            }
+        }
+
+        [Fact]
+        public void LocalChannel_PeerWrite_when_WritePromiseComplete_in_different_eventloop_should_still_preserve_order()
+        {
+            var cb = new ClientBootstrap();
+            var sb = new ServerBootstrap();
+            var messageLatch = new CountdownEvent(2);
+            var data1 = Unpooled.WrappedBuffer(new byte[1024]);
+            var data2 = Unpooled.WrappedBuffer(new byte[512]);
+            var serverLatch = new CountdownEvent(1);
+            var serverChannelRef = new AtomicReference<IChannel>();
+
+            try
+            {
+                cb.Group(_group1)
+                    .Channel<LocalChannel>()
+                    .Handler(new ReadCountdown3(messageLatch, data2));
+
+                sb.Group(_group2)
+                    .Channel<LocalServerChannel>()
+                    .ChildHandler(new ActionChannelInitializer<LocalChannel>(channel =>
+                    {
+                        channel.Pipeline.AddLast(new ReadCountdown3(messageLatch, data1));
+                        serverChannelRef = channel;
+                        serverLatch.Signal();
+                    }));
+
+                IChannel sc = null;
+                IChannel cc = null;
+
+                try
+                {
+                    // Start server
+                    sc = sb.BindAsync(TEST_ADDRESS).Result;
+
+                    // Connect to server
+                    cc = cb.ConnectAsync(sc.LocalAddress).Result;
+                    serverLatch.Wait(TimeSpan.FromSeconds(5));
+                    Assert.True(serverLatch.IsSet);
+
+                    var ccCpy = cc;
+
+                    // Make sure a write operation is executed in the eventloop
+                    cc.Pipeline.LastContext().Executor.Execute(() =>
+                    {
+                        // todo: reference counting
+                        ccCpy.WriteAndFlushAsync(data1.Duplicate()).ContinueWith(tr =>
+                        {
+                            var severChannelCopy = serverChannelRef.Value;
+                            // todo: reference counting
+                            severChannelCopy.WriteAndFlushAsync(data2.Duplicate());
+                        });
+                    });
+
+                    messageLatch.Wait(TimeSpan.FromSeconds(5));
+                    Assert.True(messageLatch.IsSet);
+                }
+                finally
+                {
+                    CloseChannel(sc);
+                    CloseChannel(cc);
+                }
+            }
+            finally
+            {
+                // todo: referencing counting
+            }
+        }
+
+        [Fact]
+        public void LocalChannel_PeerWrite_when_WritePromiseComplete_in_same_eventloop_should_still_preserve_order()
+        {
+            var cb = new ClientBootstrap();
+            var sb = new ServerBootstrap();
+            var messageLatch = new CountdownEvent(2);
+            var data1 = Unpooled.WrappedBuffer(new byte[1024]);
+            var data2 = Unpooled.WrappedBuffer(new byte[512]);
+            var serverLatch = new CountdownEvent(1);
+            var serverChannelRef = new AtomicReference<IChannel>();
+
+            try
+            {
+                cb.Group(_sharedGroup)
+                    .Channel<LocalChannel>()
+                    .Handler(new ReadCountdown3(messageLatch, data2));
+
+                sb.Group(_sharedGroup)
+                    .Channel<LocalServerChannel>()
+                    .ChildHandler(new ActionChannelInitializer<LocalChannel>(channel =>
+                    {
+                        channel.Pipeline.AddLast(new ReadCountdown3(messageLatch, data1));
+                        serverChannelRef = channel;
+                        serverLatch.Signal();
+                    }));
+
+                IChannel sc = null;
+                IChannel cc = null;
+
+                try
+                {
+                    // Start server
+                    sc = sb.BindAsync(TEST_ADDRESS).Result;
+
+                    // Connect to server
+                    cc = cb.ConnectAsync(sc.LocalAddress).Result;
+                    serverLatch.Wait(TimeSpan.FromSeconds(5));
+                    Assert.True(serverLatch.IsSet);
+
+                    var ccCpy = cc;
+
+                    // Make sure a write operation is executed in the eventloop
+                    cc.Pipeline.LastContext().Executor.Execute(() =>
+                    {
+                        // todo: reference counting
+                        ccCpy.WriteAndFlushAsync(data1.Duplicate()).ContinueWith(tr =>
+                        {
+                            var severChannelCopy = serverChannelRef.Value;
+                            // todo: reference counting
+                            severChannelCopy.WriteAndFlushAsync(data2.Duplicate());
+                        });
+                    });
+
+                    messageLatch.Wait(TimeSpan.FromSeconds(5));
+                    Assert.True(messageLatch.IsSet);
+                }
+                finally
+                {
+                    CloseChannel(sc);
+                    CloseChannel(cc);
+                }
+            }
+            finally
+            {
+                // todo: referencing counting
+            }
+        }
+
+        [Fact]
+        public void LocalChannel_PeerClose_when_WritePromiseComplete_in_same_eventloop_should_still_preserve_order()
+        {
+            var cb = new ClientBootstrap();
+            var sb = new ServerBootstrap();
+            var messageLatch = new CountdownEvent(2);
+            var data = Unpooled.WrappedBuffer(new byte[1024]);
+            var serverLatch = new CountdownEvent(1);
+            var serverChannelRef = new AtomicReference<IChannel>();
+
+            try
+            {
+                cb.Group(_sharedGroup)
+                    .Channel<LocalChannel>()
+                    .Handler(new TestHandler());
+
+                sb.Group(_sharedGroup)
+                    .Channel<LocalServerChannel>()
+                    .ChildHandler(new ActionChannelInitializer<LocalChannel>(channel =>
+                    {
+                        channel.Pipeline.AddLast(new ReadCountdown1(messageLatch, data));
+                        serverChannelRef = channel;
+                        serverLatch.Signal();
+                    }));
+
+                IChannel sc = null;
+                IChannel cc = null;
+
+                try
+                {
+                    // Start server
+                    sc = sb.BindAsync(TEST_ADDRESS).Result;
+
+                    // Connect to server
+                    cc = cb.ConnectAsync(sc.LocalAddress).Result;
+                    serverLatch.Wait(TimeSpan.FromSeconds(5));
+                    Assert.True(serverLatch.IsSet);
+
+                    var ccCpy = cc;
+
+                    // Make sure a write operation is executed in the eventloop
+                    cc.Pipeline.LastContext().Executor.Execute(() =>
+                    {
+                        // todo: reference counting
+                        ccCpy.WriteAndFlushAsync(data.Duplicate()).ContinueWith(tr =>
+                        {
+                            var severChannelCopy = serverChannelRef.Value;
+                            severChannelCopy.CloseAsync();
+                        });
+                    });
+
+                    messageLatch.Wait(TimeSpan.FromSeconds(5));
+                    Assert.True(messageLatch.IsSet);
+                    Assert.False(cc.IsOpen);
+                    Assert.False(serverChannelRef.Value.IsOpen);
+                }
+                finally
+                {
+                    CloseChannel(sc);
+                    CloseChannel(cc);
+                }
+            }
+            finally
+            {
+                // todo: referencing counting
+            }
+        }
+
+        private class DummyHandler : ChannelHandlerAdapter { }
+
+        private class PromiseAssertHandler : ChannelHandlerAdapter
+        {
+            private readonly TaskCompletionSource _promise;
+            private readonly TaskCompletionSource _assertPromise;
+
+            public PromiseAssertHandler(TaskCompletionSource promise, TaskCompletionSource assertPromise)
+            {
+                _promise = promise;
+                _assertPromise = assertPromise;
+            }
+
+            public override Task ConnectAsync(IChannelHandlerContext context, EndPoint remoteAddress, EndPoint localAddress)
+            {
+                _promise.TryComplete();
+                return base.ConnectAsync(context, remoteAddress, localAddress);
+            }
+
+            public override void ChannelActive(IChannelHandlerContext context)
+            {
+                // Ensure the promise was completed before the handler method was triggered.
+                if (_promise.Task.IsCompleted)
+                {
+                    _assertPromise.Complete();
+                }
+                else
+                {
+                    _assertPromise.SetException(new ApplicationException("connect promise should be done"));
+                }
+            }
+        }
+
+        [Fact]
+        public void LocalChannel_should_not_fire_channel_active_before_connecting()
+        {
+            var cb = new ClientBootstrap();
+            var sb = new ServerBootstrap();
+
+            cb.Group(_group1).Channel<LocalChannel>().Handler(new DummyHandler());
+
+            sb.Group(_group2).Channel<LocalServerChannel>().ChildHandler(new ActionChannelInitializer<LocalChannel>(
+                channel =>
+                {
+                    channel.Pipeline.AddLast(new TestHandler());
+                }));
+
+            IChannel sc = null;
+            IChannel cc = null;
+
+            try
+            {
+                // Start server
+                sc = sb.BindAsync(TEST_ADDRESS).Result;
+             
+                cc = cb.Register().Result;
+
+                var promise = new TaskCompletionSource();
+                var assertPromise = new TaskCompletionSource();
+
+                cc.Pipeline.AddLast(new PromiseAssertHandler(promise, assertPromise));
+                
+                // Connect to the server
+                cc.ConnectAsync(sc.LocalAddress).Wait();
+
+                assertPromise.Task.Wait();
+                Assert.True(promise.Task.IsCompleted);
+            }
+            finally
+            {
+                CloseChannel(cc);
+                CloseChannel(sc);
             }
         }
 
