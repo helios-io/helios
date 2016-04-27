@@ -121,6 +121,60 @@ namespace Helios.Tests.Channels.Local
             }
         }
 
+        private class ReadHandler1 : ChannelHandlerAdapter
+        {
+            private CountdownEvent _event;
+
+            public ReadHandler1(CountdownEvent @event)
+            {
+                _event = @event;
+            }
+
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                _event.Signal();
+                context.CloseAsync();
+            }
+        }
+
+        private class ReadHandler2 : ChannelHandlerAdapter
+        {
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                //discard
+            }
+        }
+
+        [Fact]
+        public void LocalServerChannel_should_close_channel_same_EventLoop()
+        {
+            var latch = new CountdownEvent(1);
+            var sb = new ServerBootstrap();
+
+            sb.Group(_group2).Channel<LocalServerChannel>().ChildHandler(new ReadHandler1(latch));
+
+            IChannel sc = null;
+            IChannel cc = null;
+
+            try
+            {
+                sc = sb.BindAsync(TEST_ADDRESS).Result;
+
+                var b = new ClientBootstrap()
+                    .Group(_group2)
+                    .Channel<LocalChannel>().Handler(new ReadHandler2());
+                cc = b.ConnectAsync(sc.LocalAddress).Result;
+                cc.WriteAndFlushAsync(new object());
+                latch.Wait(TimeSpan.FromSeconds(5));
+                Assert.True(latch.IsSet);
+            }
+            finally
+            {
+                CloseChannel(cc);
+                CloseChannel(sc);
+            }
+        }
+
         private static void CloseChannel(IChannel cc)
         {
             cc?.CloseAsync().Wait();

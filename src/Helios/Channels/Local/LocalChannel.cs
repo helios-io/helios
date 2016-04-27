@@ -462,17 +462,17 @@ namespace Helios.Channels.Local
                 if (Local._state != State.Bound)
                 {
                     // Not bound yet and no LocalAddress specified. Get one
-                    if (Local._localAddress == null)
+                    if (localAddress == null)
                     {
-                        Local._localAddress = new LocalAddress(Local);
+                        localAddress = new LocalAddress(Local);
                     }
                 }
 
-                if (Local._localAddress != null)
+                if (localAddress != null)
                 {
                     try
                     {
-                        Local.DoBind(Local._localAddress);
+                        Local.DoBind(localAddress);
                     }
                     catch (Exception ex)
                     {
@@ -481,7 +481,7 @@ namespace Helios.Channels.Local
                     }
                 }
 
-                var boundChannel = LocalChannelRegistry.Get(Local._remoteAddress);
+                var boundChannel = LocalChannelRegistry.Get(remoteAddress);
                 if (!(boundChannel is LocalServerChannel))
                 {
                     var cause = new ChannelException("connection refused");
