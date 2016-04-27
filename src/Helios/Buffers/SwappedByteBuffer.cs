@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 
 namespace Helios.Buffers
 {
@@ -538,7 +539,7 @@ namespace Helios.Buffers
 
         public IByteBuf ReadSlice(int length)
         {
-            throw new NotImplementedException();
+            return _buf.ReadSlice(length).WithOrder(Order);
         }
 
         public IByteBuf Duplicate()
@@ -559,6 +560,11 @@ namespace Helios.Buffers
         public IByteBuf CompactIfNecessary()
         {
             throw new NotImplementedException();
+        }
+
+        public string ToString(Encoding encoding)
+        {
+            return ByteBufferUtil.DecodeString(this, ReaderIndex, ReadableBytes, encoding);
         }
 
         public ByteOrder Order
@@ -592,7 +598,7 @@ namespace Helios.Buffers
 
         public IByteBuf Slice(int index, int length)
         {
-            throw new NotImplementedException();
+            return _buf.Slice(index, length).WithOrder(Order);
         }
 
         public int ArrayOffset { get; }

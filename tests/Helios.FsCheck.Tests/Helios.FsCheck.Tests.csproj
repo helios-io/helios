@@ -81,12 +81,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Buffers\BufferGenerators.cs" />
+    <Compile Include="Buffers\BufferHelpers.cs" />
     <Compile Include="Buffers\BufferSpecs.cs" />
     <Compile Include="Channels\ChannelOutboundBufferSpecs.cs" />
     <Compile Include="Channels\ChannelPipelineInvocationSpecs.cs" />
     <Compile Include="Channels\ChannelPipelineModels.cs" />
     <Compile Include="Channels\ChannelPipelineConstructionSpecs.cs" />
+    <Compile Include="FsharpDelegateHelper.cs" />
     <Compile Include="Channels\TestChannel.cs" />
+    <Compile Include="Codecs\EncodingGenerators.cs" />
     <Compile Include="Codecs\LengthFrameEncodingSpecs.cs" />
     <Compile Include="Collections\CircularBufferPropertyTests.cs" />
     <Compile Include="Concurrency\EventExecutorSpecBase.cs" />

@@ -9,32 +9,6 @@ namespace Helios.FsCheck.Tests.Buffers
 {
     public class BufferSpecs
     {
-        public static List<List<T>> ChunkOps<T>(List<T> source, int chunkSize)
-        {
-            var list = new List<List<T>>();
-            for (var i = 0; i < source.Count; i = i + chunkSize)
-            {
-                list.Add(source.GetRange(i, Math.Min(chunkSize, source.Count - i)));
-            }
-            return list;
-        }
-
-        public static string PrintByteArray(byte[] bytes)
-        {
-            return "byte[" + string.Join("|", bytes) + "]";
-        }
-
-        public static object PrintByteBufferItem(object item)
-        {
-            if (item is byte[])
-            {
-                var bytes = item as byte[];
-                return PrintByteArray(bytes);
-            }
-
-            return item;
-        }
-
         public BufferSpecs()
         {
             Arb.Register(typeof (BufferGenerators));
@@ -73,7 +47,7 @@ namespace Helios.FsCheck.Tests.Buffers
 
             var interleavedBehavior = Prop.ForAll<BufferOperations.IWrite[], BufferSize>((writes, size) =>
             {
-                var writeStages = ChunkOps(writes.ToList(), 4);
+                var writeStages = BufferHelpers.ChunkOps(writes.ToList(), 4);
                 var expectedValues = writes.Select(x => x.UntypedData).ToList();
                 var buffer = allocator.Buffer(size.InitialSize, size.MaxSize);
                 var actualValues = new List<object>();
@@ -127,7 +101,7 @@ namespace Helios.FsCheck.Tests.Buffers
 
                 return expectedValues.SequenceEqual(actualValues, BufferOperations.Comparer)
                 .Label($"Expected: {string.Join(",", expectedValues)}; Got: {string.Join(",", actualValues)}")
-                .And(() => actualValues.SequenceEqual(reversedValues, BufferOperations.Comparer)).Label($"Expected swapped values to match original [{string.Join(",", actualValues.Select(PrintByteBufferItem))}], but were [{string.Join(",", actualValues.Select(PrintByteBufferItem))}]");
+                .And(() => actualValues.SequenceEqual(reversedValues, BufferOperations.Comparer)).Label($"Expected swapped values to match original [{string.Join(",", actualValues.Select(BufferHelpers.PrintByteBufferItem))}], but were [{string.Join(",", actualValues.Select(BufferHelpers.PrintByteBufferItem))}]");
             }).Label("Writes then reads against the reverse of the reverse should produce original input");
 
             swappedWritesCanBeSwappedBack.QuickCheckThrowOnFailure();

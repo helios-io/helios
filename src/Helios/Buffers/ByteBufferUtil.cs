@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace Helios.Buffers
 {
@@ -36,6 +37,33 @@ namespace Helios.Buffers
         public static short SwapShort(short value)
         {
             return (short)(((value & 0xFF) << 8) | (value >> 8) & 0xFF);
+        }
+
+        public static string DecodeString(IByteBuf src, int readerIndex, int len, Encoding encoding)
+        {
+            if (len == 0)
+            {
+                return string.Empty;
+            }
+
+            if (src.HasArray)
+            {
+                return encoding.GetString(src.UnderlyingArray, src.ArrayOffset + readerIndex, len);
+            }
+            else
+            {
+                IByteBuf buffer = src.Allocator.Buffer(len);
+                try
+                {
+                    buffer.WriteBytes(src, readerIndex, len);
+                    return encoding.GetString(buffer.ToArray(), 0, len);
+                }
+                finally
+                {
+                    // Release the temporary buffer again.
+                    // todo: reference counting
+                }
+            }
         }
     }
 }

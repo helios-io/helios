@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Helios.Util;
 
 namespace Helios.Buffers
@@ -685,7 +686,9 @@ namespace Helios.Buffers
 
         public IByteBuf ReadSlice(int length)
         {
-            throw new NotImplementedException();
+            var slice = Slice(ReaderIndex, length);
+            ReaderIndex += length;
+            return slice;
         }
 
         public virtual IByteBuf Duplicate()
@@ -696,6 +699,10 @@ namespace Helios.Buffers
         public abstract IByteBuf Unwrap();
         public abstract IByteBuf Compact();
         public abstract IByteBuf CompactIfNecessary();
+        public string ToString(Encoding encoding)
+        {
+            return ByteBufferUtil.DecodeString(this, ReaderIndex, ReadableBytes, encoding);
+        }
 
         protected void AdjustMarkers(int decrement)
         {

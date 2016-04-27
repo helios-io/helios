@@ -13,6 +13,7 @@ using Helios.Channels.Embedded;
 using Microsoft.FSharp.Core;
 using Random = FsCheck.Random;
 using Task = System.Threading.Tasks.Task;
+using static Helios.FsCheck.Tests.FsharpDelegateHelper;
 
 // ReSharper disable RedundantOverridenMember
 
@@ -444,25 +445,10 @@ namespace Helios.FsCheck.Tests.Channels
             return Arb.From(GenEvents());
         }
 
-        public static FSharpFunc<T2, TResult> Create<T2, TResult>(Func<T2, TResult> func)
-        {
-            Converter<T2, TResult> conv = input => func(input);
-            return FSharpFunc<T2, TResult>.FromConverter(conv);
-        }
-
-        public static FSharpFunc<T1, FSharpFunc<T2, TResult>> Create<T1, T2, TResult>(Func<T1, T2, TResult> func)
-        {
-            Converter<T1, FSharpFunc<T2, TResult>> conv = value1 =>
-         {
-             return Create<T2, TResult>(value2 => func(value1, value2));
-         };
-            return FSharpFunc<T1, FSharpFunc<T2, TResult>>.FromConverter(conv);
-        }
-
         public static Gen<NamedChannelHandler> GenAllEventsHandler()
         {
             Func<string, SupportedEvent[], NamedChannelHandler> producer = (s, e) => new AllEventsChannelHandler(s, e) as NamedChannelHandler;
-            var fsFunc = Create(producer);
+            var fsFunc = FsharpDelegateHelper.Create(producer);
             return Gen.Map2(fsFunc, CreateName(), GenEvents());
         }
 

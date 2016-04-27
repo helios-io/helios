@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace Helios.Buffers
 {
@@ -556,5 +557,7 @@ namespace Helios.Buffers
         /// </summary>
         [Obsolete]
         IByteBuf CompactIfNecessary();
+
+        string ToString(Encoding encoding);
     }
 }
