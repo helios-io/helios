@@ -655,7 +655,7 @@ namespace Helios.Buffers
         }
 
         public abstract bool HasArray { get; }
-        public abstract byte[] UnderlyingArray { get; }
+        public abstract byte[] Array { get; }
 
         public virtual byte[] ToArray()
         {
@@ -667,7 +667,7 @@ namespace Helios.Buffers
 
             if (HasArray)
             {
-                return UnderlyingArray.Slice(ArrayOffset + ReaderIndex, ReadableBytes);
+                return Array.Slice(ArrayOffset + ReaderIndex, ReadableBytes);
             }
 
             var bytes = new byte[ReadableBytes];

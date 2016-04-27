@@ -81,9 +81,9 @@ namespace Helios.Buffers
             get { return this.buffer.HasArray; }
         }
 
-        public override byte[] UnderlyingArray
+        public override byte[] Array
         {
-            get { return buffer.UnderlyingArray; }
+            get { return buffer.Array; }
         }
 
         public override bool IsDirect => buffer.IsDirect;

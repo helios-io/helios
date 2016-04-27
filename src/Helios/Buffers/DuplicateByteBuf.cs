@@ -157,9 +157,9 @@ namespace Helios.Buffers
             get { return _buffer.HasArray; }
         }
 
-        public override byte[] UnderlyingArray
+        public override byte[] Array
         {
-            get { return _buffer.UnderlyingArray; }
+            get { return _buffer.Array; }
         }
 
         public override bool IsDirect

@@ -118,7 +118,7 @@ namespace Helios.Buffers
 
             if (src.HasArray)
             {
-                return encoding.GetString(src.UnderlyingArray, src.ArrayOffset + readerIndex, len);
+                return encoding.GetString(src.Array, src.ArrayOffset + readerIndex, len);
             }
             else
             {

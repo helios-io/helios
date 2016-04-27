@@ -50,12 +50,12 @@ namespace Helios.Buffers
             //expand
             if (newCapacity > Capacity)
             {
-                Array.Copy(_buffer, ReaderIndex, newBuffer, 0, ReadableBytes);
+                System.Array.Copy(_buffer, ReaderIndex, newBuffer, 0, ReadableBytes);
                 SetIndex(0, ReadableBytes);
             }
             else //shrink
             {
-                Array.Copy(_buffer, ReaderIndex, newBuffer, 0, newCapacity);
+                System.Array.Copy(_buffer, ReaderIndex, newBuffer, 0, newCapacity);
                 if (ReaderIndex < newCapacity)
                 {
                     if (WriterIndex > newCapacity)
@@ -146,10 +146,10 @@ namespace Helios.Buffers
 
         public override IByteBuf SetBytes(int index, IByteBuf src, int srcIndex, int length)
         {
-            CheckSrcIndex(index, length, srcIndex, src.ReadableBytes);
+            CheckSrcIndex(index, length, srcIndex, src.Capacity);
             if (src.HasArray)
             {
-                _buffer.SetRange(index, src.UnderlyingArray.Slice(srcIndex, length));
+                _buffer.SetRange(index, src.Array.Slice(srcIndex, length));
             }
             else
             {
@@ -170,7 +170,7 @@ namespace Helios.Buffers
             get { return true; }
         }
 
-        public override byte[] UnderlyingArray
+        public override byte[] Array
         {
             get { return _buffer; }
         }

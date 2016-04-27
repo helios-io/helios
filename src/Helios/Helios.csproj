@@ -63,6 +63,7 @@
     </Compile>
     <Compile Include="Buffers\AbstractByteBufAllocator.cs" />
     <Compile Include="Buffers\AbstractDerivedByteBuffer.cs" />
+    <Compile Include="Buffers\AbstractReferenceCountedByteBuf.cs" />
     <Compile Include="Buffers\ByteBufferUtil.cs" />
     <Compile Include="Buffers\ByteOrder.cs" />
     <Compile Include="Buffers\DuplicateByteBuf.cs" />
@@ -172,7 +173,6 @@
     <Compile Include="Tracing\Impl\NoOpHeliosTraceWriter.cs" />
     <Compile Include="Util\ByteArrayExtensions.cs" />
     <Compile Include="Buffers\AbstractByteBuf.cs" />
-    <Compile Include="Buffers\ByteBuffer.cs" />
     <Compile Include="Buffers\IByteBuf.cs" />
     <Compile Include="Buffers\IByteBufAllocator.cs" />
     <Compile Include="Buffers\IReferenceCounted.cs" />

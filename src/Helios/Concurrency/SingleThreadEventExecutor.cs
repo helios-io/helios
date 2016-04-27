@@ -14,7 +14,7 @@ namespace Helios.Concurrency
     /// <summary>
     /// A single-threaded <see cref="IEventExecutor"/>
     /// </summary>
-    public class SingleThreadEventExecutor : AbstractEventExecutor, IDisposable
+    public class SingleThreadEventExecutor : AbstractEventExecutor
     {
         private class WakeupTask : IRunnable {
             public static readonly WakeupTask Instance = new WakeupTask();
@@ -401,25 +401,6 @@ namespace Helios.Concurrency
             {
                 Execute(WakeupTask.Instance);
             }
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-            Dispose(true);
-        }
-
-        public void Dispose(bool isDisposing)
-        {
-            if (!_disposed)
-            {
-                if (isDisposing)
-                {
-                    _workerThread = null;
-                }
-            }
-
-            _disposed = true;
         }
     }
 }

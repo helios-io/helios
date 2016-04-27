@@ -30,7 +30,7 @@ namespace Helios.Tests.Codecs
         [Fact]
         public void Should_remove_itself()
         {
-            var ec = new EmbeddedChannel(new RemovedDecoder2());
+            var ec = new EmbeddedChannel(new RemovedDecoder1());
             var buf = Unpooled.WrappedBuffer(new char[] { 'a', 'b', 'c' }.Select(Convert.ToByte).ToArray());
             ec.WriteInbound(buf.Copy());
             IByteBuf b = ec.ReadInbound<IByteBuf>();

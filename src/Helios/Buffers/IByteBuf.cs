@@ -495,7 +495,7 @@ namespace Helios.Buffers
         /// Grabs the underlying byte array for this buffer
         /// </summary>
         /// <value></value>
-        byte[] UnderlyingArray { get; }
+        byte[] Array { get; }
 
         /// <summary>
         /// Converts the readable contents of the buffer into an array.

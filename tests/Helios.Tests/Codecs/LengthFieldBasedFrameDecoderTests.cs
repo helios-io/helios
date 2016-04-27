@@ -24,7 +24,7 @@ namespace Helios.Tests.Codecs
                 IByteBuf buf = ch.ReadInbound<IByteBuf>();
                 Encoding iso = Encoding.GetEncoding("ISO-8859-1");
                 Assert.Equal("A", iso.GetString(buf.ToArray()));
-                //buf.Release();
+                buf.Release();
             }
         }
 

@@ -525,9 +525,9 @@ namespace Helios.Buffers
             get { return _buf.HasArray; }
         }
 
-        public byte[] UnderlyingArray
+        public byte[] Array
         {
-            get { return _buf.UnderlyingArray; }
+            get { return _buf.Array; }
         }
 
         public byte[] ToArray()

@@ -96,7 +96,7 @@ namespace Helios.Buffers
             get { return false; }
         }
 
-        public override byte[] UnderlyingArray
+        public override byte[] Array
         {
             get { throw new NotSupportedException(); }
         }

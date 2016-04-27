@@ -207,7 +207,7 @@ namespace Helios.Tests.Buffer
             var currentWritableBytes = originalByteBuffer.WritableBytes;
 
             //compact
-            originalByteBuffer.CompactIfNecessary();
+            originalByteBuffer.DiscardSomeReadBytes();
 
             Assert.Equal(currentReadableBytes, originalByteBuffer.ReadableBytes);
             Assert.Equal(0, originalByteBuffer.ReaderIndex);
