@@ -14,9 +14,17 @@ namespace Helios.FsCheck.Tests.Codecs
 {
     public class EncodingGenerators
     {
-        public static Arbitrary<Tuple<IByteBuf, ReadMode>> ChannelReads()
+        public static Arbitrary<Tuple<IByteBuf, ReadInstruction>> ChannelReads()
         {
-            Func<IByteBuf, ReadMode, Tuple<IByteBuf, ReadMode>> producer = (buf, mode) => new Tuple<IByteBuf, ReadMode>(buf, mode);
+            Func<IByteBuf, ReadMode, Tuple<IByteBuf, ReadInstruction>> producer = (buf, mode) =>
+            {
+                if (mode == ReadMode.Full)
+                    return new Tuple<IByteBuf, ReadInstruction>(buf,
+                        new ReadInstruction(mode, buf.ReadableBytes, buf.ReadableBytes));
+                var partialBytesToRead = ThreadLocalRandom.Current.Next(1, buf.ReadableBytes-1); // TODO: find a way to use Gen here
+                return new Tuple<IByteBuf, ReadInstruction>(buf,
+                        new ReadInstruction(mode, partialBytesToRead, buf.ReadableBytes));
+            };
             var fsFunc = Create(producer);
             return Arb.From(Gen.Map2(fsFunc, BufferGenerators.ByteBuf().Generator, GenReadMode()));
         }
@@ -35,6 +43,28 @@ namespace Helios.FsCheck.Tests.Codecs
         Partial
     };
 
+    public struct ReadInstruction
+    {
+        public ReadInstruction(ReadMode mode, int readBytes, int fullBytes)
+        {
+            Mode = mode;
+            ReadBytes = readBytes;
+            FullBytes = fullBytes;
+        }
+
+        public ReadMode Mode { get; private set; }
+        public int ReadBytes { get; private set; }
+
+        public int FullBytes { get; private set; }
+
+        public override string ToString()
+        {
+            return $"ReadInstruction(Mode={Mode}, ReadBytes={ReadBytes}, FullBytes={FullBytes}}}";
+        }
+
+        public static readonly ReadInstruction Full = new ReadInstruction(ReadMode.Full, 0, 0);
+    }
+
     /// <summary>
     /// A <see cref="ChannelHandlerAdapter"/> that will randomly 
     /// </summary>
@@ -49,21 +79,22 @@ namespace Helios.FsCheck.Tests.Codecs
 
         private IByteBuf _cumulativeBuffer = Unpooled.Buffer(4096);
 
-        public PartialReadGenerator(ReadMode[] modes)
+        public PartialReadGenerator(ReadInstruction[] instructions)
         {
-            _modes = new Queue<ReadMode>(modes);
+            _instructions = new Queue<ReadInstruction>(instructions);
         }
 
-        private readonly Queue<ReadMode> _modes;
+        private readonly Queue<ReadInstruction> _instructions;
 
         public override void ChannelRead(IChannelHandlerContext context, object message)
         {
             if (message is IByteBuf)
             {
-                ReadMode mode;
-                mode = _modes.Any() ? _modes.Dequeue() : ReadMode.Full;
+                ReadInstruction mode;
                 var buf = (IByteBuf)message;
-                if (mode == ReadMode.Full)
+                mode = _instructions.Any() && buf.ReadableBytes > 4 ? _instructions.Dequeue() : ReadInstruction.Full;
+                
+                if (mode.Mode == ReadMode.Full)
                 {
                     var writeBuf =
                         context.Allocator.Buffer(_cumulativeBuffer.ReadableBytes + buf.ReadableBytes)
@@ -76,7 +107,7 @@ namespace Helios.FsCheck.Tests.Codecs
                 else
                 {
                     var originalBytes = buf.ReadableBytes;
-                    var partialReadBytes = ThreadLocalRandom.Current.Next(5, buf.ReadableBytes / 2); // read up to half of the current message
+                    var partialReadBytes = mode.ReadBytes;
                     var writeBuf =
                         context.Allocator.Buffer(_cumulativeBuffer.ReadableBytes + partialReadBytes)
                             .WriteBytes(_cumulativeBuffer)

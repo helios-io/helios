@@ -26,7 +26,8 @@ namespace Helios.FsCheck.Tests.Codecs
         {
             var prepender = new LengthFieldPrepender(4, false);
             var decoder = new LengthFieldBasedFrameDecoder(int.MaxValue, 0, 4, 0, 4);
-            var ec = new EmbeddedChannel(prepender, decoder, new PartialReadGenerator(new[] { ReadMode.Partial }));
+            var partialReader = new PartialReadGenerator(new[] { new ReadInstruction(ReadMode.Partial, 5, 8),  });
+            var ec = new EmbeddedChannel(partialReader, prepender, decoder);
             var byteBuff = Unpooled.Buffer(10).WriteInt(4).WriteInt(10);
             ec.WriteAndFlushAsync(byteBuff.Duplicate()).Wait();
 
@@ -46,14 +47,14 @@ namespace Helios.FsCheck.Tests.Codecs
         }
 
         [Property(QuietOnSuccess = true, MaxTest = 10000)]
-        public Property LengthFrameEncoders_should_correctly_encode_anything_LittleEndian(Tuple<IByteBuf, ReadMode>[] reads)
+        public Property LengthFrameEncoders_should_correctly_encode_anything_LittleEndian(Tuple<IByteBuf, ReadInstruction>[] reads)
         {
             var expectedReads = reads.Select(x => x.Item1).ToArray();
             var readModes = reads.Select(x => x.Item2).ToArray();
             var partialReader = new PartialReadGenerator(readModes);
             var prepender = new LengthFieldPrepender(4, false);
             var decoder = new LengthFieldBasedFrameDecoder(int.MaxValue, 0, 4, 0, 4);
-            var ec = new EmbeddedChannel(prepender, decoder, partialReader);
+            var ec = new EmbeddedChannel(partialReader, prepender, decoder);
             
             var actualReads = new List<IByteBuf>();
             foreach (var read in reads)
@@ -71,14 +72,13 @@ namespace Helios.FsCheck.Tests.Codecs
             }
 
             // do one final read in case the last readmode was a partial
-            ec.WriteInbound(PartialReadGenerator.FinishPartialReads.Instance);
+            ec.Pipeline.FireUserEventTriggered(PartialReadGenerator.FinishPartialReads.Instance);
             IByteBuf decoded;
             do
             {
                 decoded = ec.ReadInbound<IByteBuf>();
                 if (decoded != null 
-                    && decoded.ReadableBytes > 0 
-                    && decoded.ReadableBytes != 4) // special case to omit length frame headers that get added
+                    && decoded.ReadableBytes > 0) 
                 {
                     actualReads.Add(decoded);
                 }
@@ -90,8 +90,8 @@ namespace Helios.FsCheck.Tests.Codecs
                 && reads.All(x => x.Item1.ReadableBytes > 0 // length can't be zero
                 && x.Item1.ReadableBytes != 4)) // length can't be equal to the length frame length
                     .Label($"Expected encoders and decoders to read each other's messages, even with partial reads. " +
-                           $"Expected: {string.Join("|", expectedReads.Select(x => "buf[Readable=" + x.ReadableBytes + "]"))}" + Environment.NewLine +
-                           $"Actual: {string.Join("|", actualReads.Select(x => "buf[Readable=" + x.ReadableBytes + "]"))}");
+                           $"Expected: {string.Join("|", expectedReads.Select(x => ByteBufferUtil.HexDump(x)))}" + Environment.NewLine +
+                           $"Actual: {string.Join("|", actualReads.Select(x => ByteBufferUtil.HexDump(x)))}");
         }
     }
 }
