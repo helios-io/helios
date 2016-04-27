@@ -19,7 +19,7 @@ namespace Helios.Buffers
            
         }
 
-        public UnpooledDirectByteBuf(IByteBufAllocator alloc, byte[] initialArray, int maxCapacity) : this(alloc, initialArray, 0, 0, maxCapacity)
+        public UnpooledDirectByteBuf(IByteBufAllocator alloc, byte[] initialArray, int maxCapacity) : this(alloc, initialArray, 0, initialArray.Length, maxCapacity)
         {
 
         }
