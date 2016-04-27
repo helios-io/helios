@@ -16,7 +16,8 @@ namespace Helios.Concurrency
     /// </summary>
     public class SingleThreadEventExecutor : AbstractEventExecutor
     {
-        private class WakeupTask : IRunnable {
+        private class WakeupTask : IRunnable
+        {
             public static readonly WakeupTask Instance = new WakeupTask();
 
             private WakeupTask() { }
@@ -37,7 +38,7 @@ namespace Helios.Concurrency
 
         private static readonly ILogger Logger = LoggingFactory.GetLogger<SingleThreadEventExecutor>();
         private readonly ConcurrentQueue<IRunnable> _taskQueue = new ConcurrentQueue<IRunnable>();
-        private readonly HashSet<IRunnable> _shutdownHooks = new HashSet<IRunnable>(); 
+        private readonly HashSet<IRunnable> _shutdownHooks = new HashSet<IRunnable>();
         private Thread _workerThread;
         private readonly ManualResetEventSlim _emptyQueueEvent = new ManualResetEventSlim();
         volatile int _runningState = ST_NOT_STARTED;
@@ -143,15 +144,15 @@ namespace Helios.Concurrency
         {
             Task.Factory.StartNew(() =>
             {
-                if (Interlocked.CompareExchange(ref _runningState, ST_STARTED, ST_NOT_STARTED) == ST_NOT_STARTED)
-                {
-                    while (!ConfirmShutdown())
-                    {
-                        this.RunAllTasks(_breakoutInterval);
-                    }
+                Interlocked.CompareExchange(ref _runningState, ST_STARTED, ST_NOT_STARTED);
 
-                    this.CleanupAndShutdown(true);
+                while (!ConfirmShutdown())
+                {
+                    this.RunAllTasks(_breakoutInterval);
                 }
+
+                this.CleanupAndShutdown(true);
+
             }, CancellationToken.None, TaskCreationOptions.None, Scheduler);
         }
 
@@ -170,6 +171,8 @@ namespace Helios.Concurrency
                     return true;
                 }
 
+                // There were tasks in the queue. Wait a little bit more until no tasks are queued for the quiet period.
+                Wakeup(true);
                 return false;
             }
 
@@ -180,6 +183,7 @@ namespace Helios.Concurrency
             if (currentTime - _lastExecutionTime <= _gracefulShutdownQuietPeriod)
             {
                 // Check if any tasks were added to the queue every 100ms
+                Wakeup(true);
                 Thread.Sleep(100);
                 return false;
             }
@@ -386,9 +390,9 @@ namespace Helios.Concurrency
             if (!_taskQueue.TryDequeue(out task))
             {
                 _emptyQueueEvent.Reset();
-                if (!_taskQueue.TryDequeue(out task)) // revisit queue as producer might have put a task in meanwhile
+                if (!_taskQueue.TryDequeue(out task) && !IsShuttingDown) // revisit queue as producer might have put a task in meanwhile
                 {
-                    _emptyQueueEvent.Wait(_breakoutInterval); // wait until work is put into the queue
+                    _emptyQueueEvent.Wait(); // wait until work is put into the queue
                     _taskQueue.TryDequeue(out task);
                 }
             }
@@ -397,7 +401,7 @@ namespace Helios.Concurrency
 
         protected void Wakeup(bool inEventLoop)
         {
-            if (!InEventLoop || IsShuttingDown)
+            if (!InEventLoop || _runningState == ST_SHUTTING_DOWN)
             {
                 Execute(WakeupTask.Instance);
             }

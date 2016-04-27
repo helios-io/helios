@@ -16,7 +16,7 @@ namespace Helios.FsCheck.Tests.Concurrency
 
         public EventExecutorSpecBase Model { get; }
 
-        [Property(QuietOnSuccess = true, MaxTest = 1000)]
+        [Property(QuietOnSuccess = true, MaxTest = 5000)]
         public Property SingleThreadEventExecutor_must_execute_operations_in_FIFO_order()
         {
             var model = new SingleThreadEventExecutorModelSpec();

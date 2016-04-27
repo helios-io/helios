@@ -182,38 +182,5 @@ namespace Helios.Tests.Buffer
         }
 
         #endregion
-
-        #region Compaction
-
-        /// <summary>
-        /// Should be able to compact our <see cref="IByteBuf"/> without losing any data integrity
-        /// 
-        /// Compaction is a process that is designed to simply move the readable contents of the byte buffer to the front
-        /// of the array - that we can continue to reuse bytebuffers continuously when reading from a socket.
-        /// </summary>
-        [Fact]
-        public void Should_compact_buffer_without_data_loss()
-        {
-            var originalByteBuffer =
-                GetBuffer(1024*100);
-            for (var i = 0; i < 100; i++)
-                originalByteBuffer.WriteBytes(new byte[1024]);
-
-            //read some chunks off the front of the array
-            for (var i = 0; i < 70; i++)
-                originalByteBuffer.ReadBytes(1024);
-
-            var currentReadableBytes = originalByteBuffer.ReadableBytes;
-            var currentWritableBytes = originalByteBuffer.WritableBytes;
-
-            //compact
-            originalByteBuffer.DiscardSomeReadBytes();
-
-            Assert.Equal(currentReadableBytes, originalByteBuffer.ReadableBytes);
-            Assert.Equal(0, originalByteBuffer.ReaderIndex);
-            Assert.True(currentWritableBytes < originalByteBuffer.WritableBytes);
-        }
-
-        #endregion
     }
 }

@@ -106,7 +106,14 @@ namespace Helios.Buffers
         public override IByteBuf GetBytes(int index, IByteBuf destination, int dstIndex, int length)
         {
             CheckDstIndex(index, length, dstIndex, destination.WritableBytes);
-            destination.SetBytes(dstIndex, _buffer.Slice(index, length), 0, length);
+            if (destination.HasArray)
+            {
+                GetBytes(index, destination.Array, destination.ArrayOffset + dstIndex, length);
+            }
+            else
+            {
+                destination.SetBytes(dstIndex, Array, index, length);
+            }
             return this;
         }
 
@@ -149,11 +156,11 @@ namespace Helios.Buffers
             CheckSrcIndex(index, length, srcIndex, src.Capacity);
             if (src.HasArray)
             {
-                _buffer.SetRange(index, src.Array.Slice(srcIndex, length));
+                SetBytes(index, src.Array, src.ArrayOffset + srcIndex, length);
             }
             else
             {
-                src.ReadBytes(_buffer, srcIndex, length);
+                src.GetBytes(srcIndex, Array, index, length);
             }
             return this;
         }
