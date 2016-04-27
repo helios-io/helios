@@ -18,30 +18,30 @@ namespace Helios.Channels.Bootstrap
     /// <p>The {@link #bind()} methods are useful in combination with connectionless transports such as datagram (UDP).
     /// For regular TCP connections, please use the provided {@link #connect()} methods.</p>
     /// </summary>
-    public class Bootstrap : AbstractBootstrap<Bootstrap, IChannel>
+    public class ClientBootstrap : AbstractBootstrap<ClientBootstrap, IChannel>
     {
-        static readonly ILogger Logger = LoggingFactory.GetLogger<Bootstrap>();
+        static readonly ILogger Logger = LoggingFactory.GetLogger<ClientBootstrap>();
 
         static readonly INameResolver DefaultResolver = new DefaultNameResolver();
 
         volatile INameResolver _resolver = DefaultResolver;
         volatile EndPoint _remoteAddress;
 
-        public Bootstrap()
+        public ClientBootstrap()
         {
         }
 
-        Bootstrap(Bootstrap bootstrap)
-            : base(bootstrap)
+        ClientBootstrap(ClientBootstrap clientBootstrap)
+            : base(clientBootstrap)
         {
-            this._resolver = bootstrap._resolver;
-            this._remoteAddress = bootstrap._remoteAddress;
+            this._resolver = clientBootstrap._resolver;
+            this._remoteAddress = clientBootstrap._remoteAddress;
         }
 
         /// <summary>
         /// Sets the {@link NameResolver} which will resolve the address of the unresolved named address.
         /// </summary>
-        public Bootstrap Resolver(INameResolver resolver)
+        public ClientBootstrap Resolver(INameResolver resolver)
         {
             Contract.Requires(resolver != null);
             this._resolver = resolver;
@@ -52,7 +52,7 @@ namespace Helios.Channels.Bootstrap
         /// The {@link SocketAddress} to connect to once the {@link #connect()} method
         /// is called.
         /// </summary>
-        public Bootstrap RemoteAddress(EndPoint remoteAddress)
+        public ClientBootstrap RemoteAddress(EndPoint remoteAddress)
         {
             this._remoteAddress = remoteAddress;
             return this;
@@ -61,7 +61,7 @@ namespace Helios.Channels.Bootstrap
         /// <summary>
         /// @see {@link #remoteAddress(SocketAddress)}
         /// </summary>
-        public Bootstrap RemoteAddress(string inetHost, int inetPort)
+        public ClientBootstrap RemoteAddress(string inetHost, int inetPort)
         {
             this._remoteAddress = new DnsEndPoint(inetHost, inetPort);
             return this;
@@ -70,7 +70,7 @@ namespace Helios.Channels.Bootstrap
         /// <summary>
         /// @see {@link #remoteAddress(SocketAddress)}
         /// </summary>
-        public Bootstrap RemoteAddress(IPAddress inetHost, int inetPort)
+        public ClientBootstrap RemoteAddress(IPAddress inetHost, int inetPort)
         {
             this._remoteAddress = new IPEndPoint(inetHost, inetPort);
             return this;
@@ -208,7 +208,7 @@ namespace Helios.Channels.Bootstrap
             }
         }
 
-        public override Bootstrap Validate()
+        public override ClientBootstrap Validate()
         {
             base.Validate();
             if (this.Handler() == null)
@@ -220,7 +220,7 @@ namespace Helios.Channels.Bootstrap
 
         public override object Clone()
         {
-            return new Bootstrap(this);
+            return new ClientBootstrap(this);
         }
 
         /// <summary>
@@ -228,9 +228,9 @@ namespace Helios.Channels.Bootstrap
         /// the given {@link EventLoopGroup}. This method is useful when making multiple {@link Channel}s with similar
         /// settings.
         /// </summary>
-        public Bootstrap Clone(IEventLoopGroup group)
+        public ClientBootstrap Clone(IEventLoopGroup group)
         {
-            var bs = new Bootstrap(this);
+            var bs = new ClientBootstrap(this);
             bs.Group(group);
             return bs;
         }

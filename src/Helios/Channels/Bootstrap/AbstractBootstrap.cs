@@ -27,13 +27,13 @@ namespace Helios.Channels.Bootstrap
             // Disallow extending from a different package.
         }
 
-        protected internal AbstractBootstrap(AbstractBootstrap<TBootstrap, TChannel> bootstrap)
+        protected internal AbstractBootstrap(AbstractBootstrap<TBootstrap, TChannel> clientBootstrap)
         {
-            this._group = bootstrap._group;
-            this._channelFactory = bootstrap._channelFactory;
-            this._handler = bootstrap._handler;
-            this._localAddress = bootstrap._localAddress;
-            this._options = new ConcurrentDictionary<ChannelOption, object>(bootstrap._options);
+            this._group = clientBootstrap._group;
+            this._channelFactory = clientBootstrap._channelFactory;
+            this._handler = clientBootstrap._handler;
+            this._localAddress = clientBootstrap._localAddress;
+            this._options = new ConcurrentDictionary<ChannelOption, object>(clientBootstrap._options);
         }
 
         /// <summary>

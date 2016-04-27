@@ -37,7 +37,9 @@ namespace Helios.Channels.Local
 
         public static IChannel Get(EndPoint localAddress)
         {
-            return BoundChannels[localAddress];
+            if (BoundChannels.ContainsKey(localAddress))
+                return BoundChannels[localAddress];
+            return null;
         }
 
         public static void Unregister(LocalAddress localAddress)

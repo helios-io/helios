@@ -83,6 +83,7 @@
     <Compile Include="Channels\AbstractChannelHandlerContextSpecs.cs" />
     <Compile Include="Channels\Bootstrap\BootstrapSpecs.cs" />
     <Compile Include="Channels\Embedded\EmbeddedChannelTest.cs" />
+    <Compile Include="Channels\Local\LocalChannelTest.cs" />
     <Compile Include="Codecs\ByteToMessageDecoderSpecs.cs" />
     <Compile Include="Codecs\LengthFieldBasedFrameDecoderTests.cs" />
     <Compile Include="Codecs\LengthFieldPrependerSpecs.cs" />

@@ -100,7 +100,7 @@ namespace Helios.Channels.Local
 
         protected override IChannelUnsafe NewUnsafe()
         {
-            throw new NotImplementedException();
+            return new LocalUnsafe(this);
         }
 
         public override bool DisconnectSupported { get { return true; } }
@@ -160,7 +160,7 @@ namespace Helios.Channels.Local
                 });
             }
 
-            ((SingleThreadEventExecutor)EventLoop).AddShutdownHook(_shutdownHook);
+            ((SingleThreadEventExecutor)EventLoop.Unwrap()).AddShutdownHook(_shutdownHook);
         }
 
         protected override void DoBind(EndPoint localAddress)

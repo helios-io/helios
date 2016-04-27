@@ -50,6 +50,8 @@ namespace Helios.Channels
 
         protected AbstractChannel(IChannelId id, IChannel parent)
         {
+            Contract.Requires(id != null);
+            Id = id;
             Parent = parent;
             // ReSharper disable once VirtualMemberCallInContructor
             _channelUnsafe = NewUnsafe();

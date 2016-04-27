@@ -77,7 +77,7 @@
     <Compile Include="Channels\ActionChannelInitializer.cs" />
     <Compile Include="Channels\AlreadyConnectedException.cs" />
     <Compile Include="Channels\Bootstrap\AbstractBootstrap.cs" />
-    <Compile Include="Channels\Bootstrap\Bootstrap.cs" />
+    <Compile Include="Channels\Bootstrap\ClientBootstrap.cs" />
     <Compile Include="Channels\Bootstrap\DefaultNameResolver.cs" />
     <Compile Include="Channels\Bootstrap\INameResolver.cs" />
     <Compile Include="Channels\Bootstrap\ServerBootstrap.cs" />

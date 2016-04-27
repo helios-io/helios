@@ -58,12 +58,12 @@ namespace Helios.Channels.Local
 
         protected override void DoRegister()
         {
-            ((SingleThreadEventLoop) EventLoop).AddShutdownHook(_shutdownHook);
+            ((SingleThreadEventExecutor) EventLoop.Unwrap()).AddShutdownHook(_shutdownHook);
         }
 
         protected override void DoDeregister()
         {
-            ((SingleThreadEventLoop)EventLoop).RemoveShutdownHook(_shutdownHook);
+            ((SingleThreadEventExecutor)EventLoop.Unwrap()).RemoveShutdownHook(_shutdownHook);
         }
 
         protected override void DoClose()
