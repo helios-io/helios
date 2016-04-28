@@ -768,7 +768,7 @@ namespace Helios.Channels
                 {
                     Logger.Debug(
                         "Discarded inbound message {0} that reached at the tail of the pipeline. " +
-                        "Please check your pipeline configuration.", message.ToString());
+                        "Please check your pipeline configuration.", message?.ToString());
                 }
                 finally
                 {

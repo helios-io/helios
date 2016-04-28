@@ -165,12 +165,20 @@ namespace Helios.FsCheck.Tests.Channels
             return completion.IsCompleted.Label("Expected all underlying tasks to be completed.");
         }
 
+        private class ExceptionSupressor : ChannelHandlerAdapter
+        {
+            public override void ExceptionCaught(IChannelHandlerContext context, Exception exception)
+            {
+                // discard
+            }
+        }
+
         [Property(QuietOnSuccess = true)]
         public Property ChannelOutboundBuffer_must_dump_all_flushed_messages_upon_failure(IByteBuf[] writes)
         {
             var tasks = new List<Task>();
             bool writeable = true;
-            var buffer = new ChannelOutboundBuffer(TestChannel.Instance, () =>
+            var buffer = new ChannelOutboundBuffer(TestChannel.NewInstance(new ExceptionSupressor()), () =>
             {
                 writeable = !writeable; // toggle writeability
             });

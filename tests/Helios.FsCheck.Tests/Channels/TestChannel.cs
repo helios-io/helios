@@ -16,17 +16,15 @@ namespace Helios.FsCheck.Tests.Channels
     internal class TestChannel
     {
 
-        public static IChannel Instance
-        {
-            get
-            {
+        public static IChannel Instance => NewInstance();
 
-                var instance = new EmbeddedChannel();
-                instance.Configuration.WriteBufferHighWaterMark = ChannelOutboundBufferSpecs.WriteHighWaterMark;
-                instance.Configuration.WriteBufferLowWaterMark = ChannelOutboundBufferSpecs.WriteLowWaterMark;
-                instance.Configuration.AutoRead = false; // interferes with testing the invocation model for ChannelReadComplete
-                return instance;
-            }
+        public static IChannel NewInstance(params IChannelHandler[] handlers)
+        {
+            var instance = new EmbeddedChannel(handlers);
+            instance.Configuration.WriteBufferHighWaterMark = ChannelOutboundBufferSpecs.WriteHighWaterMark;
+            instance.Configuration.WriteBufferLowWaterMark = ChannelOutboundBufferSpecs.WriteLowWaterMark;
+            instance.Configuration.AutoRead = false; // interferes with testing the invocation model for ChannelReadComplete
+            return instance;
         }
     }
 }

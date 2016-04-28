@@ -83,7 +83,7 @@ namespace Helios.FsCheck.Tests.Codecs
             byteBuf3.Release();
         }
 
-        [Property(QuietOnSuccess = true, MaxTest = 10000)]
+        [Property(QuietOnSuccess = true, MaxTest = 5000)]
         public Property LengthFrameEncoders_should_correctly_encode_anything_LittleEndian(Tuple<IByteBuf, ReadInstruction>[] reads)
         {          
             var expectedReads = reads.Select(x => x.Item1).ToArray();
@@ -131,7 +131,7 @@ namespace Helios.FsCheck.Tests.Codecs
             return
                 pass
                 .When(reads.Length > 0 // need something to read
-                && reads.All(x => x.Item1.ReadableBytes > 0)) // length can't be zero
+                ) 
                     .Label($"Expected encoders and decoders to read each other's messages, even with partial reads. " +
                            $"Expected: {string.Join("|", expectedReads.Select(x => ByteBufferUtil.HexDump(x)))}" + Environment.NewLine +
                            $"Actual: {string.Join("|", actualReads.Select(x => ByteBufferUtil.HexDump(x)))}");
