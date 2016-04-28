@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Helios.Concurrency;
 using Helios.Logging;
+using Helios.Util;
 using Helios.Util.Concurrency;
 
 namespace Helios.Channels
@@ -751,7 +752,7 @@ namespace Helios.Channels
                 }
                 finally
                 {
-                    // todo: reference counting
+                    ReferenceCountUtil.Release(exception);
                 }
             }
 
@@ -771,7 +772,7 @@ namespace Helios.Channels
                 }
                 finally
                 {
-                    // todo: referencing counting
+                    ReferenceCountUtil.Release(message);
                 }
             }
 
@@ -813,7 +814,7 @@ namespace Helios.Channels
 
             public void UserEventTriggered(IChannelHandlerContext context, object evt)
             {
-                //todo: reference counting
+                ReferenceCountUtil.Release(evt);
             }
 
             [Skip]

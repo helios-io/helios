@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Helios.Concurrency;
+using Helios.Util;
 using Helios.Util.Concurrency;
 
 namespace Helios.Channels
@@ -314,7 +315,7 @@ namespace Helios.Channels
                 }
                 catch (Exception cause)
                 {
-                    //ReferenceCountUtil.Release(msg); // todo: safe release?
+                    ReferenceCountUtil.Release(msg);
                     promise.TrySetException(cause);
                 }
                 return promise.Task;
@@ -345,7 +346,7 @@ namespace Helios.Channels
             {
                 if (!success)
                 {
-                    //ReferenceCountUtil.Release(msg);
+                    ReferenceCountUtil.Release(msg);
                 }
             }
         }

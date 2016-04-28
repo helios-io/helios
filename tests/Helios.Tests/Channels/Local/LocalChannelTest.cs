@@ -170,8 +170,7 @@ namespace Helios.Tests.Channels.Local
                     .Channel<LocalChannel>().Handler(new ReadHandler2());
                 cc = b.ConnectAsync(sc.LocalAddress).Result;
                 cc.WriteAndFlushAsync(new object());
-                latch.Wait(TimeSpan.FromSeconds(5));
-                Assert.True(latch.IsSet);
+                Assert.True(latch.Wait(TimeSpan.FromSeconds(5)));
             }
             finally
             {
@@ -195,7 +194,7 @@ namespace Helios.Tests.Channels.Local
             {
                 if (AbstractByteBuf.ByteBufComparer.Equals(_expectedData, message as IByteBuf))
                 {
-                    // todo: reference counting
+                    ReferenceCountUtil.SafeRelease(message);
                     _latch.Signal();
                 }
                 else
@@ -246,15 +245,13 @@ namespace Helios.Tests.Channels.Local
                     // Make sure a write operation is executed in the eventloop
                     cc.Pipeline.LastContext().Executor.Execute(() =>
                     {
-                        // todo: reference counting
-                        ccCpy.WriteAndFlushAsync(data.Duplicate()).ContinueWith(tr =>
+                        ccCpy.WriteAndFlushAsync(data.Duplicate().Retain()).ContinueWith(tr =>
                         {
                             ccCpy.Pipeline.LastContext().CloseAsync();
                         });
                     });
 
-                    messageLatch.Wait(TimeSpan.FromSeconds(5));
-                    Assert.True(messageLatch.IsSet);
+                    Assert.True(messageLatch.Wait(TimeSpan.FromSeconds(5)));
                     Assert.False(cc.IsOpen);
                 }
                 finally
@@ -265,7 +262,7 @@ namespace Helios.Tests.Channels.Local
             }
             finally
             {
-                // todo: referencing counting
+                data.Release();
             }
         }
 
@@ -288,7 +285,7 @@ namespace Helios.Tests.Channels.Local
                 if ((AbstractByteBuf.ByteBufComparer.Equals(_expectedData1, message as IByteBuf) && count == 2)
                     || (AbstractByteBuf.ByteBufComparer.Equals(_expectedData2, message as IByteBuf) && count == 1))
                 {
-                    // todo: reference counting
+                    ReferenceCountUtil.SafeRelease(message);
                     _latch.Signal();
                 }
                 else
@@ -333,16 +330,13 @@ namespace Helios.Tests.Channels.Local
                     // Make sure a write operation is executed in the eventloop
                     cc.Pipeline.LastContext().Executor.Execute(() =>
                     {
-                        // todo: reference counting
-                        ccCpy.WriteAndFlushAsync(data1.Duplicate()).ContinueWith(tr =>
+                        ccCpy.WriteAndFlushAsync(data1.Duplicate().Retain()).ContinueWith(tr =>
                         {
-                            // todo: reference counting
-                            ccCpy.WriteAndFlushAsync(data2.Duplicate());
+                            ccCpy.WriteAndFlushAsync(data2.Duplicate().Retain());
                         });
                     });
 
-                    messageLatch.Wait(TimeSpan.FromSeconds(5));
-                    Assert.True(messageLatch.IsSet);
+                    Assert.True(messageLatch.Wait(TimeSpan.FromSeconds(5)));
                 }
                 finally
                 {
@@ -352,7 +346,8 @@ namespace Helios.Tests.Channels.Local
             }
             finally
             {
-                // todo: referencing counting
+                data1.Release();
+                data2.Release();
             }
         }
 
@@ -371,7 +366,7 @@ namespace Helios.Tests.Channels.Local
             {
                 if (AbstractByteBuf.ByteBufComparer.Equals(_expectedData, message as IByteBuf))
                 {
-                    // todo: reference counting
+                    ReferenceCountUtil.SafeRelease(message);
                     _latch.Signal();
                 }
                 else
@@ -425,12 +420,10 @@ namespace Helios.Tests.Channels.Local
                     // Make sure a write operation is executed in the eventloop
                     cc.Pipeline.LastContext().Executor.Execute(() =>
                     {
-                        // todo: reference counting
-                        ccCpy.WriteAndFlushAsync(data1.Duplicate()).ContinueWith(tr =>
+                        ccCpy.WriteAndFlushAsync(data1.Duplicate().Retain()).ContinueWith(tr =>
                         {
                             var severChannelCopy = serverChannelRef.Value;
-                            // todo: reference counting
-                            severChannelCopy.WriteAndFlushAsync(data2.Duplicate());
+                            severChannelCopy.WriteAndFlushAsync(data2.Duplicate().Retain());
                         });
                     });
 
@@ -445,7 +438,8 @@ namespace Helios.Tests.Channels.Local
             }
             finally
             {
-                // todo: referencing counting
+                data1.Release();
+                data2.Release();
             }
         }
 
@@ -493,12 +487,10 @@ namespace Helios.Tests.Channels.Local
                     // Make sure a write operation is executed in the eventloop
                     cc.Pipeline.LastContext().Executor.Execute(() =>
                     {
-                        // todo: reference counting
-                        ccCpy.WriteAndFlushAsync(data1.Duplicate()).ContinueWith(tr =>
+                        ccCpy.WriteAndFlushAsync(data1.Duplicate().Retain()).ContinueWith(tr =>
                         {
                             var severChannelCopy = serverChannelRef.Value;
-                            // todo: reference counting
-                            severChannelCopy.WriteAndFlushAsync(data2.Duplicate());
+                            severChannelCopy.WriteAndFlushAsync(data2.Duplicate().Retain());
                         });
                     });
 
@@ -513,7 +505,8 @@ namespace Helios.Tests.Channels.Local
             }
             finally
             {
-                // todo: referencing counting
+                data1.Retain();
+                data2.Retain();
             }
         }
 
@@ -560,16 +553,14 @@ namespace Helios.Tests.Channels.Local
                     // Make sure a write operation is executed in the eventloop
                     cc.Pipeline.LastContext().Executor.Execute(() =>
                     {
-                        // todo: reference counting
-                        ccCpy.WriteAndFlushAsync(data.Duplicate()).ContinueWith(tr =>
+                        ccCpy.WriteAndFlushAsync(data.Duplicate().Retain()).ContinueWith(tr =>
                         {
                             var severChannelCopy = serverChannelRef.Value;
                             severChannelCopy.CloseAsync();
                         });
                     });
 
-                    messageLatch.Wait(TimeSpan.FromSeconds(5));
-                    Assert.True(messageLatch.IsSet);
+                    Assert.True(messageLatch.Wait(TimeSpan.FromSeconds(5)));
                     Assert.False(cc.IsOpen);
                     Assert.False(serverChannelRef.Value.IsOpen);
                 }
@@ -581,7 +572,7 @@ namespace Helios.Tests.Channels.Local
             }
             finally
             {
-                // todo: referencing counting
+                data.Release();
             }
         }
 
@@ -670,7 +661,7 @@ namespace Helios.Tests.Channels.Local
             public override void ChannelRead(IChannelHandlerContext context, object message)
             {
                 Logger.Info("Received message: {0}", message);
-                // todo: reference counting
+                ReferenceCountUtil.SafeRelease(message);
             }
         }
 

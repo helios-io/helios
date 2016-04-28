@@ -138,7 +138,7 @@ namespace Helios.Codecs
                     throw new Exception("Unknown length field length");
             }
 
-            output.Add(message); // todo: reference counting
+            output.Add(message.Retain());
         }
     }
 }

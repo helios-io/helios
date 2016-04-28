@@ -182,7 +182,8 @@ namespace Helios.Channels
 
             if (!e.Cancelled)
             {
-                // todo: reference counting
+                // only release message, notify and decrement if it was not canceled before.
+                ReferenceCountUtil.SafeRelease(msg);
                 PromiseUtil.SafeSetSuccess(promise, Logger);
                 DecrementPendingOutboundBytes(size, true);
             }
@@ -211,7 +212,8 @@ namespace Helios.Channels
 
             if (!e.Cancelled)
             {
-                // todo: reference counting
+                // only release message, notify and decrement if it was not canceled before.
+                ReferenceCountUtil.SafeRelease(msg);
                 PromiseUtil.SafeSetFailure(promise, cause, Logger);
                 DecrementPendingOutboundBytes(size, notifyWritability);
             }
@@ -354,7 +356,7 @@ namespace Helios.Channels
                     // No triggering anymore events, as we are shutting down
                     if (!e.Cancelled)
                     {
-                        // todo: referencing counting
+                        ReferenceCountUtil.SafeRelease(e.Message);
                         PromiseUtil.SafeSetFailure(e.Promise, cause, Logger);
                     }
                     e = e.RecycleAndGetNext();
@@ -403,7 +405,8 @@ namespace Helios.Channels
                     Cancelled = true;
                     var pSize = PendingSize;
 
-                    // TODO: message reference counting (optional)
+                    // release message and replace with an empty buffer
+                    ReferenceCountUtil.SafeRelease(Message);
                     Message = Unpooled.Empty;
                     PendingSize = 0;
                     Total = 0;

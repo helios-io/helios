@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Helios.Concurrency;
 using Helios.Logging;
+using Helios.Util;
 using Helios.Util.Concurrency;
 
 namespace Helios.Channels.Local
@@ -317,7 +318,7 @@ namespace Helios.Channels.Local
                         // simulate real socket behavior and ensure the write operation is failed.
                         if (peer._state == State.Connected)
                         {
-                            peer._inboundBuffer.Enqueue(msg); // todo: reference counting
+                            peer._inboundBuffer.Enqueue(ReferenceCountUtil.Retain(msg));
                             input.Remove();
                         }
                         else
@@ -341,7 +342,10 @@ namespace Helios.Channels.Local
 
         private void ReleaseInboundBuffers()
         {
-            return; // todo: referencing counting
+            foreach (var o in _inboundBuffer)
+            {
+                ReferenceCountUtil.Release(o);
+            }
         }
 
         private void DoPeerClose(LocalChannel peer, bool peerWriteInProgress)

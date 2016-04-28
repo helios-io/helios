@@ -43,6 +43,12 @@ namespace Helios.Logging
         /// <param name="args">The arguments.</param>
         void Warning(string format, params object[] args);
 
+        /// <summary>Logs a message with the Warning level.</summary>
+        /// <param name="cause">The cause.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The arguments.</param>
+        void Warning(Exception cause, string format, params object[] args);
+
         /// <summary>Logs a message with the Error level.</summary>
         /// <param name="format">The format.</param>
         /// <param name="args">The arguments.</param>

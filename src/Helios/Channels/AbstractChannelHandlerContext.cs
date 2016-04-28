@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Concurrency;
+using Helios.Util;
 
 namespace Helios.Channels
 {
@@ -255,6 +256,7 @@ namespace Helios.Channels
         public IChannelHandlerContext FireChannelRead(object message)
         {
             var next = FindContextInbound();
+            ReferenceCountUtil.Touch(message, next);
             next.Invoker.InvokeChannelRead(next, message);
             return this;
         }
@@ -297,7 +299,7 @@ namespace Helios.Channels
         public Task WriteAsync(object message)
         {
             var next = FindContextOutbound();
-            // TODO: reference counting
+            ReferenceCountUtil.Touch(message, next);
             return next.Invoker.InvokeWriteAsync(next, message);
         }
 
@@ -311,7 +313,7 @@ namespace Helios.Channels
         public Task WriteAndFlushAsync(object message)
         {
             var target = FindContextOutbound();
-            // todo: reference count
+            ReferenceCountUtil.Touch(message, target);
             var writeTask = target.Invoker.InvokeWriteAsync(target, message);
             target = FindContextOutbound();
             target.Invoker.InvokeFlush(target);

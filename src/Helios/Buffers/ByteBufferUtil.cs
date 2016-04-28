@@ -131,7 +131,7 @@ namespace Helios.Buffers
                 finally
                 {
                     // Release the temporary buffer again.
-                    // todo: reference counting
+                    buffer.Release();
                 }
             }
         }

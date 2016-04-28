@@ -155,6 +155,7 @@
     <Compile Include="Util\MonotonicClock.cs" />
     <Compile Include="Util\ObjectPool.cs" />
     <Compile Include="Util\RecyclableArrayList.cs" />
+    <Compile Include="Util\ReferenceCountUtil.cs" />
     <Compile Include="Util\StandardOutWriter.cs" />
     <Compile Include="Logging\StdOutLogger.cs" />
     <Compile Include="Net\NetworkData.cs" />

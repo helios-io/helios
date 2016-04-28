@@ -65,8 +65,19 @@ namespace Helios.Logging
     /// </summary>
     public class Warning : LogEvent
     {
+        public Exception Cause { get; private set; }
+
         public Warning(string message, string logSource) : base(message, logSource, LogLevel.Warning)
         {
+        }
+
+        public Warning(Exception cause, string message, string logSource) : base(message, logSource, LogLevel.Error)
+        {
+            Cause = cause;
+        }
+        public override string ToString()
+        {
+            return base.ToString() + Environment.NewLine + $"Cause: {Cause?.ToString() ?? "Unknown"}";
         }
     }
 

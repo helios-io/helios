@@ -67,6 +67,12 @@ namespace Helios.Logging
                 WarningInternal(new Warning(string.Format(format, args), LogSource));
         }
 
+        public void Warning(Exception cause, string format, params object[] args)
+        {
+            if (IsWarningEnabled)
+                WarningInternal(new Warning(cause, string.Format(format, args), LogSource));
+        }
+
         protected abstract void WarningInternal(Warning message);
 
         public void Error(string format, params object[] args)
