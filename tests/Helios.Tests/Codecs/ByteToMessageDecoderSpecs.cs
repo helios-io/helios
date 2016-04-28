@@ -35,11 +35,19 @@ namespace Helios.Tests.Codecs
             ec.WriteInbound(buf.Copy());
             IByteBuf b = ec.ReadInbound<IByteBuf>();
             Assert.Equal(b, buf.SkipBytes(1), AbstractByteBuf.ByteBufComparer);
+            buf.Release();
+            b.Release();
         }
 
         class RemovedDecoder2 : ByteToMessageDecoder
         {
             private bool _removed;
+            private IByteBuf _buf;
+
+            public RemovedDecoder2(IByteBuf buf)
+            {
+                _buf = buf;
+            }
 
             protected override void Decode(IChannelHandlerContext context, IByteBuf input, List<object> output)
             {
@@ -48,7 +56,7 @@ namespace Helios.Tests.Codecs
                 context.Pipeline.Remove(this);
 
                 // This should not let it keep calling Decode()
-                input.WriteByte(Convert.ToByte('d'));
+                _buf.WriteByte(Convert.ToByte('d'));
 
                 _removed = true;
             }
@@ -57,12 +65,14 @@ namespace Helios.Tests.Codecs
         [Fact]
         public void Should_remove_itself_WriteBuffer()
         {
-            var ec = new EmbeddedChannel(new RemovedDecoder2());
             var buf = Unpooled.Buffer().WriteBytes(new char[] { 'a', 'b', 'c' }.Select(Convert.ToByte).ToArray());
+            var ec = new EmbeddedChannel(new RemovedDecoder2(buf));
             ec.WriteInbound(buf.Copy());
             var expected = Unpooled.WrappedBuffer(new char[] { 'b', 'c' }.Select(Convert.ToByte).ToArray());
             IByteBuf b = ec.ReadInbound<IByteBuf>();
-            Assert.Equal(expected, buf.SkipBytes(1), AbstractByteBuf.ByteBufComparer);
+            Assert.Equal(expected, b, AbstractByteBuf.ByteBufComparer);
+            buf.Release();
+            b.Release();
         }
 
         class RemovedDecoder3 : ByteToMessageDecoder
@@ -109,6 +119,8 @@ namespace Helios.Tests.Codecs
             IByteBuf b = ec.ReadInbound<IByteBuf>();
             Assert.Equal(b, buf.SkipBytes(1), AbstractByteBuf.ByteBufComparer);
             Assert.False(ec.Finish());
+            buf.Release();
+            b.Release();
         }
 
         class LastEmptyBufferDecoder : ByteToMessageDecoder

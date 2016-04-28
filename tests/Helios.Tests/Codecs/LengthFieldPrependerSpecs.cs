@@ -80,9 +80,9 @@ namespace Helios.Tests.Codecs
         }
 
         [Fact]
-        public void TestPrependLengthInLittleEndian()
+        public void TestPrependLengthInBigEndian()
         {
-            EmbeddedChannel ch = new EmbeddedChannel(new LengthFieldPrepender(ByteOrder.LittleEndian, 4, 0, false));
+            EmbeddedChannel ch = new EmbeddedChannel(new LengthFieldPrepender(ByteOrder.BigEndian, 4, 0, false));
             ch.WriteOutbound(msg);
             IByteBuf buf = ch.ReadOutbound<IByteBuf>();
             Assert.Equal(4, buf.ReadableBytes);

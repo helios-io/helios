@@ -67,7 +67,7 @@ namespace Helios.Buffers
                     {
                         SetWriterIndex(writerIndex = newCapacity);
                     }
-                    System.Array.Copy(_buffer, readerIndex, newBuffer, writerIndex - readerIndex, newCapacity);
+                    System.Array.Copy(_buffer, readerIndex, newBuffer, 0, writerIndex - readerIndex);
                 }
                 else
                 {
