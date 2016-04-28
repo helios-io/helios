@@ -170,8 +170,7 @@ namespace Helios.Channels.Embedded
                     break;
                 }
 
-                // TODO: reference counting
-                //ReferenceCountUtil.Retain(msg);
+                ReferenceCountUtil.Retain(msg);
                 this.OutboundMessages.Enqueue(msg);
                 input.Remove();
             }

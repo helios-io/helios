@@ -44,37 +44,38 @@ namespace Helios.Buffers
 
         public override IByteBuf AdjustCapacity(int newCapacity)
         {
-            if (newCapacity > MaxCapacity) throw new ArgumentOutOfRangeException("newCapacity", string.Format("capacity({0}) must be less than MaxCapacity({1})", newCapacity, MaxCapacity));
-            var newBuffer = new byte[newCapacity];
-
+            EnsureAccessible();
+            Contract.Requires(newCapacity >= 0 && newCapacity <= MaxCapacity);
+            
+            var oldCapacity = _buffer.Length;
             //expand
-            if (newCapacity > Capacity)
+            if (newCapacity > oldCapacity)
             {
-                System.Array.Copy(_buffer, ReaderIndex, newBuffer, 0, ReadableBytes);
-                SetIndex(0, ReadableBytes);
+                var newBuffer = new byte[newCapacity];
+                System.Array.Copy(_buffer, 0, newBuffer, 0, _buffer.Length);
+                SetBuffer(newBuffer);
             }
-            else //shrink
+            else if(newCapacity < oldCapacity) //shrink
             {
-                System.Array.Copy(_buffer, ReaderIndex, newBuffer, 0, newCapacity);
-                if (ReaderIndex < newCapacity)
+                var newBuffer = new byte[newCapacity];
+                var readerIndex = ReaderIndex;
+               
+                if (readerIndex < newCapacity)
                 {
-                    if (WriterIndex > newCapacity)
+                    var writerIndex = WriterIndex;
+                    if (writerIndex > newCapacity)
                     {
-                        SetWriterIndex(newCapacity);
+                        SetWriterIndex(writerIndex = newCapacity);
                     }
-                    else
-                    {
-                        SetWriterIndex(ReadableBytes);
-                    }
-                    SetReaderIndex(0);
+                    System.Array.Copy(_buffer, readerIndex, newBuffer, writerIndex - readerIndex, newCapacity);
                 }
                 else
                 {
                     SetIndex(newCapacity, newCapacity);
                 }
+                SetBuffer(newBuffer);
             }
 
-            _buffer = newBuffer;
             return this;
         }
 

@@ -145,7 +145,7 @@ namespace Helios.FsCheck.Tests.Codecs
 
         public override void ChannelInactive(IChannelHandlerContext context)
         {
-            // todo: release cumulative buffer
+            _cumulativeBuffer.Release();
             context.FireChannelInactive();
         }
     }

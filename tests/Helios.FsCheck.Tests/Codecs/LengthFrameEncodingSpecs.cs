@@ -46,7 +46,7 @@ namespace Helios.FsCheck.Tests.Codecs
             // finish the read
             ec.Pipeline.FireUserEventTriggered(PartialReadGenerator.FinishPartialReads.Instance);
             var inboud = ec.ReadInbound<IByteBuf>();
-            Assert.Equal(byteBuff, inboud, AbstractByteBuf.ByteBufComparer);
+            Assert.Equal(byteBuff.ResetReaderIndex(), inboud, AbstractByteBuf.ByteBufComparer);
         }
 
         [Fact]
@@ -59,14 +59,14 @@ namespace Helios.FsCheck.Tests.Codecs
             var byteBuf1 = Unpooled.Buffer(10).WriteInt(4).WriteInt(10);
             var byteBuf2 = Unpooled.Buffer(100).WriteInt(5).WriteInt(6).WriteBytes(new byte[92]);
             var byteBuf3 = Unpooled.Buffer(10).WriteInt(21).WriteInt(11);
-            Task.WaitAll(ec.WriteAndFlushAsync(byteBuf1.Duplicate()), ec.WriteAndFlushAsync(byteBuf2.Duplicate()), ec.WriteAndFlushAsync(byteBuf3.Duplicate()));
+            Task.WaitAll(ec.WriteAndFlushAsync(byteBuf1.Duplicate().Retain()), ec.WriteAndFlushAsync(byteBuf2.Duplicate().Retain()), ec.WriteAndFlushAsync(byteBuf3.Duplicate().Retain()));
 
             IByteBuf encoded;
             do
             {
                 encoded = ec.ReadOutbound<IByteBuf>();
                 if (encoded != null)
-                    ec.WriteInbound(encoded);
+                    ec.WriteInbound(encoded.Duplicate().Retain());
             } while (encoded != null);
 
 
@@ -75,9 +75,12 @@ namespace Helios.FsCheck.Tests.Codecs
             var inbound1 = ec.ReadInbound<IByteBuf>();
             var inbound2 = ec.ReadInbound<IByteBuf>();
             var inbound3 = ec.ReadInbound<IByteBuf>();
-            Assert.Equal(byteBuf1, inbound1, AbstractByteBuf.ByteBufComparer);
-            Assert.Equal(byteBuf2, inbound2, AbstractByteBuf.ByteBufComparer);
-            Assert.Equal(byteBuf3, inbound3, AbstractByteBuf.ByteBufComparer);
+            Assert.Equal(byteBuf1.ResetReaderIndex(), inbound1, AbstractByteBuf.ByteBufComparer);
+            Assert.Equal(byteBuf2.ResetReaderIndex(), inbound2, AbstractByteBuf.ByteBufComparer);
+            Assert.Equal(byteBuf3.ResetReaderIndex(), inbound3, AbstractByteBuf.ByteBufComparer);
+            byteBuf1.Release();
+            byteBuf2.Release();
+            byteBuf3.Release();
         }
 
         [Property(QuietOnSuccess = true, MaxTest = 10000)]
@@ -117,7 +120,7 @@ namespace Helios.FsCheck.Tests.Codecs
                     actualReads.Add(decoded);
                 }
             } while (decoded != null);
-
+            expectedReads = expectedReads.Select(x => x.ResetReaderIndex()).ToArray(); // need to perform a read reset of the buffer
             var pass = expectedReads.SequenceEqual(actualReads, AbstractByteBuf.ByteBufComparer);
 
             if (!pass)
