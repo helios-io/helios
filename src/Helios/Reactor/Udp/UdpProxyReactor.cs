@@ -5,7 +5,6 @@ using System.Net.Sockets;
 using Helios.Buffers;
 using Helios.Exceptions;
 using Helios.Net;
-using Helios.Ops;
 using Helios.Reactor.Response;
 using Helios.Serialization;
 using Helios.Topology;
@@ -57,11 +56,12 @@ namespace Helios.Reactor.Udp
                 var received = receiveState.Socket.EndReceiveFrom(ar, ref RemoteEndPoint);
                 if (received == 0)
                 {
-                    if (SocketMap.ContainsKey(receiveState.RemoteHost))
+                    ReactorResponseChannel connection;
+                    if (SocketMap.TryGetValue(receiveState.RemoteHost, out connection))
                     {
-                        var connection = SocketMap[receiveState.RemoteHost];
                         CloseConnection(connection);
                     }
+
                     return;
                 }
                 
@@ -71,14 +71,11 @@ namespace Helios.Reactor.Udp
                     receiveState.RemoteHost = remoteAddress.ToNode(TransportType.Udp);
 
                 ReactorResponseChannel adapter;
-                if (SocketMap.ContainsKey(receiveState.RemoteHost))
+               
+                if (!SocketMap.TryGetValue(receiveState.RemoteHost, out adapter))
                 {
-                    adapter = SocketMap[receiveState.RemoteHost];
-                }
-                else
-                {
-                    adapter = new ReactorProxyResponseChannel(this, receiveState.Socket, remoteAddress, EventLoop.Clone(ProxiesShareFiber)); ;
-                    SocketMap.Add(adapter.RemoteHost, adapter);
+                    adapter = new ReactorProxyResponseChannel(this, receiveState.Socket, remoteAddress, EventLoop.Clone(ProxiesShareFiber));
+                    SocketMap.TryAdd(adapter.RemoteHost, adapter);
                     NodeConnected(adapter.RemoteHost, adapter);
                 }
 
@@ -103,21 +100,27 @@ namespace Helios.Reactor.Udp
             }
             catch (SocketException ex) //node disconnected
             {
-                var connection = SocketMap[receiveState.RemoteHost];
-                CloseConnection(ex, connection);
+                ReactorResponseChannel connection;
+                if (SocketMap.TryGetValue(receiveState.RemoteHost, out connection))
+                {
+                    CloseConnection(ex, connection);
+                }
             }
             catch (ObjectDisposedException ex)
             {
-                if (SocketMap.ContainsKey(receiveState.RemoteHost))
+                ReactorResponseChannel connection;
+                if (SocketMap.TryGetValue(receiveState.RemoteHost, out connection))
                 {
-                    var connection = SocketMap[receiveState.RemoteHost];
                     CloseConnection(ex, connection);
                 }
             }
             catch (Exception ex)
             {
-                var connection = SocketMap[receiveState.RemoteHost];
-                OnErrorIfNotNull(ex, connection);
+                ReactorResponseChannel connection;
+                if (SocketMap.TryGetValue(receiveState.RemoteHost, out connection))
+                {
+                    OnErrorIfNotNull(ex, connection);
+                }
             }
         }
 
@@ -167,17 +170,17 @@ namespace Helios.Reactor.Udp
             }
             catch (SocketException ex) //node disconnected
             {
-                if (SocketMap.ContainsKey(receiveState.RemoteHost))
+                ReactorResponseChannel connection;
+                if (SocketMap.TryGetValue(receiveState.RemoteHost, out connection))
                 {
-                    var connection = SocketMap[receiveState.RemoteHost];
                     CloseConnection(ex, connection);
                 }
             }
             catch (Exception ex)
             {
-                if (SocketMap.ContainsKey(receiveState.RemoteHost))
+                ReactorResponseChannel connection;
+                if (SocketMap.TryGetValue(receiveState.RemoteHost, out connection))
                 {
-                    var connection = SocketMap[receiveState.RemoteHost];
                     OnErrorIfNotNull(ex, connection);
                 }
             }
@@ -201,8 +204,8 @@ namespace Helios.Reactor.Udp
             }
             finally
             {
-                if (SocketMap.ContainsKey(remoteConnection.RemoteHost))
-                    SocketMap.Remove(remoteConnection.RemoteHost);
+                ReactorResponseChannel temp;
+                SocketMap.TryRemove(remoteConnection.RemoteHost, out temp);
             }
         }
 
@@ -226,7 +229,5 @@ namespace Helios.Reactor.Udp
         }
 
         #endregion
-
-
     }
 }

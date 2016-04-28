@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using Helios.Buffers;
 using Helios.Net;
 using Helios.Reactor.Response;
 using Helios.Serialization;
 using Helios.Topology;
+using System.Collections.Concurrent;
 
 namespace Helios.Reactor
 {
@@ -14,7 +14,7 @@ namespace Helios.Reactor
     /// </summary>
     public abstract class ProxyReactorBase : ReactorBase
     {
-        protected Dictionary<INode, ReactorResponseChannel> SocketMap = new Dictionary<INode, ReactorResponseChannel>();
+        protected ConcurrentDictionary<INode, ReactorResponseChannel> SocketMap = new ConcurrentDictionary<INode, ReactorResponseChannel>();
 
         protected ProxyReactorBase(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base(localAddress, localPort, eventLoop, encoder, decoder, allocator, socketType, protocol, bufferSize)
