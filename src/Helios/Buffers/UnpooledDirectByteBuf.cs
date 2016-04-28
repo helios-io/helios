@@ -90,17 +90,31 @@ namespace Helios.Buffers
 
         protected override short _GetShort(int index)
         {
-            return BitConverter.ToInt16(_buffer.Slice(index, 2), 0);
+            return unchecked((short)(_buffer[index] << 8 | _buffer[index + 1]));
         }
 
         protected override int _GetInt(int index)
         {
-            return BitConverter.ToInt32(_buffer.Slice(index, 4), 0);
+            return unchecked(_buffer[index] << 24 |
+                _buffer[index + 1] << 16 |
+                _buffer[index + 2] << 8 |
+                _buffer[index + 3]);
         }
 
         protected override long _GetLong(int index)
         {
-            return BitConverter.ToInt64(_buffer.Slice(index, 8), 0);
+            unchecked
+            {
+                int i1 = _buffer[index] << 24 |
+                    _buffer[index + 1] << 16 |
+                    _buffer[index + 2] << 8 |
+                    _buffer[index + 3];
+                int i2 = _buffer[index + 4] << 24 |
+                    _buffer[index + 5] << 16 |
+                    _buffer[index + 6] << 8 |
+                    _buffer[index + 7];
+                return (uint)i2 | ((long)i1 << 32);
+            }
         }
 
         public override IByteBuf GetBytes(int index, IByteBuf destination, int dstIndex, int length)
@@ -134,20 +148,39 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                _buffer.SetRange(index, BitConverter.GetBytes((short)(value)));
+                _buffer[index] = (byte)((ushort)value >> 8);
+                _buffer[index + 1] = (byte)value;
             }
             return this;
         }
 
         protected override IByteBuf _SetInt(int index, int value)
         {
-            _buffer.SetRange(index, BitConverter.GetBytes(value));
+            unchecked
+            {
+                uint unsignedValue = (uint)value;
+                _buffer[index] = (byte)(unsignedValue >> 24);
+                _buffer[index + 1] = (byte)(unsignedValue >> 16);
+                _buffer[index + 2] = (byte)(unsignedValue >> 8);
+                _buffer[index + 3] = (byte)value;
+            }
             return this;
         }
 
         protected override IByteBuf _SetLong(int index, long value)
         {
-            _buffer.SetRange(index, BitConverter.GetBytes(value));
+            unchecked
+            {
+                ulong unsignedValue = (ulong)value;
+                _buffer[index] = (byte)(unsignedValue >> 56);
+                _buffer[index + 1] = (byte)(unsignedValue >> 48);
+                _buffer[index + 2] = (byte)(unsignedValue >> 40);
+                _buffer[index + 3] = (byte)(unsignedValue >> 32);
+                _buffer[index + 4] = (byte)(unsignedValue >> 24);
+                _buffer[index + 5] = (byte)(unsignedValue >> 16);
+                _buffer[index + 6] = (byte)(unsignedValue >> 8);
+                _buffer[index + 7] = (byte)value;
+            }
             return this;
         }
 

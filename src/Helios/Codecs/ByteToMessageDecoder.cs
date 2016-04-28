@@ -28,7 +28,7 @@ namespace Helios.Codecs
                 ExpandCumulation(alloc, cumulation, input.ReadableBytes) : // expand the buffer
                 cumulation; // or, use the original since input will fit inside
             buffer.WriteBytes(input);
-            // todo: referencing counting release
+            input.Release();
             return buffer;
         };
 
@@ -40,7 +40,7 @@ namespace Helios.Codecs
             var old = cumulation;
             cumulation = alloc.Buffer(old.ReadableBytes + readable);
             cumulation.WriteBytes(old);
-            // todo: reference count the old cumulation buffer
+            old.Release();
             return cumulation;
         }
 
@@ -109,12 +109,12 @@ namespace Helios.Codecs
             if (readable > 0)
             {
                 var bytes = buf.ReadBytes(readable);
-                // todo: reference count release
+                buf.Release();
                 context.FireChannelRead(bytes);
             }
             else
             {
-                // todo: reference count release
+                buf.Release();
             }
             _cumulation = null;
             _numReads = 0;
@@ -156,7 +156,7 @@ namespace Helios.Codecs
                     if (_cumulation != null && !_cumulation.IsReadable())
                     {
                         _numReads = 0;
-                        // TODO: release cumulation buffer
+                        _cumulation.Release();
                         _cumulation = null;
                     } else if (++_numReads >= _discardAfterReads)
                     {
@@ -226,7 +226,7 @@ namespace Helios.Codecs
                 {
                     if (_cumulation != null)
                     {
-                        // todo: reference count release
+                        _cumulation.Release();
                         _cumulation = null;
                     }
                     var size = output.Count;
@@ -253,7 +253,7 @@ namespace Helios.Codecs
 
         protected void DiscardSomeReadBytes()
         {
-            if (_cumulation != null && !_first) //todo: reference counting
+            if (_cumulation != null && !_first && _cumulation.ReferenceCount == 1)
             {
                 _cumulation.DiscardSomeReadBytes();
             }

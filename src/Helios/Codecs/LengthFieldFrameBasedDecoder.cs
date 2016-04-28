@@ -254,7 +254,7 @@ namespace Helios.Codecs
         protected virtual IByteBuf ExtractFrame(IChannelHandlerContext context, IByteBuf buffer, int index, int length)
         {
             var buff = buffer.Slice(index, length);
-            // buff.Retain(); // todo: reference counting
+            buff.Retain();
             return buff;
         }
 
