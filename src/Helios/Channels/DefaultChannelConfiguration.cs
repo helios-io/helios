@@ -26,7 +26,7 @@ namespace Helios.Channels
             _maxMessagesPerRead = 1;
         }
 
-        public T GetOption<T>(ChannelOption<T> option)
+        public virtual T GetOption<T>(ChannelOption<T> option)
         {
             Contract.Requires(option != null);
 
@@ -74,7 +74,7 @@ namespace Helios.Channels
             return option.Set(this, value);
         }
 
-        public bool SetOption<T>(ChannelOption<T> option, T value)
+        public virtual bool SetOption<T>(ChannelOption<T> option, T value)
         {
             Validate(option, value);
 

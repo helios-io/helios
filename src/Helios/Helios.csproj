@@ -126,7 +126,9 @@
     <Compile Include="Channels\PausableChannelEventExecutor.cs" />
     <Compile Include="Channels\SingleThreadEventLoop.cs" />
     <Compile Include="Channels\SkipAttribute.cs" />
-    <Compile Include="Channels\Sockets\ISocketConnectionConfig.cs" />
+    <Compile Include="Channels\Sockets\DefaultSocketChannelConfiguration.cs" />
+    <Compile Include="Channels\Sockets\ISocketChannel.cs" />
+    <Compile Include="Channels\Sockets\ISocketChannelConfig.cs" />
     <Compile Include="Codecs\ByteToMessageDecoder.cs" />
     <Compile Include="Codecs\LengthFieldFrameBasedDecoder.cs" />
     <Compile Include="Codecs\LengthFieldPrepender.cs" />
