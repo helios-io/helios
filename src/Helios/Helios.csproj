@@ -138,7 +138,13 @@
     <Compile Include="Codecs\LengthFieldPrepender.cs" />
     <Compile Include="Codecs\MessageToMessageEncoder.cs" />
     <Compile Include="Concurrency\AbstractEventExecutor.cs" />
-    <Compile Include="Concurrency\AbstractSchedulerEventExecutor.cs" />
+    <Compile Include="Concurrency\AbstractScheduledEventExecutor.cs" />
+    <Compile Include="Concurrency\ActionScheduledAsyncTask.cs" />
+    <Compile Include="Concurrency\ActionScheduledTask.cs" />
+    <Compile Include="Concurrency\ActionWithStateAndContextScheduledAsyncTask.cs" />
+    <Compile Include="Concurrency\ActionWithStateAndContextScheduledTask.cs" />
+    <Compile Include="Concurrency\ActionWithStateScheduledAsyncTask.cs" />
+    <Compile Include="Concurrency\ActionWithStateScheduledTask.cs" />
     <Compile Include="Concurrency\EventExecutorTaskScheduler.cs" />
     <Compile Include="Concurrency\IEventExecutor.cs" />
     <Compile Include="Concurrency\IEventLoop.cs" />
@@ -150,6 +156,8 @@
     <Compile Include="Concurrency\IScheduledTask.cs" />
     <Compile Include="Concurrency\PromiseUtil.cs" />
     <Compile Include="Concurrency\RejectedTaskException.cs" />
+    <Compile Include="Concurrency\ScheduledAsyncTask.cs" />
+    <Compile Include="Concurrency\ScheduledTask.cs" />
     <Compile Include="Concurrency\SingleThreadEventExecutor.cs" />
     <Compile Include="Concurrency\TaskCompletionSource.cs" />
     <Compile Include="Logging\ILogger.cs" />

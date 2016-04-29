@@ -14,7 +14,7 @@ namespace Helios.Concurrency
     /// <summary>
     /// A single-threaded <see cref="IEventExecutor"/>
     /// </summary>
-    public class SingleThreadEventExecutor : AbstractEventExecutor
+    public class SingleThreadEventExecutor : AbstractScheduledEventExecutor
     {
         private class WakeupTask : IRunnable
         {
@@ -238,6 +238,7 @@ namespace Helios.Concurrency
 
         protected bool RunAllTasks()
         {
+            FetchFromScheduledTaskQueue();
             var task = PollTask();
             if (task == null)
                 return false;
@@ -264,6 +265,7 @@ namespace Helios.Concurrency
 
         private bool RunAllTasks(TimeSpan breakoutInternval)
         {
+            FetchFromScheduledTaskQueue();
             var task = PollTask();
             if (task == null)
                 return false;
@@ -383,6 +385,24 @@ namespace Helios.Concurrency
             return ran;
         }
 
+        private void FetchFromScheduledTaskQueue()
+        {
+            if (HasScheduledTasks())
+            {
+                var tickCount = MonotonicClock.GetTicks();
+                while (true)
+                {
+                    IScheduledRunnable scheduledTask = PollScheduledTask(tickCount);
+                    if (scheduledTask == null)
+                    {
+                        break;
+                    }
+
+                    _taskQueue.Enqueue(scheduledTask);
+                }
+            }
+        }
+
         private IRunnable PollTask()
         {
             Contract.Assert(InEventLoop);
@@ -392,8 +412,25 @@ namespace Helios.Concurrency
                 _emptyQueueEvent.Reset();
                 if (!_taskQueue.TryDequeue(out task) && !IsShuttingDown) // revisit queue as producer might have put a task in meanwhile
                 {
-                    _emptyQueueEvent.Wait(); // wait until work is put into the queue
-                    _taskQueue.TryDequeue(out task);
+                    var nextScheduledTask = ScheduledTaskQueue.Peek();
+                    if (nextScheduledTask != null)
+                    {
+                        var wakeupTimeout = new TimeSpan(nextScheduledTask.Deadline.When - MonotonicClock.GetTicks());
+                        if (wakeupTimeout.Ticks > 0)
+                        {
+                            if (_emptyQueueEvent.Wait(wakeupTimeout))
+                            {
+                                // woken up before the next scheduled task was due
+                                _taskQueue.TryDequeue(out task);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        _emptyQueueEvent.Wait(); // wait until work is put into the queue
+                        _taskQueue.TryDequeue(out task);
+                    }
+                   
                 }
             }
             return task;

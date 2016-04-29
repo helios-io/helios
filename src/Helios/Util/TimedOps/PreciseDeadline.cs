@@ -7,6 +7,8 @@ namespace Helios.Util.TimedOps
     /// </summary>
     public struct PreciseDeadline : IComparable<PreciseDeadline>
     {
+        public PreciseDeadline(TimeSpan timespan) : this(timespan.Ticks + MonotonicClock.GetTicks()) { }
+
         public PreciseDeadline(long tickCountDue)
         {
             When = tickCountDue;
