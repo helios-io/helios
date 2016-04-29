@@ -122,7 +122,7 @@ namespace Helios.FsCheck.Tests.Concurrency
 
             public override string ToString()
             {
-                return "Reset()";
+                return "Setup()";
             }
         }
 

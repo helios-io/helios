@@ -285,6 +285,7 @@ namespace Helios.Tests.Channels.Local
                 if ((AbstractByteBuf.ByteBufComparer.Equals(_expectedData1, message as IByteBuf) && count == 2)
                     || (AbstractByteBuf.ByteBufComparer.Equals(_expectedData2, message as IByteBuf) && count == 1))
                 {
+                    Logger.Info("Received message");
                     ReferenceCountUtil.SafeRelease(message);
                     _latch.Signal();
                 }
@@ -330,8 +331,10 @@ namespace Helios.Tests.Channels.Local
                     // Make sure a write operation is executed in the eventloop
                     cc.Pipeline.LastContext().Executor.Execute(() =>
                     {
+                        Logger.Info("Writing message 1");
                         ccCpy.WriteAndFlushAsync(data1.Duplicate().Retain()).ContinueWith(tr =>
                         {
+                            Logger.Info("Writing message 2");
                             ccCpy.WriteAndFlushAsync(data2.Duplicate().Retain());
                         });
                     });
@@ -670,7 +673,7 @@ namespace Helios.Tests.Channels.Local
             var t1 = _group1.ShutdownGracefullyAsync();
             var t2 = _group2.ShutdownGracefullyAsync();
             var t3 = _sharedGroup.ShutdownGracefullyAsync();
-            Task.WaitAll(t1, t2, t3);
+            //Task.WaitAll(t1, t2, t3);
         }
     }
 }
