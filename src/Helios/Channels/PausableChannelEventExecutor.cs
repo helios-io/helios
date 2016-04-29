@@ -84,6 +84,60 @@ namespace Helios.Channels
             return Unwrap().SubmitAsync(func, context, state, cancellationToken);
         }
 
+        public IScheduledTask Schedule(Action action, TimeSpan delay)
+        {
+            VerifyAcceptingNewTasks();
+            return Unwrap().Schedule(action, delay);
+        }
+
+        public IScheduledTask Schedule(Action<object> action, object state, TimeSpan delay)
+        {
+            VerifyAcceptingNewTasks();
+            return Unwrap().Schedule(action, state, delay);
+        }
+
+        public IScheduledTask Schedule(Action<object, object> action, object context, object state, TimeSpan delay)
+        {
+            VerifyAcceptingNewTasks();
+            return Unwrap().Schedule(action, context, state, delay);
+        }
+
+        public Task ScheduleAsync(Action<object> action, object state, TimeSpan delay, CancellationToken cancellationToken)
+        {
+            VerifyAcceptingNewTasks();
+            return Unwrap().ScheduleAsync(action, state, delay, cancellationToken);
+        }
+
+        public Task ScheduleAsync(Action<object> action, object state, TimeSpan delay)
+        {
+            VerifyAcceptingNewTasks();
+            return Unwrap().ScheduleAsync(action, state, delay);
+        }
+
+        public Task ScheduleAsync(Action action, TimeSpan delay, CancellationToken cancellationToken)
+        {
+            VerifyAcceptingNewTasks();
+            return Unwrap().ScheduleAsync(action, delay, cancellationToken);
+        }
+
+        public Task ScheduleAsync(Action action, TimeSpan delay)
+        {
+            VerifyAcceptingNewTasks();
+            return Unwrap().ScheduleAsync(action, delay);
+        }
+
+        public Task ScheduleAsync(Action<object, object> action, object context, object state, TimeSpan delay)
+        {
+            VerifyAcceptingNewTasks();
+            return Unwrap().ScheduleAsync(action, context, state, delay);
+        }
+
+        public Task ScheduleAsync(Action<object, object> action, object context, object state, TimeSpan delay, CancellationToken cancellationToken)
+        {
+            VerifyAcceptingNewTasks();
+            return Unwrap().ScheduleAsync(action, context, state, delay, cancellationToken);
+        }
+
         public Task GracefulShutdownAsync()
         {
             return Unwrap().GracefulShutdownAsync();

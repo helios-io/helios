@@ -1,9 +1,9 @@
 ﻿namespace Helios.Channels.Sockets
 {
     /// <summary>
-    ///     <see cref="IConnectionConfig" /> specific to sockets.
+    ///     <see cref="IChannelConfiguration" /> specific to sockets.
     /// </summary>
-    public interface ISocketChannelConfig : IChannelConfiguration
+    public interface ISocketChannelConfiguration : IChannelConfiguration
     {
         bool AllowHalfClosure { get; set; }
 

@@ -7,7 +7,7 @@ namespace Helios.Channels.Sockets
     /// <summary>
     /// Default <see cref="IChannelConfiguration"/> for <see cref="ISocketChannel"/>
     /// </summary>
-    public class DefaultSocketChannelConfiguration : DefaultChannelConfiguration, ISocketChannelConfig
+    public class DefaultSocketChannelConfiguration : DefaultChannelConfiguration, ISocketChannelConfiguration
     {
         protected readonly Socket Socket;
         private volatile bool _allowHalfClosure;

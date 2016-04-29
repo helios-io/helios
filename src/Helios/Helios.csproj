@@ -126,14 +126,19 @@
     <Compile Include="Channels\PausableChannelEventExecutor.cs" />
     <Compile Include="Channels\SingleThreadEventLoop.cs" />
     <Compile Include="Channels\SkipAttribute.cs" />
+    <Compile Include="Channels\Sockets\AbstractSocketChannel.cs" />
     <Compile Include="Channels\Sockets\DefaultSocketChannelConfiguration.cs" />
+    <Compile Include="Channels\Sockets\IServerSocketChannel.cs" />
+    <Compile Include="Channels\Sockets\IServerSocketChannelConfiguration.cs" />
     <Compile Include="Channels\Sockets\ISocketChannel.cs" />
-    <Compile Include="Channels\Sockets\ISocketChannelConfig.cs" />
+    <Compile Include="Channels\Sockets\ISocketChannelConfiguration.cs" />
+    <Compile Include="Channels\Sockets\SocketChannelAsyncOperation.cs" />
     <Compile Include="Codecs\ByteToMessageDecoder.cs" />
     <Compile Include="Codecs\LengthFieldFrameBasedDecoder.cs" />
     <Compile Include="Codecs\LengthFieldPrepender.cs" />
     <Compile Include="Codecs\MessageToMessageEncoder.cs" />
     <Compile Include="Concurrency\AbstractEventExecutor.cs" />
+    <Compile Include="Concurrency\AbstractSchedulerEventExecutor.cs" />
     <Compile Include="Concurrency\EventExecutorTaskScheduler.cs" />
     <Compile Include="Concurrency\IEventExecutor.cs" />
     <Compile Include="Concurrency\IEventLoop.cs" />
@@ -141,6 +146,8 @@
     <Compile Include="Concurrency\Impl\ThreadPoolFiber.cs" />
     <Compile Include="Concurrency\IPausableEventExecutor.cs" />
     <Compile Include="Concurrency\IRunnable.cs" />
+    <Compile Include="Concurrency\IScheduledRunnable.cs" />
+    <Compile Include="Concurrency\IScheduledTask.cs" />
     <Compile Include="Concurrency\PromiseUtil.cs" />
     <Compile Include="Concurrency\RejectedTaskException.cs" />
     <Compile Include="Concurrency\SingleThreadEventExecutor.cs" />
@@ -153,6 +160,7 @@
     <Compile Include="Logging\NoOpLogger.cs" />
     <Compile Include="Logging\NoOpLoggerFactory.cs" />
     <Compile Include="Logging\StandardOutLoggerFactory.cs" />
+    <Compile Include="Util\Collections\PriorityQueue.cs" />
     <Compile Include="Util\Concurrency\TaskEx.cs" />
     <Compile Include="Util\MonotonicClock.cs" />
     <Compile Include="Util\ObjectPool.cs" />

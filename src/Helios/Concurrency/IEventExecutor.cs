@@ -105,6 +105,90 @@ namespace Helios.Concurrency
         /// </summary>
         Task<T> SubmitAsync<T>(Func<object, object, T> func, object context, object state, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Schedules the given action for execution after the specified delay would pass.
+        /// </summary>
+        /// <remarks>
+        /// <para>Threading specifics are determined by <c>IEventExecutor</c> implementation.</para>
+        /// </remarks>
+        IScheduledTask Schedule(Action action, TimeSpan delay);
+
+        /// <summary>
+        /// Schedules the given action for execution after the specified delay would pass.
+        /// </summary>
+        /// <remarks>
+        /// <paramref name="state"/> parameter is useful to when repeated execution of an action against
+        /// different objects is needed.
+        /// <para>Threading specifics are determined by <c>IEventExecutor</c> implementation.</para>
+        /// </remarks>
+        IScheduledTask Schedule(Action<object> action, object state, TimeSpan delay);
+
+        /// <summary>
+        /// Schedules the given action for execution after the specified delay would pass.
+        /// </summary>
+        /// <remarks>
+        /// <paramref name="context"/> and <paramref name="state"/> parameters are useful when repeated execution of
+        /// an action against different objects in different context is needed.
+        /// <para>Threading specifics are determined by <c>IEventExecutor</c> implementation.</para>
+        /// </remarks>
+        IScheduledTask Schedule(Action<object, object> action, object context, object state, TimeSpan delay);
+
+        /// <summary>
+        /// Schedules the given action for execution after the specified delay would pass.
+        /// </summary>
+        /// <remarks>
+        /// <paramref name="state"/> parameter is useful to when repeated execution of an action against
+        /// different objects is needed.
+        /// <para>Threading specifics are determined by <c>IEventExecutor</c> implementation.</para>
+        /// </remarks>
+        Task ScheduleAsync(Action<object> action, object state, TimeSpan delay, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Schedules the given action for execution after the specified delay would pass.
+        /// </summary>
+        /// <remarks>
+        /// <paramref name="state"/> parameter is useful to when repeated execution of an action against
+        /// different objects is needed.
+        /// <para>Threading specifics are determined by <c>IEventExecutor</c> implementation.</para>
+        /// </remarks>
+        Task ScheduleAsync(Action<object> action, object state, TimeSpan delay);
+
+        /// <summary>
+        /// Schedules the given action for execution after the specified delay would pass.
+        /// </summary>
+        /// <remarks>
+        /// <para>Threading specifics are determined by <c>IEventExecutor</c> implementation.</para>
+        /// </remarks>
+        Task ScheduleAsync(Action action, TimeSpan delay, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Schedules the given action for execution after the specified delay would pass.
+        /// </summary>
+        /// <remarks>
+        /// <para>Threading specifics are determined by <c>IEventExecutor</c> implementation.</para>
+        /// </remarks>
+        Task ScheduleAsync(Action action, TimeSpan delay);
+
+        /// <summary>
+        /// Schedules the given action for execution after the specified delay would pass.
+        /// </summary>
+        /// <remarks>
+        /// <paramref name="context"/> and <paramref name="state"/> parameters are useful when repeated execution of
+        /// an action against different objects in different context is needed.
+        /// <para>Threading specifics are determined by <c>IEventExecutor</c> implementation.</para>
+        /// </remarks>
+        Task ScheduleAsync(Action<object, object> action, object context, object state, TimeSpan delay);
+
+        /// <summary>
+        /// Schedules the given action for execution after the specified delay would pass.
+        /// </summary>
+        /// <remarks>
+        /// <paramref name="context"/> and <paramref name="state"/> parameters are useful when repeated execution of
+        /// an action against different objects in different context is needed.
+        /// <para>Threading specifics are determined by <c>IEventExecutor</c> implementation.</para>
+        /// </remarks>
+        Task ScheduleAsync(Action<object, object> action, object context, object state, TimeSpan delay, CancellationToken cancellationToken);
+
         Task GracefulShutdownAsync();
 
         Task GracefulShutdownAsync(TimeSpan quietPeriod, TimeSpan timeout);

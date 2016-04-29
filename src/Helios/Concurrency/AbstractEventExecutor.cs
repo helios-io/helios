@@ -70,6 +70,51 @@ namespace Helios.Concurrency
             return queueItem.Task;
         }
 
+        public virtual IScheduledTask Schedule(Action action, TimeSpan delay)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual IScheduledTask Schedule(Action<object> action, object state, TimeSpan delay)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual IScheduledTask Schedule(Action<object, object> action, object context, object state, TimeSpan delay)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual Task ScheduleAsync(Action<object> action, object state, TimeSpan delay, CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual Task ScheduleAsync(Action<object> action, object state, TimeSpan delay)
+        {
+            return ScheduleAsync(action, state, delay, CancellationToken.None);
+        }
+
+        public virtual Task ScheduleAsync(Action action, TimeSpan delay, CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual Task ScheduleAsync(Action action, TimeSpan delay)
+        {
+            return ScheduleAsync(action, delay, CancellationToken.None);
+        }
+
+        public virtual Task ScheduleAsync(Action<object, object> action, object context, object state, TimeSpan delay)
+        {
+            return ScheduleAsync(action, context, state, delay, CancellationToken.None);
+        }
+
+        public virtual Task ScheduleAsync(Action<object, object> action, object context, object state, TimeSpan delay, CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException();
+        }
+
         public Task GracefulShutdownAsync()
         {
             return GracefulShutdownAsync(DefaultShutdownQuietPeriod, DefaultShutdownTimeout);

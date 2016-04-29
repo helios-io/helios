@@ -5,5 +5,7 @@
     /// </summary>
     public interface ISocketChannel : IChannel
     {
+        new IServerSocketChannel Parent { get; }
+        new ISocketChannelConfiguration Configuration { get; }
     }
 }

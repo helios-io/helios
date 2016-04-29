@@ -5,7 +5,7 @@ namespace Helios.Util.TimedOps
     /// <summary>
     /// A <see cref="Deadline"/> alternative which relies on the <see cref="MonotonicClock"/> internally.
     /// </summary>
-    internal struct PreciseDeadline
+    public struct PreciseDeadline : IComparable<PreciseDeadline>
     {
         public PreciseDeadline(long tickCountDue)
         {
@@ -21,6 +21,11 @@ namespace Helios.Util.TimedOps
         public bool Equals(PreciseDeadline other)
         {
             return When == other.When;
+        }
+
+        public int CompareTo(PreciseDeadline other)
+        {
+            return When.CompareTo(other.When);
         }
 
         public override bool Equals(object obj)
@@ -49,6 +54,7 @@ namespace Helios.Util.TimedOps
         #region Static members
 
         public static PreciseDeadline Now => new PreciseDeadline(MonotonicClock.GetTicks());
+        public static PreciseDeadline MinusOne = new PreciseDeadline(-1);
 
         public static readonly PreciseDeadline Never = new PreciseDeadline(DateTime.MaxValue.Ticks);
 
@@ -90,6 +96,26 @@ namespace Helios.Util.TimedOps
                 return deadline - duration.Value;
             else
                 return deadline;
+        }
+
+        public static bool operator >(PreciseDeadline deadline1, PreciseDeadline deadline2)
+        {
+            return deadline1.When > deadline2.When;
+        }
+
+        public static bool operator >=(PreciseDeadline deadline1, PreciseDeadline deadline2)
+        {
+            return deadline1.When >= deadline2.When;
+        }
+       
+        public static bool operator <(PreciseDeadline deadline1, PreciseDeadline deadline2)
+        {
+            return deadline1.When < deadline2.When;
+        }
+
+        public static bool operator <=(PreciseDeadline deadline1, PreciseDeadline deadline2)
+        {
+            return deadline1.When <= deadline2.When;
         }
 
 
