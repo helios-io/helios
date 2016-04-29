@@ -20,7 +20,29 @@ namespace Helios.Tests.Concurrency
             var task = executor.SubmitAsync(myFunc);
             Assert.True(task.Wait(200), "Should have completed task in under 200 milliseconds");
             Assert.True(task.Result);
-            executor.GracefulShutdownAsync().Wait();
+            executor.GracefulShutdownAsync();
+        }
+
+        [Fact]
+        public void STE_should_execute_scheduled_tasks_on_time()
+        {
+            AtomicCounter counter = new AtomicCounter(0);
+            var executor = new SingleThreadEventExecutor("Foo" + ThreadNameCounter.GetAndIncrement(),
+               TimeSpan.FromMilliseconds(100));
+            Action<object> increment = o => ((AtomicCounter) o).GetAndIncrement();
+
+            // schedule a delayed operation
+            var checkCounter = executor.ScheduleAsync(o => Assert.True(((AtomicCounter) o).Current == 4), counter,
+                TimeSpan.FromMilliseconds(40));
+
+            // schedule 4 immediate operations
+            executor.Execute(increment, counter);
+            executor.Execute(increment, counter);
+            executor.Execute(increment, counter);
+            executor.Execute(increment, counter);
+
+            // delay should run after the first 4 previous
+            checkCounter.Wait(TimeSpan.FromMilliseconds(100));
         }
 
         class MyHook : IRunnable
