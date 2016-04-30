@@ -486,6 +486,8 @@ namespace Helios.Buffers
 
         IByteBuf WriteBytes(byte[] src, int srcIndex, int length);
 
+        IByteBuf WriteZero(int length);
+
         /// <summary>
         /// Flag that indicates if this <see cref="IByteBuf"/> is backed by a byte array or not
         /// </summary>

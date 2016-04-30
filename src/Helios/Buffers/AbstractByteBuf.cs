@@ -654,6 +654,55 @@ namespace Helios.Buffers
             return this;
         }
 
+        public IByteBuf WriteZero(int length)
+        {
+            if (length == 0)
+                return this;
+
+            EnsureWritable(length);
+            var wIndex = WriterIndex;
+            CheckIndex(wIndex, length);
+
+            int nLong;
+            int nBytes;
+            unchecked
+            {
+                nLong = (int)((uint)length >> 3);
+                nBytes = length & 7;
+            }
+           
+            for (var i = nLong; i > 0; i--)
+            {
+                _SetLong(wIndex, 0);
+                wIndex += 8;
+            }
+            if (nBytes == 4)
+            {
+                _SetInt(wIndex, 0);
+                wIndex += 4;
+            }
+            else if (nBytes < 4)
+            {
+                for (var i = nBytes; i > 0; i--)
+                {
+                    _SetByte(wIndex, 0);
+                    wIndex++;
+                }
+            }
+            else
+            {
+                _SetInt(wIndex, 0);
+                wIndex += 4;
+                for (var i = nBytes - 4; i > 0; i--)
+                {
+                    _SetByte(wIndex, 0);
+                    wIndex++;
+                }
+            }
+            WriterIndex = wIndex;
+            return this;
+        }
+
         public abstract bool HasArray { get; }
         public abstract byte[] Array { get; }
 

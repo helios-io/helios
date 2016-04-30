@@ -520,6 +520,12 @@ namespace Helios.Buffers
             return this;
         }
 
+        public IByteBuf WriteZero(int length)
+        {
+            _buf.WriteZero(length);
+            return this;
+        }
+
         public bool HasArray
         {
             get { return _buf.HasArray; }

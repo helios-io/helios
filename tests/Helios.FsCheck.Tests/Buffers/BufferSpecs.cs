@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FsCheck;
+using FsCheck.Xunit;
 using Helios.Buffers;
 using Xunit;
 
@@ -105,6 +106,17 @@ namespace Helios.FsCheck.Tests.Buffers
             }).Label("Writes then reads against the reverse of the reverse should produce original input");
 
             swappedWritesCanBeSwappedBack.QuickCheckThrowOnFailure();
+        }
+
+        [Property(QuietOnSuccess = true)]
+        public Property Buffer_should_be_able_to_WriteZero_for_sizes_within_MaxCapacity(BufferSize initialSize, int length)
+        {
+            var buffer = UnpooledByteBufAllocator.Default.Buffer(initialSize.InitialSize, initialSize.MaxSize);
+            if(length > 0)
+                buffer.WriteZero(length);
+            return (buffer.ReadableBytes == length).When(length <= initialSize.MaxSize && length > 0).Label(
+                $"Buffer should be able to write {length} 0 bytes, but was {buffer.ReadableBytes}")
+                .And(() => buffer.ToArray().All(x => x == 0)).Label("All contents of buffer should be 0");
         }
     }
 }
