@@ -9,6 +9,7 @@ using Helios.Buffers;
 using Helios.Channels;
 using Helios.Channels.Local;
 using Helios.Channels.Bootstrap;
+using Helios.Codecs;
 using Helios.Concurrency;
 using Helios.Logging;
 using Helios.Util;
@@ -31,6 +32,172 @@ namespace Helios.Tests.Channels.Local
             _group1 = new MultithreadEventLoopGroup(2);
             _group2 = new MultithreadEventLoopGroup(2);
             _sharedGroup = new MultithreadEventLoopGroup(1);
+        }
+
+        private class ReadCountAwaiter : ChannelHandlerAdapter
+        {
+            private ManualResetEventSlim _resetEvent;
+            private readonly int _expectedReadCount;
+            private int actualReadCount;
+
+            public ReadCountAwaiter(ManualResetEventSlim resetEvent, int expectedReadCount)
+            {
+                _resetEvent = resetEvent;
+                _expectedReadCount = expectedReadCount;
+            }
+
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                if(++actualReadCount == _expectedReadCount)
+                    _resetEvent.Set();
+                context.FireChannelRead(message);
+            }
+        }
+
+        [Fact]
+        public void LocalChannel_batch_read_should_not_NRE()
+        {
+            var cb = new ClientBootstrap();
+            var sb = new ServerBootstrap();
+            var reads = 100;
+            var resetEvent = new ManualResetEventSlim();
+
+            cb.Group(_group1).Channel<LocalChannel>().Handler(new ActionChannelInitializer<LocalChannel>(channel =>
+            {
+                channel.Pipeline.AddLast(new LengthFieldBasedFrameDecoder(20, 0, 4, 0, 4)).AddLast(new LengthFieldPrepender(4, false)).AddLast(new TestHandler());
+            }));
+
+            sb.Group(_group2).Channel<LocalServerChannel>().ChildHandler(new ActionChannelInitializer<LocalChannel>(channel =>
+            {
+                channel.Pipeline.AddLast(new LengthFieldBasedFrameDecoder(20, 0, 4, 0, 4)).AddLast(new LengthFieldPrepender(4, false)).AddLast(new ReadCountAwaiter(resetEvent, reads)).AddLast(new TestHandler());
+            }));
+
+            IChannel sc = null;
+            IChannel cc = null;
+
+            try
+            {
+                // Start server
+                sc = sb.BindAsync(TEST_ADDRESS).Result;
+
+                // Connect to the server
+                cc = cb.ConnectAsync(sc.LocalAddress).Result;
+
+                foreach (var read in Enumerable.Range(0, reads))
+                {
+                    cc.WriteAndFlushAsync(Unpooled.Buffer(4).WriteInt(read));
+                }
+                Assert.True(resetEvent.Wait(5000));
+            }
+            finally
+            {
+                CloseChannel(sc);
+                CloseChannel(cc);
+            }
+        }
+
+        private class ReadAssertHandler : ChannelHandlerAdapter
+        {
+            private readonly Queue<int> _expectedReads;
+            private readonly List<int> _accumulatedReads;
+            private ManualResetEventSlim _resetEventSlim;
+
+            public ReadAssertHandler(List<int> accumulatedReads, ManualResetEventSlim resetEventSlim, params int[] expectedReads)
+            {
+                _accumulatedReads = accumulatedReads;
+                _resetEventSlim = resetEventSlim;
+                _expectedReads = new Queue<int>(expectedReads);
+            }
+
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                var next = _expectedReads.Dequeue();
+                Assert.Equal(next, message);
+                _accumulatedReads.Add((int)message);
+                if (!_expectedReads.Any())
+                {
+                    _resetEventSlim.Set();
+                }
+            }
+        }
+
+        private class IntCodec : ChannelHandlerAdapter
+        {
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                if (message is IByteBuf)
+                {
+                    var buf = (IByteBuf) message;
+                    var integer = buf.ReadInt();
+                    context.FireChannelRead(integer);
+                }
+                else
+                {
+                    context.FireChannelRead(message);
+                }
+            }
+
+            public override Task WriteAsync(IChannelHandlerContext context, object message)
+            {
+                if (message is int)
+                {
+                    var buf = Unpooled.Buffer(4).WriteInt((int) message);
+                    return context.WriteAsync(buf);
+                }
+                else
+                {
+                    return context.WriteAsync(message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Verify that messages written out to a server following a connection
+        /// are read by a child <see cref="LocalChannel"/>
+        /// </summary>
+        [Fact]
+        public void LocalChannel_writes_to_server_should_be_read_by_LocalChannel()
+        {
+            var cb = new ClientBootstrap();
+            var sb = new ServerBootstrap();
+            var reads = new int[] {-11, 2, 9, 13, 1013, 1, 4};
+            var resetEvent = new ManualResetEventSlim();
+            var accumulatedReads = new List<int>();
+
+            cb.Group(_group1).Channel<LocalChannel>().Handler(new ActionChannelInitializer<LocalChannel>(channel =>
+            {
+                channel.Pipeline.AddLast(new LengthFieldBasedFrameDecoder(20, 0, 4, 0, 4)).AddLast(new LengthFieldPrepender(4, false)).AddLast(new IntCodec());
+            }));
+
+            sb.Group(_group2).Channel<LocalServerChannel>().ChildHandler(new ActionChannelInitializer<LocalChannel>(channel =>
+            {
+                channel.Pipeline.AddLast(new LengthFieldBasedFrameDecoder(20, 0, 4, 0, 4)).AddLast(new LengthFieldPrepender(4, false)).AddLast(new IntCodec()).AddLast(new ReadAssertHandler(accumulatedReads, resetEvent, reads));
+            }));
+
+            IChannel sc = null;
+            IChannel cc = null;
+
+            try
+            {
+                // Start server
+                sc = sb.BindAsync(TEST_ADDRESS).Result;
+
+                // Connect to the server
+                cc = cb.ConnectAsync(sc.LocalAddress).Result;
+
+                foreach (var read in reads)
+                {
+                    cc.WriteAsync(read);
+                }
+                cc.Flush();
+                resetEvent.Wait(200);
+                Assert.Equal(reads, accumulatedReads);
+            }
+            finally
+            {
+                CloseChannel(sc);
+                CloseChannel(cc);
+            }
         }
 
         [Fact]

@@ -212,7 +212,7 @@ namespace Helios.Channels.Local
             {
                 if (peer.EventLoop.InEventLoop && !_registerInProgress)
                 {
-                    DoPeerClose(_peer, peer._writeInProgress);
+                    DoPeerClose(peer, peer._writeInProgress);
                 }
                 else
                 {
@@ -220,7 +220,7 @@ namespace Helios.Channels.Local
                     var peerWriteInProgress = peer._writeInProgress;
                     try
                     {
-                        _peer.EventLoop.Execute((context, state) => // todo: allocation
+                        peer.EventLoop.Execute((context, state) => // todo: allocation
                         {
                             var p = (LocalChannel) context;
                             var wIP = (bool) state;
@@ -407,7 +407,7 @@ namespace Helios.Channels.Local
 
         private void FinishPeerRead0(LocalChannel peer)
         {
-            var finishPeerReadTask = _peer._finishReadTask;
+            var finishPeerReadTask = peer._finishReadTask;
             if (finishPeerReadTask != null)
             {
                 if (!finishPeerReadTask.IsCompleted)

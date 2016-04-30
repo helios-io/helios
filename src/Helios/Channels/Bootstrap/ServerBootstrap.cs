@@ -251,9 +251,7 @@ namespace Helios.Channels.Bootstrap
                     // stop accept new connections for 1 second to allow the channel to recover
                     // See https://github.com/netty/netty/issues/1328
                     config.AutoRead = false;
-
-                    //todo: scheduling 
-                    ctx.Channel.EventLoop.Execute(() => { config.AutoRead = true; });
+                    ctx.Channel.EventLoop.ScheduleAsync(() => { config.AutoRead = true; }, TimeSpan.FromSeconds(1));
                 }
                 // still let the ExceptionCaught event flow through the pipeline to give the user
                 // a chance to do something with it

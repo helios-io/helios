@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Channels;
 using Helios.Channels.Embedded;
@@ -41,64 +40,25 @@ namespace Helios.Tests.Performance.Channels
         }
 
         private EmbeddedChannel channel;
-        private IByteBuf message;
         private const string InboundThroughputCounterName = "inbound ops";
         private Counter _inboundThroughputCounter;
 
         private const string OutboundThroughputCounterName = "outbound ops";
         private Counter _outboundThroughputCounter;
-
-        private IChannelHandler _lengthFieldPrepender;
-        private IChannelHandler _lengthFieldFrameDecoder;
         private IChannelHandler _counterHandlerInbound;
         private IChannelHandler _counterHandlerOutbound;
 
-        private class CounterHandlerInbound : ChannelHandlerAdapter
-        {
-            private readonly Counter _throughput;
-
-            public CounterHandlerInbound(Counter throughput)
-            {
-                _throughput = throughput;
-            }
-
-            public override void ChannelRead(IChannelHandlerContext context, object message)
-            {
-                _throughput.Increment();
-            }
-        }
-
-        private class CounterHandlerOutbound : ChannelHandlerAdapter
-        {
-            private readonly Counter _throughput;
-
-            public CounterHandlerOutbound(Counter throughput)
-            {
-                _throughput = throughput;
-            }
-
-            public override Task WriteAsync(IChannelHandlerContext context, object message)
-            {
-                _throughput.Increment();
-                return TaskCompletionSource.Void.Task; // don't allocate any tasks
-            }
-        }
+        
 
         [PerfSetup]
         public void SetUp(BenchmarkContext context)
         {
-            Encoding iso = Encoding.GetEncoding("ISO-8859-1");
-            byte[] charBytes = iso.GetBytes("ABC");
-            message = Unpooled.WrappedBuffer(charBytes);
             _inboundThroughputCounter = context.GetCounter(InboundThroughputCounterName);
             _counterHandlerInbound = new CounterHandlerInbound(_inboundThroughputCounter);
             _outboundThroughputCounter = context.GetCounter(OutboundThroughputCounterName);
             _counterHandlerOutbound = new CounterHandlerOutbound(_outboundThroughputCounter);
 
-            _lengthFieldFrameDecoder = new LengthFieldBasedFrameDecoder(20,0,4,0,4);
-            _lengthFieldPrepender = new LengthFieldPrepender(4, true);
-
-            channel = new EmbeddedChannel(_counterHandlerOutbound, _counterHandlerInbound, _lengthFieldFrameDecoder, _lengthFieldPrepender);
+            channel = new EmbeddedChannel(_counterHandlerOutbound, _counterHandlerInbound);
         }
 
         [PerfBenchmark(Description = "Measures how quickly and with how much GC overhead the EmbeddedChannel can decode / encode realistic messages",
@@ -109,7 +69,7 @@ namespace Helios.Tests.Performance.Channels
         [MemoryMeasurement(MemoryMetric.TotalBytesAllocated)]
         public void EmbeddedChannel_Inbound_Throughput(BenchmarkContext context)
         {
-            channel.WriteInbound(message);
+            channel.WriteInbound(1);
         }
 
         [PerfBenchmark(Description = "Measures how quickly and with how much GC overhead the EmbeddedChannel can decode / encode realistic messages",
@@ -120,7 +80,7 @@ namespace Helios.Tests.Performance.Channels
         [MemoryMeasurement(MemoryMetric.TotalBytesAllocated)]
         public void EmbeddedChannel_Outbound_Throughput(BenchmarkContext context)
         {
-            channel.WriteOutbound(message);
+            channel.WriteOutbound(1);
         }
 
         [PerfCleanup]
