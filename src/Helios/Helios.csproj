@@ -90,6 +90,7 @@
     <Compile Include="Channels\ChannelPipelineException.cs" />
     <Compile Include="Channels\ClosedChannelException.cs" />
     <Compile Include="Channels\ConnectException.cs" />
+    <Compile Include="Channels\ConnectTimeoutException.cs" />
     <Compile Include="Channels\DefaultChannelConfiguration.cs" />
     <Compile Include="Channels\DefaultChannelHandlerContext.cs" />
     <Compile Include="Channels\DefaultChannelHandlerInvoker.cs" />
@@ -126,13 +127,17 @@
     <Compile Include="Channels\PausableChannelEventExecutor.cs" />
     <Compile Include="Channels\SingleThreadEventLoop.cs" />
     <Compile Include="Channels\SkipAttribute.cs" />
+    <Compile Include="Channels\Sockets\AbstractSocketByteChannel.cs" />
     <Compile Include="Channels\Sockets\AbstractSocketChannel.cs" />
+    <Compile Include="Channels\Sockets\DefaultServerSocketChannelConfiguration.cs" />
     <Compile Include="Channels\Sockets\DefaultSocketChannelConfiguration.cs" />
     <Compile Include="Channels\Sockets\IServerSocketChannel.cs" />
     <Compile Include="Channels\Sockets\IServerSocketChannelConfiguration.cs" />
     <Compile Include="Channels\Sockets\ISocketChannel.cs" />
     <Compile Include="Channels\Sockets\ISocketChannelConfiguration.cs" />
     <Compile Include="Channels\Sockets\SocketChannelAsyncOperation.cs" />
+    <Compile Include="Channels\Sockets\TcpServerSocketChannel.cs" />
+    <Compile Include="Channels\Sockets\TcpSocketChannel.cs" />
     <Compile Include="Codecs\ByteToMessageDecoder.cs" />
     <Compile Include="Codecs\LengthFieldFrameBasedDecoder.cs" />
     <Compile Include="Codecs\LengthFieldPrepender.cs" />
