@@ -1,3 +1,4 @@
+using System.Threading;
 using Helios.Concurrency;
 
 namespace Helios.Tests.Performance.Channels
@@ -6,6 +7,23 @@ namespace Helios.Tests.Performance.Channels
     {
         void Signal();
         bool Finished { get; }
+    }
+
+    public class ManualResetEventSlimReadFinishedSignal : IReadFinishedSignal
+    {
+        private readonly ManualResetEventSlim _manualResetEventSlim;
+
+        public ManualResetEventSlimReadFinishedSignal(ManualResetEventSlim manualResetEventSlim)
+        {
+            _manualResetEventSlim = manualResetEventSlim;
+        }
+
+        public void Signal()
+        {
+            _manualResetEventSlim.Set();
+        }
+
+        public bool Finished => _manualResetEventSlim.IsSet;
     }
 
     public class TaskCompletionSourceFinishedSignal : IReadFinishedSignal

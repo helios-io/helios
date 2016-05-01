@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -31,6 +32,7 @@ namespace Helios.Tests.Performance.Channels
         protected ServerBootstrap ServerBoostrap;
 
         protected IEventLoopGroup ClientGroup;
+        protected IEventLoopGroup WorkerGroup;
         protected IEventLoopGroup ServerGroup;
 
         private byte[] message;
@@ -47,7 +49,7 @@ namespace Helios.Tests.Performance.Channels
         private TaskCompletionSource _tcs = new TaskCompletionSource();
         private Task CompletionTask => _tcs.Task;
 
-        public const int WriteCount = 10;
+        public const int WriteCount = 100000;
         private IReadFinishedSignal _signal;
 
         protected virtual IChannelHandler GetEncoder()
@@ -64,7 +66,9 @@ namespace Helios.Tests.Performance.Channels
         public void SetUp(BenchmarkContext context)
         {
             ClientGroup = new MultithreadEventLoopGroup(1);
-            ServerGroup = new MultithreadEventLoopGroup(2);
+            ServerGroup = new MultithreadEventLoopGroup(1);
+            WorkerGroup = new MultithreadEventLoopGroup();
+            
 
             Encoding iso = Encoding.GetEncoding("ISO-8859-1");
             message = iso.GetBytes("ABC");
@@ -74,13 +78,13 @@ namespace Helios.Tests.Performance.Channels
             var counterHandler = new CounterHandlerInbound(_inboundThroughputCounter);
             _signal = new TaskCompletionSourceFinishedSignal(_tcs);
 
-            var sb = new ServerBootstrap().Group(ServerGroup).Channel<TcpServerSocketChannel>()
+            var sb = new ServerBootstrap().Group(ServerGroup, WorkerGroup).Channel<TcpServerSocketChannel>()
                 .ChildHandler(new ActionChannelInitializer<TcpSocketChannel>(channel =>
                 {
                     channel.Pipeline.AddLast(GetEncoder()).AddLast(GetDecoder()).AddLast(counterHandler).AddLast(new CounterHandlerOutbound(_outboundThroughputCounter)).AddLast(new ReadFinishedHandler(_signal, WriteCount));
                 }));
 
-            var cb = new ClientBootstrap().Group(ClientGroup).Channel<TcpSocketChannel>().Handler(new ActionChannelInitializer<LocalChannel>(
+            var cb = new ClientBootstrap().Group(ClientGroup).Channel<TcpSocketChannel>().Handler(new ActionChannelInitializer<TcpSocketChannel>(
                 channel =>
                 {
                     channel.Pipeline.AddLast(GetEncoder()).AddLast(GetDecoder()).AddLast(counterHandler)
@@ -118,7 +122,7 @@ namespace Helios.Tests.Performance.Channels
         {
             CloseChannel(_clientChannel);
             CloseChannel(_serverChannel);
-            Task.WaitAll(ClientGroup.ShutdownGracefullyAsync(), ServerGroup.ShutdownGracefullyAsync());
+            Task.WaitAll(ClientGroup.ShutdownGracefullyAsync(), ServerGroup.ShutdownGracefullyAsync(), WorkerGroup.ShutdownGracefullyAsync());
         }
 
         private static void CloseChannel(IChannel cc)
