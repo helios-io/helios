@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using Helios.Buffers;
+using Helios.Channels;
 using Helios.Serialization;
 
 namespace Helios.Net.Bootstrap

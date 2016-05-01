@@ -1,4 +1,4 @@
-#### 1.5 April 12 2016
+#### 2.0 April 30 2016
 Major performance and stability rewrite of Helios, including breaking API changes.
 
 #### 1.4.2 Dec 12 2015

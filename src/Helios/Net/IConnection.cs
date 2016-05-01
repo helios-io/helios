@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Buffers;
+using Helios.Channels;
 using Helios.Exceptions;
 using Helios.Ops;
 using Helios.Serialization;

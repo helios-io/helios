@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Helios.Buffers;
+using Helios.Codecs;
 using Helios.Exceptions;
 using Helios.Net;
 using Helios.Topology;

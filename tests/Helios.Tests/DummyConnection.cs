@@ -2,6 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using Helios.Buffers;
+using Helios.Channels;
 using Helios.Net;
 using Helios.Ops;
 using Helios.Serialization;

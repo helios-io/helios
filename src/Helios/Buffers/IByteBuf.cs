@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace Helios.Buffers
 {
@@ -11,7 +12,7 @@ namespace Helios.Buffers
     /// 
     /// * <see cref="ReaderIndex"/> LESS THAN OR EQUAL TO <see cref="WriterIndex"/> LESS THAN OR EQUAL TO <see cref="Capacity"/>.
     /// </summary>
-    public interface IByteBuf
+    public interface IByteBuf : IReferenceCounted
     {
         int Capacity { get; }
 
@@ -19,6 +20,18 @@ namespace Helios.Buffers
         /// Expands the capacity of this buffer so long as it is less than <see cref="MaxCapacity"/>.
         /// </summary>
         IByteBuf AdjustCapacity(int newCapacity);
+
+        /// <summary>
+        /// The byte order of the buffer. <see cref="ByteOrder.LittleEndian"/> by default.
+        /// </summary>
+        ByteOrder Order { get; }
+
+        /// <summary>
+        /// Returns a 
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns></returns>
+        IByteBuf WithOrder(ByteOrder order);
 
         int MaxCapacity { get; }
 
@@ -122,6 +135,13 @@ namespace Helios.Buffers
         /// </summary>
         /// <returns></returns>
         IByteBuf DiscardReadBytes();
+
+        /// <summary>
+        /// Similar to <see cref="DiscardReadBytes"/> except that this method might discard some, all, or none of read bytes
+        /// depending on its internal implementation to reduce overall memory bandwidth consumption at the cost of potentially
+        /// additional total memory consumption.
+        /// </summary>
+        IByteBuf DiscardSomeReadBytes();
 
         /// <summary>
         /// Makes sure the number of <see cref="WritableBytes"/> is equal to or greater than
@@ -466,6 +486,8 @@ namespace Helios.Buffers
 
         IByteBuf WriteBytes(byte[] src, int srcIndex, int length);
 
+        IByteBuf WriteZero(int length);
+
         /// <summary>
         /// Flag that indicates if this <see cref="IByteBuf"/> is backed by a byte array or not
         /// </summary>
@@ -474,8 +496,8 @@ namespace Helios.Buffers
         /// <summary>
         /// Grabs the underlying byte array for this buffer
         /// </summary>
-        /// <returns></returns>
-        byte[] InternalArray();
+        /// <value></value>
+        byte[] Array { get; }
 
         /// <summary>
         /// Converts the readable contents of the buffer into an array.
@@ -490,7 +512,28 @@ namespace Helios.Buffers
         bool IsDirect { get; }
 
         /// <summary>
-        /// Creates a deep clone of the existing byte array and returns it
+        /// Create a full clone of the existing byte buffer.
+        /// </summary>
+        IByteBuf Copy();
+
+        /// <summary>
+        /// Copy a full clone for the specified segment of the current byte buffer.
+        /// </summary>
+        /// <param name="index">The starting read position</param>
+        /// <param name="length">The length of the buffer.</param>
+        /// <returns>A deep clone of the buffer at the specified length.</returns>
+        IByteBuf Copy(int index, int length);
+
+        IByteBuf Slice();
+
+        IByteBuf Slice(int index, int length);
+
+        int ArrayOffset { get; }
+
+        IByteBuf ReadSlice(int length);
+
+        /// <summary>
+        /// Creates a view of the current byte buffer. If you want a deep copy call <see cref="Copy"/> instead.
         /// </summary>
         IByteBuf Duplicate();
 
@@ -500,16 +543,12 @@ namespace Helios.Buffers
         IByteBuf Unwrap();
 
         /// <summary>
-        /// Internal use only. Exposes the underlying NIO buffer.
-        /// </summary>
-        ByteBuffer InternalNioBuffer(int index, int length);
-
-        /// <summary>
         /// Shifts all of the <see cref="ReadableBytes"/> to the front of the internal buffer
         /// and resets the <see cref="ReaderIndex"/> to zero and <see cref="WriterIndex"/> to <see cref="ReadableBytes"/>.
         /// 
         /// Designed to work with frequently re-used buffers that are held for long periods of time.
         /// </summary>
+        [Obsolete]
         IByteBuf Compact();
 
         /// <summary>
@@ -518,6 +557,9 @@ namespace Helios.Buffers
         /// 
         /// Designed to work with frequently re-used buffers
         /// </summary>
+        [Obsolete]
         IByteBuf CompactIfNecessary();
+
+        string ToString(Encoding encoding);
     }
 }

@@ -39,8 +39,24 @@
       <HintPath>..\..\packages\FsCheck.Xunit.2.3.0\lib\net45\FsCheck.Xunit.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="FSharp.Control.AsyncSeq, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\FSharp.Control.AsyncSeq.1.13\lib\net40\FSharp.Control.AsyncSeq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="FSharp.Core, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\FSharp.Core.3.1.2.5\lib\net40\FSharp.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FSharpx.Async, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\FSharpx.Async.1.12.0\lib\net40\FSharpx.Async.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FSharpx.Collections, Version=1.10.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\FSharpx.Collections.1.10.1\lib\net40\FSharpx.Collections.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FSharpx.Extras, Version=1.10.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\FSharpx.Extras.1.10.3\lib\40\FSharpx.Extras.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -48,6 +64,10 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
       <HintPath>..\..\packages\xunit.abstractions.2.0.0\lib\net35\xunit.abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="xunit.assert, Version=2.1.0.3179, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\xunit.assert.2.1.0\lib\dotnet\xunit.assert.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="xunit.core, Version=2.1.0.3179, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
@@ -60,9 +80,24 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Buffers\BufferGenerators.cs" />
+    <Compile Include="Buffers\BufferHelpers.cs" />
+    <Compile Include="Buffers\BufferSpecs.cs" />
+    <Compile Include="Channels\ChannelOutboundBufferSpecs.cs" />
+    <Compile Include="Channels\ChannelPipelineInvocationSpecs.cs" />
+    <Compile Include="Channels\ChannelPipelineModels.cs" />
+    <Compile Include="Channels\ChannelPipelineConstructionSpecs.cs" />
+    <Compile Include="FsharpDelegateHelper.cs" />
+    <Compile Include="Channels\TestChannel.cs" />
+    <Compile Include="Codecs\EncodingGenerators.cs" />
+    <Compile Include="Codecs\LengthFrameEncodingSpecs.cs" />
     <Compile Include="Collections\CircularBufferPropertyTests.cs" />
+    <Compile Include="Concurrency\EventExecutorSpecBase.cs" />
+    <Compile Include="Concurrency\ObjectPoolSpec.cs" />
+    <Compile Include="Concurrency\SingleThreadEventExecutorSpec.cs" />
     <Compile Include="HeliosGenerators.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestLogger.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Helios\Helios.csproj">
@@ -71,7 +106,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Channels\Sockets\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

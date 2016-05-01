@@ -119,12 +119,13 @@ Target "NBench" <| fun _ ->
     printfn "Using NBench.Runner: %s" nbenchTestPath
 
     let runNBench assembly =
-        let spec = getBuildParam "spec"
+        let spec = getBuildParam "include"
 
         let args = new StringBuilder()
                 |> append assembly
                 |> append (sprintf "output-directory=\"%s\"" perfOutput)
                 |> append (sprintf "concurrent=\"%b\"" true)
+                |> appendIfNotNullOrEmpty spec "include="
                 |> toText
 
         let result = ExecProcess(fun info -> 

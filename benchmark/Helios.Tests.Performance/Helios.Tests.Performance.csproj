@@ -39,7 +39,15 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Channels\CounterHandlerInbound.cs" />
+    <Compile Include="Channels\CounterHandlerOutbound.cs" />
+    <Compile Include="Channels\EmbeddedChannelPerfSpecs.cs" />
+    <Compile Include="Channels\IReadFinishedSignal.cs" />
+    <Compile Include="Channels\LocalChannelPerfSpecs.cs" />
+    <Compile Include="Channels\ReadFinishedHandler.cs" />
+    <Compile Include="Channels\TcpChannelPerfSpecs.cs" />
     <Compile Include="Collections\AllCollectionsSpec.cs" />
+    <Compile Include="Concurrency\EventExecutorSpecs.cs" />
     <Compile Include="Concurrency\FiberSpecs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Socket\SocketThroughputSpec.cs" />

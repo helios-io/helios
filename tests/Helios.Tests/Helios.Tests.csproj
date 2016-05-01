@@ -77,11 +77,23 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Buffer\BasicByteBufTests.cs" />
+    <Compile Include="Buffer\ByteBufferDerivationSpecs.cs" />
     <Compile Include="Buffer\ByteBufferTests.cs" />
     <Compile Include="Buffer\UnpooledDirectByteBufferTests.cs" />
-    <Compile Include="Concurrency\DedicatedThreadFiberTests.cs" />
-    <Compile Include="Concurrency\SharedFiberTests.cs" />
-    <Compile Include="Concurrency\ThreadPoolFiberTests.cs" />
+    <Compile Include="Channels\AbstractChannelHandlerContextSpecs.cs" />
+    <Compile Include="Channels\Bootstrap\BootstrapSpecs.cs" />
+    <Compile Include="Channels\Embedded\EmbeddedChannelTest.cs" />
+    <Compile Include="Channels\IntCodec.cs" />
+    <Compile Include="Channels\Local\LocalChannelTest.cs" />
+    <Compile Include="Channels\ReadCountAwaiter.cs" />
+    <Compile Include="Channels\Socket\TcpSocketChannelTest.cs" />
+    <Compile Include="Codecs\ByteToMessageDecoderSpecs.cs" />
+    <Compile Include="Codecs\LengthFieldBasedFrameDecoderTests.cs" />
+    <Compile Include="Codecs\LengthFieldPrependerSpecs.cs" />
+    <Compile Include="Codecs\MessageToMessageEncoderSpecs.cs" />
+    <Compile Include="Concurrency\EventLoopGroupSpecs.cs" />
+    <Compile Include="Concurrency\SingleThreadEventExecutorSpecs.cs" />
     <Compile Include="DummyConnection.cs" />
     <Compile Include="Eventing\SimpleEventBrokerTests.cs" />
     <Compile Include="Net\MulticastHelperTests.cs" />
@@ -98,6 +110,7 @@
     <Compile Include="Util\Collections\CircularBufferTests.cs" />
     <Compile Include="Util\Collections\ConcurrentCircularBufferTests.cs" />
     <Compile Include="Util\Collections\ConcurrentFixedSizeStackTests.cs" />
+    <Compile Include="Util\TimedOps\PreciseDeadlineSpecs.cs" />
     <Compile Include="Util\TimedOps\ScheduledValueTests.cs" />
   </ItemGroup>
   <ItemGroup>

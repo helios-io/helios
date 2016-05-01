@@ -2,6 +2,7 @@
 using FsCheck;
 using Helios.Util;
 using Helios.Util.Collections;
+using Helios.Logging;
 
 namespace Helios.FsCheck.Tests
 {
@@ -16,6 +17,11 @@ namespace Helios.FsCheck.Tests
         public static Arbitrary<CircularBuffer<int>> CreateCircularBufferInt()
         {
             return CreateCircularBuffer<int>();
+        }
+
+        public static Arbitrary<LogLevel> CreateLogLevel()
+        {
+            return Arb.From(Gen.Elements(LogLevel.Error, LogLevel.Debug, LogLevel.Info, LogLevel.Warning));
         }
     }
 }
