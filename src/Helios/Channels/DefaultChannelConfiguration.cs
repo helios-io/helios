@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using Helios.Buffers;
+using Helios.Channels.Sockets;
 
 namespace Helios.Channels
 {
@@ -22,8 +23,14 @@ namespace Helios.Channels
         public DefaultChannelConfiguration(IChannel channel)
         {
             Channel = channel;
-            // TODO: add support for IServerChannel and AbstractSocketByteChannel
-            _maxMessagesPerRead = 1;
+            if (channel is IServerChannel || channel is AbstractSocketByteChannel)
+            {
+                _maxMessagesPerRead = 16;
+            }
+            else
+            {
+                _maxMessagesPerRead = 1;
+            }
         }
 
         public virtual T GetOption<T>(ChannelOption<T> option)
