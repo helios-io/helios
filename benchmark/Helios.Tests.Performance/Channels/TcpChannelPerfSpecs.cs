@@ -44,10 +44,7 @@ namespace Helios.Tests.Performance.Channels
 
         private IChannel _serverChannel;
         private IChannel _clientChannel;
-        protected readonly ManualResetEventSlim ResetEvent = new ManualResetEventSlim();
-
-        private TaskCompletionSource _tcs = new TaskCompletionSource();
-        private Task CompletionTask => _tcs.Task;
+        protected readonly ManualResetEventSlim ResetEvent = new ManualResetEventSlim(false);
 
         public const int WriteCount = 100000;
         private IReadFinishedSignal _signal;
@@ -76,7 +73,7 @@ namespace Helios.Tests.Performance.Channels
             _inboundThroughputCounter = context.GetCounter(InboundThroughputCounterName);
             _outboundThroughputCounter = context.GetCounter(OutboundThroughputCounterName);
             var counterHandler = new CounterHandlerInbound(_inboundThroughputCounter);
-            _signal = new TaskCompletionSourceFinishedSignal(_tcs);
+            _signal = new ManualResetEventSlimReadFinishedSignal(ResetEvent);
 
             var sb = new ServerBootstrap().Group(ServerGroup, WorkerGroup).Channel<TcpServerSocketChannel>()
                 .ChildHandler(new ActionChannelInitializer<TcpSocketChannel>(channel =>
@@ -113,7 +110,7 @@ namespace Helios.Tests.Performance.Channels
                     _clientChannel.Flush();
             }
             _clientChannel.Flush();
-            CompletionTask.Wait(5000);
+            ResetEvent.Wait(5000);
         }
 
 
