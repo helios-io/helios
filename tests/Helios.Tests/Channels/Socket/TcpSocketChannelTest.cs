@@ -1,21 +1,27 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Helios.Buffers;
 using Helios.Channels;
 using Helios.Channels.Bootstrap;
+using Helios.Channels.Local;
 using Helios.Channels.Sockets;
+using Helios.Codecs;
+using Helios.Logging;
+using Helios.Tests.Channels.Local;
+using Helios.Util;
 using Xunit;
 
 namespace Helios.Tests.Channels.Socket
 {
     public class TcpSocketChannelTest
     {
+        private static readonly ILogger Logger = LoggingFactory.GetLogger<TcpSocketChannelTest>();
+        private static readonly IPEndPoint TEST_ADDRESS = new IPEndPoint(IPAddress.IPv6Loopback, 0);
+
         private class ChannelFlushCloseHandler : ChannelHandlerAdapter
         {
             private readonly ConcurrentQueue<Task> _tasks;
@@ -83,6 +89,67 @@ namespace Helios.Tests.Channels.Socket
             finally
             {
                 eventLoopGroup.ShutdownGracefullyAsync();
+            }
+        }
+
+
+
+        [Fact]
+        public void TcpSocketChannel_can_connect_to_TcpServerSocketChannel()
+        {
+            IEventLoopGroup group1 = new MultithreadEventLoopGroup(2);
+            IEventLoopGroup group2 = new MultithreadEventLoopGroup(2);
+
+            var cb = new ClientBootstrap();
+            var sb = new ServerBootstrap();
+            var reads = 100;
+            var resetEvent = new ManualResetEventSlim();
+
+            cb.Group(group1).Channel<TcpSocketChannel>().Handler(new ActionChannelInitializer<TcpSocketChannel>(channel =>
+            {
+                channel.Pipeline.AddLast(new LengthFieldBasedFrameDecoder(20, 0, 4, 0, 4)).AddLast(new LengthFieldPrepender(4, false)).AddLast(new IntCodec()).AddLast(new TestHandler());
+            }));
+
+            sb.Group(group2).Channel<TcpServerSocketChannel>().ChildHandler(new ActionChannelInitializer<TcpSocketChannel>(channel =>
+            {
+                channel.Pipeline.AddLast(new LengthFieldBasedFrameDecoder(20, 0, 4, 0, 4)).AddLast(new LengthFieldPrepender(4, false)).AddLast(new IntCodec()).AddLast(new ReadCountAwaiter(resetEvent, reads)).AddLast(new TestHandler());
+            }));
+
+            IChannel sc = null;
+            IChannel cc = null;
+            try
+            {
+                // Start server
+                sc = sb.BindAsync(TEST_ADDRESS).Result;
+
+                // Connect to the server
+                cc = cb.ConnectAsync(sc.LocalAddress).Result;
+
+                foreach (var read in Enumerable.Range(0, reads))
+                {
+                    cc.WriteAndFlushAsync(read);
+                }
+                Assert.True(resetEvent.Wait(5000));
+            }
+            finally
+            {
+                CloseChannel(cc);
+                CloseChannel(sc);
+                Task.WaitAll(group1.ShutdownGracefullyAsync(), group2.ShutdownGracefullyAsync());
+            }
+        }
+
+        private static void CloseChannel(IChannel cc)
+        {
+            cc?.CloseAsync().Wait();
+        }
+
+        private class TestHandler : ChannelHandlerAdapter
+        {
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                Logger.Info("Received message: {0}", message);
+                ReferenceCountUtil.SafeRelease(message);
             }
         }
     }

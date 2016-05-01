@@ -34,26 +34,6 @@ namespace Helios.Tests.Channels.Local
             _sharedGroup = new MultithreadEventLoopGroup(1);
         }
 
-        private class ReadCountAwaiter : ChannelHandlerAdapter
-        {
-            private ManualResetEventSlim _resetEvent;
-            private readonly int _expectedReadCount;
-            private int actualReadCount;
-
-            public ReadCountAwaiter(ManualResetEventSlim resetEvent, int expectedReadCount)
-            {
-                _resetEvent = resetEvent;
-                _expectedReadCount = expectedReadCount;
-            }
-
-            public override void ChannelRead(IChannelHandlerContext context, object message)
-            {
-                if(++actualReadCount == _expectedReadCount)
-                    _resetEvent.Set();
-                context.FireChannelRead(message);
-            }
-        }
-
         [Fact]
         public void LocalChannel_batch_read_should_not_NRE()
         {
@@ -117,36 +97,6 @@ namespace Helios.Tests.Channels.Local
                 if (!_expectedReads.Any())
                 {
                     _resetEventSlim.Set();
-                }
-            }
-        }
-
-        private class IntCodec : ChannelHandlerAdapter
-        {
-            public override void ChannelRead(IChannelHandlerContext context, object message)
-            {
-                if (message is IByteBuf)
-                {
-                    var buf = (IByteBuf) message;
-                    var integer = buf.ReadInt();
-                    context.FireChannelRead(integer);
-                }
-                else
-                {
-                    context.FireChannelRead(message);
-                }
-            }
-
-            public override Task WriteAsync(IChannelHandlerContext context, object message)
-            {
-                if (message is int)
-                {
-                    var buf = Unpooled.Buffer(4).WriteInt((int) message);
-                    return context.WriteAsync(buf);
-                }
-                else
-                {
-                    return context.WriteAsync(message);
                 }
             }
         }
