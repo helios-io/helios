@@ -49,6 +49,8 @@ namespace Helios.Tests.Performance.Channels
         public const int WriteCount = 100000;
         private IReadFinishedSignal _signal;
 
+        private IByteBuf[] messages = new IByteBuf[WriteCount];
+
         protected virtual IChannelHandler GetEncoder()
         {
             return new LengthFieldPrepender(4, false);
@@ -70,18 +72,27 @@ namespace Helios.Tests.Performance.Channels
             Encoding iso = Encoding.GetEncoding("ISO-8859-1");
             message = iso.GetBytes("ABC");
 
+            // pre-allocate all messages
+            foreach (var m in Enumerable.Range(0, WriteCount))
+            {
+                messages[m] = Unpooled.WrappedBuffer(message);
+            }
+
             _inboundThroughputCounter = context.GetCounter(InboundThroughputCounterName);
             _outboundThroughputCounter = context.GetCounter(OutboundThroughputCounterName);
             var counterHandler = new CounterHandlerInbound(_inboundThroughputCounter);
             _signal = new ManualResetEventSlimReadFinishedSignal(ResetEvent);
 
             var sb = new ServerBootstrap().Group(ServerGroup, WorkerGroup).Channel<TcpServerSocketChannel>()
+                .ChildOption(ChannelOption.TcpNodelay, true)
                 .ChildHandler(new ActionChannelInitializer<TcpSocketChannel>(channel =>
                 {
                     channel.Pipeline.AddLast(GetEncoder()).AddLast(GetDecoder()).AddLast(counterHandler).AddLast(new CounterHandlerOutbound(_outboundThroughputCounter)).AddLast(new ReadFinishedHandler(_signal, WriteCount));
                 }));
 
-            var cb = new ClientBootstrap().Group(ClientGroup).Channel<TcpSocketChannel>().Handler(new ActionChannelInitializer<TcpSocketChannel>(
+            var cb = new ClientBootstrap().Group(ClientGroup)
+                .Option(ChannelOption.TcpNodelay, true)
+                .Channel<TcpSocketChannel>().Handler(new ActionChannelInitializer<TcpSocketChannel>(
                 channel =>
                 {
                     channel.Pipeline.AddLast(GetEncoder()).AddLast(GetDecoder()).AddLast(counterHandler)
@@ -93,6 +104,7 @@ namespace Helios.Tests.Performance.Channels
 
             // connect to server
             _clientChannel = cb.ConnectAsync(_serverChannel.LocalAddress).Result;
+            //_clientChannel.Configuration.AutoRead = false;
         }
 
         [PerfBenchmark(Description = "Measures how quickly and with how much GC overhead a TcpSocketChannel --> TcpServerSocketChannel connection can decode / encode realistic messages",
@@ -105,8 +117,8 @@ namespace Helios.Tests.Performance.Channels
         {
             for (var i = 0; i < WriteCount; i++)
             {
-                _clientChannel.WriteAsync(Unpooled.WrappedBuffer(message).Retain());
-                if (i % 10 == 0) // flush every 10 writes
+                _clientChannel.WriteAsync(messages[i]);
+                if (i % 100 == 0) // flush every 100 writes
                     _clientChannel.Flush();
             }
             _clientChannel.Flush();
