@@ -1,26 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Channels;
 using Helios.Channels.Bootstrap;
-using Helios.Channels.Local;
 using Helios.Channels.Sockets;
 using Helios.Codecs;
-using Helios.Concurrency;
 using Helios.Logging;
 using NBench;
 
 namespace Helios.Tests.Performance.Channels
 {
-    public class TcpChannelPerfSpecs
+    public class TcpChannelInboundOnlyPerfSpec
     {
-        static TcpChannelPerfSpecs()
+        static TcpChannelInboundOnlyPerfSpec()
         {
             // Disable the logging factory
             LoggingFactory.DefaultFactory = new NoOpLoggerFactory();
@@ -28,10 +26,10 @@ namespace Helios.Tests.Performance.Channels
 
         private static readonly IPEndPoint TEST_ADDRESS = new IPEndPoint(IPAddress.IPv6Loopback, 0);
 
-        protected ClientBootstrap ClientBootstrap;
         protected ServerBootstrap ServerBoostrap;
 
-        protected IEventLoopGroup ClientGroup;
+        protected System.Net.Sockets.Socket ClientSocket;
+        protected NetworkStream Stream;
         protected IEventLoopGroup WorkerGroup;
         protected IEventLoopGroup ServerGroup;
 
@@ -43,7 +41,6 @@ namespace Helios.Tests.Performance.Channels
         private Counter _outboundThroughputCounter;
 
         private IChannel _serverChannel;
-        private IChannel _clientChannel;
         protected readonly ManualResetEventSlim ResetEvent = new ManualResetEventSlim(false);
 
         public const int IterationCount = 5;
@@ -68,19 +65,13 @@ namespace Helios.Tests.Performance.Channels
         [PerfSetup]
         public void SetUp(BenchmarkContext context)
         {
-            ClientGroup = new MultithreadEventLoopGroup(1);
             ServerGroup = new MultithreadEventLoopGroup(1);
             WorkerGroup = new MultithreadEventLoopGroup();
-            
+
 
             Encoding iso = Encoding.GetEncoding("ISO-8859-1");
-            message = iso.GetBytes("ABC");
+            message = Unpooled.Buffer().WriteInt(3).WriteBytes(iso.GetBytes("ABC")).ToArray();
 
-            // pre-allocate all messages
-            foreach (var m in Enumerable.Range(0, WriteCount))
-            {
-                messages[m] = Unpooled.WrappedBuffer(message);
-            }
 
             _inboundThroughputCounter = context.GetCounter(InboundThroughputCounterName);
             _outboundThroughputCounter = context.GetCounter(OutboundThroughputCounterName);
@@ -94,21 +85,15 @@ namespace Helios.Tests.Performance.Channels
                     channel.Pipeline.AddLast(GetEncoder()).AddLast(GetDecoder()).AddLast(counterHandler).AddLast(new CounterHandlerOutbound(_outboundThroughputCounter)).AddLast(new ReadFinishedHandler(_signal, WriteCount));
                 }));
 
-            var cb = new ClientBootstrap().Group(ClientGroup)
-                .Option(ChannelOption.TcpNodelay, true)
-                .Channel<TcpSocketChannel>().Handler(new ActionChannelInitializer<TcpSocketChannel>(
-                channel =>
-                {
-                    channel.Pipeline.AddLast(GetEncoder()).AddLast(GetDecoder()).AddLast(counterHandler)
-                        .AddLast(new CounterHandlerOutbound(_outboundThroughputCounter));
-                }));
-
             // start server
             _serverChannel = sb.BindAsync(TEST_ADDRESS).Result;
 
             // connect to server
-            _clientChannel = cb.ConnectAsync(_serverChannel.LocalAddress).Result;
-            //_clientChannel.Configuration.AutoRead = false;
+            var address = (IPEndPoint) _serverChannel.LocalAddress;
+            ClientSocket = new System.Net.Sockets.Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp);
+            ClientSocket.Connect(address.Address, address.Port);
+
+            Stream = new NetworkStream(ClientSocket, true);
         }
 
         [PerfBenchmark(Description = "Measures how quickly and with how much GC overhead a TcpSocketChannel --> TcpServerSocketChannel connection can decode / encode realistic messages",
@@ -121,11 +106,8 @@ namespace Helios.Tests.Performance.Channels
         {
             for (var i = 0; i < WriteCount; i++)
             {
-                _clientChannel.WriteAsync(messages[i]);
-                if (i % 100 == 0) // flush every 100 writes
-                    _clientChannel.Flush();
+                Stream.Write(message, 0, message.Length);
             }
-            _clientChannel.Flush();
             ResetEvent.Wait(Timeout);
         }
 
@@ -133,9 +115,15 @@ namespace Helios.Tests.Performance.Channels
         [PerfCleanup]
         public void TearDown()
         {
-            CloseChannel(_clientChannel);
-            CloseChannel(_serverChannel);
-            Task.WaitAll(ClientGroup.ShutdownGracefullyAsync(), ServerGroup.ShutdownGracefullyAsync(), WorkerGroup.ShutdownGracefullyAsync());
+            try
+            {
+                Stream.Close();
+            }
+            finally
+            {
+                CloseChannel(_serverChannel);
+                Task.WaitAll(ServerGroup.ShutdownGracefullyAsync(), WorkerGroup.ShutdownGracefullyAsync());
+            }
         }
 
         private static void CloseChannel(IChannel cc)
