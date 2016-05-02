@@ -1,17 +1,27 @@
 using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Channels;
+using Helios.Util;
 
 namespace Helios.Tests.Channels
 {
     public class IntCodec : ChannelHandlerAdapter
     {
+        public IntCodec(bool releaseMessages = false)
+        {
+            ReleaseMessages = releaseMessages;
+        }
+
+        public bool ReleaseMessages { get; }
+
         public override void ChannelRead(IChannelHandlerContext context, object message)
         {
             if (message is IByteBuf)
             {
                 var buf = (IByteBuf) message;
                 var integer = buf.ReadInt();
+                if(ReleaseMessages)
+                    ReferenceCountUtil.SafeRelease(message);
                 context.FireChannelRead(integer);
             }
             else

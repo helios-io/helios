@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Concurrency;
 using Helios.Logging;
+using Helios.Util;
 using Helios.Util.Concurrency;
 
 namespace Helios.Channels
@@ -660,6 +661,7 @@ namespace Helios.Channels
 
                     // release message now to prevent resource-leak
                     // TODO: referencing counting
+                    ReferenceCountUtil.SafeRelease(msg);
                     return TaskEx.FromException(ClosedChannelException.Instance);
                 }
 
@@ -675,7 +677,7 @@ namespace Helios.Channels
                 }
                 catch (Exception t)
                 {
-                    // TODO: reference counting
+                    ReferenceCountUtil.SafeRelease(msg);
 
                     return TaskEx.FromException(t);
                 }

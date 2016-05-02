@@ -5,6 +5,7 @@ using Helios.Concurrency;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using FsCheck;
 
@@ -155,12 +156,16 @@ namespace Helios.FsCheck.Tests.Concurrency
             public override Property Check(SpecCounter obj0, CounterModel obj1)
             {
                 var tasks = new ConcurrentBag<Task>();
-                Action<object, object> setFunction = (counter, val) => ((SpecCounter) counter).Set((int) val);
+                Action<object, object> setFunction = (counter, val) =>
+                {
+                    var i = (int)val;
+                    ((SpecCounter)counter).Set(i);
+                };
                 Action<object, object> incrementFunction = (counter, val) => ((SpecCounter)counter).IncrementBy((int)val);
                 var delayQueue = new ConcurrentQueue<Tuple<int, TimeSpan>>();
                 var initialDelay = TimeSpan.FromMilliseconds(20).Ticks;
                 long nextDelay = initialDelay;
-                long incrementFactor = 10;
+                long incrementFactor = TimeSpan.TicksPerMillisecond;
                 foreach (var set in Sets)
                 {
                     delayQueue.Enqueue(new Tuple<int, TimeSpan>(set, new TimeSpan(nextDelay)));
@@ -220,7 +225,11 @@ namespace Helios.FsCheck.Tests.Concurrency
             public override Property Check(SpecCounter obj0, CounterModel obj1)
             {
                 var tasks = new ConcurrentBag<Task>();
-                Action<object, object> setFunction = (counter, val) => ((SpecCounter)counter).Set((int)val);
+                Action<object, object> setFunction = (counter, val) =>
+                {
+                    var i = (int) val;
+                    ((SpecCounter) counter).Set(i);
+                };
                 var delayQueue = new ConcurrentQueue<Tuple<int, TimeSpan>>();
                 var initialDelay = TimeSpan.FromMilliseconds(20).Ticks;
                 long nextDelay = initialDelay;

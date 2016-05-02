@@ -22,6 +22,12 @@ namespace Helios.Channels
             return 0;
         }
 
+        public override bool Equals(object obj)
+        {
+            if (!(obj is DefaultChannelId)) return false;
+            return GetHashCode() == obj.GetHashCode();
+        }
+
         public override int GetHashCode()
         {
             return _hashCode;

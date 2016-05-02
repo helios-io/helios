@@ -83,7 +83,7 @@ namespace Helios.FsCheck.Tests.Codecs
             byteBuf3.Release();
         }
 
-        [Property(QuietOnSuccess = true, MaxTest = 5000)]
+        [Property(MaxTest = 5000)]
         public Property LengthFrameEncoders_should_correctly_encode_anything_LittleEndian(Tuple<IByteBuf, ReadInstruction>[] reads)
         {          
             var expectedReads = reads.Select(x => x.Item1).ToArray();

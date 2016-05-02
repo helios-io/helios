@@ -48,7 +48,7 @@ namespace Helios.FsCheck.Tests.Buffers
 
             var interleavedBehavior = Prop.ForAll<BufferOperations.IWrite[], BufferSize>((writes, size) =>
             {
-                var writeStages = BufferHelpers.ChunkOps(writes.ToList(), 4);
+                var writeStages = HeliosModelHelpers.Chunk(writes.ToList(), 4);
                 var expectedValues = writes.Select(x => x.UntypedData).ToList();
                 var buffer = allocator.Buffer(size.InitialSize, size.MaxSize);
                 var actualValues = new List<object>();
@@ -108,7 +108,7 @@ namespace Helios.FsCheck.Tests.Buffers
             swappedWritesCanBeSwappedBack.QuickCheckThrowOnFailure();
         }
 
-        [Property(QuietOnSuccess = true)]
+        [Property()]
         public Property Buffer_should_be_able_to_WriteZero_for_sizes_within_MaxCapacity(BufferSize initialSize, int length)
         {
             var buffer = UnpooledByteBufAllocator.Default.Buffer(initialSize.InitialSize, initialSize.MaxSize);

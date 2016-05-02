@@ -17,7 +17,7 @@ namespace Helios.FsCheck.Tests.Collections
             Arb.Register<HeliosGenerators>();
         }
 
-        [Property(QuietOnSuccess = true)]
+        [Property()]
         public Property CircularBuffer_dequeue_after_enqueue_should_return_original_item(CircularBuffer<int> buffer, int[] itemsToAdd)
         {
             for (var i = 0; i < itemsToAdd.Length; i++)
@@ -33,7 +33,7 @@ namespace Helios.FsCheck.Tests.Collections
             return true.ToProperty();
         }
 
-        [Property(QuietOnSuccess = true)]
+        [Property()]
         public Property CircularBuffer_size_is_always_accurate(CircularBuffer<int> buffer, int[] itemsToAdd)
         {
             buffer.Clear(); // found issues with old buffers being reused by FsCheck generators
@@ -52,7 +52,7 @@ namespace Helios.FsCheck.Tests.Collections
             return true.ToProperty();
         }
 
-        [Property(QuietOnSuccess = true, MaxTest = 1000)]
+        [Property(MaxTest = 1000)]
         public Property CircularBuffer_Model_Should_Pass()
         {
             Func<int> generator = () => ThreadLocalRandom.Current.Next();
@@ -60,7 +60,7 @@ namespace Helios.FsCheck.Tests.Collections
             return tests.ToProperty();
         }
 
-        [Property(QuietOnSuccess = true, MaxTest = 1000)]
+        [Property(MaxTest = 1000)]
         public Property ConcurrentCircularBuffer_Model_Should_Pass()
         {
             Func<int> generator = () => ThreadLocalRandom.Current.Next();

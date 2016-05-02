@@ -43,7 +43,7 @@ namespace Helios.FsCheck.Tests.Concurrency
             Arb.Register<ObjectPoolSpec>();
         }
 
-        [Property(QuietOnSuccess = true, StartSize = 100)]
+        [Property(StartSize = 100)]
         public Property ObjectPool_should_not_leak_when_used_properly(Tuple<int,int>[] values)
         {
             var tasks = new List<Task<bool>>();

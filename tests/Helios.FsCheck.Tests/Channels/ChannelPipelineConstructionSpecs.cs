@@ -112,7 +112,7 @@ namespace Helios.FsCheck.Tests.Channels
         //    Assert.Equal(predictedOutcome, actualOutcome);
         //}
 
-        [Property(QuietOnSuccess = true, MaxTest = 1000)]
+        [Property(MaxTest = 1000)]
         public Property ChannelPipeline_should_obey_mutation_model()
         {
             return Model.ToProperty();
