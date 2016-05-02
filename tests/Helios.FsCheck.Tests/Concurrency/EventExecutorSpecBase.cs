@@ -176,7 +176,8 @@ namespace Helios.FsCheck.Tests.Concurrency
 
                 SpinWait.SpinUntil(() => loopResult.IsCompleted, TimeSpan.FromMilliseconds(100));
 
-                var waitPeriod = TimeSpan.FromTicks(nextDelay).Add(TimeSpan.FromMilliseconds(20));
+                // need a longer timeout window due to CPU scheduling failing this spec on low-powered devices
+                var waitPeriod = TimeSpan.FromTicks(nextDelay).Add(TimeSpan.FromMilliseconds(200)); 
                 if (!Task.WhenAll(tasks).Wait(waitPeriod))
                     return
                         false.ToProperty()
@@ -238,7 +239,8 @@ namespace Helios.FsCheck.Tests.Concurrency
 
                 SpinWait.SpinUntil(() => loopResult.IsCompleted, TimeSpan.FromMilliseconds(100));
 
-                var waitPeriod = TimeSpan.FromTicks(nextDelay).Add(TimeSpan.FromMilliseconds(20));
+                // need a longer timeout window due to CPU scheduling failing this spec on low-powered devices
+                var waitPeriod = TimeSpan.FromTicks(nextDelay).Add(TimeSpan.FromMilliseconds(200));
                 if (!Task.WhenAll(tasks).Wait(waitPeriod))
                     return false.ToProperty().Label($"TIMEOUT: {obj1.Executor} failed to execute {Sets.Length} within {waitPeriod.TotalMilliseconds}ms");
 
