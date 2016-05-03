@@ -9,7 +9,7 @@ namespace Helios.Util
     /// without any explicit locking. .NET's strong memory on write guarantees might already enforce
     /// this ordering, but the addition of the MemoryBarrier guarantees it.
     /// </summary>
-    public class AtomicReference<T>
+    public class AtomicReference<T> where T:class
     {
         /// <summary>
         /// Sets the initial value of this <see cref="AtomicReference{T}"/> to <see cref="originalValue"/>.
@@ -35,33 +35,11 @@ namespace Helios.Util
         /// </summary>
         public T Value
         {
-            get
-            {
-                Thread.MemoryBarrier();
-                return atomicValue;
-            }
+            get { return Volatile.Read(ref atomicValue); }
             set
             {
-                Thread.MemoryBarrier();
-                atomicValue = value;
-                Thread.MemoryBarrier();
+                Volatile.Write(ref atomicValue, value);
             }
-        }
-
-        /// <summary>
-        /// If <see cref="Value"/> equals <see cref="expected"/>, then set the Value to
-        /// <see cref="newValue"/>.
-        /// 
-        /// Returns true if <see cref="newValue"/> was set, false otherwise.
-        /// </summary>
-        public bool CompareAndSet(T expected, T newValue)
-        {
-            if (Value.Equals(expected))
-            {
-                Value = newValue;
-                return true;
-            }
-            return false;
         }
 
         #region Conversion operators

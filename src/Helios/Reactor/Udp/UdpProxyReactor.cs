@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using Helios.Buffers;
+using Helios.Channels;
 using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;

@@ -68,7 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Helios\Helios.csproj">
-      <Project>{FCC26FA6-1B8E-413D-ACA5-A25B9C6459A1}</Project>
+      <Project>{fcc26fa6-1b8e-413d-aca5-a25b9c6459a1}</Project>
       <Name>Helios</Name>
     </ProjectReference>
   </ItemGroup>

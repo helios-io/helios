@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Net;
+using Helios.Channels;
 using Helios.MultiNodeTests.TestKit;
 using Helios.Net;
 using Xunit;

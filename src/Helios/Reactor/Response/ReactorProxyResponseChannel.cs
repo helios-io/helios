@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using Helios.Channels;
 using Helios.Net;
 using Helios.Ops;
 

@@ -24,6 +24,8 @@ namespace Helios.Buffers
             throw new NotSupportedException();
         }
 
+        public override ByteOrder Order => ByteOrder.LittleEndian;
+
         public override IByteBufAllocator Allocator
         {
             get { return _alloc; }
@@ -94,9 +96,9 @@ namespace Helios.Buffers
             get { return false; }
         }
 
-        public override byte[] InternalArray()
+        public override byte[] Array
         {
-            throw new NotSupportedException();
+            get { throw new NotSupportedException(); }
         }
 
         public override bool IsDirect
@@ -104,12 +106,14 @@ namespace Helios.Buffers
             get { return true; }
         }
 
-        public override IByteBuf Unwrap()
+        public override IByteBuf Copy(int index, int length)
         {
-            return null;
+            return this;
         }
 
-        public override ByteBuffer InternalNioBuffer(int index, int length)
+        public override int ArrayOffset => 0;
+
+        public override IByteBuf Unwrap()
         {
             return null;
         }
@@ -122,6 +126,37 @@ namespace Helios.Buffers
         public override IByteBuf CompactIfNecessary()
         {
             return this;
+        }
+
+        public override int ReferenceCount { get { return 1; } }
+        public override IReferenceCounted Retain()
+        {
+            return this;
+        }
+
+        public override IReferenceCounted Retain(int increment)
+        {
+            return this;
+        }
+
+        public override IReferenceCounted Touch()
+        {
+            return this;
+        }
+
+        public override IReferenceCounted Touch(object hint)
+        {
+            return this;
+        }
+
+        public override bool Release()
+        {
+            return false;
+        }
+
+        public override bool Release(int decrement)
+        {
+            return false;
         }
     }
 }

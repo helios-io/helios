@@ -1,5 +1,8 @@
 using System;
-using System.IO.Compression;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using Helios.Util;
 
 namespace Helios.Buffers
@@ -11,6 +14,16 @@ namespace Helios.Buffers
     {
         private int _markedReaderIndex;
         private int _markedWriterIndex;
+        private SwappedByteBuffer _swapped;
+        private static readonly bool _checkAccessible;
+
+        static AbstractByteBuf()
+        {
+            if (Debugger.IsAttached)
+            {
+                _checkAccessible = true;
+            }
+        }
 
         protected AbstractByteBuf(int maxCapacity)
         {
@@ -20,6 +33,19 @@ namespace Helios.Buffers
         public abstract int Capacity { get; }
 
         public abstract IByteBuf AdjustCapacity(int newCapacity);
+        public abstract ByteOrder Order { get; }
+
+        public IByteBuf WithOrder(ByteOrder order)
+        {
+            if (order == Order)
+                return this;
+            var swapped = _swapped;
+            if (_swapped == null)
+            {
+                _swapped = new SwappedByteBuffer(this);
+            }
+            return _swapped;
+        }
 
         public int MaxCapacity { get; private set; }
         public abstract IByteBufAllocator Allocator { get; }
@@ -126,6 +152,32 @@ namespace Helios.Buffers
             {
                 AdjustMarkers(ReaderIndex);
                 WriterIndex = ReaderIndex = 0;
+            }
+
+            return this;
+        }
+
+        public virtual IByteBuf DiscardSomeReadBytes()
+        {
+            EnsureAccessible();
+            if (ReaderIndex == 0) return this;
+
+            if (ReaderIndex == WriterIndex) // everything has been read
+            {
+                AdjustMarkers(ReaderIndex);
+                WriterIndex = ReaderIndex = 0;
+                return this;
+            }
+
+            unchecked
+            {
+                if (ReaderIndex >= Capacity >> 1)
+                {
+                    SetBytes(0, this, ReaderIndex, WriterIndex - ReaderIndex);
+                    WriterIndex -= ReaderIndex;
+                    AdjustMarkers(ReaderIndex);
+                    ReaderIndex = 0;
+                }
             }
 
             return this;
@@ -521,7 +573,11 @@ namespace Helios.Buffers
 
         public IByteBuf WriteUnsignedShort(int value)
         {
-            throw new NotImplementedException();
+            unchecked
+            {
+                WriteShort((ushort) value);
+            }
+            return this;
         }
 
         public virtual IByteBuf WriteInt(int value)
@@ -598,13 +654,69 @@ namespace Helios.Buffers
             return this;
         }
 
+        public IByteBuf WriteZero(int length)
+        {
+            if (length == 0)
+                return this;
+
+            EnsureWritable(length);
+            var wIndex = WriterIndex;
+            CheckIndex(wIndex, length);
+
+            int nLong;
+            int nBytes;
+            unchecked
+            {
+                nLong = (int)((uint)length >> 3);
+                nBytes = length & 7;
+            }
+           
+            for (var i = nLong; i > 0; i--)
+            {
+                _SetLong(wIndex, 0);
+                wIndex += 8;
+            }
+            if (nBytes == 4)
+            {
+                _SetInt(wIndex, 0);
+                wIndex += 4;
+            }
+            else if (nBytes < 4)
+            {
+                for (var i = nBytes; i > 0; i--)
+                {
+                    _SetByte(wIndex, 0);
+                    wIndex++;
+                }
+            }
+            else
+            {
+                _SetInt(wIndex, 0);
+                wIndex += 4;
+                for (var i = nBytes - 4; i > 0; i--)
+                {
+                    _SetByte(wIndex, 0);
+                    wIndex++;
+                }
+            }
+            WriterIndex = wIndex;
+            return this;
+        }
+
         public abstract bool HasArray { get; }
-        public abstract byte[] InternalArray();
+        public abstract byte[] Array { get; }
+
         public virtual byte[] ToArray()
         {
+            var readableBytes = ReadableBytes;
+            if (readableBytes == 0)
+            {
+                return ByteArrayExtensions.Empty;
+            }
+
             if (HasArray)
             {
-                return InternalArray().Slice(ReaderIndex, ReadableBytes);
+                return Array.Slice(ArrayOffset + ReaderIndex, ReadableBytes);
             }
 
             var bytes = new byte[ReadableBytes];
@@ -613,15 +725,50 @@ namespace Helios.Buffers
         }
 
         public abstract bool IsDirect { get; }
+
+        public IByteBuf Copy()
+        {
+            return Copy(ReaderIndex, ReadableBytes);
+        }
+        public abstract IByteBuf Copy(int index, int length);
+        public IByteBuf Slice()
+        {
+            return Slice(ReaderIndex, ReadableBytes);
+        }
+
+        public virtual IByteBuf Slice(int index, int length)
+        {
+            return new SlicedByteBuffer(this, index, length);
+        }
+
+        public abstract int ArrayOffset { get; }
+
+        public IByteBuf ReadSlice(int length)
+        {
+            var slice = Slice(ReaderIndex, length);
+            ReaderIndex += length;
+            return slice;
+        }
+
         public virtual IByteBuf Duplicate()
         {
             return new DuplicateByteBuf(this);
         }
 
         public abstract IByteBuf Unwrap();
-        public abstract ByteBuffer InternalNioBuffer(int index, int length);
         public abstract IByteBuf Compact();
         public abstract IByteBuf CompactIfNecessary();
+        public string ToString(Encoding encoding)
+        {
+            return ByteBufferUtil.DecodeString(this, ReaderIndex, ReadableBytes, encoding);
+        }
+
+        public override string ToString()
+        {
+            return
+                $"{GetType()}(Capacity={Capacity}, ReadableBytes={ReadableBytes}, " +
+                $"WritableBytes={WritableBytes}, ReaderIndex={ReaderIndex}, WriterIndex={WriterIndex})";
+        }
 
         protected void AdjustMarkers(int decrement)
         {
@@ -706,7 +853,42 @@ namespace Helios.Buffers
 
         protected void EnsureAccessible()
         {
-            //TODO: add reference counting in the future if applicable
+            if (_checkAccessible && ReferenceCount == 0)
+            {
+                throw new IllegalReferenceCountException(0);
+            }
         }
+
+        private sealed class ByteBufEqualityComparer : IEqualityComparer<IByteBuf>
+        {
+            public bool Equals(IByteBuf x, IByteBuf y)
+            {
+                if (ReferenceEquals(x, y)) return true;
+                if (ReferenceEquals(x, null)) return false;
+                if (ReferenceEquals(y, null)) return false;
+                if (x.ReadableBytes == 0 && y.ReadableBytes == 0) return true;
+                if (x.ReadableBytes != y.ReadableBytes) return false;
+
+                var readAllBytesX = x.ToArray();
+                var readAllBytesY = y.ToArray();
+                return readAllBytesX.SequenceEqual(readAllBytesY);
+            }
+
+            public int GetHashCode(IByteBuf obj)
+            {
+                return obj.GetHashCode();
+            }
+        }
+
+        private static readonly IEqualityComparer<IByteBuf> ByteBufComparerInstance = new ByteBufEqualityComparer();
+
+        public static IEqualityComparer<IByteBuf> ByteBufComparer => ByteBufComparerInstance;
+        public abstract int ReferenceCount { get; }
+        public abstract IReferenceCounted Retain();
+        public abstract IReferenceCounted Retain(int increment);
+        public abstract IReferenceCounted Touch();
+        public abstract IReferenceCounted Touch(object hint);
+        public abstract bool Release();
+        public abstract bool Release(int decrement);
     }
 }

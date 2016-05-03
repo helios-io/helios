@@ -20,6 +20,10 @@
         /// </summary>
         IReferenceCounted Retain(int increment);
 
+        IReferenceCounted Touch();
+
+        IReferenceCounted Touch(object hint);
+
         /// <summary>
         /// Decreases the reference count by 1 and deallocates this object if the reference count reaches 0.
         /// </summary>
@@ -39,5 +43,7 @@
     public class IllegalReferenceCountException : HeliosException
     {
         public IllegalReferenceCountException(int count) : base(string.Format("Illegal reference count of {0} for this object", count)) { }
+
+        public IllegalReferenceCountException(int count, int increment) : base(string.Format("Illegal reference count of {0} for this object; was attempting to increment by {1}", count, increment)) { }
     }
 }
