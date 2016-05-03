@@ -68,7 +68,7 @@ namespace Helios.Codecs
                     var sizeMinusOne = output.Count - 1;
                     if (sizeMinusOne == 0)
                     {
-                        context.WriteAsync(output[0]);
+                        result = context.WriteAsync(output[0]);
                     }
                     else if (sizeMinusOne > 0)
                     {

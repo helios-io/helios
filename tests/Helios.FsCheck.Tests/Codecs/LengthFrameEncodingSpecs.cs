@@ -136,5 +136,60 @@ namespace Helios.FsCheck.Tests.Codecs
                            $"Expected: {string.Join("|", expectedReads.Select(x => ByteBufferUtil.HexDump(x)))}" + Environment.NewLine +
                            $"Actual: {string.Join("|", actualReads.Select(x => ByteBufferUtil.HexDump(x)))}");
         }
+
+        [Property(MaxTest = 1000)]
+        public Property HeliosBackwardsCompatibilityLengthFrameEncoders_should_correctly_encode_anything_LittleEndian(Tuple<IByteBuf, ReadInstruction>[] reads)
+        {
+            var expectedReads = reads.Select(x => x.Item1).ToArray();
+            var readModes = reads.Select(x => x.Item2).ToArray();
+            var partialReader = new PartialReadGenerator(readModes);
+            var prepender = new HeliosBackwardsCompatabilityLengthFramePrepender(4, false);
+            var decoder = new LengthFieldBasedFrameDecoder(int.MaxValue, 0, 4, 0, 4);
+            var ec = new EmbeddedChannel(partialReader, prepender, decoder);
+
+
+            foreach (var read in expectedReads)
+            {
+                var task = ec.WriteAndFlushAsync(read.Duplicate());
+                task.Wait();
+
+                IByteBuf encoded;
+                do
+                {
+                    encoded = ec.ReadOutbound<IByteBuf>();
+                    if (encoded != null)
+                        ec.WriteInbound(encoded);
+                } while (encoded != null);
+
+            }
+
+            var actualReads = new List<IByteBuf>();
+            // do one final read in case the last readmode was a partial
+            ec.Pipeline.FireUserEventTriggered(PartialReadGenerator.FinishPartialReads.Instance);
+            IByteBuf decoded;
+            do
+            {
+                decoded = ec.ReadInbound<IByteBuf>();
+                if (decoded != null)
+                {
+                    actualReads.Add(decoded);
+                }
+            } while (decoded != null);
+            expectedReads = expectedReads.Select(x => x.ResetReaderIndex()).ToArray(); // need to perform a read reset of the buffer
+            var pass = expectedReads.SequenceEqual(actualReads, AbstractByteBuf.ByteBufComparer);
+
+            if (!pass)
+            {
+                Debugger.Break();
+            }
+
+            return
+                pass
+                .When(reads.Length > 0 // need something to read
+                )
+                    .Label($"Expected encoders and decoders to read each other's messages, even with partial reads. " +
+                           $"Expected: {string.Join("|", expectedReads.Select(x => ByteBufferUtil.HexDump(x)))}" + Environment.NewLine +
+                           $"Actual: {string.Join("|", actualReads.Select(x => ByteBufferUtil.HexDump(x)))}");
+        }
     }
 }
