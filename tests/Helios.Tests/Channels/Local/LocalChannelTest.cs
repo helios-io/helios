@@ -34,7 +34,7 @@ namespace Helios.Tests.Channels.Local
             _sharedGroup = new MultithreadEventLoopGroup(1);
         }
 
-        [Fact]
+        [Fact(Skip = "Not relevant for Helios 2.0")]
         public void LocalChannel_batch_read_should_not_NRE()
         {
             var cb = new ClientBootstrap();
@@ -105,7 +105,7 @@ namespace Helios.Tests.Channels.Local
         /// Verify that messages written out to a server following a connection
         /// are read by a child <see cref="LocalChannel"/>
         /// </summary>
-        [Fact]
+        [Fact(Skip = "Not relevant for Helios 2.0")]
         public void LocalChannel_writes_to_server_should_be_read_by_LocalChannel()
         {
             var cb = new ClientBootstrap();
@@ -150,7 +150,7 @@ namespace Helios.Tests.Channels.Local
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Not relevant for Helios 2.0")]
         public void LocalChannel_should_reuse_LocalAddress()
         {
             for (var i = 0; i < 2; i++)
@@ -202,7 +202,7 @@ namespace Helios.Tests.Channels.Local
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Not relevant for Helios 2.0")]
         public void LocalChannel_WriteAsync_should_fail_fast_on_closed_channel()
         {
             var cb = new ClientBootstrap();
@@ -267,7 +267,7 @@ namespace Helios.Tests.Channels.Local
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Not relevant for Helios 2.0")]
         public void LocalServerChannel_should_be_able_to_close_channel_on_same_EventLoop()
         {
             var latch = new CountdownEvent(1);
@@ -328,7 +328,7 @@ namespace Helios.Tests.Channels.Local
         }
 
 
-        [Fact]
+        [Fact(Skip = "Not relevant for Helios 2.0")]
         public void LocalChannel_close_when_WritePromiseComplete_should_still_preserve_order()
         {
             var cb = new ClientBootstrap();
@@ -413,7 +413,7 @@ namespace Helios.Tests.Channels.Local
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Not relevant for Helios 2.0")]
         public void LocalChannel_write_when_WritePromiseComplete_should_still_preserve_order()
         {
             var cb = new ClientBootstrap();
@@ -496,7 +496,7 @@ namespace Helios.Tests.Channels.Local
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Not relevant for Helios 2.0")]
         public void LocalChannel_PeerWrite_when_WritePromiseComplete_in_different_eventloop_should_still_preserve_order()
         {
             var cb = new ClientBootstrap();
@@ -563,7 +563,7 @@ namespace Helios.Tests.Channels.Local
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Not relevant for Helios 2.0")]
         public void LocalChannel_PeerWrite_when_WritePromiseComplete_in_same_eventloop_should_still_preserve_order()
         {
             var cb = new ClientBootstrap();
@@ -630,7 +630,7 @@ namespace Helios.Tests.Channels.Local
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Not relevant for Helios 2.0")]
         public void LocalChannel_PeerClose_when_WritePromiseComplete_in_same_eventloop_should_still_preserve_order()
         {
             var cb = new ClientBootstrap();
@@ -729,7 +729,7 @@ namespace Helios.Tests.Channels.Local
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Not relevant for Helios 2.0")]
         public void LocalChannel_should_not_fire_channel_active_before_connecting()
         {
             var cb = new ClientBootstrap();

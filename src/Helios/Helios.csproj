@@ -139,6 +139,7 @@
     <Compile Include="Channels\Sockets\TcpServerSocketChannel.cs" />
     <Compile Include="Channels\Sockets\TcpSocketChannel.cs" />
     <Compile Include="Codecs\ByteToMessageDecoder.cs" />
+    <Compile Include="Codecs\HeliosBackwardsCompatabilityLengthFramePrepender.cs" />
     <Compile Include="Codecs\LengthFieldFrameBasedDecoder.cs" />
     <Compile Include="Codecs\LengthFieldPrepender.cs" />
     <Compile Include="Codecs\MessageToMessageEncoder.cs" />
