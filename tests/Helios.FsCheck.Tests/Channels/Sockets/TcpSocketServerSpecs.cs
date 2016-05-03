@@ -7,7 +7,7 @@ namespace Helios.FsCheck.Tests.Channels.Sockets
 {
     public class TcpSocketServerSpecs
     {
-        [Fact(Skip = "XUnit hates our threads :(")]
+        [Fact(Skip = "Resolved XUnit issue, but need to disable shrinking")]
         public void TcpSeverSocketChannel_should_obey_model()
         {
             var model = new TcpServerSocketChannelStateMachine();
