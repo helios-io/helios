@@ -10,6 +10,7 @@ namespace Helios.Net
     /// Data arrived via a remote host - used to help provide a common interface
     /// on our IConnection members
     /// </summary>
+    [Obsolete()]
     public struct NetworkData
     {
         public INode RemoteHost { get; set; }
