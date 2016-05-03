@@ -5,7 +5,7 @@ namespace Helios.Buffers
     /// <summary>
     /// Derived buffer that forwards requests to the original underlying buffer
     /// </summary>
-    public class DuplicateByteBuf : AbstractByteBuf
+    public class DuplicateByteBuf : AbstractDerivedByteBuffer
     {
         private readonly IByteBuf _buffer;
 
@@ -26,6 +26,8 @@ namespace Helios.Buffers
         {
             return _buffer.AdjustCapacity(newCapacity);
         }
+
+        public override ByteOrder Order => _buffer.Order;
 
         public override IByteBufAllocator Allocator
         {
@@ -155,9 +157,9 @@ namespace Helios.Buffers
             get { return _buffer.HasArray; }
         }
 
-        public override byte[] InternalArray()
+        public override byte[] Array
         {
-            return _buffer.InternalArray();
+            get { return _buffer.Array; }
         }
 
         public override bool IsDirect
@@ -165,14 +167,16 @@ namespace Helios.Buffers
             get { return _buffer.IsDirect; }
         }
 
+        public override IByteBuf Copy(int index, int length)
+        {
+            return _buffer.Copy(index, length);
+        }
+
+        public override int ArrayOffset => _buffer.ArrayOffset;
+
         public override IByteBuf Unwrap()
         {
             return _buffer;
-        }
-
-        public override ByteBuffer InternalNioBuffer(int index, int length)
-        {
-            return _buffer.InternalNioBuffer(index, length);
         }
 
         public override IByteBuf Compact()
@@ -188,15 +192,5 @@ namespace Helios.Buffers
             SetIndex(_buffer.ReaderIndex, _buffer.WriterIndex);
             return this;
         }
-
-        #region Conversion
-
-        public static implicit operator ByteBuffer(DuplicateByteBuf buf)
-        {
-            if (buf.Unwrap() is ByteBuffer) return (ByteBuffer)buf.Unwrap();
-            return null;
-        }
-
-        #endregion
     }
 }

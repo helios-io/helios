@@ -24,7 +24,7 @@ namespace Helios.Concurrency
         void Add(Action op);
 
         /// <summary>
-        /// Replaces the current <see cref="Executor"/> with a new <see cref="IExecutor"/> instance
+        /// Replaces the current <see cref="Executor"/> with a new <see cref="IEventExecutor"/> instance
         /// </summary>
         /// <param name="executor">The new executor</param>
         void SwapExecutor(IExecutor executor);

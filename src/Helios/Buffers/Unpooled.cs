@@ -1,4 +1,6 @@
-﻿namespace Helios.Buffers
+﻿using Helios.Concurrency;
+
+namespace Helios.Buffers
 {
     /// <summary>
     /// Utility class for managing and creating unpooled buffers
@@ -22,6 +24,18 @@
         public static IByteBuf Buffer(int initialCapacity, int maxCapacity)
         {
             return Alloc.Buffer(initialCapacity, maxCapacity);
+        }
+
+        public static IByteBuf WrappedBuffer(byte[] bytes)
+        {
+           return WrappedBuffer(bytes, 0, bytes.Length);
+        }
+
+        public static IByteBuf WrappedBuffer(byte[] bytes, int index, int length)
+        {
+            if (bytes.Length == 0)
+                return Empty;
+            return Alloc.Buffer(bytes.Length).WriteBytes(bytes, index, length);
         }
     }
 }
