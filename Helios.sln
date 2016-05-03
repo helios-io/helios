@@ -59,6 +59,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.Tests.Performance", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.FsCheck.Tests", "tests\Helios.FsCheck.Tests\Helios.FsCheck.Tests.csproj", "{8ED071C0-55C7-4B47-89B2-F68BC58D9590}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helios.HorizontalScaling.Performance", "benchmark\Helios.HorizontalScaling.Performance\Helios.HorizontalScaling.Performance.csproj", "{96870699-C5A6-411A-856E-3E0F6BF6F9F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mono|Any CPU = Debug Mono|Any CPU
@@ -195,6 +197,14 @@ Global
 		{8ED071C0-55C7-4B47-89B2-F68BC58D9590}.Release Mono|Any CPU.Build.0 = Release|Any CPU
 		{8ED071C0-55C7-4B47-89B2-F68BC58D9590}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8ED071C0-55C7-4B47-89B2-F68BC58D9590}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96870699-C5A6-411A-856E-3E0F6BF6F9F9}.Debug Mono|Any CPU.ActiveCfg = Debug|Any CPU
+		{96870699-C5A6-411A-856E-3E0F6BF6F9F9}.Debug Mono|Any CPU.Build.0 = Debug|Any CPU
+		{96870699-C5A6-411A-856E-3E0F6BF6F9F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96870699-C5A6-411A-856E-3E0F6BF6F9F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96870699-C5A6-411A-856E-3E0F6BF6F9F9}.Release Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{96870699-C5A6-411A-856E-3E0F6BF6F9F9}.Release Mono|Any CPU.Build.0 = Release|Any CPU
+		{96870699-C5A6-411A-856E-3E0F6BF6F9F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96870699-C5A6-411A-856E-3E0F6BF6F9F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -218,5 +228,6 @@ Global
 		{0B1D7AB8-6046-4A19-AF48-32193F4555A2} = {7B7D8B0C-110F-4120-85A9-D0F9A9A97448}
 		{86FEA7AF-A3BC-46FE-9492-8F4BDE8F1A1B} = {7B7D8B0C-110F-4120-85A9-D0F9A9A97448}
 		{8ED071C0-55C7-4B47-89B2-F68BC58D9590} = {5E5EEA56-0AA6-469A-8123-E3076881057D}
+		{96870699-C5A6-411A-856E-3E0F6BF6F9F9} = {7B7D8B0C-110F-4120-85A9-D0F9A9A97448}
 	EndGlobalSection
 EndGlobal
