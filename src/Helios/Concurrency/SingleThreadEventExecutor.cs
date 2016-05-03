@@ -43,7 +43,6 @@ namespace Helios.Concurrency
         private readonly ManualResetEventSlim _emptyQueueEvent = new ManualResetEventSlim();
         volatile int _runningState = ST_NOT_STARTED;
         private readonly TaskCompletionSource<int> _terminationCompletionSource;
-        private bool _disposed;
         private readonly TaskScheduler _scheduler;
         private TimeSpan _gracefulShutdownQuietPeriod;
         private PreciseDeadline _gracefulShutdownTimeout;

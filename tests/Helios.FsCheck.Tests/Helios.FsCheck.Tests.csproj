@@ -80,13 +80,27 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Helios.Tests\Channels\IntCodec.cs">
+      <Link>Channels\Sockets\Models\IntCodec.cs</Link>
+    </Compile>
     <Compile Include="Buffers\BufferGenerators.cs" />
     <Compile Include="Buffers\BufferHelpers.cs" />
     <Compile Include="Buffers\BufferSpecs.cs" />
+    <Compile Include="Channels\Sockets\Models\TcpServerSocketModelComparer.cs" />
+    <Compile Include="Channels\Sockets\TcpSocketServerSpecs.cs" />
+    <Compile Include="HeliosModelHelpers.cs" />
     <Compile Include="Channels\ChannelOutboundBufferSpecs.cs" />
     <Compile Include="Channels\ChannelPipelineInvocationSpecs.cs" />
     <Compile Include="Channels\ChannelPipelineModels.cs" />
     <Compile Include="Channels\ChannelPipelineConstructionSpecs.cs" />
+    <Compile Include="Channels\Sockets\Models\ConcurrentTcpServerSocketModel.cs" />
+    <Compile Include="Channels\Sockets\Models\ConnectionState.cs" />
+    <Compile Include="Channels\Sockets\Models\ImmutableTcpServerSocketModel.cs" />
+    <Compile Include="Channels\Sockets\Models\TcpClientSocketModel.cs" />
+    <Compile Include="Channels\Sockets\Models\ITcpServerSocketModel.cs" />
+    <Compile Include="Channels\Sockets\Models\TcpClientSocketStateHandler.cs" />
+    <Compile Include="Channels\Sockets\TcpServerSocketChannelStateMachine.cs" />
+    <Compile Include="Channels\Sockets\Models\TcpServerSocketStateHandler.cs" />
     <Compile Include="FsharpDelegateHelper.cs" />
     <Compile Include="Channels\TestChannel.cs" />
     <Compile Include="Codecs\EncodingGenerators.cs" />
@@ -109,9 +123,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Channels\Sockets\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

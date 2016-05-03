@@ -10,8 +10,6 @@ namespace Helios.Buffers
     /// </summary>
     public class UnpooledDirectByteBuf : AbstractReferenceCountedByteBuf
     {
-        private readonly IByteBufAllocator _alloc;
-
         private byte[] _buffer;
 
         public UnpooledDirectByteBuf(IByteBufAllocator alloc, int initialCapacity, int maxCapacity) : this(alloc, new byte[initialCapacity], 0, 0, maxCapacity)

@@ -129,7 +129,7 @@ namespace Helios.Tests.Channels.Socket
                 {
                     cc.WriteAndFlushAsync(read);
                 }
-                Assert.True(resetEvent.Wait(5000));
+                Assert.True(resetEvent.Wait(15000));
             }
             finally
             {

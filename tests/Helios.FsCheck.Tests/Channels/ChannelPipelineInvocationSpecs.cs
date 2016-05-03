@@ -26,20 +26,20 @@ namespace Helios.FsCheck.Tests.Channels
 
         public ChannelPipelineModel Model { get; }
 
-        [Property(QuietOnSuccess = true)]
+        [Property()]
         public Property ChannelPipeline_should_obey_invocation_model()
         {
             return Model.ToProperty();
         }
 
-        [Property(QuietOnSuccess = true)]
+        [Property()]
         public Property AllEventsChannelHandler_should_correctly_report_all_supported_events(SupportedEvent[] events)
         {
             var handler = new AllEventsChannelHandler("foo", events);
             return events.All(x => handler.SupportsEvent(x)).ToProperty();
         }
 
-        [Property(QuietOnSuccess = true)]
+        [Property()]
         public Property DefaultNamedChannelHandler_should_not_support_any_events(SupportedEvent[] events)
         {
             var handler = new NamedChannelHandler("foo");
