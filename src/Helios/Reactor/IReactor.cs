@@ -12,6 +12,7 @@ namespace Helios.Reactor
     /// Reactive interface for receiving input from
     /// a network connection
     /// </summary>
+    [Obsolete("Use IChannel instead")]
     public interface IReactor : IDisposable
     {
         event ConnectionEstablishedCallback OnConnection;

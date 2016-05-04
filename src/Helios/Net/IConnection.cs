@@ -39,6 +39,7 @@ namespace Helios.Net
     /// <summary>
     /// Interface used to describe an open connection to a client node / capability
     /// </summary>
+    [Obsolete("Use IChannel instead")]
     public interface IConnection : IDisposable
     {
         event ReceivedDataCallback Receive;

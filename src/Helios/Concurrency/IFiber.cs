@@ -7,6 +7,7 @@ namespace Helios.Concurrency
     /// <summary>
     /// Interface for lightweight threading and execution
     /// </summary>
+    [Obsolete()]
     public interface IFiber : IDisposable
     {
         /// <summary>

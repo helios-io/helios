@@ -10,6 +10,7 @@ using Helios.Serialization;
 
 namespace Helios.Reactor.Bootstrap
 {
+    [Obsolete()]
     public class ServerBootstrap : AbstractBootstrap
     {
         public ServerBootstrap()
