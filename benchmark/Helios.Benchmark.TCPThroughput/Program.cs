@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -6,17 +10,17 @@ using Helios.MultiNodeTests.TestKit;
 
 namespace Helios.Benchmark.TCPThroughput
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             var test = new TcpThroughputHarness();
             Console.WriteLine("Helios TCP Message Throughput Test");
             Console.WriteLine("How quickly can we send messages along the following route?");
             Console.WriteLine("Client Send --> Server Receive --> Server Send --> Client Receive");
-             var generations = 3;
+            var generations = 3;
             var threadCount = Environment.ProcessorCount;
-            for (int i = 0; i < generations; i++)
+            for (var i = 0; i < generations; i++)
             {
                 var workItems = 10000*(int) Math.Pow(10, i);
                 Console.WriteLine("Testing for {0} 200b messages", workItems);
@@ -35,7 +39,7 @@ namespace Helios.Benchmark.TCPThroughput
     }
 
     /// <summary>
-    /// Going to re-use the multi-node testkit for running this benchmark
+    ///     Going to re-use the multi-node testkit for running this benchmark
     /// </summary>
     public class TcpThroughputHarness : MultiNodeTest
     {
@@ -63,7 +67,7 @@ namespace Helios.Benchmark.TCPThroughput
                 Send(message);
             }
             WaitUntilNMessagesReceived(sends, TimeSpan.FromMinutes(3)); //set a really long timeout, just in case
-
         }
     }
 }
+

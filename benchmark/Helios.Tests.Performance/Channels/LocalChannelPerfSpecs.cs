@@ -1,4 +1,8 @@
-﻿using System.Text;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Helios.Buffers;
@@ -14,52 +18,52 @@ using NBench;
 namespace Helios.Tests.Performance.Channels
 {
     /// <summary>
-    /// End-to-end performance benchmark for a realistic-ish pipeline built using the <see cref="LocalChannel"/>
-    /// 
-    /// Contains a total of three handlers and runs on the same thread as the caller, so all calls made against the pipeline
-    /// are totally synchronous. Tests the overhead of the following components working together:
-    /// 
-    /// 1. <see cref="IChannelPipeline"/> default implementation
-    /// 2. <see cref="IChannelHandlerContext"/> default implementation
-    /// 3. <see cref="IRecvByteBufAllocator"/> default implementation
-    /// 4. <see cref="IByteBufAllocator"/> default implementation 
-    /// 5. <see cref="ChannelOutboundBuffer"/>
-    /// 6. <see cref="ObjectPool{T}"/> and <see cref="RecyclableArrayList"/>
-    /// 7. <see cref="AbstractChannel"/> and its built-in <see cref="IChannelUnsafe"/> implementation
-    /// 8. <see cref="LengthFieldPrepender"/> and <see cref="LengthFieldBasedFrameDecoder"/>
-    /// 9. And finally, <see cref="AbstractScheduledEventExecutor"/>.
-    /// 
-    /// Buffer size for each individual written message is intentionally kept small, since this is a throughput and GC overhead test.
+    ///     End-to-end performance benchmark for a realistic-ish pipeline built using the <see cref="LocalChannel" />
+    ///     Contains a total of three handlers and runs on the same thread as the caller, so all calls made against the
+    ///     pipeline
+    ///     are totally synchronous. Tests the overhead of the following components working together:
+    ///     1. <see cref="IChannelPipeline" /> default implementation
+    ///     2. <see cref="IChannelHandlerContext" /> default implementation
+    ///     3. <see cref="IRecvByteBufAllocator" /> default implementation
+    ///     4. <see cref="IByteBufAllocator" /> default implementation
+    ///     5. <see cref="ChannelOutboundBuffer" />
+    ///     6. <see cref="ObjectPool{T}" /> and <see cref="RecyclableArrayList" />
+    ///     7. <see cref="AbstractChannel" /> and its built-in <see cref="IChannelUnsafe" /> implementation
+    ///     8. <see cref="LengthFieldPrepender" /> and <see cref="LengthFieldBasedFrameDecoder" />
+    ///     9. And finally, <see cref="AbstractScheduledEventExecutor" />.
+    ///     Buffer size for each individual written message is intentionally kept small, since this is a throughput and GC
+    ///     overhead test.
     /// </summary>
     public class LocalChannelPerfSpecs
     {
+        private const string InboundThroughputCounterName = "inbound ops";
+
+        private const string OutboundThroughputCounterName = "outbound ops";
+
+        public const int WriteCount = 10;
+
+        private static readonly LocalAddress TEST_ADDRESS = new LocalAddress("test.id");
+        protected readonly ManualResetEventSlim ResetEvent = new ManualResetEventSlim();
+        private IChannel _clientChannel;
+        private Counter _inboundThroughputCounter;
+        private Counter _outboundThroughputCounter;
+
+        private IChannel _serverChannel;
+        private IReadFinishedSignal _signal;
+
+        protected ClientBootstrap ClientBootstrap;
+
+        protected IEventLoopGroup ClientGroup;
+
+        private byte[] message;
+        protected ServerBootstrap ServerBoostrap;
+        protected IEventLoopGroup ServerGroup;
+
         static LocalChannelPerfSpecs()
         {
             // Disable the logging factory
             LoggingFactory.DefaultFactory = new NoOpLoggerFactory();
         }
-
-        private static readonly LocalAddress TEST_ADDRESS = new LocalAddress("test.id");
-
-        protected ClientBootstrap ClientBootstrap;
-        protected ServerBootstrap ServerBoostrap;
-
-        protected IEventLoopGroup ClientGroup;
-        protected IEventLoopGroup ServerGroup;
-
-        private byte[] message;
-        private const string InboundThroughputCounterName = "inbound ops";
-        private Counter _inboundThroughputCounter;
-
-        private const string OutboundThroughputCounterName = "outbound ops";
-        private Counter _outboundThroughputCounter;
-
-        private IChannel _serverChannel;
-        private IChannel _clientChannel;
-        protected readonly ManualResetEventSlim ResetEvent = new ManualResetEventSlim();
-
-        public const int WriteCount = 10;
-        private IReadFinishedSignal _signal;
 
         protected virtual IChannelHandler GetEncoder()
         {
@@ -77,7 +81,7 @@ namespace Helios.Tests.Performance.Channels
             ClientGroup = new MultithreadEventLoopGroup(1);
             ServerGroup = new MultithreadEventLoopGroup(2);
 
-            Encoding iso = Encoding.GetEncoding("ISO-8859-1");
+            var iso = Encoding.GetEncoding("ISO-8859-1");
             message = iso.GetBytes("ABC");
 
             _inboundThroughputCounter = context.GetCounter(InboundThroughputCounterName);
@@ -86,17 +90,26 @@ namespace Helios.Tests.Performance.Channels
             _signal = new SimpleReadFinishedSignal();
 
             var sb = new ServerBootstrap().Group(ServerGroup).Channel<LocalServerChannel>()
-                .ChildHandler(new ActionChannelInitializer<LocalChannel>(channel =>
-                {
-                    channel.Pipeline.AddLast(GetEncoder()).AddLast(GetDecoder()).AddLast(counterHandler).AddLast(new CounterHandlerOutbound(_outboundThroughputCounter)).AddLast(new ReadFinishedHandler(_signal, WriteCount));
-                }));
+                .ChildHandler(
+                    new ActionChannelInitializer<LocalChannel>(
+                        channel =>
+                        {
+                            channel.Pipeline.AddLast(GetEncoder())
+                                .AddLast(GetDecoder())
+                                .AddLast(counterHandler)
+                                .AddLast(new CounterHandlerOutbound(_outboundThroughputCounter))
+                                .AddLast(new ReadFinishedHandler(_signal, WriteCount));
+                        }));
 
-            var cb = new ClientBootstrap().Group(ClientGroup).Channel<LocalChannel>().Handler(new ActionChannelInitializer<LocalChannel>(
-                channel =>
-                {
-                    channel.Pipeline.AddLast(GetEncoder()).AddLast(GetDecoder()).AddLast(counterHandler)
-                        .AddLast(new CounterHandlerOutbound(_outboundThroughputCounter));
-                }));
+            var cb =
+                new ClientBootstrap().Group(ClientGroup)
+                    .Channel<LocalChannel>()
+                    .Handler(new ActionChannelInitializer<LocalChannel>(
+                        channel =>
+                        {
+                            channel.Pipeline.AddLast(GetEncoder()).AddLast(GetDecoder()).AddLast(counterHandler)
+                                .AddLast(new CounterHandlerOutbound(_outboundThroughputCounter));
+                        }));
 
             // start server
             _serverChannel = sb.BindAsync(TEST_ADDRESS).Result;
@@ -105,7 +118,9 @@ namespace Helios.Tests.Performance.Channels
             _clientChannel = cb.ConnectAsync(_serverChannel.LocalAddress).Result;
         }
 
-        [PerfBenchmark(Description = "Measures how quickly and with how much GC overhead a LocalChannel --> LocalServerChannel connection can decode / encode realistic messages",
+        [PerfBenchmark(
+            Description =
+                "Measures how quickly and with how much GC overhead a LocalChannel --> LocalServerChannel connection can decode / encode realistic messages",
             NumberOfIterations = 13, RunMode = RunMode.Iterations, Skip = "Race issues on connect?")]
         [CounterMeasurement(InboundThroughputCounterName)]
         [CounterMeasurement(OutboundThroughputCounterName)]
@@ -138,3 +153,4 @@ namespace Helios.Tests.Performance.Channels
         }
     }
 }
+

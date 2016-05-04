@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using Helios.Logging;
 
 namespace Helios.Concurrency
 {
     /// <summary>
-    /// Utility class for working with <see cref="TaskCompletionSource"/>
+    ///     Utility class for working with <see cref="TaskCompletionSource" />
     /// </summary>
     internal static class PromiseUtil
     {
@@ -24,8 +24,11 @@ namespace Helios.Concurrency
         {
             if (promise != TaskCompletionSource.Void && !promise.TrySetException(cause))
             {
-                logger.Warning("Failed to set exception on task successfully because it is done already: {0}; Cause: {1}", promise, cause);
+                logger.Warning(
+                    "Failed to set exception on task successfully because it is done already: {0}; Cause: {1}", promise,
+                    cause);
             }
         }
     }
 }
+

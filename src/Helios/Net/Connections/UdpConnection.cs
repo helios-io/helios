@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -9,34 +13,37 @@ using Helios.Exceptions;
 using Helios.Serialization;
 using Helios.Topology;
 using Helios.Tracing;
-using Helios.Util.Concurrency;
 
 namespace Helios.Net.Connections
 {
     /// <summary>
-    /// UDP IConnection implementation.
-    /// 
-    /// <remarks>N.B. It's worth nothing that <see cref="Node"/> in this IConnection implementation
-    /// refers to the local port / address that this UDP socket is bound to, rather than a remote host.</remarks>
+    ///     UDP IConnection implementation.
+    ///     <remarks>
+    ///         N.B. It's worth nothing that <see cref="Node" /> in this IConnection implementation
+    ///         refers to the local port / address that this UDP socket is bound to, rather than a remote host.
+    ///     </remarks>
     /// </summary>
     public class UdpConnection : UnstreamedConnectionBase
     {
         protected Socket Client;
         protected EndPoint RemoteEndpoint;
 
-        public UdpConnection(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator)
+        public UdpConnection(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout, IMessageEncoder encoder,
+            IMessageDecoder decoder, IByteBufAllocator allocator)
             : base(eventLoop, binding, timeout, encoder, decoder, allocator)
         {
             InitClient();
         }
 
-        public UdpConnection(NetworkEventLoop eventLoop, INode binding, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator)
+        public UdpConnection(NetworkEventLoop eventLoop, INode binding, IMessageEncoder encoder, IMessageDecoder decoder,
+            IByteBufAllocator allocator)
             : base(eventLoop, binding, encoder, decoder, allocator)
         {
             InitClient();
         }
 
-        public UdpConnection(Socket client, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator)
+        public UdpConnection(Socket client, IMessageEncoder encoder, IMessageDecoder decoder,
+            IByteBufAllocator allocator)
         {
             InitClient(client);
             Encoder = encoder;
@@ -61,6 +68,7 @@ namespace Helios.Net.Connections
             get { return Client.Blocking; }
             set { Client.Blocking = value; }
         }
+
         public override bool IsOpen()
         {
             return Local != null;
@@ -96,9 +104,11 @@ namespace Helios.Net.Connections
             if (config.HasOption<int>("sendBufferSize"))
                 Client.SendBufferSize = config.GetOption<int>("sendBufferSize");
             if (config.HasOption<bool>("reuseAddress"))
-                Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, config.GetOption<bool>("reuseAddress"));
+                Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress,
+                    config.GetOption<bool>("reuseAddress"));
             if (config.HasOption<bool>("keepAlive"))
-                Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, config.GetOption<bool>("keepAlive"));
+                Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive,
+                    config.GetOption<bool>("keepAlive"));
         }
 
         public override void Open()
@@ -109,7 +119,8 @@ namespace Helios.Net.Connections
 
             if (Binding == null || Binding.Host == null)
             {
-                throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to a null Node or null Node.Host");
+                throw new HeliosConnectionException(ExceptionType.NotOpen,
+                    "Cannot open a connection to a null Node or null Node.Host");
             }
 
             if (Binding.Port < 0)
@@ -139,12 +150,13 @@ namespace Helios.Net.Connections
         protected override void BeginReceiveInternal()
         {
             var receiveState = CreateNetworkState(Client, RemoteHost);
-            Client.BeginReceiveFrom(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ref RemoteEndpoint, ReceiveCallback, receiveState);
+            Client.BeginReceiveFrom(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None,
+                ref RemoteEndpoint, ReceiveCallback, receiveState);
         }
 
         protected override void ReceiveCallback(IAsyncResult ar)
         {
-            var receiveState = (NetworkState)ar.AsyncState;
+            var receiveState = (NetworkState) ar.AsyncState;
             try
             {
                 var buffSize = receiveState.Socket.EndReceiveFrom(ar, ref RemoteEndpoint);
@@ -186,7 +198,7 @@ namespace Helios.Net.Connections
             {
                 HeliosTrace.Instance.UdpClientReceiveFailure();
                 Receiving = false;
-                InvokeDisconnectIfNotNull(NodeBuilder.FromEndpoint((IPEndPoint)RemoteEndpoint),
+                InvokeDisconnectIfNotNull(NodeBuilder.FromEndpoint((IPEndPoint) RemoteEndpoint),
                     new HeliosConnectionException(ExceptionType.Closed, ex));
             }
             catch (Exception ex)
@@ -254,22 +266,23 @@ namespace Helios.Net.Connections
             }
         }
 
-
         #endregion
 
         #region Internal members
 
-
         protected void InitClient()
         {
-            Client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp) { MulticastLoopback = false };
+            Client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp)
+            {
+                MulticastLoopback = false
+            };
             RemoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
         }
 
         protected void InitClient(Socket client)
         {
             Client = client;
-            var ipAddress = (IPEndPoint)Client.RemoteEndPoint;
+            var ipAddress = (IPEndPoint) Client.RemoteEndPoint;
             Local = Binding = NodeBuilder.FromEndpoint(ipAddress);
             RemoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
         }
@@ -287,7 +300,7 @@ namespace Helios.Net.Connections
                     if (Client != null)
                     {
                         Close();
-                        ((IDisposable)Client).Dispose();
+                        ((IDisposable) Client).Dispose();
                         EventLoop.Dispose();
                     }
                 }
@@ -298,3 +311,4 @@ namespace Helios.Net.Connections
         #endregion
     }
 }
+

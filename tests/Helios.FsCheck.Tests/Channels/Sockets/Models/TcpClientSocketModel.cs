@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Helios.Channels;
@@ -7,11 +11,18 @@ namespace Helios.FsCheck.Tests.Channels.Sockets.Models
 {
     public class TcpClientSocketModel
     {
-        public TcpClientSocketModel() : this(null) { }
+        private static readonly IReadOnlyList<int> Empty = new List<int>();
 
-        public TcpClientSocketModel(IChannel self) : this(self, Empty, Empty, ConnectionState.Connecting) { }
+        public TcpClientSocketModel() : this(null)
+        {
+        }
 
-        public TcpClientSocketModel(IChannel self, IReadOnlyList<int> lastWrittenMessages, IReadOnlyList<int> lastReceivedMessages, ConnectionState state)
+        public TcpClientSocketModel(IChannel self) : this(self, Empty, Empty, ConnectionState.Connecting)
+        {
+        }
+
+        public TcpClientSocketModel(IChannel self, IReadOnlyList<int> lastWrittenMessages,
+            IReadOnlyList<int> lastReceivedMessages, ConnectionState state)
         {
             Self = self;
             LastWrittenMessages = lastWrittenMessages;
@@ -19,13 +30,11 @@ namespace Helios.FsCheck.Tests.Channels.Sockets.Models
             State = state;
         }
 
-        public IChannel Self { get; private set; }
-        public IPEndPoint BoundAddress => (IPEndPoint)Self.LocalAddress;
-        public IReadOnlyList<int> LastWrittenMessages { get; private set; }
-        public IReadOnlyList<int> LastReceivedMessages { get; private set; }
-        public ConnectionState State { get; private set; }
-
-        private static readonly IReadOnlyList<int> Empty = new List<int>();
+        public IChannel Self { get; }
+        public IPEndPoint BoundAddress => (IPEndPoint) Self.LocalAddress;
+        public IReadOnlyList<int> LastWrittenMessages { get; }
+        public IReadOnlyList<int> LastReceivedMessages { get; }
+        public ConnectionState State { get; }
 
         public TcpClientSocketModel SetChannel(IChannel self)
         {
@@ -44,13 +53,15 @@ namespace Helios.FsCheck.Tests.Channels.Sockets.Models
 
         public TcpClientSocketModel WriteMessages(params int[] messages)
         {
-            return new TcpClientSocketModel(Self, LastWrittenMessages.Concat(messages).ToList(), LastReceivedMessages, State);
+            return new TcpClientSocketModel(Self, LastWrittenMessages.Concat(messages).ToList(), LastReceivedMessages,
+                State);
         }
 
         public TcpClientSocketModel ReceiveMessages(params int[] messages)
         {
-            return new TcpClientSocketModel(Self, LastWrittenMessages, LastReceivedMessages.Concat(messages).ToList(), State);
+            return new TcpClientSocketModel(Self, LastWrittenMessages, LastReceivedMessages.Concat(messages).ToList(),
+                State);
         }
-
     }
 }
+

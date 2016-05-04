@@ -1,8 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Helios.Concurrency;
@@ -14,76 +17,43 @@ namespace Helios.Channels.Local
 {
     public class LocalChannel : AbstractChannel
     {
+        private const int MAX_READER_STACK_DEPTH = 8;
         private static readonly ILogger Logger = LoggingFactory.GetLogger<LocalChannel>();
 
-        private enum State
+        private static readonly Func<object, object, bool> DoFinishPeerReadAsync = (context, o) =>
         {
-            Open,
-            Bound,
-            Connected,
-            Closed
-        }
+            var self = (LocalChannel) context;
+            var peer = (LocalChannel) o;
+            self.FinishPeerRead0(peer);
+            return true;
+        };
 
-        private class ReadTask : IRunnable
+        private static readonly Action<object, object> DoFinishPeerRead = (context, o) =>
         {
-            private LocalChannel _channel;
+            var self = (LocalChannel) context;
+            var peer = (LocalChannel) o;
+            self.FinishPeerRead0(peer);
+        };
 
-            public ReadTask(LocalChannel channel)
-            {
-                _channel = channel;
-            }
-
-            public void Run()
-            {
-                var pipeline = _channel.Pipeline;
-                var inboundBuffer = _channel._inboundBuffer;
-                while (true)
-                {
-                    if (inboundBuffer.Count == 0)
-                        break;
-                    var msg = inboundBuffer.Dequeue();
-                    pipeline.FireChannelRead(msg);
-                }
-                pipeline.FireChannelReadComplete();
-            }
-        }
-
-        private class ShutdownHook : IRunnable
-        {
-            private readonly LocalChannel _channel;
-
-            public ShutdownHook(LocalChannel channel)
-            {
-                _channel = channel;
-            }
-
-            public void Run()
-            {
-                _channel.Unsafe.CloseAsync();
-            }
-        }
-
-        private const int MAX_READER_STACK_DEPTH = 8;
-        private readonly IChannelConfiguration _config;
-        private ThreadLocal<int> _stackDepth = new ThreadLocal<int>(() => 0);
         private readonly Queue<object> _inboundBuffer = new Queue<object>();
-        private readonly ShutdownHook _shutdownHook;
         private readonly ReadTask _readTask;
+        private readonly ShutdownHook _shutdownHook;
+        private volatile TaskCompletionSource _connectPromise;
+        private volatile Task _finishReadTask;
+        private volatile LocalAddress _localAddress;
+        private volatile LocalChannel _peer;
+        private volatile bool _readInProgress;
+        private volatile bool _registerInProgress;
+        private volatile LocalAddress _remoteAddress;
+        private readonly ThreadLocal<int> _stackDepth = new ThreadLocal<int>(() => 0);
 
 
         private volatile State _state;
-        private volatile LocalChannel _peer;
-        private volatile LocalAddress _localAddress;
-        private volatile LocalAddress _remoteAddress;
-        private volatile TaskCompletionSource _connectPromise;
-        private volatile bool _readInProgress;
-        private volatile bool _registerInProgress;
         private volatile bool _writeInProgress;
-        private volatile Task _finishReadTask;
 
         public LocalChannel() : base(null)
         {
-            _config = new DefaultChannelConfiguration(this);
+            Configuration = new DefaultChannelConfiguration(this);
             _shutdownHook = new ShutdownHook(this);
             _readTask = new ReadTask(this);
         }
@@ -94,33 +64,61 @@ namespace Helios.Channels.Local
             _localAddress = parent.LocalAddress;
             _remoteAddress = peer.LocalAddress;
 
-            _config = new DefaultChannelConfiguration(this);
+            Configuration = new DefaultChannelConfiguration(this);
             _shutdownHook = new ShutdownHook(this);
             _readTask = new ReadTask(this);
         }
+
+        public override bool DisconnectSupported
+        {
+            get { return true; }
+        }
+
+        public override bool IsOpen
+        {
+            get { return _state != State.Closed; }
+        }
+
+        public override bool IsActive
+        {
+            get { return _state == State.Connected; }
+        }
+
+        public new LocalServerChannel Parent
+        {
+            get { return base.Parent as LocalServerChannel; }
+        }
+
+        public new LocalAddress LocalAddress
+        {
+            get { return LocalAddressInternal as LocalAddress; }
+        }
+
+        public new LocalAddress RemoteAddress
+        {
+            get { return RemoteAddressInternal as LocalAddress; }
+        }
+
+        protected override EndPoint LocalAddressInternal
+        {
+            get { return _localAddress; }
+        }
+
+        protected override EndPoint RemoteAddressInternal
+        {
+            get { return _remoteAddress; }
+        }
+
+        public override IChannelConfiguration Configuration { get; }
 
         protected override IChannelUnsafe NewUnsafe()
         {
             return new LocalUnsafe(this);
         }
 
-        public override bool DisconnectSupported { get { return true; } }
-        public override bool IsOpen { get { return _state != State.Closed; } }
-        public override bool IsActive { get { return _state == State.Connected; } }
-
-        public new LocalServerChannel Parent { get { return base.Parent as LocalServerChannel; } }
-
-        public new LocalAddress LocalAddress { get { return LocalAddressInternal as LocalAddress; } }
-
-        public new LocalAddress RemoteAddress { get { return RemoteAddressInternal as LocalAddress; } }
-
-        protected override EndPoint LocalAddressInternal { get { return _localAddress; } }
-        protected override EndPoint RemoteAddressInternal { get { return _remoteAddress; } }
-        public override IChannelConfiguration Configuration { get { return _config; } }
-
         protected override bool IsCompatible(IEventLoop eventLoop)
         {
-            return (eventLoop is SingleThreadEventLoop);
+            return eventLoop is SingleThreadEventLoop;
         }
 
 
@@ -161,7 +159,7 @@ namespace Helios.Channels.Local
                 });
             }
 
-            ((SingleThreadEventExecutor)EventLoop.Unwrap()).AddShutdownHook(_shutdownHook);
+            ((SingleThreadEventExecutor) EventLoop.Unwrap()).AddShutdownHook(_shutdownHook);
         }
 
         protected override void DoBind(EndPoint localAddress)
@@ -370,21 +368,6 @@ namespace Helios.Channels.Local
             }
         }
 
-        private static readonly Func<object, object, bool> DoFinishPeerReadAsync = (context, o) =>
-        {
-            var self = (LocalChannel)context;
-            var peer = (LocalChannel)o;
-            self.FinishPeerRead0(peer);
-            return true;
-        };
-
-        private static readonly Action<object, object> DoFinishPeerRead = (context, o) =>
-        {
-            var self = (LocalChannel)context;
-            var peer = (LocalChannel)o;
-            self.FinishPeerRead0(peer);
-        };
-
         private void RunFinishPeerReadTask(LocalChannel peer)
         {
             try
@@ -415,11 +398,8 @@ namespace Helios.Channels.Local
                     RunFinishPeerReadTask(peer);
                     return;
                 }
-                else
-                {
-                    // TODO: might need to make this lazy in order to avoid a premature unset while scheduling a new task
-                    peer._finishReadTask = null;
-                }
+                // TODO: might need to make this lazy in order to avoid a premature unset while scheduling a new task
+                peer._finishReadTask = null;
             }
 
             var peerPipeline = peer.Pipeline;
@@ -439,14 +419,61 @@ namespace Helios.Channels.Local
             }
         }
 
+        private enum State
+        {
+            Open,
+            Bound,
+            Connected,
+            Closed
+        }
+
+        private class ReadTask : IRunnable
+        {
+            private readonly LocalChannel _channel;
+
+            public ReadTask(LocalChannel channel)
+            {
+                _channel = channel;
+            }
+
+            public void Run()
+            {
+                var pipeline = _channel.Pipeline;
+                var inboundBuffer = _channel._inboundBuffer;
+                while (true)
+                {
+                    if (inboundBuffer.Count == 0)
+                        break;
+                    var msg = inboundBuffer.Dequeue();
+                    pipeline.FireChannelRead(msg);
+                }
+                pipeline.FireChannelReadComplete();
+            }
+        }
+
+        private class ShutdownHook : IRunnable
+        {
+            private readonly LocalChannel _channel;
+
+            public ShutdownHook(LocalChannel channel)
+            {
+                _channel = channel;
+            }
+
+            public void Run()
+            {
+                _channel.Unsafe.CloseAsync();
+            }
+        }
+
         private class LocalUnsafe : AbstractUnsafe
         {
-            private LocalChannel Local { get; }
-
             public LocalUnsafe(LocalChannel channel) : base(channel)
             {
                 Local = channel;
             }
+
+            private LocalChannel Local { get; }
 
             public override Task ConnectAsync(EndPoint remoteAddress, EndPoint localAddress)
             {
@@ -480,7 +507,7 @@ namespace Helios.Channels.Local
                     }
                     catch (Exception ex)
                     {
-                        PromiseUtil.SafeSetFailure(Local._connectPromise, ex, LocalChannel.Logger);
+                        PromiseUtil.SafeSetFailure(Local._connectPromise, ex, Logger);
                         return CloseAsync();
                     }
                 }
@@ -500,3 +527,4 @@ namespace Helios.Channels.Local
         }
     }
 }
+

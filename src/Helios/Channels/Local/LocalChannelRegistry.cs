@@ -1,20 +1,20 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Helios.Channels.Local
 {
     public static class LocalChannelRegistry
     {
-        private static readonly ConcurrentDictionary<EndPoint, IChannel> BoundChannels = new ConcurrentDictionary<EndPoint, IChannel>();
+        private static readonly ConcurrentDictionary<EndPoint, IChannel> BoundChannels =
+            new ConcurrentDictionary<EndPoint, IChannel>();
 
         public static LocalAddress Register(IChannel channel, LocalAddress oldLocalAddress, EndPoint localAddress)
         {
-            if(oldLocalAddress != null)
+            if (oldLocalAddress != null)
                 throw new HeliosException("already bound");
 
             if (!(localAddress is LocalAddress))
@@ -28,10 +28,10 @@ namespace Helios.Channels.Local
                 addr = new LocalAddress(channel);
             }
 
-            if(BoundChannels.ContainsKey(addr))
+            if (BoundChannels.ContainsKey(addr))
                 throw new HeliosException($"address {addr} is already in use ");
 
-            IChannel boundChannel = BoundChannels.GetOrAdd(addr, channel);
+            var boundChannel = BoundChannels.GetOrAdd(addr, channel);
             return addr;
         }
 
@@ -49,3 +49,4 @@ namespace Helios.Channels.Local
         }
     }
 }
+

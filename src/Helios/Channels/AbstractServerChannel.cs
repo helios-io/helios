@@ -1,22 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
-using Helios.Concurrency;
 using Helios.Util.Concurrency;
 
 namespace Helios.Channels
 {
     /// <summary>
-    /// A skeleton of a server-side <see cref="IChannel"/> implementation, which
-    /// does not allow any of the following operations:
-    /// 
-    /// * <see cref="IChannel.ConnectAsync(EndPoint)"/>
-    /// * <see cref="IChannel.DisconnectAsync()"/>
-    /// * <see cref="IChannel.WriteAsync(object)"/>
-    /// * <see cref="IChannel.Flush()"/>
+    ///     A skeleton of a server-side <see cref="IChannel" /> implementation, which
+    ///     does not allow any of the following operations:
+    ///     * <see cref="IChannel.ConnectAsync(EndPoint)" />
+    ///     * <see cref="IChannel.DisconnectAsync()" />
+    ///     * <see cref="IChannel.WriteAsync(object)" />
+    ///     * <see cref="IChannel.Flush()" />
     /// </summary>
     public abstract class AbstractServerChannel : AbstractChannel, IServerChannel
     {
@@ -24,7 +23,10 @@ namespace Helios.Channels
         {
         }
 
-        protected override EndPoint RemoteAddressInternal { get { return null; } }
+        protected override EndPoint RemoteAddressInternal
+        {
+            get { return null; }
+        }
 
         protected override void DoDisconnect()
         {
@@ -46,7 +48,7 @@ namespace Helios.Channels
             return new DefaultServerUnsafe(this);
         }
 
-        sealed class DefaultServerUnsafe : AbstractUnsafe
+        private sealed class DefaultServerUnsafe : AbstractUnsafe
         {
             public DefaultServerUnsafe(AbstractChannel channel) : base(channel)
             {
@@ -59,3 +61,4 @@ namespace Helios.Channels
         }
     }
 }
+

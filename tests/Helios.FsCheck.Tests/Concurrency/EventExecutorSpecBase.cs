@@ -1,19 +1,21 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using FsCheck;
 using FsCheck.Experimental;
 using Helios.Concurrency;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading;
-using FsCheck;
 
 namespace Helios.FsCheck.Tests.Concurrency
 {
     /// <summary>
-    /// Non-thread-safe counter instance.
-    /// Mutable
+    ///     Non-thread-safe counter instance.
+    ///     Mutable
     /// </summary>
     public class SpecCounter
     {
@@ -53,12 +55,12 @@ namespace Helios.FsCheck.Tests.Concurrency
         }
 
         /// <summary>
-        /// Used for generating a counter instance
+        ///     Used for generating a counter instance
         /// </summary>
         public int CurrentValue { get; }
 
         /// <summary>
-        /// Used for asserting post conditions
+        ///     Used for asserting post conditions
         /// </summary>
         public int NextValue { get; }
 
@@ -76,11 +78,13 @@ namespace Helios.FsCheck.Tests.Concurrency
     }
 
     /// <summary>
-    /// A note about this spec - it's designed to guarantee that the underlying <see cref="IEventExecutor"/> obeys FIFO order, at all times.
-    /// 
-    /// All of the operations we use to test, addition and subtraction, obey the commutative property. So all valid schedulings of those
-    /// operations will produce the same result. We designed the test this way to avoid having to exhaustively calculate all possible orderings
-    /// when interleaving multiple different types of operations.
+    ///     A note about this spec - it's designed to guarantee that the underlying <see cref="IEventExecutor" /> obeys FIFO
+    ///     order, at all times.
+    ///     All of the operations we use to test, addition and subtraction, obey the commutative property. So all valid
+    ///     schedulings of those
+    ///     operations will produce the same result. We designed the test this way to avoid having to exhaustively calculate
+    ///     all possible orderings
+    ///     when interleaving multiple different types of operations.
     /// </summary>
     public abstract class EventExecutorSpecBase : Machine<SpecCounter, CounterModel>
     {
@@ -90,24 +94,25 @@ namespace Helios.FsCheck.Tests.Concurrency
         }
 
         /// <summary>
-        /// The <see cref="IEventExecutor"/> implementation that we will be testing. Created externally.
+        ///     The <see cref="IEventExecutor" /> implementation that we will be testing. Created externally.
         /// </summary>
         public IEventExecutor Executor { get; }
 
+        public override Arbitrary<Setup<SpecCounter, CounterModel>> Setup => Arb.From(Gen.Choose(0, int.MaxValue)
+            .Select(i => (Setup<SpecCounter, CounterModel>) new ExecutorSetup(i, Executor)));
+
         public override Gen<Operation<SpecCounter, CounterModel>> Next(CounterModel obj0)
         {
-            return Gen.OneOf(Increment.IncrementGen(), Reset.ResetGen(), ScheduledSet.ScheduledSetGen(), ScheduledSetInterleaved.ScheduledInterleavedSetGen());
+            return Gen.OneOf(Increment.IncrementGen(), Reset.ResetGen(), ScheduledSet.ScheduledSetGen(),
+                ScheduledSetInterleaved.ScheduledInterleavedSetGen());
         }
-
-        public override Arbitrary<Setup<SpecCounter, CounterModel>> Setup => Arb.From(Gen.Choose(0, int.MaxValue)
-            .Select(i => (Setup<SpecCounter, CounterModel>)new ExecutorSetup(i, Executor)));
 
         #region Commands
 
         internal class ExecutorSetup : Setup<SpecCounter, CounterModel>
         {
-            private int _seed;
             private readonly IEventExecutor _executor;
+            private int _seed;
 
             public ExecutorSetup(int seed, IEventExecutor executor)
             {
@@ -132,18 +137,11 @@ namespace Helios.FsCheck.Tests.Concurrency
         }
 
         /// <summary>
-        /// Interleave increment (immediate) and set operations (scheduled), fully expecting
-        /// the results of the increment operations to be overriden by the subsequent scheduled set operations
+        ///     Interleave increment (immediate) and set operations (scheduled), fully expecting
+        ///     the results of the increment operations to be overriden by the subsequent scheduled set operations
         /// </summary>
         internal class ScheduledSetInterleaved : Operation<SpecCounter, CounterModel>
         {
-            public static Gen<Operation<SpecCounter, CounterModel>> ScheduledInterleavedSetGen()
-            {
-                return
-                    Gen.ArrayOf<int>(Arb.Default.Int32().Generator)
-                        .Select(incs => (Operation<SpecCounter, CounterModel>) new ScheduledSetInterleaved(incs));
-            }
-
             public ScheduledSetInterleaved(int[] sets)
             {
                 Sets = sets;
@@ -153,19 +151,27 @@ namespace Helios.FsCheck.Tests.Concurrency
 
             public int Last => Sets.Last();
 
+            public static Gen<Operation<SpecCounter, CounterModel>> ScheduledInterleavedSetGen()
+            {
+                return
+                    Gen.ArrayOf(Arb.Default.Int32().Generator)
+                        .Select(incs => (Operation<SpecCounter, CounterModel>) new ScheduledSetInterleaved(incs));
+            }
+
             public override Property Check(SpecCounter obj0, CounterModel obj1)
             {
                 var tasks = new ConcurrentBag<Task>();
                 Action<object, object> setFunction = (counter, val) =>
                 {
-                    var i = (int)val;
-                    ((SpecCounter)counter).Set(i);
+                    var i = (int) val;
+                    ((SpecCounter) counter).Set(i);
                 };
-                Action<object, object> incrementFunction = (counter, val) => ((SpecCounter)counter).IncrementBy((int)val);
+                Action<object, object> incrementFunction =
+                    (counter, val) => ((SpecCounter) counter).IncrementBy((int) val);
                 var delayQueue = new ConcurrentQueue<Tuple<int, TimeSpan>>();
                 var initialDelay = TimeSpan.FromMilliseconds(20).Ticks;
-                long nextDelay = initialDelay;
-                long incrementFactor = TimeSpan.TicksPerMillisecond;
+                var nextDelay = initialDelay;
+                var incrementFactor = TimeSpan.TicksPerMillisecond;
                 foreach (var set in Sets)
                 {
                     delayQueue.Enqueue(new Tuple<int, TimeSpan>(set, new TimeSpan(nextDelay)));
@@ -182,7 +188,7 @@ namespace Helios.FsCheck.Tests.Concurrency
                 SpinWait.SpinUntil(() => loopResult.IsCompleted, TimeSpan.FromMilliseconds(100));
 
                 // need a longer timeout window due to CPU scheduling failing this spec on low-powered devices
-                var waitPeriod = TimeSpan.FromTicks(nextDelay).Add(TimeSpan.FromMilliseconds(200)); 
+                var waitPeriod = TimeSpan.FromTicks(nextDelay).Add(TimeSpan.FromMilliseconds(200));
                 if (!Task.WhenAll(tasks).Wait(waitPeriod))
                     return
                         false.ToProperty()
@@ -208,11 +214,6 @@ namespace Helios.FsCheck.Tests.Concurrency
 
         internal class ScheduledSet : Operation<SpecCounter, CounterModel>
         {
-            public static Gen<Operation<SpecCounter, CounterModel>> ScheduledSetGen()
-            {
-                return Gen.ArrayOf<int>(Arb.Default.Int32().Generator).Select(incs => (Operation<SpecCounter, CounterModel>)new ScheduledSet(incs));
-            }
-
             public ScheduledSet(int[] sets)
             {
                 Sets = sets;
@@ -221,6 +222,13 @@ namespace Helios.FsCheck.Tests.Concurrency
             public int[] Sets { get; }
 
             public int Last => Sets.Last();
+
+            public static Gen<Operation<SpecCounter, CounterModel>> ScheduledSetGen()
+            {
+                return
+                    Gen.ArrayOf(Arb.Default.Int32().Generator)
+                        .Select(incs => (Operation<SpecCounter, CounterModel>) new ScheduledSet(incs));
+            }
 
             public override Property Check(SpecCounter obj0, CounterModel obj1)
             {
@@ -232,7 +240,7 @@ namespace Helios.FsCheck.Tests.Concurrency
                 };
                 var delayQueue = new ConcurrentQueue<Tuple<int, TimeSpan>>();
                 var initialDelay = TimeSpan.FromMilliseconds(20).Ticks;
-                long nextDelay = initialDelay;
+                var nextDelay = initialDelay;
                 long incrementFactor = 10;
                 foreach (var set in Sets)
                 {
@@ -241,19 +249,23 @@ namespace Helios.FsCheck.Tests.Concurrency
                 }
 
                 // concurrently schedule tasks with incrementing delays
-                var loopResult = Parallel.ForEach(delayQueue, delay =>
-                {
-                    tasks.Add(obj1.Executor.ScheduleAsync(setFunction, obj0, delay.Item1, delay.Item2));
-                });
+                var loopResult = Parallel.ForEach(delayQueue,
+                    delay => { tasks.Add(obj1.Executor.ScheduleAsync(setFunction, obj0, delay.Item1, delay.Item2)); });
 
                 SpinWait.SpinUntil(() => loopResult.IsCompleted, TimeSpan.FromMilliseconds(100));
 
                 // need a longer timeout window due to CPU scheduling failing this spec on low-powered devices
                 var waitPeriod = TimeSpan.FromTicks(nextDelay).Add(TimeSpan.FromMilliseconds(200));
                 if (!Task.WhenAll(tasks).Wait(waitPeriod))
-                    return false.ToProperty().Label($"TIMEOUT: {obj1.Executor} failed to execute {Sets.Length} within {waitPeriod.TotalMilliseconds}ms");
+                    return
+                        false.ToProperty()
+                            .Label(
+                                $"TIMEOUT: {obj1.Executor} failed to execute {Sets.Length} within {waitPeriod.TotalMilliseconds}ms");
 
-                return (obj0.Value == obj1.NextValue).ToProperty().Label($"Actual counter value: [{obj0.Value}] should equal next predicted model value [{obj1.NextValue}]");
+                return
+                    (obj0.Value == obj1.NextValue).ToProperty()
+                        .Label(
+                            $"Actual counter value: [{obj0.Value}] should equal next predicted model value [{obj1.NextValue}]");
             }
 
             public override bool Pre(CounterModel _arg1)
@@ -269,11 +281,6 @@ namespace Helios.FsCheck.Tests.Concurrency
 
         internal class Increment : Operation<SpecCounter, CounterModel>
         {
-            public static Gen<Operation<SpecCounter, CounterModel>> IncrementGen()
-            {
-                return Gen.ArrayOf<int>(Arb.Default.Int32().Generator).Select(incs => (Operation<SpecCounter, CounterModel>)new Increment(incs));
-            }
-
             public Increment(int[] increments)
             {
                 Increments = increments;
@@ -283,21 +290,31 @@ namespace Helios.FsCheck.Tests.Concurrency
 
             public int ExpectedDiff => Increments.Sum();
 
+            public static Gen<Operation<SpecCounter, CounterModel>> IncrementGen()
+            {
+                return
+                    Gen.ArrayOf(Arb.Default.Int32().Generator)
+                        .Select(incs => (Operation<SpecCounter, CounterModel>) new Increment(incs));
+            }
+
             public override Property Check(SpecCounter obj0, CounterModel obj1)
             {
                 var tasks = new ConcurrentBag<Task>();
-                Func<object, SpecCounter> incrementFunc = o => obj0.IncrementBy((int)o);
-                var loopResult = Parallel.ForEach(Increments, inc =>
-                {
-                    tasks.Add(obj1.Executor.SubmitAsync(incrementFunc, inc));
-                });
+                Func<object, SpecCounter> incrementFunc = o => obj0.IncrementBy((int) o);
+                var loopResult = Parallel.ForEach(Increments,
+                    inc => { tasks.Add(obj1.Executor.SubmitAsync(incrementFunc, inc)); });
 
                 SpinWait.SpinUntil(() => loopResult.IsCompleted, TimeSpan.FromMilliseconds(100));
 
                 if (!Task.WhenAll(tasks).Wait(200))
-                    return false.ToProperty().Label($"TIMEOUT: {obj1.Executor} failed to execute {Increments.Length} within 200ms");
+                    return
+                        false.ToProperty()
+                            .Label($"TIMEOUT: {obj1.Executor} failed to execute {Increments.Length} within 200ms");
 
-                return (obj0.Value == obj1.NextValue).ToProperty().Label($"Actual counter value: [{obj0.Value}] should equal next predicted model value [{obj1.NextValue}]");
+                return
+                    (obj0.Value == obj1.NextValue).ToProperty()
+                        .Label(
+                            $"Actual counter value: [{obj0.Value}] should equal next predicted model value [{obj1.NextValue}]");
             }
 
             public override CounterModel Run(CounterModel obj0)
@@ -315,15 +332,21 @@ namespace Helios.FsCheck.Tests.Concurrency
         {
             public static Gen<Operation<SpecCounter, CounterModel>> ResetGen()
             {
-                return Gen.Constant((Operation<SpecCounter, CounterModel>)new Reset());
+                return Gen.Constant((Operation<SpecCounter, CounterModel>) new Reset());
             }
 
             public override Property Check(SpecCounter obj0, CounterModel obj1)
             {
                 Func<SpecCounter> resetFunc = obj0.Reset;
                 if (!obj1.Executor.SubmitAsync(resetFunc).Wait(200))
-                    return false.ToProperty().Label($"TIMEOUT: {obj1.Executor} failed to execute SpecCounter.Reset() within 200ms");
-                return (obj0.Value == obj1.NextValue).ToProperty().Label($"Actual counter value: [{obj0.Value}] should equal next predicted model value [{obj1.CurrentValue}]"); ;
+                    return
+                        false.ToProperty()
+                            .Label($"TIMEOUT: {obj1.Executor} failed to execute SpecCounter.Reset() within 200ms");
+                return
+                    (obj0.Value == obj1.NextValue).ToProperty()
+                        .Label(
+                            $"Actual counter value: [{obj0.Value}] should equal next predicted model value [{obj1.CurrentValue}]");
+                ;
             }
 
             public override CounterModel Run(CounterModel obj0)
@@ -335,3 +358,4 @@ namespace Helios.FsCheck.Tests.Concurrency
         #endregion
     }
 }
+

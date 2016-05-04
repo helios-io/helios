@@ -1,17 +1,19 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Helios.Buffers;
 using Helios.Channels;
-using Helios.Concurrency;
 using Helios.Util;
 using Helios.Util.Concurrency;
 
 namespace Helios.Codecs
 {
     /// <summary>
-    /// <see cref="IChannelHandler"/> implementation which encodes from one type of message to another.
+    ///     <see cref="IChannelHandler" /> implementation which encodes from one type of message to another.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public abstract class MessageToMessageEncoder<T> : ChannelHandlerAdapter
@@ -29,7 +31,7 @@ namespace Helios.Codecs
             {
                 if (CanAcceptOutboundMessage(message))
                 {
-                    T cast = (T)message;
+                    var cast = (T) message;
                     output = RecyclableArrayList.Take();
                     try
                     {
@@ -88,9 +90,9 @@ namespace Helios.Codecs
 
         public void Write(IChannelHandlerContext context, object message)
         {
-           
         }
 
         protected abstract void Encode(IChannelHandlerContext context, T cast, List<object> output);
     }
 }
+

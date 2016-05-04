@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using Helios.Eventing;
 using Helios.Eventing.Brokers;
 using Helios.Eventing.Subscriptions;
@@ -7,19 +11,19 @@ using Xunit;
 namespace Helios.Tests.Eventing
 {
     /// <summary>
-    /// Tests for validating the approach of our SimpleEventBroker implementation
+    ///     Tests for validating the approach of our SimpleEventBroker implementation
     /// </summary>
-    
     public class SimpleEventBrokerTests
     {
         #region Setup / Teardown
 
-        private IEventBroker<int, int> eventBroker;
+        private readonly IEventBroker<int, int> eventBroker;
 
         public class SampleEventBrokerSubscriber
         {
             public bool ReceivedEvent { get; set; }
         }
+
         public SimpleEventBrokerTests()
         {
             eventBroker = new SimpleEventBroker<int, int>();
@@ -29,14 +33,14 @@ namespace Helios.Tests.Eventing
 
         #region Tests
 
-        [Fact()]
+        [Fact]
         public void Should_notify_changes_in_subscribers()
         {
             //arrange
             var subscriberCount = 0;
             var changes = 0;
             var subscriber1 = new SampleEventBrokerSubscriber();
-            
+
             //act
             eventBroker.SubscriptionAdded += (sender, args) =>
             {
@@ -50,7 +54,7 @@ namespace Helios.Tests.Eventing
                 changes++;
             };
 
-            eventBroker.Subscribe(0, subscriber1.GetHashCode(), new NormalTopicSubscription((o,e)=> { }));
+            eventBroker.Subscribe(0, subscriber1.GetHashCode(), new NormalTopicSubscription((o, e) => { }));
             eventBroker.Unsubscribe(0, subscriber1.GetHashCode());
 
             //assert
@@ -66,14 +70,10 @@ namespace Helios.Tests.Eventing
             var subscriber2 = new SampleEventBrokerSubscriber();
 
             //act
-            eventBroker.Subscribe(0, subscriber1.GetHashCode(), new NormalTopicSubscription((o, e) =>
-            {
-                subscriber1.ReceivedEvent = true;
-            }));
-            eventBroker.Subscribe(0, subscriber2.GetHashCode(), new NormalTopicSubscription((o, e) =>
-            {
-                subscriber2.ReceivedEvent = true;
-            }));
+            eventBroker.Subscribe(0, subscriber1.GetHashCode(),
+                new NormalTopicSubscription((o, e) => { subscriber1.ReceivedEvent = true; }));
+            eventBroker.Subscribe(0, subscriber2.GetHashCode(),
+                new NormalTopicSubscription((o, e) => { subscriber2.ReceivedEvent = true; }));
             eventBroker.InvokeEvent(0, this, new EventArgs());
 
             //assert
@@ -91,7 +91,7 @@ namespace Helios.Tests.Eventing
             var subscriber3 = new SampleEventBrokerSubscriber();
             var subscriber4 = new SampleEventBrokerSubscriber();
 
-            
+
             eventBroker.Subscribe(0, subscriber1.GetHashCode(), new NormalTopicSubscription((o, e) =>
             {
                 subscriber1.ReceivedEvent = true;
@@ -129,3 +129,4 @@ namespace Helios.Tests.Eventing
         #endregion
     }
 }
+

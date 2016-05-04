@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,14 +17,10 @@ using Helios.Util;
 namespace Helios.FsCheck.Tests.Channels
 {
     /// <summary>
-    /// Specs for verifying that the <see cref="ChannelOutboundBuffer"/> behaves as expected.
+    ///     Specs for verifying that the <see cref="ChannelOutboundBuffer" /> behaves as expected.
     /// </summary>
     public class ChannelOutboundBufferSpecs
     {
-        #region TestChannel
-
-        #endregion
-
         public const int WriteLowWaterMark = 2048;
         public const int WriteHighWaterMark = WriteLowWaterMark*2;
 
@@ -30,13 +30,14 @@ namespace Helios.FsCheck.Tests.Channels
         }
 
         [Property(MaxTest = 10000)]
-        public Property ChannelOutboundBuffer_must_always_correctly_report_writability_and_PendingBytes(IByteBuf[] writes)
+        public Property ChannelOutboundBuffer_must_always_correctly_report_writability_and_PendingBytes(
+            IByteBuf[] writes)
         {
-            bool writeable = true;
-            var buffer = new ChannelOutboundBuffer(TestChannel.Instance, () =>
-            {
-                writeable = !writeable; // toggle writeability
-            });
+            var writeable = true;
+            var buffer = new ChannelOutboundBuffer(TestChannel.Instance,
+                () => {
+                          writeable = !writeable; // toggle writeability
+                });
 
             foreach (var msg in writes)
             {
@@ -71,10 +72,10 @@ namespace Helios.FsCheck.Tests.Channels
 
                 buffer.AddMessage(msg, msg.ReadableBytes, TaskCompletionSource.Void);
 
-                var satisfiesGrowthPrediction = (nextWritability == writeable &&
-                                                 nextBytesUntilUnwriteable == buffer.BytesBeforeUnwritable &&
-                                                 nextBytesUntilWriteable == buffer.BytesBeforeWritable &&
-                                                 nextSize == buffer.TotalPendingWriteBytes);
+                var satisfiesGrowthPrediction = nextWritability == writeable &&
+                                                nextBytesUntilUnwriteable == buffer.BytesBeforeUnwritable &&
+                                                nextBytesUntilWriteable == buffer.BytesBeforeWritable &&
+                                                nextSize == buffer.TotalPendingWriteBytes;
                 if (!satisfiesGrowthPrediction)
                     return
                         false.Label(
@@ -93,12 +94,12 @@ namespace Helios.FsCheck.Tests.Channels
         public Property ChannelOutboundBuffer_must_always_process_pending_writes_in_FIFO_order(IByteBuf[] writes)
         {
             if (writes.Length == 0) // skip any zero-length results
-                return true.ToProperty(); 
-            bool writeable = true;
-            var buffer = new ChannelOutboundBuffer(TestChannel.Instance, () =>
-            {
-                writeable = !writeable; // toggle writeability
-            });
+                return true.ToProperty();
+            var writeable = true;
+            var buffer = new ChannelOutboundBuffer(TestChannel.Instance,
+                () => {
+                          writeable = !writeable; // toggle writeability
+                });
 
             foreach (var message in writes)
             {
@@ -125,14 +126,15 @@ namespace Helios.FsCheck.Tests.Channels
         }
 
         [Property(MaxTest = 10000)]
-        public Property ChannelOutboundBuffer_must_complete_all_promises_successfully_on_read_regardless_of_flush_order(IByteBuf[] writes)
+        public Property ChannelOutboundBuffer_must_complete_all_promises_successfully_on_read_regardless_of_flush_order(
+            IByteBuf[] writes)
         {
             var tasks = new List<Task>();
-            bool writeable = true;
-            var buffer = new ChannelOutboundBuffer(TestChannel.Instance, () =>
-            {
-                writeable = !writeable; // toggle writeability
-            });
+            var writeable = true;
+            var buffer = new ChannelOutboundBuffer(TestChannel.Instance,
+                () => {
+                          writeable = !writeable; // toggle writeability
+                });
 
             // write + flush loop
             foreach (var message in writes)
@@ -140,7 +142,8 @@ namespace Helios.FsCheck.Tests.Channels
                 var tcs = new TaskCompletionSource();
                 tasks.Add(tcs.Task);
                 buffer.AddMessage(message, message.ReadableBytes, tcs);
-                if(ThreadLocalRandom.Current.Next(0,1) == 0) // just doing this to guarantee we don't screw up the linked list
+                if (ThreadLocalRandom.Current.Next(0, 1) == 0)
+                    // just doing this to guarantee we don't screw up the linked list
                     buffer.AddFlush();
             }
             buffer.AddFlush(); // add a final flush in case RNG hasn't let us do one in a while
@@ -165,23 +168,15 @@ namespace Helios.FsCheck.Tests.Channels
             return completion.IsCompleted.Label("Expected all underlying tasks to be completed.");
         }
 
-        private class ExceptionSupressor : ChannelHandlerAdapter
-        {
-            public override void ExceptionCaught(IChannelHandlerContext context, Exception exception)
-            {
-                // discard
-            }
-        }
-
         [Property]
         public Property ChannelOutboundBuffer_must_dump_all_flushed_messages_upon_failure(IByteBuf[] writes)
         {
             var tasks = new List<Task>();
-            bool writeable = true;
-            var buffer = new ChannelOutboundBuffer(TestChannel.NewInstance(new ExceptionSupressor()), () =>
-            {
-                writeable = !writeable; // toggle writeability
-            });
+            var writeable = true;
+            var buffer = new ChannelOutboundBuffer(TestChannel.NewInstance(new ExceptionSupressor()),
+                () => {
+                          writeable = !writeable; // toggle writeability
+                });
 
             // write
             foreach (var message in writes)
@@ -198,9 +193,24 @@ namespace Helios.FsCheck.Tests.Channels
             var exception = new ApplicationException("TEST");
             buffer.FailFlushed(exception, true);
 
-            return (completion.IsFaulted && buffer.IsWritable && tasks.All(x => x.IsFaulted && x.Exception.InnerExceptions.Contains(exception)))
+            return (completion.IsFaulted && buffer.IsWritable &&
+                    tasks.All(x => x.IsFaulted && x.Exception.InnerExceptions.Contains(exception)))
                 .When(writes.Length > 0)
-                .Label("Expected all flushed messages to be faulted with the same exception upon FailFlush, and for buffer to be writable.");
+                .Label(
+                    "Expected all flushed messages to be faulted with the same exception upon FailFlush, and for buffer to be writable.");
         }
+
+        private class ExceptionSupressor : ChannelHandlerAdapter
+        {
+            public override void ExceptionCaught(IChannelHandlerContext context, Exception exception)
+            {
+                // discard
+            }
+        }
+
+        #region TestChannel
+
+        #endregion
     }
 }
+

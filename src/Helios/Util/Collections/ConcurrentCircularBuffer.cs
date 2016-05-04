@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,88 +10,71 @@ using System.Linq;
 namespace Helios.Util.Collections
 {
     /// <summary>
-    /// Concurrent circular buffer implementation, synchronized using a monitor
+    ///     Concurrent circular buffer implementation, synchronized using a monitor
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class ConcurrentCircularBuffer<T> : ICircularBuffer<T>
     {
+        private bool _full;
+
         public ConcurrentCircularBuffer(int capacity)
         {
-            _head = 0;
-            _tail = 0;
+            Head = 0;
+            Tail = 0;
             _buffer = new T[capacity];
         }
 
-        public int Capacity => _buffer.Length;
+        private int SizeUnsafe => _full ? Capacity : (Tail - Head + Capacity)%Capacity;
 
-        private bool _full;
+        /// <summary>
+        ///     FOR TESTING PURPOSES ONLY
+        /// </summary>
+        internal int Head { get; private set; }
+
+        /// <summary>
+        ///     FOR TESTING PURPOSES ONLY
+        /// </summary>
+        internal int Tail { get; private set; }
+
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
+
+        public int Capacity => _buffer.Length;
 
 
         public int Size
         {
             get
             {
-                lock (m_lockObject)
+                lock (SyncRoot)
                 {
                     return SizeUnsafe;
                 }
             }
         }
 
-        private int SizeUnsafe => _full ? Capacity : (_tail - _head + Capacity)%Capacity;
-
-        /// <summary>
-        /// FOR TESTING PURPOSES ONLY
-        /// </summary>
-        internal int Head => _head;
-
-        /// <summary>
-        /// FOR TESTING PURPOSES ONLY
-        /// </summary>
-        internal int Tail => _tail;
-
-        #region Internal members
-
-        private readonly object m_lockObject = new object();
-
-        private int _head;
-        private int _tail;
-
-        /// <summary>
-        /// The buffer itself
-        /// </summary>
-        private T[] _buffer;
-
-        #endregion
-
         public T Peek()
         {
-            lock (m_lockObject)
+            lock (SyncRoot)
             {
-                return _buffer[_head];
+                return _buffer[Head];
             }
-
         }
 
         public void Enqueue(T obj)
         {
-            lock (m_lockObject)
+            lock (SyncRoot)
             {
                 UnsafeEnqueue(obj);
             }
         }
 
-        private void UnsafeEnqueue(T obj)
-        {
-            _full = _full || _tail + 1 == Capacity; // leave FULL flag on
-            _buffer[_tail] = obj;
-            _tail = (_tail + 1) % Capacity;
-        }
-
         public void Enqueue(T[] objs)
         {
             //Expand
-            lock (m_lockObject)
+            lock (SyncRoot)
             {
                 foreach (var item in objs)
                 {
@@ -98,26 +85,17 @@ namespace Helios.Util.Collections
 
         public T Dequeue()
         {
-            lock (m_lockObject)
+            lock (SyncRoot)
             {
                 return UnsafeDequeue();
             }
         }
 
-        private T UnsafeDequeue()
-        {
-            _full = false; // full is always false as soon as we dequeue
-            var item = _buffer[_head];
-            _head = (_head + 1) % Capacity;
-            return item;
-        }
-
         public IEnumerable<T> Dequeue(int count)
         {
-
             IList<T> returnItems;
 
-            lock (m_lockObject)
+            lock (SyncRoot)
             {
                 var availabileItems = Math.Min(count, SizeUnsafe);
                 returnItems = new List<T>(availabileItems);
@@ -138,27 +116,14 @@ namespace Helios.Util.Collections
         {
             return Dequeue(Size);
         }
-      
-        public void Add(T item)
-        {
-            Enqueue(item);
-        }
 
         public void Clear()
         {
-            lock (m_lockObject)
+            lock (SyncRoot)
             {
-                _head = 0;
-                _tail = 0;
+                Head = 0;
+                Tail = 0;
                 _full = false;
-            }
-        }
-
-        public bool Contains(T item)
-        {
-            lock (m_lockObject)
-            {
-                return _buffer.Any(x => x.GetHashCode() == item.GetHashCode());
             }
         }
 
@@ -170,11 +135,6 @@ namespace Helios.Util.Collections
         public void CopyTo(T[] array, int index)
         {
             CopyTo(array, index, Size);
-        }
-
-        public bool Remove(T item)
-        {
-            return false;
         }
 
         public bool TryAdd(T item)
@@ -193,7 +153,7 @@ namespace Helios.Util.Collections
 
         public T[] ToArray()
         {
-            lock (m_lockObject)
+            lock (SyncRoot)
             {
                 var bufferCopy = new T[SizeUnsafe];
                 CopyToUnsafe(bufferCopy, 0, bufferCopy.Length);
@@ -201,21 +161,9 @@ namespace Helios.Util.Collections
             }
         }
 
-        private void CopyToUnsafe(T[] array, int index, int count)
-        {
-            if (count > SizeUnsafe) //The maximum value of count is Size
-                count = SizeUnsafe;
-
-            var bufferBegin = _head;
-            for (var i = 0; i < count; i++, bufferBegin = (bufferBegin + 1) % Capacity, index++)
-            {
-                array[index] = _buffer[bufferBegin];
-            }
-        }
-
         public void CopyTo(T[] array, int index, int count)
         {
-            lock (m_lockObject)
+            lock (SyncRoot)
             {
                 CopyToUnsafe(array, index, count);
             }
@@ -223,13 +171,12 @@ namespace Helios.Util.Collections
 
         public void CopyTo(Array array, int index)
         {
-            CopyTo((T[])array, index);
+            CopyTo((T[]) array, index);
         }
 
         public IEnumerator<T> GetEnumerator()
         {
-
-            return ((IEnumerable<T>)ToArray()).GetEnumerator();
+            return ((IEnumerable<T>) ToArray()).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -237,10 +184,71 @@ namespace Helios.Util.Collections
             return GetEnumerator();
         }
 
-        public int Count { get { return Size; } }
-        public bool IsReadOnly { get { return false; } }
-        public object SyncRoot { get { return m_lockObject; } }
+        public int Count
+        {
+            get { return Size; }
+        }
 
-        public bool IsSynchronized { get { return true; } }
+        public object SyncRoot { get; } = new object();
+
+        public bool IsSynchronized
+        {
+            get { return true; }
+        }
+
+        private void UnsafeEnqueue(T obj)
+        {
+            _full = _full || Tail + 1 == Capacity; // leave FULL flag on
+            _buffer[Tail] = obj;
+            Tail = (Tail + 1)%Capacity;
+        }
+
+        private T UnsafeDequeue()
+        {
+            _full = false; // full is always false as soon as we dequeue
+            var item = _buffer[Head];
+            Head = (Head + 1)%Capacity;
+            return item;
+        }
+
+        public void Add(T item)
+        {
+            Enqueue(item);
+        }
+
+        public bool Contains(T item)
+        {
+            lock (SyncRoot)
+            {
+                return _buffer.Any(x => x.GetHashCode() == item.GetHashCode());
+            }
+        }
+
+        public bool Remove(T item)
+        {
+            return false;
+        }
+
+        private void CopyToUnsafe(T[] array, int index, int count)
+        {
+            if (count > SizeUnsafe) //The maximum value of count is Size
+                count = SizeUnsafe;
+
+            var bufferBegin = Head;
+            for (var i = 0; i < count; i++, bufferBegin = (bufferBegin + 1)%Capacity, index++)
+            {
+                array[index] = _buffer[bufferBegin];
+            }
+        }
+
+        #region Internal members
+
+        /// <summary>
+        ///     The buffer itself
+        /// </summary>
+        private readonly T[] _buffer;
+
+        #endregion
     }
 }
+

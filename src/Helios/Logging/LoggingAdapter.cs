@@ -1,23 +1,28 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Threading;
 
 namespace Helios.Logging
 {
     /// <summary>
-    /// Abstract base class that implements most of the expected logger behavior
+    ///     Abstract base class that implements most of the expected logger behavior
     /// </summary>
     public abstract class LoggingAdapter : ILogger
     {
         private readonly LogLevel[] _supportedLogLevels;
 
-        
 
         /// <summary>
-        /// All <see cref="LogLevel"/>s are enabled by default.
+        ///     All <see cref="LogLevel" />s are enabled by default.
         /// </summary>
-        protected LoggingAdapter(string logSource) : this(logSource, LogLevel.Debug, LogLevel.Error, LogLevel.Info, LogLevel.Warning) { }
+        protected LoggingAdapter(string logSource)
+            : this(logSource, LogLevel.Debug, LogLevel.Error, LogLevel.Info, LogLevel.Warning)
+        {
+        }
 
         protected LoggingAdapter(string logSource, params LogLevel[] supportedLogLevels)
         {
@@ -51,15 +56,11 @@ namespace Helios.Logging
                 DebugInternal(new Debug(string.Format(format, args), LogSource));
         }
 
-        protected abstract void DebugInternal(Debug message);
-
         public void Info(string format, params object[] args)
         {
             if (IsInfoEnabled)
                 InfoInternal(new Info(string.Format(format, args), LogSource));
         }
-
-        protected abstract void InfoInternal(Info message);
 
         public void Warning(string format, params object[] args)
         {
@@ -73,8 +74,6 @@ namespace Helios.Logging
                 WarningInternal(new Warning(cause, string.Format(format, args), LogSource));
         }
 
-        protected abstract void WarningInternal(Warning message);
-
         public void Error(string format, params object[] args)
         {
             if (IsErrorEnabled)
@@ -86,8 +85,6 @@ namespace Helios.Logging
             if (IsErrorEnabled)
                 ErrorInternal(new Error(cause, string.Format(format, args), LogSource));
         }
-
-        protected abstract void ErrorInternal(Error message);
 
         public void Log(LogLevel logLevel, string format, params object[] args)
         {
@@ -107,5 +104,14 @@ namespace Helios.Logging
                     break;
             }
         }
+
+        protected abstract void DebugInternal(Debug message);
+
+        protected abstract void InfoInternal(Info message);
+
+        protected abstract void WarningInternal(Warning message);
+
+        protected abstract void ErrorInternal(Error message);
     }
 }
+

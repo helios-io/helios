@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Linq;
 using System.Text;
 
@@ -7,18 +11,17 @@ namespace Helios.Buffers
     public sealed class SwappedByteBuffer : IByteBuf
     {
         private readonly IByteBuf _buf;
-        private readonly ByteOrder _order;
 
         public SwappedByteBuffer(IByteBuf buf)
         {
             _buf = buf;
             if (buf.Order == ByteOrder.BigEndian)
             {
-                _order = ByteOrder.LittleEndian;
+                Order = ByteOrder.LittleEndian;
             }
             else
             {
-                _order = ByteOrder.BigEndian;
+                Order = ByteOrder.BigEndian;
             }
         }
 
@@ -172,7 +175,7 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                return (ushort)(GetShort(index));
+                return (ushort) GetShort(index);
             }
         }
 
@@ -185,7 +188,7 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                return (uint)GetInt(index);
+                return (uint) GetInt(index);
             }
         }
 
@@ -196,7 +199,7 @@ namespace Helios.Buffers
 
         public char GetChar(int index)
         {
-            return (char)GetShort(index);
+            return (char) GetShort(index);
         }
 
         public double GetDouble(int index)
@@ -248,23 +251,15 @@ namespace Helios.Buffers
 
         public IByteBuf SetShort(int index, int value)
         {
-            _buf.SetShort(index, ByteBufferUtil.SwapShort((short)value));
+            _buf.SetShort(index, ByteBufferUtil.SwapShort((short) value));
             return this;
-        }
-
-        public IByteBuf SetUnsignedShort(int index, ushort value)
-        {
-            unchecked
-            {
-                return SetUnsignedShort(index, (int)value);
-            }
         }
 
         public IByteBuf SetUnsignedShort(int index, int value)
         {
             unchecked
             {
-                _buf.SetUnsignedShort(index, (ushort)ByteBufferUtil.SwapShort((short)value));
+                _buf.SetUnsignedShort(index, (ushort) ByteBufferUtil.SwapShort((short) value));
             }
             return this;
         }
@@ -279,7 +274,7 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                _buf.SetUnsignedInt(index, (uint)ByteBufferUtil.SwapInt((int)value));
+                _buf.SetUnsignedInt(index, (uint) ByteBufferUtil.SwapInt((int) value));
             }
             return this;
         }
@@ -292,7 +287,7 @@ namespace Helios.Buffers
 
         public IByteBuf SetChar(int index, char value)
         {
-            SetShort(index, (short)value);
+            SetShort(index, (short) value);
             return this;
         }
 
@@ -351,7 +346,7 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                return (ushort)ReadShort();
+                return (ushort) ReadShort();
             }
         }
 
@@ -364,7 +359,7 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                return (uint)ReadInt();
+                return (uint) ReadInt();
             }
         }
 
@@ -375,7 +370,7 @@ namespace Helios.Buffers
 
         public char ReadChar()
         {
-            return (char)ReadShort();
+            return (char) ReadShort();
         }
 
         public double ReadDouble()
@@ -438,21 +433,13 @@ namespace Helios.Buffers
 
         public IByteBuf WriteShort(int value)
         {
-            _buf.WriteShort(ByteBufferUtil.SwapShort((short)value));
+            _buf.WriteShort(ByteBufferUtil.SwapShort((short) value));
             return this;
-        }
-
-        public IByteBuf WriteUnsignedShort(ushort value)
-        {
-            unchecked
-            {
-                return WriteUnsignedShort((int) value);
-            }
         }
 
         public IByteBuf WriteUnsignedShort(int value)
         {
-            _buf.WriteUnsignedShort(unchecked((ushort)ByteBufferUtil.SwapShort((short)value)));
+            _buf.WriteUnsignedShort(unchecked((ushort) ByteBufferUtil.SwapShort((short) value)));
             return this;
         }
 
@@ -466,7 +453,7 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                _buf.WriteUnsignedInt((uint)ByteBufferUtil.SwapInt((int)value));
+                _buf.WriteUnsignedInt((uint) ByteBufferUtil.SwapInt((int) value));
             }
 
             return this;
@@ -541,7 +528,10 @@ namespace Helios.Buffers
             return _buf.ToArray().Reverse().ToArray();
         }
 
-        public bool IsDirect { get { return _buf.IsDirect; } }
+        public bool IsDirect
+        {
+            get { return _buf.IsDirect; }
+        }
 
         public IByteBuf ReadSlice(int length)
         {
@@ -573,10 +563,7 @@ namespace Helios.Buffers
             return ByteBufferUtil.DecodeString(this, ReaderIndex, ReadableBytes, encoding);
         }
 
-        public ByteOrder Order
-        {
-            get { return _order; }
-        }
+        public ByteOrder Order { get; }
 
         public IByteBuf WithOrder(ByteOrder endianness)
         {
@@ -608,11 +595,6 @@ namespace Helios.Buffers
         }
 
         public int ArrayOffset { get; }
-
-        public override string ToString()
-        {
-            return "Swapped(" + _buf + ")";
-        }
 
         public int ReferenceCount
         {
@@ -649,6 +631,21 @@ namespace Helios.Buffers
             return _buf.Release(decrement);
         }
 
+        public IByteBuf SetUnsignedShort(int index, ushort value)
+        {
+            return SetUnsignedShort(index, (int) value);
+        }
+
+        public IByteBuf WriteUnsignedShort(ushort value)
+        {
+            return WriteUnsignedShort((int) value);
+        }
+
+        public override string ToString()
+        {
+            return "Swapped(" + _buf + ")";
+        }
+
         public override int GetHashCode()
         {
             return _buf.GetHashCode();
@@ -660,3 +657,4 @@ namespace Helios.Buffers
         }
     }
 }
+

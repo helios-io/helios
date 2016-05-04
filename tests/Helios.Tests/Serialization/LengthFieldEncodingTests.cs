@@ -1,20 +1,20 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using Helios.Buffers;
 using Helios.Codecs;
-using Helios.Exceptions;
 using Helios.Net;
 using Helios.Serialization;
-using Helios.Topology;
 using Xunit;
+using LengthFieldPrepender = Helios.Serialization.LengthFieldPrepender;
 
 namespace Helios.Tests.Serialization
 {
-    
     public class LengthFieldEncodingTests
     {
         #region Setup / Teardown
@@ -26,8 +26,8 @@ namespace Helios.Tests.Serialization
 
         public LengthFieldEncodingTests()
         {
-            Encoder = new Helios.Serialization.LengthFieldPrepender(LengthFieldLength);
-            Decoder = new LengthFieldFrameBasedDecoder(2000,0,LengthFieldLength,0,LengthFieldLength);  //stip headers
+            Encoder = new LengthFieldPrepender(LengthFieldLength);
+            Decoder = new LengthFieldFrameBasedDecoder(2000, 0, LengthFieldLength, 0, LengthFieldLength); //stip headers
         }
 
         #endregion
@@ -94,7 +94,7 @@ namespace Helios.Tests.Serialization
             {
                 var binaryContent1 = Encoding.UTF8.GetBytes("somebytes");
                 var buffer = Unpooled.Buffer(100)
-                    .WriteInt((-1) * binaryContent1.Length) //make the frame length negative
+                    .WriteInt(-1*binaryContent1.Length) //make the frame length negative
                     .WriteBytes(binaryContent1);
 
                 List<IByteBuf> decodedMessages;
@@ -118,3 +118,4 @@ namespace Helios.Tests.Serialization
         #endregion
     }
 }
+

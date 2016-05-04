@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Linq;
 using Helios.Ops.Executors;
 using Helios.Util;
@@ -70,7 +74,7 @@ namespace Helios.Tests.Ops
             for (var i = 0; i < wasCalled.Count; i++)
             {
                 var i1 = i;
-                callbacks[i] = new Action(() => { wasCalled[i1] = true; });
+                callbacks[i] = () => { wasCalled[i1] = true; };
             }
             callbacks[1] = exOperation;
 
@@ -91,3 +95,4 @@ namespace Helios.Tests.Ops
         #endregion
     }
 }
+

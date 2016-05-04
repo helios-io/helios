@@ -1,11 +1,15 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Diagnostics.Contracts;
 using System.Net.Sockets;
 
 namespace Helios.Channels.Sockets
 {
     /// <summary>
-    /// Default <see cref="IChannelConfiguration"/> for <see cref="ISocketChannel"/>
+    ///     Default <see cref="IChannelConfiguration" /> for <see cref="ISocketChannel" />
     /// </summary>
     public class DefaultSocketChannelConfiguration : DefaultChannelConfiguration, ISocketChannelConfiguration
     {
@@ -31,31 +35,31 @@ namespace Helios.Channels.Sockets
         {
             if (ChannelOption.SoRcvbuf.Equals(option))
             {
-                return (T) (object) this.ReceiveBufferSize;
+                return (T) (object) ReceiveBufferSize;
             }
             if (ChannelOption.SoSndbuf.Equals(option))
             {
-                return (T) (object) this.SendBufferSize;
+                return (T) (object) SendBufferSize;
             }
             if (ChannelOption.TcpNodelay.Equals(option))
             {
-                return (T) (object) this.TcpNoDelay;
+                return (T) (object) TcpNoDelay;
             }
             if (ChannelOption.SoKeepalive.Equals(option))
             {
-                return (T) (object) this.KeepAlive;
+                return (T) (object) KeepAlive;
             }
             if (ChannelOption.SoReuseaddr.Equals(option))
             {
-                return (T) (object) this.ReuseAddress;
+                return (T) (object) ReuseAddress;
             }
             if (ChannelOption.SoLinger.Equals(option))
             {
-                return (T) (object) this.Linger;
+                return (T) (object) Linger;
             }
             if (ChannelOption.AllowHalfClosure.Equals(option))
             {
-                return (T) (object) this.AllowHalfClosure;
+                return (T) (object) AllowHalfClosure;
             }
 
             return base.GetOption(option);
@@ -70,27 +74,27 @@ namespace Helios.Channels.Sockets
 
             if (ChannelOption.SoRcvbuf.Equals(option))
             {
-                this.ReceiveBufferSize = (int) (object) value;
+                ReceiveBufferSize = (int) (object) value;
             }
             else if (ChannelOption.SoSndbuf.Equals(option))
             {
-                this.SendBufferSize = (int) (object) value;
+                SendBufferSize = (int) (object) value;
             }
             else if (ChannelOption.TcpNodelay.Equals(option))
             {
-                this.TcpNoDelay = (bool) (object) value;
+                TcpNoDelay = (bool) (object) value;
             }
             else if (ChannelOption.SoKeepalive.Equals(option))
             {
-                this.KeepAlive = (bool) (object) value;
+                KeepAlive = (bool) (object) value;
             }
             else if (ChannelOption.SoReuseaddr.Equals(option))
             {
-                this.ReuseAddress = (bool) (object) value;
+                ReuseAddress = (bool) (object) value;
             }
             else if (ChannelOption.SoLinger.Equals(option))
             {
-                this.Linger = (int) (object) value;
+                Linger = (int) (object) value;
             }
             else if (ChannelOption.AllowHalfClosure.Equals(option))
             {
@@ -116,7 +120,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    return this.Socket.ReceiveBufferSize;
+                    return Socket.ReceiveBufferSize;
                 }
                 catch (ObjectDisposedException ex)
                 {
@@ -131,7 +135,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    this.Socket.ReceiveBufferSize = value;
+                    Socket.ReceiveBufferSize = value;
                 }
                 catch (ObjectDisposedException ex)
                 {
@@ -150,7 +154,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    return this.Socket.SendBufferSize;
+                    return Socket.SendBufferSize;
                 }
                 catch (ObjectDisposedException ex)
                 {
@@ -165,7 +169,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    this.Socket.SendBufferSize = value;
+                    Socket.SendBufferSize = value;
                 }
                 catch (ObjectDisposedException ex)
                 {
@@ -184,7 +188,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    LingerOption lingerState = this.Socket.LingerState;
+                    var lingerState = Socket.LingerState;
                     return lingerState.Enabled ? lingerState.LingerTime : -1;
                 }
                 catch (ObjectDisposedException ex)
@@ -202,11 +206,11 @@ namespace Helios.Channels.Sockets
                 {
                     if (value < 0)
                     {
-                        this.Socket.LingerState = new LingerOption(false, 0);
+                        Socket.LingerState = new LingerOption(false, 0);
                     }
                     else
                     {
-                        this.Socket.LingerState = new LingerOption(true, value);
+                        Socket.LingerState = new LingerOption(true, value);
                     }
                 }
                 catch (ObjectDisposedException ex)
@@ -226,7 +230,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    return (int) this.Socket.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive) != 0;
+                    return (int) Socket.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive) != 0;
                 }
                 catch (ObjectDisposedException ex)
                 {
@@ -241,7 +245,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    this.Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, value ? 1 : 0);
+                    Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, value ? 1 : 0);
                 }
                 catch (ObjectDisposedException ex)
                 {
@@ -260,7 +264,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    return (int) this.Socket.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress) !=
+                    return (int) Socket.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress) !=
                            0;
                 }
                 catch (ObjectDisposedException ex)
@@ -276,7 +280,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    this.Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, value ? 1 : 0);
+                    Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, value ? 1 : 0);
                 }
                 catch (ObjectDisposedException ex)
                 {
@@ -295,7 +299,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    return this.Socket.NoDelay;
+                    return Socket.NoDelay;
                 }
                 catch (ObjectDisposedException ex)
                 {
@@ -310,7 +314,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    this.Socket.NoDelay = value;
+                    Socket.NoDelay = value;
                 }
                 catch (ObjectDisposedException ex)
                 {
@@ -324,3 +328,4 @@ namespace Helios.Channels.Sockets
         }
     }
 }
+

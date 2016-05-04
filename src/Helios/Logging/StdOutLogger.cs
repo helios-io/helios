@@ -1,10 +1,14 @@
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System;
 using Helios.Util;
 
 namespace Helios.Logging
 {
     /// <summary>
-    /// <see cref="ILogger"/> implementation which writes messages out to <see cref="Console"/>.
+    ///     <see cref="ILogger" /> implementation which writes messages out to <see cref="Console" />.
     /// </summary>
     public class StdOutLogger : LoggingAdapter
     {
@@ -17,38 +21,39 @@ namespace Helios.Logging
             UseColors = true;
         }
 
-        /// <summary>
-        /// Gets or Sets the color of Debug events.
-        /// </summary>
-        public static ConsoleColor DebugColor { get; set; }
-
-        /// <summary>
-        /// Gets or Sets the color of Info events.
-        /// </summary>
-        public static ConsoleColor InfoColor { get; set; }
-
-        /// <summary>
-        /// Gets or Sets the color of Warning events.
-        /// </summary>
-        public static ConsoleColor WarningColor { get; set; }
-
-        /// <summary>
-        /// Gets or Sets the color of Error events. 
-        /// </summary>
-        public static ConsoleColor ErrorColor { get; set; }
-
-        /// <summary>
-        /// Gets or Sets whether or not to use colors when printing events.
-        /// </summary>
-        public static bool UseColors { get; set; }
-
         public StdOutLogger(string logSource) : base(logSource)
         {
         }
 
-        public StdOutLogger(string logSource, params LogLevel[] supportedLogLevels) : base(logSource, supportedLogLevels)
+        public StdOutLogger(string logSource, params LogLevel[] supportedLogLevels)
+            : base(logSource, supportedLogLevels)
         {
         }
+
+        /// <summary>
+        ///     Gets or Sets the color of Debug events.
+        /// </summary>
+        public static ConsoleColor DebugColor { get; set; }
+
+        /// <summary>
+        ///     Gets or Sets the color of Info events.
+        /// </summary>
+        public static ConsoleColor InfoColor { get; set; }
+
+        /// <summary>
+        ///     Gets or Sets the color of Warning events.
+        /// </summary>
+        public static ConsoleColor WarningColor { get; set; }
+
+        /// <summary>
+        ///     Gets or Sets the color of Error events.
+        /// </summary>
+        public static ConsoleColor ErrorColor { get; set; }
+
+        /// <summary>
+        ///     Gets or Sets whether or not to use colors when printing events.
+        /// </summary>
+        public static bool UseColors { get; set; }
 
         protected override void DebugInternal(Debug message)
         {
@@ -71,3 +76,4 @@ namespace Helios.Logging
         }
     }
 }
+

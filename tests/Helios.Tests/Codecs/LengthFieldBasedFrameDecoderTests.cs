@@ -1,4 +1,8 @@
-﻿using System.Text;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System.Text;
 using Helios.Buffers;
 using Helios.Channels.Embedded;
 using Helios.Codecs;
@@ -11,18 +15,18 @@ namespace Helios.Tests.Codecs
         [Fact]
         public void FailSlowTooLongFrameRecovery()
         {
-            EmbeddedChannel ch = new EmbeddedChannel(new LengthFieldBasedFrameDecoder(5, 0, 4, 0, 4, false));
-            for (int i = 0; i < 2; i++)
+            var ch = new EmbeddedChannel(new LengthFieldBasedFrameDecoder(5, 0, 4, 0, 4, false));
+            for (var i = 0; i < 2; i++)
             {
-                Assert.False(ch.WriteInbound(Unpooled.WrappedBuffer(new byte[] { 0, 0, 0, 2 })));
+                Assert.False(ch.WriteInbound(Unpooled.WrappedBuffer(new byte[] {0, 0, 0, 2})));
                 Assert.Throws<TooLongFrameException>(() =>
                 {
-                    Assert.True(ch.WriteInbound(Unpooled.WrappedBuffer(new byte[] { 0, 0 })));
-                    Assert.True(false, typeof(DecoderException).Name + " must be raised.");
+                    Assert.True(ch.WriteInbound(Unpooled.WrappedBuffer(new byte[] {0, 0})));
+                    Assert.True(false, typeof (DecoderException).Name + " must be raised.");
                 });
-                ch.WriteInbound(Unpooled.WrappedBuffer(new byte[] { 0, 0, 0, 1, (byte)'A' }));
-                IByteBuf buf = ch.ReadInbound<IByteBuf>();
-                Encoding iso = Encoding.GetEncoding("ISO-8859-1");
+                ch.WriteInbound(Unpooled.WrappedBuffer(new byte[] {0, 0, 0, 1, (byte) 'A'}));
+                var buf = ch.ReadInbound<IByteBuf>();
+                var iso = Encoding.GetEncoding("ISO-8859-1");
                 Assert.Equal("A", iso.GetString(buf.ToArray()));
                 buf.Release();
             }
@@ -31,23 +35,24 @@ namespace Helios.Tests.Codecs
         [Fact]
         public void TestFailFastTooLongFrameRecovery()
         {
-            EmbeddedChannel ch = new EmbeddedChannel(
+            var ch = new EmbeddedChannel(
                 new LengthFieldBasedFrameDecoder(5, 0, 4, 0, 4));
 
-            for (int i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
                 Assert.Throws<TooLongFrameException>(() =>
                 {
-                    Assert.True(ch.WriteInbound(Unpooled.WrappedBuffer(new byte[] { 0, 0, 0, 2 })));
-                    Assert.True(false, typeof(DecoderException).Name + " must be raised.");
+                    Assert.True(ch.WriteInbound(Unpooled.WrappedBuffer(new byte[] {0, 0, 0, 2})));
+                    Assert.True(false, typeof (DecoderException).Name + " must be raised.");
                 });
 
-                ch.WriteInbound(Unpooled.WrappedBuffer(new byte[] { 0, 0, 0, 0, 0, 1, (byte)'A' }));
-                IByteBuf buf = ch.ReadInbound<IByteBuf>();
-                Encoding iso = Encoding.GetEncoding("ISO-8859-1");
+                ch.WriteInbound(Unpooled.WrappedBuffer(new byte[] {0, 0, 0, 0, 0, 1, (byte) 'A'}));
+                var buf = ch.ReadInbound<IByteBuf>();
+                var iso = Encoding.GetEncoding("ISO-8859-1");
                 Assert.Equal("A", iso.GetString(buf.ToArray()));
                 buf.Release();
             }
         }
     }
 }
+

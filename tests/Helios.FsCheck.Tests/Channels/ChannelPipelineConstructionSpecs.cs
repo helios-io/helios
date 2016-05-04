@@ -1,18 +1,20 @@
-﻿using System.Linq;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System.Linq;
 using FsCheck;
 using FsCheck.Experimental;
 using FsCheck.Xunit;
 using Helios.Channels;
-using static Helios.FsCheck.Tests.Channels.ChannelPipelineModel;
 using Xunit;
+using static Helios.FsCheck.Tests.Channels.ChannelPipelineModel;
 
 namespace Helios.FsCheck.Tests.Channels
 {
-    
-
     /// <summary>
-    /// Test to validate that the <see cref="DefaultChannelPipeline"/> adds pipeline handlers
-    /// to their correct and proper positions.
+    ///     Test to validate that the <see cref="DefaultChannelPipeline" /> adds pipeline handlers
+    ///     to their correct and proper positions.
     /// </summary>
     public class ChannelPipelineConstructionSpecs
     {
@@ -46,11 +48,11 @@ namespace Helios.FsCheck.Tests.Channels
         {
             var namedChannel = new NamedChannelHandler("TEST");
             var namedChannel2 = new NamedChannelHandler("TEST2");
-            var node = new PipelineModelNode() {Handler = namedChannel, Name = namedChannel.Name};
+            var node = new PipelineModelNode {Handler = namedChannel, Name = namedChannel.Name};
             var pipelineModel = PipelineMutationModel.Fresh();
             pipelineModel = AddToHead(pipelineModel, node);
             Assert.True(pipelineModel.Contains(node.Name));
-            var node2 = new PipelineModelNode() { Handler = namedChannel2, Name = namedChannel2.Name };
+            var node2 = new PipelineModelNode {Handler = namedChannel2, Name = namedChannel2.Name};
             pipelineModel = AddToHead(pipelineModel, node2);
             Assert.True(pipelineModel.Contains(node.Name));
             Assert.True(pipelineModel.Contains(node2.Name));
@@ -61,7 +63,7 @@ namespace Helios.FsCheck.Tests.Channels
         {
             var namedChannel = new NamedChannelHandler("TEST");
             var namedChannel2 = new NamedChannelHandler("TEST2");
-            var node = new PipelineModelNode() { Handler = namedChannel, Name = namedChannel.Name };
+            var node = new PipelineModelNode {Handler = namedChannel, Name = namedChannel.Name};
             var pipelineModel = PipelineMutationModel.Fresh();
             pipelineModel = AddToHead(pipelineModel, node);
             Assert.True(pipelineModel.Contains(node.Name));
@@ -74,11 +76,11 @@ namespace Helios.FsCheck.Tests.Channels
         {
             var namedChannel = new NamedChannelHandler("TEST");
             var namedChannel2 = new NamedChannelHandler("TEST2");
-            var node = new PipelineModelNode() { Handler = namedChannel, Name = namedChannel.Name };
+            var node = new PipelineModelNode {Handler = namedChannel, Name = namedChannel.Name};
             var pipelineModel = PipelineMutationModel.Fresh();
             pipelineModel = AddToTail(pipelineModel, node);
             Assert.True(pipelineModel.Contains(node.Name));
-            var node2 = new PipelineModelNode() { Handler = namedChannel2, Name = namedChannel2.Name };
+            var node2 = new PipelineModelNode {Handler = namedChannel2, Name = namedChannel2.Name};
             pipelineModel = AddToTail(pipelineModel, node2);
             Assert.True(pipelineModel.Contains(node.Name));
             Assert.True(pipelineModel.Contains(node2.Name));
@@ -88,7 +90,7 @@ namespace Helios.FsCheck.Tests.Channels
         public void PipelineModel_should_no_longer_detect_named_nodes_removed_from_tail()
         {
             var namedChannel = new NamedChannelHandler("TEST");
-            var node = new PipelineModelNode() { Handler = namedChannel, Name = namedChannel.Name };
+            var node = new PipelineModelNode {Handler = namedChannel, Name = namedChannel.Name};
             var pipelineModel = PipelineMutationModel.Fresh();
             pipelineModel = AddToTail(pipelineModel, node);
             Assert.True(pipelineModel.Contains(node.Name));
@@ -103,7 +105,7 @@ namespace Helios.FsCheck.Tests.Channels
         //    var pipeline = new DefaultChannelPipeline(TestChannel.Instance);
         //    var namedChannel = new AllEventsChannelHandler("foo", new SupportedEvent[] { SupportedEvent.HandlerAdded });
         //    var node = new PipelineModelNode() { Handler = namedChannel, Name = namedChannel.Name };
-          
+
         //    var addLast = new AddLast(namedChannel);
         //    addLast.Run(pipelineModel);
         //    var predictedOutcome = pipelineModel.PredictedOutcome(SupportedEvent.HandlerAdded);
@@ -119,3 +121,4 @@ namespace Helios.FsCheck.Tests.Channels
         }
     }
 }
+

@@ -1,35 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
-using Faker;
+using Faker.Generators;
 using Helios.MultiNodeTests.TestKit;
-using Helios.Net;
 using Helios.Serialization;
 using Xunit;
 
 namespace Helios.MultiNodeTests
 {
     /// <summary>
-    /// Tests to see how Helios can handle large messages
+    ///     Tests to see how Helios can handle large messages
     /// </summary>
-    
     public abstract class LargeMessageTests : MultiNodeTest
     {
+        public override IMessageDecoder Decoder
+        {
+            get { return new LengthFieldFrameBasedDecoder(1024*5000, 0, 4, 0, 4); }
+        }
+
         /// <summary>
-        /// Returns a Unicode-encoded string that will be equal to the desired byte size
+        ///     Returns a Unicode-encoded string that will be equal to the desired byte size
         /// </summary>
         public static byte[] TestMessage(int byteSize)
         {
-            var str = Faker.Generators.Strings.GenerateAlphaNumericString(byteSize/2, byteSize/2);
+            var str = Strings.GenerateAlphaNumericString(byteSize/2, byteSize/2);
             return Encoding.Unicode.GetBytes(str);
-        }
-
-        public override IMessageDecoder Decoder
-        {
-            get { return new LengthFieldFrameBasedDecoder(1024*5000,0,4,0,4); }
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace Helios.MultiNodeTests
             //arrange
             StartServer(); //echo
             StartClient();
-            var message = TestMessage(1024 * 40);
+            var message = TestMessage(1024*40);
             var sends = 1;
 
             //act
@@ -84,7 +84,7 @@ namespace Helios.MultiNodeTests
             //arrange
             StartServer(); //echo
             StartClient();
-            var message = TestMessage(1024 * 64);
+            var message = TestMessage(1024*64);
             var sends = 1;
 
             //act
@@ -107,7 +107,7 @@ namespace Helios.MultiNodeTests
             //arrange
             StartServer(); //echo
             StartClient();
-            var message = TestMessage(1024 * 4000);
+            var message = TestMessage(1024*4000);
             var sends = 1;
 
             //act
@@ -125,7 +125,7 @@ namespace Helios.MultiNodeTests
         }
     }
 
-    
+
     public class TcpLargeMessageTests : LargeMessageTests
     {
         public override TransportType TransportType
@@ -142,3 +142,4 @@ namespace Helios.MultiNodeTests
     //    }
     //}
 }
+

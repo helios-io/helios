@@ -1,3 +1,7 @@
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -5,7 +9,7 @@ using System.Threading.Tasks;
 namespace Helios.Concurrency
 {
     /// <summary>
-    /// Abstract base class for <see cref="IEventExecutor" /> implementations
+    ///     Abstract base class for <see cref="IEventExecutor" /> implementations
     /// </summary>
     public abstract class AbstractEventExecutor : IEventExecutor
     {
@@ -19,6 +23,7 @@ namespace Helios.Concurrency
         public abstract bool IsShutDown { get; }
         public abstract bool IsTerminated { get; }
         public abstract void Execute(IRunnable task);
+
         public void Execute(Action<object> action, object state)
         {
             Execute(new StateActionTaskQueueNode(action, state));
@@ -40,7 +45,7 @@ namespace Helios.Concurrency
         }
 
         public Task<T> SubmitAsync<T>(Func<T> func, CancellationToken cancellationToken)
-        { 
+        {
             var queueItem = new FuncTaskQueueItem<T>(func, cancellationToken);
             Execute(queueItem);
             return queueItem.Task;
@@ -63,7 +68,8 @@ namespace Helios.Concurrency
             return SubmitAsync(func, context, state, CancellationToken.None);
         }
 
-        public Task<T> SubmitAsync<T>(Func<object, object, T> func, object context, object state, CancellationToken cancellationToken)
+        public Task<T> SubmitAsync<T>(Func<object, object, T> func, object context, object state,
+            CancellationToken cancellationToken)
         {
             var queueItem = new StateAndContextFuncWithTaskQueueItem<T>(func, context, state, cancellationToken);
             Execute(queueItem);
@@ -80,12 +86,14 @@ namespace Helios.Concurrency
             throw new NotSupportedException();
         }
 
-        public virtual IScheduledTask Schedule(Action<object, object> action, object context, object state, TimeSpan delay)
+        public virtual IScheduledTask Schedule(Action<object, object> action, object context, object state,
+            TimeSpan delay)
         {
             throw new NotSupportedException();
         }
 
-        public virtual Task ScheduleAsync(Action<object> action, object state, TimeSpan delay, CancellationToken cancellationToken)
+        public virtual Task ScheduleAsync(Action<object> action, object state, TimeSpan delay,
+            CancellationToken cancellationToken)
         {
             throw new NotSupportedException();
         }
@@ -110,7 +118,8 @@ namespace Helios.Concurrency
             return ScheduleAsync(action, context, state, delay, CancellationToken.None);
         }
 
-        public virtual Task ScheduleAsync(Action<object, object> action, object context, object state, TimeSpan delay, CancellationToken cancellationToken)
+        public virtual Task ScheduleAsync(Action<object, object> action, object context, object state, TimeSpan delay,
+            CancellationToken cancellationToken)
         {
             throw new NotSupportedException();
         }
@@ -130,7 +139,7 @@ namespace Helios.Concurrency
             public abstract void Run();
         }
 
-        sealed class ActionTaskQueueItem : RunnableTaskQueueItem
+        private sealed class ActionTaskQueueItem : RunnableTaskQueueItem
         {
             private readonly Action _action;
 
@@ -145,7 +154,7 @@ namespace Helios.Concurrency
             }
         }
 
-        sealed class StateActionTaskQueueNode : RunnableTaskQueueItem
+        private sealed class StateActionTaskQueueNode : RunnableTaskQueueItem
         {
             private readonly Action<object> _action;
             private readonly object _state;
@@ -162,7 +171,7 @@ namespace Helios.Concurrency
             }
         }
 
-        sealed class StateAndContextActionTaskQueueNode : RunnableTaskQueueItem
+        private sealed class StateAndContextActionTaskQueueNode : RunnableTaskQueueItem
         {
             private readonly Action<object, object> _action;
             private readonly object _context;
@@ -182,13 +191,13 @@ namespace Helios.Concurrency
         }
 
         /// <summary>
-        /// Underlying <see cref="IRunnable"/> type used for executing items which return <see cref="Task"/> instances.
+        ///     Underlying <see cref="IRunnable" /> type used for executing items which return <see cref="Task" /> instances.
         /// </summary>
-        /// <typeparam name="T">The return type of the <see cref="Task{T}"/></typeparam>
-        abstract class FuncTaskQueueItemBase<T> : RunnableTaskQueueItem
+        /// <typeparam name="T">The return type of the <see cref="Task{T}" /></typeparam>
+        private abstract class FuncTaskQueueItemBase<T> : RunnableTaskQueueItem
         {
-            private readonly TaskCompletionSource<T> _promise;
             private readonly CancellationToken _cancellationToken;
+            private readonly TaskCompletionSource<T> _promise;
 
             protected FuncTaskQueueItemBase(TaskCompletionSource<T> promise, CancellationToken cancellationToken)
             {
@@ -221,7 +230,7 @@ namespace Helios.Concurrency
             protected abstract T RunInternal();
         }
 
-        sealed class FuncTaskQueueItem<T> : FuncTaskQueueItemBase<T>
+        private sealed class FuncTaskQueueItem<T> : FuncTaskQueueItemBase<T>
         {
             private readonly Func<T> _function;
 
@@ -237,11 +246,12 @@ namespace Helios.Concurrency
             }
         }
 
-        sealed class StateFuncWithTaskQueueItem<T> : FuncTaskQueueItemBase<T>
+        private sealed class StateFuncWithTaskQueueItem<T> : FuncTaskQueueItemBase<T>
         {
             private readonly Func<object, T> _function;
 
-            public StateFuncWithTaskQueueItem(Func<object, T> function, object state, CancellationToken cancellationToken)
+            public StateFuncWithTaskQueueItem(Func<object, T> function, object state,
+                CancellationToken cancellationToken)
                 : base(new TaskCompletionSource<T>(state), cancellationToken)
             {
                 _function = function;
@@ -253,12 +263,13 @@ namespace Helios.Concurrency
             }
         }
 
-        sealed class StateAndContextFuncWithTaskQueueItem<T> : FuncTaskQueueItemBase<T>
+        private sealed class StateAndContextFuncWithTaskQueueItem<T> : FuncTaskQueueItemBase<T>
         {
-            private readonly Func<object, object, T> _function;
             private readonly object _context;
+            private readonly Func<object, object, T> _function;
 
-            public StateAndContextFuncWithTaskQueueItem(Func<object, object, T> function, object context, object state, CancellationToken cancellationToken) 
+            public StateAndContextFuncWithTaskQueueItem(Func<object, object, T> function, object context, object state,
+                CancellationToken cancellationToken)
                 : base(new TaskCompletionSource<T>(state), cancellationToken)
             {
                 _function = function;
@@ -274,3 +285,4 @@ namespace Helios.Concurrency
         #endregion
     }
 }
+

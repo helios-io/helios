@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -8,18 +12,17 @@ namespace Helios.Util.Collections
     public class PriorityQueue<T> : IEnumerable<T>
         where T : class
     {
-        readonly IComparer<T> comparer;
-        int count;
-        int capacity;
-        T[] items;
+        private readonly IComparer<T> comparer;
+        private int capacity;
+        private T[] items;
 
         public PriorityQueue(IComparer<T> comparer)
         {
             Contract.Requires(comparer != null);
 
             this.comparer = comparer;
-            this.capacity = 11;
-            this.items = new T[this.capacity];
+            capacity = 11;
+            items = new T[capacity];
         }
 
         public PriorityQueue()
@@ -27,25 +30,35 @@ namespace Helios.Util.Collections
         {
         }
 
-        public int Count
+        public int Count { get; private set; }
+
+        public IEnumerator<T> GetEnumerator()
         {
-            get { return this.count; }
+            for (var i = 0; i < Count; i++)
+            {
+                yield return items[i];
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         public T Dequeue()
         {
-            T result = this.Peek();
+            var result = Peek();
             if (result == null)
             {
                 return null;
             }
 
-            int newCount = --this.count;
-            T lastItem = this.items[newCount];
-            this.items[newCount] = null;
+            var newCount = --Count;
+            var lastItem = items[newCount];
+            items[newCount] = null;
             if (newCount > 0)
             {
-                this.TrickleDown(0, lastItem);
+                TrickleDown(0, lastItem);
             }
 
             return result;
@@ -53,115 +66,102 @@ namespace Helios.Util.Collections
 
         public T Peek()
         {
-            return this.count == 0 ? null : this.items[0];
+            return Count == 0 ? null : items[0];
         }
 
         public void Enqueue(T item)
         {
             Contract.Requires(item != null);
 
-            int oldCount = this.count;
-            if (oldCount == this.capacity)
+            var oldCount = Count;
+            if (oldCount == capacity)
             {
-                this.GrowHeap();
+                GrowHeap();
             }
-            this.count = oldCount + 1;
-            this.BubbleUp(oldCount, item);
+            Count = oldCount + 1;
+            BubbleUp(oldCount, item);
         }
 
         public void Remove(T item)
         {
-            int index = Array.IndexOf(this.items, item);
+            var index = Array.IndexOf(items, item);
             if (index == -1)
             {
                 return;
             }
 
-            this.count--;
-            if (index == this.count)
+            Count--;
+            if (index == Count)
             {
-                this.items[index] = default(T);
+                items[index] = default(T);
             }
             else
             {
-                T last = this.items[this.count];
-                this.items[this.count] = default(T);
-                this.TrickleDown(index, last);
-                if (this.items[index] == last)
+                var last = items[Count];
+                items[Count] = default(T);
+                TrickleDown(index, last);
+                if (items[index] == last)
                 {
-                    this.BubbleUp(index, last);
+                    BubbleUp(index, last);
                 }
             }
-
         }
 
-        void BubbleUp(int index, T item)
+        private void BubbleUp(int index, T item)
         {
             // index > 0 means there is a parent
             while (index > 0)
             {
-                int parentIndex = (index - 1) >> 1;
-                T parentItem = this.items[parentIndex];
-                if (this.comparer.Compare(item, parentItem) >= 0)
+                var parentIndex = (index - 1) >> 1;
+                var parentItem = items[parentIndex];
+                if (comparer.Compare(item, parentItem) >= 0)
                 {
                     break;
                 }
-                this.items[index] = parentItem;
+                items[index] = parentItem;
                 index = parentIndex;
             }
-            this.items[index] = item;
+            items[index] = item;
         }
 
-        void GrowHeap()
+        private void GrowHeap()
         {
-            int oldCapacity = this.capacity;
-            this.capacity = oldCapacity + (oldCapacity <= 64 ? oldCapacity + 2 : (oldCapacity >> 1));
-            var newHeap = new T[this.capacity];
-            Array.Copy(this.items, 0, newHeap, 0, this.count);
-            this.items = newHeap;
+            var oldCapacity = capacity;
+            capacity = oldCapacity + (oldCapacity <= 64 ? oldCapacity + 2 : oldCapacity >> 1);
+            var newHeap = new T[capacity];
+            Array.Copy(items, 0, newHeap, 0, Count);
+            items = newHeap;
         }
 
-        void TrickleDown(int index, T item)
+        private void TrickleDown(int index, T item)
         {
-            int middleIndex = this.count >> 1;
+            var middleIndex = Count >> 1;
             while (index < middleIndex)
             {
-                int childIndex = (index << 1) + 1;
-                T childItem = this.items[childIndex];
-                int rightChildIndex = childIndex + 1;
-                if (rightChildIndex < this.count
-                    && this.comparer.Compare(childItem, this.items[rightChildIndex]) > 0)
+                var childIndex = (index << 1) + 1;
+                var childItem = items[childIndex];
+                var rightChildIndex = childIndex + 1;
+                if (rightChildIndex < Count
+                    && comparer.Compare(childItem, items[rightChildIndex]) > 0)
                 {
                     childIndex = rightChildIndex;
-                    childItem = this.items[rightChildIndex];
+                    childItem = items[rightChildIndex];
                 }
-                if (this.comparer.Compare(item, childItem) <= 0)
+                if (comparer.Compare(item, childItem) <= 0)
                 {
                     break;
                 }
-                this.items[index] = childItem;
+                items[index] = childItem;
                 index = childIndex;
             }
-            this.items[index] = item;
-        }
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            for (int i = 0; i < this.count; i++)
-            {
-                yield return this.items[i];
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
+            items[index] = item;
         }
 
         public void Clear()
         {
-            this.count = 0;
-            Array.Clear(this.items, 0, 0);
+            Count = 0;
+            Array.Clear(items, 0, 0);
         }
     }
 }
+

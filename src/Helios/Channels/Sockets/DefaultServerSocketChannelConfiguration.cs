@@ -1,72 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Diagnostics.Contracts;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Helios.Channels.Sockets
 {
     /// <summary>
-    /// The default {@link ServerSocketChannelConfig} implementation.
+    ///     The default {@link ServerSocketChannelConfig} implementation.
     /// </summary>
     public class DefaultServerSocketChannelConfig : DefaultChannelConfiguration, IServerSocketChannelConfiguration
     {
         protected readonly Socket Socket;
-        volatile int backlog = 200; //todo: NetUtil.SOMAXCONN;
+        private volatile int backlog = 200; //todo: NetUtil.SOMAXCONN;
 
         /// <summary>
-        /// Creates a new instance.
+        ///     Creates a new instance.
         /// </summary>
         public DefaultServerSocketChannelConfig(IServerSocketChannel channel, Socket socket)
             : base(channel)
         {
             Contract.Requires(socket != null);
 
-            this.Socket = socket;
-        }
-
-        public override T GetOption<T>(ChannelOption<T> option)
-        {
-            if (ChannelOption.SoRcvbuf.Equals(option))
-            {
-                return (T)(object)this.ReceiveBufferSize;
-            }
-            if (ChannelOption.SoReuseaddr.Equals(option))
-            {
-                return (T)(object)this.ReuseAddress;
-            }
-            if (ChannelOption.SoBacklog.Equals(option))
-            {
-                return (T)(object)this.Backlog;
-            }
-
-            return base.GetOption(option);
-        }
-
-        public override bool SetOption<T>(ChannelOption<T> option, T value)
-        {
-            this.Validate(option, value);
-
-            if (ChannelOption.SoRcvbuf.Equals(option))
-            {
-                this.ReceiveBufferSize = (int)(object)value;
-            }
-            else if (ChannelOption.SoReuseaddr.Equals(option))
-            {
-                this.ReuseAddress = (bool)(object)value;
-            }
-            else if (ChannelOption.SoBacklog.Equals(option))
-            {
-                this.Backlog = (int)(object)value;
-            }
-            else
-            {
-                return base.SetOption(option, value);
-            }
-
-            return true;
+            Socket = socket;
         }
 
         public bool ReuseAddress
@@ -75,7 +33,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    return (int)this.Socket.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress) != 0;
+                    return (int) Socket.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress) != 0;
                 }
                 catch (ObjectDisposedException ex)
                 {
@@ -90,7 +48,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    this.Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, value ? 1 : 0);
+                    Socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, value ? 1 : 0);
                 }
                 catch (ObjectDisposedException ex)
                 {
@@ -109,7 +67,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    return this.Socket.ReceiveBufferSize;
+                    return Socket.ReceiveBufferSize;
                 }
                 catch (ObjectDisposedException ex)
                 {
@@ -124,7 +82,7 @@ namespace Helios.Channels.Sockets
             {
                 try
                 {
-                    this.Socket.ReceiveBufferSize = value;
+                    Socket.ReceiveBufferSize = value;
                 }
                 catch (ObjectDisposedException ex)
                 {
@@ -137,15 +95,58 @@ namespace Helios.Channels.Sockets
             }
         }
 
+        public override T GetOption<T>(ChannelOption<T> option)
+        {
+            if (ChannelOption.SoRcvbuf.Equals(option))
+            {
+                return (T) (object) ReceiveBufferSize;
+            }
+            if (ChannelOption.SoReuseaddr.Equals(option))
+            {
+                return (T) (object) ReuseAddress;
+            }
+            if (ChannelOption.SoBacklog.Equals(option))
+            {
+                return (T) (object) Backlog;
+            }
+
+            return base.GetOption(option);
+        }
+
+        public override bool SetOption<T>(ChannelOption<T> option, T value)
+        {
+            Validate(option, value);
+
+            if (ChannelOption.SoRcvbuf.Equals(option))
+            {
+                ReceiveBufferSize = (int) (object) value;
+            }
+            else if (ChannelOption.SoReuseaddr.Equals(option))
+            {
+                ReuseAddress = (bool) (object) value;
+            }
+            else if (ChannelOption.SoBacklog.Equals(option))
+            {
+                Backlog = (int) (object) value;
+            }
+            else
+            {
+                return base.SetOption(option, value);
+            }
+
+            return true;
+        }
+
         public int Backlog
         {
-            get { return this.backlog; }
+            get { return backlog; }
             set
             {
                 Contract.Requires(value >= 0);
 
-                this.backlog = value;
+                backlog = value;
             }
         }
     }
 }
+

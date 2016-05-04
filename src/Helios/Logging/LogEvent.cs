@@ -1,10 +1,14 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Threading;
 
 namespace Helios.Logging
 {
     /// <summary>
-    /// An event instance produced by a <see cref="ILogger"/>
+    ///     An event instance produced by a <see cref="ILogger" />
     /// </summary>
     public abstract class LogEvent
     {
@@ -28,7 +32,7 @@ namespace Helios.Logging
         public LogLevel Level { get; }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this LogEvent.
+        ///     Returns a <see cref="System.String" /> that represents this LogEvent.
         /// </summary>
         /// <returns>A <see cref="System.String" /> that represents this LogEvent.</returns>
         public override string ToString()
@@ -39,7 +43,7 @@ namespace Helios.Logging
     }
 
     /// <summary>
-    /// <see cref="LogLevel.Error"/> events
+    ///     <see cref="LogLevel.Error" /> events
     /// </summary>
     public class Error : LogEvent
     {
@@ -52,7 +56,7 @@ namespace Helios.Logging
             Cause = cause;
         }
 
-        public Exception Cause { get; private set; }
+        public Exception Cause { get; }
 
         public override string ToString()
         {
@@ -61,12 +65,10 @@ namespace Helios.Logging
     }
 
     /// <summary>
-    /// <see cref="LogLevel.Warning"/> events
+    ///     <see cref="LogLevel.Warning" /> events
     /// </summary>
     public class Warning : LogEvent
     {
-        public Exception Cause { get; private set; }
-
         public Warning(string message, string logSource) : base(message, logSource, LogLevel.Warning)
         {
         }
@@ -75,6 +77,9 @@ namespace Helios.Logging
         {
             Cause = cause;
         }
+
+        public Exception Cause { get; }
+
         public override string ToString()
         {
             return base.ToString() + Environment.NewLine + $"Cause: {Cause?.ToString() ?? "Unknown"}";
@@ -82,7 +87,7 @@ namespace Helios.Logging
     }
 
     /// <summary>
-    /// <see cref="LogLevel.Info"/> events
+    ///     <see cref="LogLevel.Info" /> events
     /// </summary>
     public class Info : LogEvent
     {
@@ -92,7 +97,7 @@ namespace Helios.Logging
     }
 
     /// <summary>
-    /// <see cref="LogLevel.Debug"/> events
+    ///     <see cref="LogLevel.Debug" /> events
     /// </summary>
     public class Debug : LogEvent
     {
@@ -101,3 +106,4 @@ namespace Helios.Logging
         }
     }
 }
+

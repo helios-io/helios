@@ -1,17 +1,19 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 
 namespace Helios.Buffers
 {
     /// <summary>
-    /// Represents an empty byte buffer
+    ///     Represents an empty byte buffer
     /// </summary>
     public class EmptyByteBuf : AbstractByteBuf
     {
-        private readonly IByteBufAllocator _alloc;
-
         public EmptyByteBuf(IByteBufAllocator allocator) : base(0)
         {
-            _alloc = allocator;
+            Allocator = allocator;
         }
 
         public override int Capacity
@@ -19,16 +21,35 @@ namespace Helios.Buffers
             get { return 0; }
         }
 
+        public override ByteOrder Order => ByteOrder.LittleEndian;
+
+        public override IByteBufAllocator Allocator { get; }
+
+        public override bool HasArray
+        {
+            get { return false; }
+        }
+
+        public override byte[] Array
+        {
+            get { throw new NotSupportedException(); }
+        }
+
+        public override bool IsDirect
+        {
+            get { return true; }
+        }
+
+        public override int ArrayOffset => 0;
+
+        public override int ReferenceCount
+        {
+            get { return 1; }
+        }
+
         public override IByteBuf AdjustCapacity(int newCapacity)
         {
             throw new NotSupportedException();
-        }
-
-        public override ByteOrder Order => ByteOrder.LittleEndian;
-
-        public override IByteBufAllocator Allocator
-        {
-            get { return _alloc; }
         }
 
         protected override byte _GetByte(int index)
@@ -91,27 +112,10 @@ namespace Helios.Buffers
             throw new IndexOutOfRangeException();
         }
 
-        public override bool HasArray
-        {
-            get { return false; }
-        }
-
-        public override byte[] Array
-        {
-            get { throw new NotSupportedException(); }
-        }
-
-        public override bool IsDirect
-        {
-            get { return true; }
-        }
-
         public override IByteBuf Copy(int index, int length)
         {
             return this;
         }
-
-        public override int ArrayOffset => 0;
 
         public override IByteBuf Unwrap()
         {
@@ -128,7 +132,6 @@ namespace Helios.Buffers
             return this;
         }
 
-        public override int ReferenceCount { get { return 1; } }
         public override IReferenceCounted Retain()
         {
             return this;
@@ -160,3 +163,4 @@ namespace Helios.Buffers
         }
     }
 }
+

@@ -1,10 +1,12 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Net;
 using System.Text;
 using Helios.Net;
-using Helios.Reactor;
 using Helios.Reactor.Bootstrap;
-using Helios.Reactor.Tcp;
 using Helios.Topology;
 
 namespace Helios.Samples.TcpReactorServer
@@ -22,7 +24,7 @@ namespace Helios.Samples.TcpReactorServer
 
         private static void Main(string[] args)
         {
-            Port = args.Length < 1 ? DEFAULT_PORT : Int32.Parse(args[0]);
+            Port = args.Length < 1 ? DEFAULT_PORT : int.Parse(args[0]);
             var ip = IPAddress.Any;
 
             Console.WriteLine("Starting echo server...");
@@ -40,7 +42,8 @@ namespace Helios.Samples.TcpReactorServer
                 channel.BeginReceive(ReceiveData);
             };
             reactor.OnDisconnection += (reason, address) => ServerPrint(address.RemoteHost,
-                string.Format("Closed connection to... {0}:{1} [Reason:{2}]", address.RemoteHost.Host, address.RemoteHost.Port, reason.Type));
+                string.Format("Closed connection to... {0}:{1} [Reason:{2}]", address.RemoteHost.Host,
+                    address.RemoteHost.Port, reason.Type));
             reactor.Start();
             Console.ReadKey();
         }
@@ -60,7 +63,8 @@ namespace Helios.Samples.TcpReactorServer
             ServerPrint(connection.RemoteHost,
                 string.Format("sending \"{0}\" back to {1}:{2}", str, node.Host, node.Port));
             var sendBytes = Encoding.UTF8.GetBytes(str + Environment.NewLine);
-            connection.Send(new NetworkData() {Buffer = sendBytes, Length = sendBytes.Length, RemoteHost = node});
+            connection.Send(new NetworkData {Buffer = sendBytes, Length = sendBytes.Length, RemoteHost = node});
         }
     }
 }
+

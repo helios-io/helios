@@ -1,17 +1,25 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
 namespace Helios.FsCheck.Tests.Channels.Sockets.Models
 {
     /// <summary>
-    /// <see cref="IEqualityComparer{T}"/> that verifies that any two <see cref="ITcpServerSocketModel"/> are equivalent, regardless of the
-    /// order of messages received / written and the order of clients joined / not joined.
+    ///     <see cref="IEqualityComparer{T}" /> that verifies that any two <see cref="ITcpServerSocketModel" /> are equivalent,
+    ///     regardless of the
+    ///     order of messages received / written and the order of clients joined / not joined.
     /// </summary>
     public class TcpServerSocketModelComparer : IEqualityComparer<ITcpServerSocketModel>
     {
         public static readonly TcpServerSocketModelComparer Instance = new TcpServerSocketModelComparer();
-        private TcpServerSocketModelComparer() { }
+
+        private TcpServerSocketModelComparer()
+        {
+        }
 
         public bool Equals(ITcpServerSocketModel x, ITcpServerSocketModel y)
         {
@@ -31,6 +39,11 @@ namespace Helios.FsCheck.Tests.Channels.Sockets.Models
             return false;
         }
 
+        public int GetHashCode(ITcpServerSocketModel obj)
+        {
+            return obj.GetHashCode();
+        }
+
         public static bool ClientsAreEqual(IReadOnlyList<IPEndPoint> list1, IReadOnlyList<IPEndPoint> list2)
         {
             var set1 = new HashSet<IPEndPoint>(list1);
@@ -42,10 +55,6 @@ namespace Helios.FsCheck.Tests.Channels.Sockets.Models
         {
             return list1.OrderBy(x => x).SequenceEqual(list2.OrderBy(y => y));
         }
-
-        public int GetHashCode(ITcpServerSocketModel obj)
-        {
-            return obj.GetHashCode();
-        }
     }
 }
+

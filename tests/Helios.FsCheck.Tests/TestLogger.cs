@@ -1,20 +1,17 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Helios.Logging;
 
 namespace Helios.FsCheck.Tests
 {
     /// <summary>
-    /// <see cref="ILogger"/> implementation used for debugging and testing purposes.
+    ///     <see cref="ILogger" /> implementation used for debugging and testing purposes.
     /// </summary>
     public class TestLogger : LoggingAdapter
     {
-        public ConcurrentQueue<LogEvent> Events { get; } = new ConcurrentQueue<LogEvent>();
-
         public TestLogger(string logSource) : base(logSource)
         {
         }
@@ -22,6 +19,8 @@ namespace Helios.FsCheck.Tests
         public TestLogger(string logSource, params LogLevel[] supportedLogLevels) : base(logSource, supportedLogLevels)
         {
         }
+
+        public ConcurrentQueue<LogEvent> Events { get; } = new ConcurrentQueue<LogEvent>();
 
         protected override void DebugInternal(Debug message)
         {
@@ -49,3 +48,4 @@ namespace Helios.FsCheck.Tests
         }
     }
 }
+

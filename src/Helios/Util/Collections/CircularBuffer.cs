@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,11 +10,28 @@ using System.Linq;
 namespace Helios.Util.Collections
 {
     /// <summary>
-    /// Base class for working with circular buffers
+    ///     Base class for working with circular buffers
     /// </summary>
     /// <typeparam name="T">The type being stored in the circular buffer</typeparam>
     public class CircularBuffer<T> : ICircularBuffer<T>
     {
+        private bool _full;
+
+        /// <summary>
+        ///     Front of the buffer
+        /// </summary>
+        private int _head;
+
+        /// <summary>
+        ///     Back of the buffer
+        /// </summary>
+        private int _tail;
+
+        /// <summary>
+        ///     The buffer itself
+        /// </summary>
+        protected T[] Buffer;
+
         public CircularBuffer(int capacity)
         {
             _head = 0;
@@ -19,36 +40,21 @@ namespace Helios.Util.Collections
         }
 
         /// <summary>
-        /// Front of the buffer
-        /// </summary>
-        private int _head;
-
-        /// <summary>
-        /// FOR TESTING PURPOSES ONLY
+        ///     FOR TESTING PURPOSES ONLY
         /// </summary>
         internal int Head => _head;
 
         /// <summary>
-        /// Back of the buffer
-        /// </summary>
-        private int _tail;
-
-        /// <summary>
-        /// FOR TESTING PURPOSES ONLY
+        ///     FOR TESTING PURPOSES ONLY
         /// </summary>
         internal int Tail => _tail;
 
-        /// <summary>
-        /// The buffer itself
-        /// </summary>
-        protected T[] Buffer;
+        public bool IsReadOnly { get; private set; }
 
         public int Capacity => Buffer.Length;
 
         // We use an N+1 trick here to make sure we can distinguish full queues from empty ones
-        public int Size => _full ? Capacity : (_tail - _head + Capacity) % Capacity;
-
-        private bool _full = false;
+        public int Size => _full ? Capacity : (_tail - _head + Capacity)%Capacity;
 
         public virtual T Peek()
         {
@@ -59,7 +65,7 @@ namespace Helios.Util.Collections
         {
             _full = _full || _tail + 1 == Capacity; // leave FULL flag on
             Buffer[_tail] = obj;
-            _tail = (_tail + 1) % Capacity;
+            _tail = (_tail + 1)%Capacity;
         }
 
         public void Enqueue(T[] objs)
@@ -74,7 +80,7 @@ namespace Helios.Util.Collections
         {
             _full = false; // full is always false as soon as we dequeue
             var item = Buffer[_head];
-            _head = (_head + 1) % Capacity;
+            _head = (_head + 1)%Capacity;
             return item;
         }
 
@@ -95,11 +101,6 @@ namespace Helios.Util.Collections
             return Dequeue(Size);
         }
 
-        public void Add(T item)
-        {
-            Enqueue(item);
-        }
-
         public virtual void Clear()
         {
             _head = 0;
@@ -107,13 +108,8 @@ namespace Helios.Util.Collections
             _full = false;
         }
 
-        public bool Contains(T item)
-        {
-            return Buffer.Any(x => x.GetHashCode() == item.GetHashCode());
-        }
-
         /// <summary>
-        /// Copies the contents of the Circular Buffer into a new array
+        ///     Copies the contents of the Circular Buffer into a new array
         /// </summary>
         /// <param name="array">The destination array for the copy</param>
         public void CopyTo(T[] array)
@@ -122,18 +118,13 @@ namespace Helios.Util.Collections
         }
 
         /// <summary>
-        /// Copies the contents of the Circular Buffer into a new array
+        ///     Copies the contents of the Circular Buffer into a new array
         /// </summary>
         /// <param name="array">The destination array for the copy</param>
         /// <param name="index">The starting index for copying in the destination array</param>
         public void CopyTo(T[] array, int index)
         {
             CopyTo(array, index, Size);
-        }
-
-        public bool Remove(T item)
-        {
-            return false;
         }
 
         public bool TryAdd(T item)
@@ -156,7 +147,7 @@ namespace Helios.Util.Collections
         }
 
         /// <summary>
-        /// Copies the contents of the Circular Buffer into a new array
+        ///     Copies the contents of the Circular Buffer into a new array
         /// </summary>
         /// <param name="array">The destination array for the copy</param>
         /// <param name="index">The starting index for copying in the destination array</param>
@@ -167,7 +158,7 @@ namespace Helios.Util.Collections
                 count = Size;
 
             var bufferBegin = _head;
-            for (var i = 0; i < count; i++, bufferBegin = (bufferBegin+1) % Capacity, index++)
+            for (var i = 0; i < count; i++, bufferBegin = (bufferBegin + 1)%Capacity, index++)
             {
                 array[index] = Buffer[bufferBegin];
             }
@@ -175,7 +166,7 @@ namespace Helios.Util.Collections
 
         public IEnumerator<T> GetEnumerator()
         {
-            return ((IEnumerable<T>)ToArray()).GetEnumerator();
+            return ((IEnumerable<T>) ToArray()).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -185,15 +176,28 @@ namespace Helios.Util.Collections
 
         public void CopyTo(Array array, int index)
         {
-            CopyTo((T[])array, index);
+            CopyTo((T[]) array, index);
         }
 
         public int Count => Size;
-
-        public bool IsReadOnly { get; private set; }
         public virtual object SyncRoot { get; private set; }
 
         public virtual bool IsSynchronized => false;
+
+        public void Add(T item)
+        {
+            Enqueue(item);
+        }
+
+        public bool Contains(T item)
+        {
+            return Buffer.Any(x => x.GetHashCode() == item.GetHashCode());
+        }
+
+        public bool Remove(T item)
+        {
+            return false;
+        }
 
         public override string ToString()
         {
@@ -201,3 +205,4 @@ namespace Helios.Util.Collections
         }
     }
 }
+

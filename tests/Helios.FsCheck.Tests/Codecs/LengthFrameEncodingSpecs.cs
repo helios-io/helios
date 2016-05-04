@@ -1,18 +1,19 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using FsCheck;
-using Microsoft.FSharp.Control;
-using Xunit;
 using FsCheck.Xunit;
 using Helios.Buffers;
 using Helios.Channels.Embedded;
 using Helios.Codecs;
 using Helios.FsCheck.Tests.Buffers;
-using Helios.Logging;
+using Xunit;
 
 namespace Helios.FsCheck.Tests.Codecs
 {
@@ -29,7 +30,7 @@ namespace Helios.FsCheck.Tests.Codecs
         {
             var prepender = new LengthFieldPrepender(4, false);
             var decoder = new LengthFieldBasedFrameDecoder(int.MaxValue, 0, 4, 0, 4);
-            var partialReader = new PartialReadGenerator(new[] { new ReadInstruction(ReadMode.Partial, 5, 8),  });
+            var partialReader = new PartialReadGenerator(new[] {new ReadInstruction(ReadMode.Partial, 5, 8)});
             var ec = new EmbeddedChannel(partialReader, prepender, decoder);
             var byteBuff = Unpooled.Buffer(10).WriteInt(4).WriteInt(10);
             ec.WriteAndFlushAsync(byteBuff.Duplicate()).Wait();
@@ -54,12 +55,19 @@ namespace Helios.FsCheck.Tests.Codecs
         {
             var prepender = new LengthFieldPrepender(4, false);
             var decoder = new LengthFieldBasedFrameDecoder(int.MaxValue, 0, 4, 0, 4);
-            var partialReader = new PartialReadGenerator(new[] { new ReadInstruction(ReadMode.Partial, 2, 8), new ReadInstruction(ReadMode.Partial, 4, 8), new ReadInstruction(ReadMode.Full, 8, 8) });
+            var partialReader =
+                new PartialReadGenerator(new[]
+                {
+                    new ReadInstruction(ReadMode.Partial, 2, 8), new ReadInstruction(ReadMode.Partial, 4, 8),
+                    new ReadInstruction(ReadMode.Full, 8, 8)
+                });
             var ec = new EmbeddedChannel(partialReader, prepender, decoder);
             var byteBuf1 = Unpooled.Buffer(10).WriteInt(4).WriteInt(10);
             var byteBuf2 = Unpooled.Buffer(100).WriteInt(5).WriteInt(6).WriteBytes(new byte[92]);
             var byteBuf3 = Unpooled.Buffer(10).WriteInt(21).WriteInt(11);
-            Task.WaitAll(ec.WriteAndFlushAsync(byteBuf1.Duplicate().Retain()), ec.WriteAndFlushAsync(byteBuf2.Duplicate().Retain()), ec.WriteAndFlushAsync(byteBuf3.Duplicate().Retain()));
+            Task.WaitAll(ec.WriteAndFlushAsync(byteBuf1.Duplicate().Retain()),
+                ec.WriteAndFlushAsync(byteBuf2.Duplicate().Retain()),
+                ec.WriteAndFlushAsync(byteBuf3.Duplicate().Retain()));
 
             IByteBuf encoded;
             do
@@ -84,16 +92,17 @@ namespace Helios.FsCheck.Tests.Codecs
         }
 
         [Property(MaxTest = 5000)]
-        public Property LengthFrameEncoders_should_correctly_encode_anything_LittleEndian(Tuple<IByteBuf, ReadInstruction>[] reads)
-        {          
+        public Property LengthFrameEncoders_should_correctly_encode_anything_LittleEndian(
+            Tuple<IByteBuf, ReadInstruction>[] reads)
+        {
             var expectedReads = reads.Select(x => x.Item1).ToArray();
             var readModes = reads.Select(x => x.Item2).ToArray();
             var partialReader = new PartialReadGenerator(readModes);
             var prepender = new LengthFieldPrepender(4, false);
             var decoder = new LengthFieldBasedFrameDecoder(int.MaxValue, 0, 4, 0, 4);
             var ec = new EmbeddedChannel(partialReader, prepender, decoder);
-            
-  
+
+
             foreach (var read in expectedReads)
             {
                 ec.WriteAndFlushAsync(read.Duplicate()).Wait();
@@ -102,10 +111,9 @@ namespace Helios.FsCheck.Tests.Codecs
                 do
                 {
                     encoded = ec.ReadOutbound<IByteBuf>();
-                    if(encoded != null)
+                    if (encoded != null)
                         ec.WriteInbound(encoded);
                 } while (encoded != null);
-                
             }
 
             var actualReads = new List<IByteBuf>();
@@ -115,12 +123,13 @@ namespace Helios.FsCheck.Tests.Codecs
             do
             {
                 decoded = ec.ReadInbound<IByteBuf>();
-                if (decoded != null) 
+                if (decoded != null)
                 {
                     actualReads.Add(decoded);
                 }
             } while (decoded != null);
-            expectedReads = expectedReads.Select(x => x.ResetReaderIndex()).ToArray(); // need to perform a read reset of the buffer
+            expectedReads = expectedReads.Select(x => x.ResetReaderIndex()).ToArray();
+                // need to perform a read reset of the buffer
             var pass = expectedReads.SequenceEqual(actualReads, AbstractByteBuf.ByteBufComparer);
 
             if (!pass)
@@ -130,15 +139,17 @@ namespace Helios.FsCheck.Tests.Codecs
 
             return
                 pass
-                .When(reads.Length > 0 // need something to read
-                ) 
+                    .When(reads.Length > 0 // need something to read
+                    )
                     .Label($"Expected encoders and decoders to read each other's messages, even with partial reads. " +
-                           $"Expected: {string.Join("|", expectedReads.Select(x => ByteBufferUtil.HexDump(x)))}" + Environment.NewLine +
+                           $"Expected: {string.Join("|", expectedReads.Select(x => ByteBufferUtil.HexDump(x)))}" +
+                           Environment.NewLine +
                            $"Actual: {string.Join("|", actualReads.Select(x => ByteBufferUtil.HexDump(x)))}");
         }
 
         [Property(MaxTest = 1000)]
-        public Property HeliosBackwardsCompatibilityLengthFrameEncoders_should_correctly_encode_anything_LittleEndian(Tuple<IByteBuf, ReadInstruction>[] reads)
+        public Property HeliosBackwardsCompatibilityLengthFrameEncoders_should_correctly_encode_anything_LittleEndian(
+            Tuple<IByteBuf, ReadInstruction>[] reads)
         {
             var expectedReads = reads.Select(x => x.Item1).ToArray();
             var readModes = reads.Select(x => x.Item2).ToArray();
@@ -160,7 +171,6 @@ namespace Helios.FsCheck.Tests.Codecs
                     if (encoded != null)
                         ec.WriteInbound(encoded);
                 } while (encoded != null);
-
             }
 
             var actualReads = new List<IByteBuf>();
@@ -175,7 +185,8 @@ namespace Helios.FsCheck.Tests.Codecs
                     actualReads.Add(decoded);
                 }
             } while (decoded != null);
-            expectedReads = expectedReads.Select(x => x.ResetReaderIndex()).ToArray(); // need to perform a read reset of the buffer
+            expectedReads = expectedReads.Select(x => x.ResetReaderIndex()).ToArray();
+                // need to perform a read reset of the buffer
             var pass = expectedReads.SequenceEqual(actualReads, AbstractByteBuf.ByteBufComparer);
 
             if (!pass)
@@ -185,11 +196,13 @@ namespace Helios.FsCheck.Tests.Codecs
 
             return
                 pass
-                .When(reads.Length > 0 // need something to read
-                )
+                    .When(reads.Length > 0 // need something to read
+                    )
                     .Label($"Expected encoders and decoders to read each other's messages, even with partial reads. " +
-                           $"Expected: {string.Join("|", expectedReads.Select(x => ByteBufferUtil.HexDump(x)))}" + Environment.NewLine +
+                           $"Expected: {string.Join("|", expectedReads.Select(x => ByteBufferUtil.HexDump(x)))}" +
+                           Environment.NewLine +
                            $"Actual: {string.Join("|", actualReads.Select(x => ByteBufferUtil.HexDump(x)))}");
         }
     }
 }
+

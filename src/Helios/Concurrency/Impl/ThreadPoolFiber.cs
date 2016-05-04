@@ -1,19 +1,23 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Helios.Concurrency;
 using Helios.Ops;
 using Helios.Ops.Executors;
-using Helios.Util.TimedOps;
 
 namespace Helios.Concurrency.Impl
 {
     /// <summary>
-    /// A <see cref="IFiber"/> implementation that uses the built-in .NET threadpool for maximum concurrency
+    ///     A <see cref="IFiber" /> implementation that uses the built-in .NET threadpool for maximum concurrency
     /// </summary>
     public class ThreadPoolFiber : IFiber
     {
-        public ThreadPoolFiber() : this(new BasicExecutor()) { }
+        public ThreadPoolFiber() : this(new BasicExecutor())
+        {
+        }
 
         public ThreadPoolFiber(IExecutor executor)
         {
@@ -84,3 +88,4 @@ namespace Helios.Concurrency.Impl
         #endregion
     }
 }
+

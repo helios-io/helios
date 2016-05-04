@@ -1,51 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Net;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Channels;
 using Helios.Net;
 using Helios.Net.Bootstrap;
-using Helios.Ops;
 using Helios.Reactor.Bootstrap;
 using Helios.Serialization;
 using Helios.Topology;
 using Helios.Util;
 using Helios.Util.Collections;
-using Xunit;
 
 namespace Helios.MultiNodeTests.TestKit
 {
-    
     public abstract class MultiNodeTest : IDisposable
     {
-        public abstract TransportType TransportType { get; }
+        private IConnection _client;
 
-        /// <summary>
-        /// Disables message capture and resorts to just using counters
-        /// </summary>
-        public virtual bool HighPerformance { get { return false; } }        
+        private readonly IConnectionFactory _clientConnectionFactory;
 
-        public virtual int BufferSize { get { return 1024; } }
+        private readonly AssertExecutor _clientExecutor;
 
-        public virtual int WorkerThreads { get { return 2; } }
-
-        public AtomicCounter ClientReceived { get; protected set; }
-
-        public AtomicCounter ServerReceived { get; protected set; }
-
-        public virtual IMessageEncoder Encoder { get { return Encoders.DefaultEncoder; } }
-
-        public virtual IMessageDecoder Decoder { get { return Encoders.DefaultDecoder; } }
-
-        public virtual IByteBufAllocator Allocator { get { return UnpooledByteBufAllocator.Default; } }
-
-        public virtual IConnectionConfig Config { get { return new DefaultConnectionConfig(); } }
-
-        private IConnectionFactory _clientConnectionFactory;
+        private IConnection _server;
+        private readonly AssertExecutor _serverExecutor;
 
         protected MultiNodeTest()
         {
@@ -57,20 +38,20 @@ namespace Helios.MultiNodeTests.TestKit
             }
             ClientReceived = new AtomicCounter(0);
             ServerReceived = new AtomicCounter(0);
-           
+
 
             _clientExecutor = new AssertExecutor();
             _serverExecutor = new AssertExecutor();
             var serverBootstrap = new ServerBootstrap()
-                   .WorkerThreads(2)
-                   .Executor(_serverExecutor)
-                   .WorkerThreads(WorkerThreads)
-                   .SetTransport(TransportType)
-                   .SetEncoder(Encoder)
-                   .SetDecoder(Decoder)
-                   .SetAllocator(Allocator)
-                   .SetConfig(Config)
-                   .Build();
+                .WorkerThreads(2)
+                .Executor(_serverExecutor)
+                .WorkerThreads(WorkerThreads)
+                .SetTransport(TransportType)
+                .SetEncoder(Encoder)
+                .SetDecoder(Decoder)
+                .SetAllocator(Allocator)
+                .SetConfig(Config)
+                .Build();
 
             _server = serverBootstrap.NewConnection(Node.Loopback());
 
@@ -83,6 +64,71 @@ namespace Helios.MultiNodeTests.TestKit
                 .SetAllocator(Allocator)
                 .SetConfig(Config)
                 .Build();
+        }
+
+        public abstract TransportType TransportType { get; }
+
+        /// <summary>
+        ///     Disables message capture and resorts to just using counters
+        /// </summary>
+        public virtual bool HighPerformance
+        {
+            get { return false; }
+        }
+
+        public virtual int BufferSize
+        {
+            get { return 1024; }
+        }
+
+        public virtual int WorkerThreads
+        {
+            get { return 2; }
+        }
+
+        public AtomicCounter ClientReceived { get; protected set; }
+
+        public AtomicCounter ServerReceived { get; protected set; }
+
+        public virtual IMessageEncoder Encoder
+        {
+            get { return Encoders.DefaultEncoder; }
+        }
+
+        public virtual IMessageDecoder Decoder
+        {
+            get { return Encoders.DefaultDecoder; }
+        }
+
+        public virtual IByteBufAllocator Allocator
+        {
+            get { return UnpooledByteBufAllocator.Default; }
+        }
+
+        public virtual IConnectionConfig Config
+        {
+            get { return new DefaultConnectionConfig(); }
+        }
+
+        protected Exception[] ClientExceptions
+        {
+            get { return _clientExecutor.Exceptions.ToArray(); }
+        }
+
+        protected Exception[] ServerExceptions
+        {
+            get { return _serverExecutor.Exceptions.ToArray(); }
+        }
+
+        protected ConcurrentCircularBuffer<NetworkData> ClientSendBuffer { get; }
+
+        protected ConcurrentCircularBuffer<NetworkData> ClientReceiveBuffer { get; }
+
+        protected ConcurrentCircularBuffer<NetworkData> ServerReceiveBuffer { get; }
+
+        public void Dispose()
+        {
+            CleanUp();
         }
 
         public void CleanUp()
@@ -102,20 +148,22 @@ namespace Helios.MultiNodeTests.TestKit
                     ServerReceiveBuffer.Add(data);
                 }
                 ServerReceived.GetAndIncrement();
-                channel.Send(new NetworkData() { Buffer = data.Buffer, Length = data.Length, RemoteHost = channel.RemoteHost });
+                channel.Send(new NetworkData
+                {
+                    Buffer = data.Buffer,
+                    Length = data.Length,
+                    RemoteHost = channel.RemoteHost
+                });
             });
         }
 
         /// <summary>
-        /// Used to start the server with a specific receive data callback
+        ///     Used to start the server with a specific receive data callback
         /// </summary>
         protected void StartServer(ReceivedDataCallback callback)
         {
             _server.Receive += callback;
-            _server.OnConnection += (address, channel) =>
-            {
-                channel.BeginReceive();
-            };
+            _server.OnConnection += (address, channel) => { channel.BeginReceive(); };
             _server.OnError += (exception, connection) => _serverExecutor.Exceptions.Add(exception);
             _server.Open();
         }
@@ -142,7 +190,7 @@ namespace Helios.MultiNodeTests.TestKit
             if (_client == null)
                 StartClient();
             var networkData = NetworkData.Create(_server.Local, data, data.Length);
-            if(!HighPerformance)
+            if (!HighPerformance)
                 ClientSendBuffer.Add(networkData);
             _client.Send(networkData);
         }
@@ -157,25 +205,6 @@ namespace Helios.MultiNodeTests.TestKit
         {
             SpinWait.SpinUntil(() => ClientReceived.Current >= count, timeout);
         }
-
-        protected Exception[] ClientExceptions { get { return _clientExecutor.Exceptions.ToArray(); } }
-        protected Exception[] ServerExceptions { get { return _serverExecutor.Exceptions.ToArray(); } }
-
-        private AssertExecutor _clientExecutor;
-        private AssertExecutor _serverExecutor;
-
-        protected ConcurrentCircularBuffer<NetworkData> ClientSendBuffer { get; private set; }
-
-        protected ConcurrentCircularBuffer<NetworkData> ClientReceiveBuffer { get; private set; }
-
-        protected ConcurrentCircularBuffer<NetworkData> ServerReceiveBuffer { get; private set; }
-
-        private IConnection _client;
-
-        private IConnection _server;
-        public void Dispose()
-        {
-            CleanUp();
-        }
     }
 }
+

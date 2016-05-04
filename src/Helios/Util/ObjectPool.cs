@@ -1,30 +1,28 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Helios.Util
 {
     /// <summary>
-    /// Pooling implementation for reusable objects
-    /// 
-    /// Roughly based on the Roslyn object pool implementation: http://source.roslyn.codeplex.com/#Microsoft.CodeAnalysis/ObjectPool%25601.cs,991396bb82e6e4be
+    ///     Pooling implementation for reusable objects
+    ///     Roughly based on the Roslyn object pool implementation:
+    ///     http://source.roslyn.codeplex.com/#Microsoft.CodeAnalysis/ObjectPool%25601.cs,991396bb82e6e4be
     /// </summary>
     public sealed class ObjectPool<T> where T : class
     {
-        private struct Element
-        {
-            internal T Value;
-        }
-
         private readonly Func<T> _producer;
-        private Element[] _items;
         private T _firstItem;
+        private readonly Element[] _items;
 
-        public ObjectPool(Func<T> producer) : this(producer, Environment.ProcessorCount * 2) { }
+        public ObjectPool(Func<T> producer) : this(producer, Environment.ProcessorCount*2)
+        {
+        }
 
         public ObjectPool(Func<T> producer, int size)
         {
@@ -41,12 +39,12 @@ namespace Helios.Util
         }
 
         /// <summary>
-        /// Creates or reuses a pooled object instance.
+        ///     Creates or reuses a pooled object instance.
         /// </summary>
         /// <returns></returns>
         public T Take()
         {
-            T inst = _firstItem;
+            var inst = _firstItem;
             if (inst == null || inst != Interlocked.CompareExchange(ref _firstItem, null, inst))
             {
                 inst = TakeSlow();
@@ -59,7 +57,7 @@ namespace Helios.Util
             var items = _items;
             for (var i = 0; i < items.Length; i++)
             {
-                T inst = items[i].Value;
+                var inst = items[i].Value;
                 if (inst != null)
                 {
                     if (inst == Interlocked.CompareExchange(ref items[i].Value, null, inst))
@@ -73,7 +71,7 @@ namespace Helios.Util
         }
 
         /// <summary>
-        /// Return an object to the pool
+        ///     Return an object to the pool
         /// </summary>
         public void Free(T obj)
         {
@@ -125,5 +123,11 @@ namespace Helios.Util
                 Debug.Assert(value != obj, "freeing the object twice!");
             }
         }
+
+        private struct Element
+        {
+            internal T Value;
+        }
     }
 }
+

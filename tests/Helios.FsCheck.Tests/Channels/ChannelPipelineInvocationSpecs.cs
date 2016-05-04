@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,20 +30,20 @@ namespace Helios.FsCheck.Tests.Channels
 
         public ChannelPipelineModel Model { get; }
 
-        [Property()]
+        [Property]
         public Property ChannelPipeline_should_obey_invocation_model()
         {
             return Model.ToProperty();
         }
 
-        [Property()]
+        [Property]
         public Property AllEventsChannelHandler_should_correctly_report_all_supported_events(SupportedEvent[] events)
         {
             var handler = new AllEventsChannelHandler("foo", events);
             return events.All(x => handler.SupportsEvent(x)).ToProperty();
         }
 
-        [Property()]
+        [Property]
         public Property DefaultNamedChannelHandler_should_not_support_any_events(SupportedEvent[] events)
         {
             var handler = new NamedChannelHandler("foo");
@@ -57,7 +61,7 @@ namespace Helios.FsCheck.Tests.Channels
         public void ChannelPipeline_should_invoke_HandlerAdded_to_recently_added_handler()
         {
             var pipeline = new DefaultChannelPipeline(TestChannel.Instance);
-            var handler = new AllEventsChannelHandler("test", new SupportedEvent[] { SupportedEvent.HandlerAdded });
+            var handler = new AllEventsChannelHandler("test", new[] {SupportedEvent.HandlerAdded});
             pipeline.AddFirst(handler.Name, handler);
             var head = ChannelPipelineModel.LastEventHistory(pipeline).Dequeue();
             Assert.Equal(handler.Name, head.Item1);
@@ -68,7 +72,8 @@ namespace Helios.FsCheck.Tests.Channels
         public void ChannelPipeline_should_invoke_HandlerRemoved_to_removed_handler()
         {
             var pipeline = new DefaultChannelPipeline(TestChannel.Instance);
-            var handler = new AllEventsChannelHandler("test", new SupportedEvent[] { SupportedEvent.HandlerAdded, SupportedEvent.HandlerRemoved });
+            var handler = new AllEventsChannelHandler("test",
+                new[] {SupportedEvent.HandlerAdded, SupportedEvent.HandlerRemoved});
 
             // add handler to pipeline first
             pipeline.AddFirst(handler.Name, handler);
@@ -89,3 +94,4 @@ namespace Helios.FsCheck.Tests.Channels
         }
     }
 }
+

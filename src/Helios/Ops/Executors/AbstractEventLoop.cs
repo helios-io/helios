@@ -1,3 +1,7 @@
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -8,7 +12,7 @@ using Helios.Net;
 namespace Helios.Ops.Executors
 {
     /// <summary>
-    /// Abstract base class for working with <see cref="IEventLoop"/> instances inside a <see cref="IConnection"/>
+    ///     Abstract base class for working with <see cref="IEventLoop" /> instances inside a <see cref="IConnection" />
     /// </summary>
     public abstract class AbstractEventLoop : IEventLoop
     {
@@ -17,9 +21,12 @@ namespace Helios.Ops.Executors
             Scheduler = scheduler;
         }
 
-        protected IFiber Scheduler { get; private set; }
+        protected IFiber Scheduler { get; }
 
-        public bool AcceptingJobs { get { return Scheduler.Running; } }
+        public bool AcceptingJobs
+        {
+            get { return Scheduler.Running; }
+        }
 
         public void Execute(Action op)
         {
@@ -76,7 +83,7 @@ namespace Helios.Ops.Executors
 
         public bool InThread(Thread thread)
         {
-            return (Thread.CurrentThread.ManagedThreadId == thread.ManagedThreadId);
+            return Thread.CurrentThread.ManagedThreadId == thread.ManagedThreadId;
         }
 
         public abstract IExecutor Clone();
@@ -84,7 +91,7 @@ namespace Helios.Ops.Executors
         public bool WasDisposed { get; private set; }
 
         /// <summary>
-        /// Returns a new <see cref="IEventLoop"/> that can be chained after this one
+        ///     Returns a new <see cref="IEventLoop" /> that can be chained after this one
         /// </summary>
         public abstract IExecutor Next();
 
@@ -108,3 +115,4 @@ namespace Helios.Ops.Executors
         #endregion
     }
 }
+

@@ -1,8 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Channels.Embedded;
 using Helios.Codecs;
@@ -12,21 +14,21 @@ namespace Helios.Tests.Codecs
 {
     public class LengthFieldPrependerSpecs
     {
-        IByteBuf msg;
+        private readonly IByteBuf msg;
 
         public LengthFieldPrependerSpecs()
         {
-            Encoding iso = Encoding.GetEncoding("ISO-8859-1");
-            byte[] charBytes = iso.GetBytes("A");
+            var iso = Encoding.GetEncoding("ISO-8859-1");
+            var charBytes = iso.GetBytes("A");
             msg = Unpooled.WrappedBuffer(charBytes);
         }
 
         [Fact]
         public void TestPrependLength()
         {
-            EmbeddedChannel ch = new EmbeddedChannel(new LengthFieldPrepender(4));
+            var ch = new EmbeddedChannel(new LengthFieldPrepender(4));
             ch.WriteOutbound(msg);
-            IByteBuf buf = ch.ReadOutbound<IByteBuf>();
+            var buf = ch.ReadOutbound<IByteBuf>();
             Assert.Equal(4, buf.ReadableBytes);
             Assert.Equal(msg.ReadableBytes, buf.ReadInt());
             //buf.Release();
@@ -39,9 +41,9 @@ namespace Helios.Tests.Codecs
         [Fact]
         public void TestPrependLengthIncludesLengthFieldLength()
         {
-            EmbeddedChannel ch = new EmbeddedChannel(new LengthFieldPrepender(4, true));
+            var ch = new EmbeddedChannel(new LengthFieldPrepender(4, true));
             ch.WriteOutbound(msg);
-            IByteBuf buf = ch.ReadOutbound<IByteBuf>();
+            var buf = ch.ReadOutbound<IByteBuf>();
             Assert.Equal(4, buf.ReadableBytes);
             Assert.Equal(5, buf.ReadInt());
             //buf.Release();
@@ -54,9 +56,9 @@ namespace Helios.Tests.Codecs
         [Fact]
         public void TestPrependAdjustedLength()
         {
-            EmbeddedChannel ch = new EmbeddedChannel(new LengthFieldPrepender(4, -1));
+            var ch = new EmbeddedChannel(new LengthFieldPrepender(4, -1));
             ch.WriteOutbound(msg);
-            IByteBuf buf = ch.ReadOutbound<IByteBuf>();
+            var buf = ch.ReadOutbound<IByteBuf>();
             Assert.Equal(4, buf.ReadableBytes);
             Assert.Equal(msg.ReadableBytes - 1, buf.ReadInt());
             //buf.Release();
@@ -69,11 +71,11 @@ namespace Helios.Tests.Codecs
         [Fact]
         public void TestPrependAdjustedLengthLessThanZero()
         {
-            EmbeddedChannel ch = new EmbeddedChannel(new LengthFieldPrepender(4, -2));
-            AggregateException ex = Assert.Throws<AggregateException>(() =>
+            var ch = new EmbeddedChannel(new LengthFieldPrepender(4, -2));
+            var ex = Assert.Throws<AggregateException>(() =>
             {
                 ch.WriteOutbound(msg);
-                Assert.True(false, typeof(EncoderException).Name + " must be raised.");
+                Assert.True(false, typeof (EncoderException).Name + " must be raised.");
             });
 
             Assert.IsType<EncoderException>(ex.InnerExceptions.Single());
@@ -82,11 +84,11 @@ namespace Helios.Tests.Codecs
         [Fact]
         public void TestPrependLengthInBigEndian()
         {
-            EmbeddedChannel ch = new EmbeddedChannel(new LengthFieldPrepender(ByteOrder.BigEndian, 4, 0, false));
+            var ch = new EmbeddedChannel(new LengthFieldPrepender(ByteOrder.BigEndian, 4, 0, false));
             ch.WriteOutbound(msg);
-            IByteBuf buf = ch.ReadOutbound<IByteBuf>();
+            var buf = ch.ReadOutbound<IByteBuf>();
             Assert.Equal(4, buf.ReadableBytes);
-            byte[] writtenBytes = new byte[buf.ReadableBytes];
+            var writtenBytes = new byte[buf.ReadableBytes];
             buf.GetBytes(0, writtenBytes);
             Assert.Equal(1, writtenBytes[0]);
             Assert.Equal(0, writtenBytes[1]);
@@ -101,3 +103,4 @@ namespace Helios.Tests.Codecs
         }
     }
 }
+

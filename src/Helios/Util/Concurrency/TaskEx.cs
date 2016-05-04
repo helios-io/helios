@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Threading.Tasks;
 using Helios.Concurrency;
 
@@ -15,7 +16,25 @@ namespace Helios.Util.Concurrency
 
         public static readonly Task<int> Cancelled = CreateCancelledTask();
 
-        static Task<int> CreateCancelledTask()
+        private static readonly Action<Task, object> LinkOutcomeContinuationAction = (t, tcs) =>
+        {
+            switch (t.Status)
+            {
+                case TaskStatus.RanToCompletion:
+                    ((TaskCompletionSource) tcs).TryComplete();
+                    break;
+                case TaskStatus.Canceled:
+                    ((TaskCompletionSource) tcs).TrySetCanceled();
+                    break;
+                case TaskStatus.Faulted:
+                    ((TaskCompletionSource) tcs).TrySetException(t.Exception);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        };
+
+        private static Task<int> CreateCancelledTask()
         {
             var tcs = new TaskCompletionSource<int>();
             tcs.SetCanceled();
@@ -35,24 +54,6 @@ namespace Helios.Util.Concurrency
             tcs.TrySetException(exception);
             return tcs.Task;
         }
-
-        static readonly Action<Task, object> LinkOutcomeContinuationAction = (t, tcs) =>
-        {
-            switch (t.Status)
-            {
-                case TaskStatus.RanToCompletion:
-                    ((TaskCompletionSource)tcs).TryComplete();
-                    break;
-                case TaskStatus.Canceled:
-                    ((TaskCompletionSource)tcs).TrySetCanceled();
-                    break;
-                case TaskStatus.Faulted:
-                    ((TaskCompletionSource)tcs).TrySetException(t.Exception);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        };
 
         public static void LinkOutcome(this Task task, TaskCompletionSource taskCompletionSource)
         {
@@ -76,28 +77,6 @@ namespace Helios.Util.Concurrency
             }
         }
 
-        class LinkOutcomeActionHost<T>
-        {
-            public static readonly Action<Task<T>, object> Action =
-                (t, tcs) =>
-                {
-                    switch (t.Status)
-                    {
-                        case TaskStatus.RanToCompletion:
-                            ((TaskCompletionSource<T>)tcs).TrySetResult(t.Result);
-                            break;
-                        case TaskStatus.Canceled:
-                            ((TaskCompletionSource<T>)tcs).TrySetCanceled();
-                            break;
-                        case TaskStatus.Faulted:
-                            ((TaskCompletionSource<T>)tcs).TrySetException(t.Exception);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                };
-        }
-
         public static void LinkOutcome<T>(this Task<T> task, TaskCompletionSource<T> taskCompletionSource)
         {
             switch (task.Status)
@@ -112,9 +91,33 @@ namespace Helios.Util.Concurrency
                     taskCompletionSource.TrySetException(task.Exception);
                     break;
                 default:
-                    task.ContinueWith(LinkOutcomeActionHost<T>.Action, taskCompletionSource, TaskContinuationOptions.ExecuteSynchronously);
+                    task.ContinueWith(LinkOutcomeActionHost<T>.Action, taskCompletionSource,
+                        TaskContinuationOptions.ExecuteSynchronously);
                     break;
             }
         }
+
+        private class LinkOutcomeActionHost<T>
+        {
+            public static readonly Action<Task<T>, object> Action =
+                (t, tcs) =>
+                {
+                    switch (t.Status)
+                    {
+                        case TaskStatus.RanToCompletion:
+                            ((TaskCompletionSource<T>) tcs).TrySetResult(t.Result);
+                            break;
+                        case TaskStatus.Canceled:
+                            ((TaskCompletionSource<T>) tcs).TrySetCanceled();
+                            break;
+                        case TaskStatus.Faulted:
+                            ((TaskCompletionSource<T>) tcs).TrySetException(t.Exception);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                };
+        }
     }
 }
+
