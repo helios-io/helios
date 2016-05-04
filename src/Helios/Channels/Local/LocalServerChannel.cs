@@ -1,50 +1,71 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Helios.Concurrency;
 
 namespace Helios.Channels.Local
 {
     public class LocalServerChannel : AbstractServerChannel
     {
-        private readonly IChannelConfiguration _config;
+        private static readonly Action<object, object> ServeAction = (context, state) =>
+        {
+            var server = context as LocalServerChannel;
+            var child = state as LocalChannel;
+            server.Serve0(child);
+        };
+
         private readonly Queue<object> _inboundBuffer = new Queue<object>();
 
-        private class ServerShutdownHook : IRunnable
-        {
-            private readonly LocalServerChannel _channel;
-
-            public ServerShutdownHook(LocalServerChannel channel)
-            {
-                _channel = channel;
-            }
-
-            public void Run()
-            {
-                _channel.Unsafe.CloseAsync();
-            }
-        }
-
         private readonly ServerShutdownHook _shutdownHook;
+        private volatile bool _acceptInProgress;
+        private volatile LocalAddress _localAddress;
 
         private volatile int _state; // 0 - open, 1 - active, 2 - closed
-        private volatile LocalAddress _localAddress;
-        private volatile bool _acceptInProgress;
 
         public LocalServerChannel()
         {
-            _config = new DefaultChannelConfiguration(this);
+            Configuration = new DefaultChannelConfiguration(this);
             _shutdownHook = new ServerShutdownHook(this);
         }
 
-        public override bool DisconnectSupported { get { return false; } }
-        public override bool IsOpen { get { return _state < 2; } }
-        public override bool IsActive { get { return _state == 1; } }
-        public override IChannelConfiguration Configuration => _config;
+        public override bool DisconnectSupported
+        {
+            get { return false; }
+        }
+
+        public override bool IsOpen
+        {
+            get { return _state < 2; }
+        }
+
+        public override bool IsActive
+        {
+            get { return _state == 1; }
+        }
+
+        public override IChannelConfiguration Configuration { get; }
+
+
+        public new LocalAddress LocalAddress
+        {
+            get { return (LocalAddress) base.LocalAddress; }
+        }
+
+        public new LocalAddress RemoteAddress
+        {
+            get { return (LocalAddress) base.RemoteAddress; }
+        }
+
+        protected override EndPoint LocalAddressInternal
+        {
+            get { return _localAddress; }
+        }
+
         protected override bool IsCompatible(IEventLoop eventLoop)
         {
             return eventLoop is SingleThreadEventLoop;
@@ -63,7 +84,7 @@ namespace Helios.Channels.Local
 
         protected override void DoDeregister()
         {
-            ((SingleThreadEventExecutor)EventLoop.Unwrap()).RemoveShutdownHook(_shutdownHook);
+            ((SingleThreadEventExecutor) EventLoop.Unwrap()).RemoveShutdownHook(_shutdownHook);
         }
 
         protected override void DoClose()
@@ -105,27 +126,6 @@ namespace Helios.Channels.Local
             pipeline.FireChannelReadComplete();
         }
 
-        
-
-        public new LocalAddress LocalAddress
-        {
-            get { return (LocalAddress)base.LocalAddress; }
-        }
-
-        public new LocalAddress RemoteAddress
-        {
-            get { return (LocalAddress) base.RemoteAddress; }
-        }
-
-        protected override EndPoint LocalAddressInternal { get { return _localAddress;} }
-
-        private static readonly Action<object, object> ServeAction = (context, state) =>
-        {
-            var server = context as LocalServerChannel;
-            var child = state as LocalChannel;
-            server.Serve0(child);
-        };
-
         public LocalChannel Serve(LocalChannel peer)
         {
             var child = new LocalChannel(this, peer);
@@ -157,5 +157,21 @@ namespace Helios.Channels.Local
                 pipeline.FireChannelReadComplete();
             }
         }
+
+        private class ServerShutdownHook : IRunnable
+        {
+            private readonly LocalServerChannel _channel;
+
+            public ServerShutdownHook(LocalServerChannel channel)
+            {
+                _channel = channel;
+            }
+
+            public void Run()
+            {
+                _channel.Unsafe.CloseAsync();
+            }
+        }
     }
 }
+

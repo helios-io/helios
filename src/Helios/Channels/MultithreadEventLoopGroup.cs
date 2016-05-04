@@ -1,3 +1,7 @@
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System;
 using System.Linq;
 using System.Threading;
@@ -7,12 +11,12 @@ using Helios.Concurrency;
 namespace Helios.Channels
 {
     /// <summary>
-    /// <see cref="IEventLoopGroup"/> implementation designs for multiplexing multiple active <see cref="IChannel"/>
-    /// instances across one or more <see cref="SingleThreadEventLoop"/> instances.
+    ///     <see cref="IEventLoopGroup" /> implementation designs for multiplexing multiple active <see cref="IChannel" />
+    ///     instances across one or more <see cref="SingleThreadEventLoop" /> instances.
     /// </summary>
     public sealed class MultithreadEventLoopGroup : IEventLoopGroup
     {
-        private static readonly int DefaultEventLoopThreadCount = Environment.ProcessorCount * 2;
+        private static readonly int DefaultEventLoopThreadCount = Environment.ProcessorCount*2;
         private static readonly Func<IEventLoop> DefaultEventLoopFactory = () => new SingleThreadEventLoop();
 
         private readonly IEventLoop[] _eventLoops;
@@ -35,12 +39,12 @@ namespace Helios.Channels
 
         public MultithreadEventLoopGroup(Func<IEventLoop> eventLoopFactory, int eventLoopCount)
         {
-            this._eventLoops = new IEventLoop[eventLoopCount];
+            _eventLoops = new IEventLoop[eventLoopCount];
             var terminationTasks = new Task[eventLoopCount];
-            for (int i = 0; i < eventLoopCount; i++)
+            for (var i = 0; i < eventLoopCount; i++)
             {
                 IEventLoop eventLoop;
-                bool success = false;
+                var success = false;
                 try
                 {
                     eventLoop = eventLoopFactory();
@@ -54,34 +58,35 @@ namespace Helios.Channels
                 {
                     if (!success)
                     {
-                        Task.WhenAll(this._eventLoops
+                        Task.WhenAll(_eventLoops
                             .Take(i)
                             .Select(loop => loop.GracefulShutdownAsync()))
                             .Wait();
                     }
                 }
 
-                this._eventLoops[i] = eventLoop;
+                _eventLoops[i] = eventLoop;
                 terminationTasks[i] = eventLoop.TerminationTask;
             }
-            this.TerminationCompletion = Task.WhenAll(terminationTasks);
+            TerminationCompletion = Task.WhenAll(terminationTasks);
         }
 
-        public Task TerminationCompletion { get; private set; }
+        public Task TerminationCompletion { get; }
 
         public IEventLoop GetNext()
         {
-            int id = Interlocked.Increment(ref this._requestId);
-            return this._eventLoops[Math.Abs(id % this._eventLoops.Length)];
+            var id = Interlocked.Increment(ref _requestId);
+            return _eventLoops[Math.Abs(id%_eventLoops.Length)];
         }
 
         public Task ShutdownGracefullyAsync()
         {
-            foreach (IEventLoop eventLoop in this._eventLoops)
+            foreach (var eventLoop in _eventLoops)
             {
                 eventLoop.GracefulShutdownAsync();
             }
-            return this.TerminationCompletion;
+            return TerminationCompletion;
         }
     }
 }
+

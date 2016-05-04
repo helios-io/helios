@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Net;
 using Helios.Buffers;
 using Helios.Channels;
@@ -10,11 +14,11 @@ using Helios.Topology;
 namespace Helios.Net.Bootstrap
 {
     /// <summary>
-    /// Client bootstrap for outbound connections
+    ///     Client bootstrap for outbound connections
     /// </summary>
     public class ClientBootstrap : AbstractBootstrap
     {
-        public ClientBootstrap() : base()
+        public ClientBootstrap()
         {
             Workers = 2;
             InternalExecutor = new BasicExecutor();
@@ -27,13 +31,10 @@ namespace Helios.Net.Bootstrap
         }
 
         protected IExecutor InternalExecutor { get; set; }
-     
+
         protected NetworkEventLoop EventLoop
         {
-            get
-            {
-                return EventLoopFactory.CreateNetworkEventLoop(Workers, InternalExecutor);
-            }
+            get { return EventLoopFactory.CreateNetworkEventLoop(Workers, InternalExecutor); }
         }
 
         protected int Workers { get; set; }
@@ -119,7 +120,7 @@ namespace Helios.Net.Bootstrap
 
         public override void Validate()
         {
-            if(Type == TransportType.All) throw new ArgumentException("Type must be set");
+            if (Type == TransportType.All) throw new ArgumentException("Type must be set");
             if (Workers < 1) throw new ArgumentException("Workers must be at least 1");
         }
 
@@ -137,3 +138,4 @@ namespace Helios.Net.Bootstrap
         }
     }
 }
+

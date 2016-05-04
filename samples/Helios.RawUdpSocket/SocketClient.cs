@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Helios.Exceptions;
 using Helios.Net;
@@ -17,24 +15,24 @@ namespace Helios.RawUdpSocket
 {
     public partial class SocketClient : Form
     {
-        public INode RemoteHost;
         public IConnection Connection;
+        public INode RemoteHost;
 
         public SocketClient()
         {
             InitializeComponent();
             Connection =
-                    new ClientBootstrap()
-                        .SetTransport(TransportType.Udp)
-                        .RemoteAddress(Node.Loopback())
-                        .OnConnect(ConnectionEstablishedCallback)
-                        .OnReceive(ReceivedDataCallback)
-                        .OnDisconnect(ConnectionTerminatedCallback)
-                        .Build().NewConnection(NodeBuilder.BuildNode().Host(IPAddress.Any).WithPort(10001), RemoteHost);
+                new ClientBootstrap()
+                    .SetTransport(TransportType.Udp)
+                    .RemoteAddress(Node.Loopback())
+                    .OnConnect(ConnectionEstablishedCallback)
+                    .OnReceive(ReceivedDataCallback)
+                    .OnDisconnect(ConnectionTerminatedCallback)
+                    .Build().NewConnection(NodeBuilder.BuildNode().Host(IPAddress.Any).WithPort(10001), RemoteHost);
             Connection.OnError += ConnectionOnOnError;
             Connection.Open();
         }
-       
+
 
         private void AppendStatusText(string text)
         {
@@ -45,9 +43,9 @@ namespace Helios.RawUdpSocket
         {
             try
             {
-                var port = Int32.Parse(portStr);
+                var port = int.Parse(portStr);
                 RemoteHost = NodeBuilder.BuildNode().Host(host).WithPort(port).WithTransportType(TransportType.Udp);
-                
+
                 return true;
             }
             catch (Exception ex)
@@ -61,7 +59,7 @@ namespace Helios.RawUdpSocket
 
         private void ConnectionTerminatedCallback(HeliosConnectionException reason, IConnection closedChannel)
         {
-            Invoke((Action)(() =>
+            Invoke((Action) (() =>
             {
                 AppendStatusText(string.Format("Disconnected from {0}", closedChannel.RemoteHost));
                 AppendStatusText(string.Format("Reason: {0}", reason.Message));
@@ -73,7 +71,7 @@ namespace Helios.RawUdpSocket
 
         private void ReceivedDataCallback(NetworkData incomingData, IConnection responseChannel)
         {
-            Invoke((Action)(() =>
+            Invoke((Action) (() =>
             {
                 AppendStatusText(string.Format("Received {0} bytes from {1}", incomingData.Length,
                     incomingData.RemoteHost));
@@ -83,16 +81,17 @@ namespace Helios.RawUdpSocket
 
         private void ConnectionOnOnError(Exception exception, IConnection connection)
         {
-            Invoke((Action)(() =>
+            Invoke((Action) (() =>
             {
-                AppendStatusText(string.Format("Exception {0} sending data to {1}", exception.Message, connection.RemoteHost));
+                AppendStatusText(string.Format("Exception {0} sending data to {1}", exception.Message,
+                    connection.RemoteHost));
                 AppendStatusText(exception.StackTrace);
             }));
         }
 
         private void ConnectionEstablishedCallback(INode remoteAddress, IConnection responseChannel)
         {
-            Invoke((Action)(() =>
+            Invoke((Action) (() =>
             {
                 AppendStatusText(string.Format("Connected to {0}", remoteAddress));
                 responseChannel.BeginReceive();
@@ -109,14 +108,11 @@ namespace Helios.RawUdpSocket
                 AppendStatusText("Must supply valid host and port before attempting to connect");
                 return;
             }
-            else
+            var didConnect = AttemptConnect(tbHost.Text, tbPort.Text);
+            if (!didConnect)
             {
-                var didConnect = AttemptConnect(tbHost.Text, tbPort.Text);
-                if (!didConnect)
-                {
-                    AppendStatusText("Invalid host and port - unable to attempt connection");
-                    return;
-                }
+                AppendStatusText("Invalid host and port - unable to attempt connection");
+                return;
             }
 
             if (!string.IsNullOrEmpty(tbSend.Text))
@@ -129,3 +125,4 @@ namespace Helios.RawUdpSocket
         }
     }
 }
+

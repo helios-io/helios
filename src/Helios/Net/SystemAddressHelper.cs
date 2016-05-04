@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -7,9 +11,8 @@ using System.Net.NetworkInformation;
 namespace Helios.Net
 {
     /// <summary>
-    /// INTERNAL API
-    /// 
-    /// Used to resolve the local MAC and IP addresses
+    ///     INTERNAL API
+    ///     Used to resolve the local MAC and IP addresses
     /// </summary>
     public static class SystemAddressHelper
     {
@@ -29,8 +32,8 @@ namespace Helios.Net
         }
 
         /// <summary>
-        /// Indicates whether any network connection is available.
-        /// Filter connections below a specified speed, as well as virtual network cards.
+        ///     Indicates whether any network connection is available.
+        ///     Filter connections below a specified speed, as well as virtual network cards.
         /// </summary>
         /// <returns>
         ///     <c>NetworkInterface</c> the connected network interface, otherwise <c>null</c>.
@@ -70,3 +73,4 @@ namespace Helios.Net
         }
     }
 }
+

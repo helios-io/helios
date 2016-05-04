@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Linq;
 using System.Threading;
 using Helios.Ops;
@@ -8,7 +12,6 @@ using Xunit;
 
 namespace Helios.Tests.Ops
 {
-    
     public class BasicExecutorTests
     {
         #region Setup / Teardown
@@ -28,7 +31,7 @@ namespace Helios.Tests.Ops
         public void Should_execute_operation_when_AcceptingJobs()
         {
             //arrange
-            bool wasCalled = false;
+            var wasCalled = false;
             var callback = new Action(() => { wasCalled = true; });
 
             //act
@@ -43,7 +46,7 @@ namespace Helios.Tests.Ops
         public void Should_not_execute_operation_when_not_AcceptingJobs()
         {
             //arrange
-            bool wasCalled = false;
+            var wasCalled = false;
             var callback = new Action(() => { wasCalled = true; });
 
             //act
@@ -65,7 +68,7 @@ namespace Helios.Tests.Ops
             for (var i = 0; i < wasCalled.Count; i++)
             {
                 var i1 = i;
-                callbacks[i] = new Action(() => { wasCalled[i1] = true; });
+                callbacks[i] = () => { wasCalled[i1] = true; };
             }
 
             //act
@@ -87,7 +90,7 @@ namespace Helios.Tests.Ops
             for (var i = 0; i < wasCalled.Count; i++)
             {
                 var i1 = i;
-                callbacks[i] = new Action(() => { wasCalled[i1] = true; });
+                callbacks[i] = () => { wasCalled[i1] = true; };
             }
 
             var slowCallback = new Action(() => Thread.Sleep(TimeSpan.FromSeconds(2)));
@@ -106,3 +109,4 @@ namespace Helios.Tests.Ops
         #endregion
     }
 }
+

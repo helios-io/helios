@@ -1,13 +1,19 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 
 namespace Helios.Util.TimedOps
 {
     /// <summary>
-    /// A <see cref="Deadline"/> alternative which relies on the <see cref="MonotonicClock"/> internally.
+    ///     A <see cref="Deadline" /> alternative which relies on the <see cref="MonotonicClock" /> internally.
     /// </summary>
     public struct PreciseDeadline : IComparable<PreciseDeadline>
     {
-        public PreciseDeadline(TimeSpan timespan) : this(timespan.Ticks + MonotonicClock.GetTicks()) { }
+        public PreciseDeadline(TimeSpan timespan) : this(timespan.Ticks + MonotonicClock.GetTicks())
+        {
+        }
 
         public PreciseDeadline(long tickCountDue)
         {
@@ -33,7 +39,7 @@ namespace Helios.Util.TimedOps
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
-            return obj is PreciseDeadline && Equals((PreciseDeadline)obj);
+            return obj is PreciseDeadline && Equals((PreciseDeadline) obj);
         }
 
         public override int GetHashCode()
@@ -63,7 +69,7 @@ namespace Helios.Util.TimedOps
         public static readonly PreciseDeadline Zero = new PreciseDeadline(0);
 
         /// <summary>
-        /// Adds a given <see cref="TimeSpan"/> to the due time of this <see cref="PreciseDeadline"/>
+        ///     Adds a given <see cref="TimeSpan" /> to the due time of this <see cref="PreciseDeadline" />
         /// </summary>
         public static PreciseDeadline operator +(PreciseDeadline deadline, TimeSpan duration)
         {
@@ -71,18 +77,17 @@ namespace Helios.Util.TimedOps
         }
 
         /// <summary>
-        /// Adds a given <see cref="Nullable{TimeSpan}"/> to the due time of this <see cref="PreciseDeadline"/>
+        ///     Adds a given <see cref="Nullable{TimeSpan}" /> to the due time of this <see cref="PreciseDeadline" />
         /// </summary>
         public static PreciseDeadline operator +(PreciseDeadline deadline, TimeSpan? duration)
         {
             if (duration.HasValue)
                 return deadline + duration.Value;
-            else
-                return deadline;
+            return deadline;
         }
 
         /// <summary>
-        /// Adds a given <see cref="TimeSpan"/> to the due time of this <see cref="PreciseDeadline"/>
+        ///     Adds a given <see cref="TimeSpan" /> to the due time of this <see cref="PreciseDeadline" />
         /// </summary>
         public static PreciseDeadline operator -(PreciseDeadline deadline, TimeSpan duration)
         {
@@ -90,14 +95,13 @@ namespace Helios.Util.TimedOps
         }
 
         /// <summary>
-        /// Adds a given <see cref="Nullable{TimeSpan}"/> to the due time of this <see cref="PreciseDeadline"/>
+        ///     Adds a given <see cref="Nullable{TimeSpan}" /> to the due time of this <see cref="PreciseDeadline" />
         /// </summary>
         public static PreciseDeadline operator -(PreciseDeadline deadline, TimeSpan? duration)
         {
             if (duration.HasValue)
                 return deadline - duration.Value;
-            else
-                return deadline;
+            return deadline;
         }
 
         public static bool operator >(PreciseDeadline deadline1, PreciseDeadline deadline2)
@@ -109,7 +113,7 @@ namespace Helios.Util.TimedOps
         {
             return deadline1.When >= deadline2.When;
         }
-       
+
         public static bool operator <(PreciseDeadline deadline1, PreciseDeadline deadline2)
         {
             return deadline1.When < deadline2.When;
@@ -120,7 +124,7 @@ namespace Helios.Util.TimedOps
             return deadline1.When <= deadline2.When;
         }
 
-
         #endregion
     }
 }
+

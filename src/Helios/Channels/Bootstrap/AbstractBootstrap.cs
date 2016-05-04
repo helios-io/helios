@@ -1,10 +1,12 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Helios.Concurrency;
 using Helios.Util.Concurrency;
@@ -15,96 +17,103 @@ namespace Helios.Channels.Bootstrap
         where TBootstrap : AbstractBootstrap<TBootstrap, TChannel>
         where TChannel : IChannel
     {
-        volatile IEventLoopGroup _group;
-        volatile Func<TChannel> _channelFactory;
-        volatile EndPoint _localAddress;
-        readonly ConcurrentDictionary<ChannelOption, object> _options;
-        volatile IChannelHandler _handler;
+        private readonly ConcurrentDictionary<ChannelOption, object> _options;
+        private volatile Func<TChannel> _channelFactory;
+        private volatile IEventLoopGroup _group;
+        private volatile IChannelHandler _handler;
+        private volatile EndPoint _localAddress;
 
         protected internal AbstractBootstrap()
         {
-            this._options = new ConcurrentDictionary<ChannelOption, object>();
+            _options = new ConcurrentDictionary<ChannelOption, object>();
             // Disallow extending from a different package.
         }
 
         protected internal AbstractBootstrap(AbstractBootstrap<TBootstrap, TChannel> clientBootstrap)
         {
-            this._group = clientBootstrap._group;
-            this._channelFactory = clientBootstrap._channelFactory;
-            this._handler = clientBootstrap._handler;
-            this._localAddress = clientBootstrap._localAddress;
-            this._options = new ConcurrentDictionary<ChannelOption, object>(clientBootstrap._options);
+            _group = clientBootstrap._group;
+            _channelFactory = clientBootstrap._channelFactory;
+            _handler = clientBootstrap._handler;
+            _localAddress = clientBootstrap._localAddress;
+            _options = new ConcurrentDictionary<ChannelOption, object>(clientBootstrap._options);
         }
 
         /// <summary>
-        /// The {@link EventLoopGroup} which is used to handle all the events for the to-be-created
-        /// {@link Channel}
+        ///     Returns a deep clone of this bootstrap which has the identical configuration.  This method is useful when making
+        ///     multiple {@link Channel}s with similar settings.  Please note that this method does not clone the
+        ///     {@link EventLoopGroup} deeply but shallowly, making the group a shared resource.
+        /// </summary>
+        public abstract object Clone();
+
+        /// <summary>
+        ///     The {@link EventLoopGroup} which is used to handle all the events for the to-be-created
+        ///     {@link Channel}
         /// </summary>
         public virtual TBootstrap Group(IEventLoopGroup group)
         {
             Contract.Requires(group != null);
-            if (this._group != null)
+            if (_group != null)
             {
                 throw new InvalidOperationException("group has already been set.");
             }
-            this._group = group;
-            return (TBootstrap)this;
+            _group = group;
+            return (TBootstrap) this;
         }
 
         /// <summary>
-        /// The {@link Class} which is used to create {@link Channel} instances from.
-        /// You either use this or {@link #channelFactory(io.netty.channel.ChannelFactory)} if your
-        /// {@link Channel} implementation has no no-args constructor.
+        ///     The {@link Class} which is used to create {@link Channel} instances from.
+        ///     You either use this or {@link #channelFactory(io.netty.channel.ChannelFactory)} if your
+        ///     {@link Channel} implementation has no no-args constructor.
         /// </summary>
         public TBootstrap Channel<T>()
             where T : TChannel, new()
         {
-            return this.ChannelFactory(() => new T());
+            return ChannelFactory(() => new T());
         }
 
         public TBootstrap ChannelFactory(Func<TChannel> channelFactory)
         {
             Contract.Requires(channelFactory != null);
-            this._channelFactory = channelFactory;
-            return (TBootstrap)this;
+            _channelFactory = channelFactory;
+            return (TBootstrap) this;
         }
 
         /// <summary>
-        /// The {@link SocketAddress} which is used to bind the local "end" to.
+        ///     The {@link SocketAddress} which is used to bind the local "end" to.
         /// </summary>
         public TBootstrap LocalAddress(EndPoint localAddress)
         {
-            this._localAddress = localAddress;
-            return (TBootstrap)this;
+            _localAddress = localAddress;
+            return (TBootstrap) this;
         }
 
         /// <summary>
-        /// @see {@link #localAddress(SocketAddress)}
+        ///     @see {@link #localAddress(SocketAddress)}
         /// </summary>
         public TBootstrap LocalAddress(int inetPort)
         {
-            return this.LocalAddress(new IPEndPoint(IPAddress.Any, inetPort));
+            return LocalAddress(new IPEndPoint(IPAddress.Any, inetPort));
         }
 
         /// <summary>
-        /// @see {@link #localAddress(SocketAddress)}
+        ///     @see {@link #localAddress(SocketAddress)}
         /// </summary>
         public TBootstrap LocalAddress(string inetHost, int inetPort)
         {
-            return this.LocalAddress(new DnsEndPoint(inetHost, inetPort));
+            return LocalAddress(new DnsEndPoint(inetHost, inetPort));
         }
 
         /// <summary>
-        /// @see {@link #localAddress(SocketAddress)}
+        ///     @see {@link #localAddress(SocketAddress)}
         /// </summary>
         public TBootstrap LocalAddress(IPAddress inetHost, int inetPort)
         {
-            return this.LocalAddress(new IPEndPoint(inetHost, inetPort));
+            return LocalAddress(new IPEndPoint(inetHost, inetPort));
         }
 
         /// <summary>
-        /// Allow to specify a {@link ChannelOption} which is used for the {@link Channel} instances once they got
-        /// created. Use a value of {@code null} to remove a previous set {@link ChannelOption}.
+        ///     Allow to specify a {@link ChannelOption} which is used for the {@link Channel} instances once they got
+        ///     created. Use a value of {@code null} to remove a previous set {@link ChannelOption}.
         /// </summary>
         public TBootstrap Option<T>(ChannelOption<T> option, T value)
         {
@@ -112,96 +121,89 @@ namespace Helios.Channels.Bootstrap
             if (value == null)
             {
                 object removed;
-                this._options.TryRemove(option, out removed);
+                _options.TryRemove(option, out removed);
             }
             else
             {
-                this._options[option] = value;
+                _options[option] = value;
             }
-            return (TBootstrap)this;
+            return (TBootstrap) this;
         }
 
         public virtual TBootstrap Validate()
         {
-            if (this._group == null)
+            if (_group == null)
             {
                 throw new InvalidOperationException("group not set");
             }
-            if (this._channelFactory == null)
+            if (_channelFactory == null)
             {
                 throw new InvalidOperationException("channel or channelFactory not set");
             }
-            return (TBootstrap)this;
+            return (TBootstrap) this;
         }
 
         /// <summary>
-        /// Returns a deep clone of this bootstrap which has the identical configuration.  This method is useful when making
-        /// multiple {@link Channel}s with similar settings.  Please note that this method does not clone the
-        /// {@link EventLoopGroup} deeply but shallowly, making the group a shared resource.
-        /// </summary>
-        public abstract object Clone();
-
-        /// <summary>
-        /// Create a new {@link Channel} and register it with an {@link EventLoop}.
+        ///     Create a new {@link Channel} and register it with an {@link EventLoop}.
         /// </summary>
         public Task<IChannel> Register()
         {
-            this.Validate();
-            return this.InitAndRegisterAsync();
+            Validate();
+            return InitAndRegisterAsync();
         }
 
         /// <summary>
-        /// Create a new {@link Channel} and bind it.
+        ///     Create a new {@link Channel} and bind it.
         /// </summary>
         public Task<IChannel> BindAsync()
         {
-            this.Validate();
-            EndPoint address = this._localAddress;
+            Validate();
+            var address = _localAddress;
             if (address == null)
             {
                 throw new InvalidOperationException("localAddress must be set beforehand.");
             }
-            return this.DoBind(address);
+            return DoBind(address);
         }
 
         /// <summary>
-        /// Create a new {@link Channel} and bind it.
+        ///     Create a new {@link Channel} and bind it.
         /// </summary>
         public Task<IChannel> BindAsync(int inetPort)
         {
-            return this.BindAsync(new IPEndPoint(IPAddress.Any, inetPort));
+            return BindAsync(new IPEndPoint(IPAddress.Any, inetPort));
         }
 
         /// <summary>
-        /// Create a new {@link Channel} and bind it.
+        ///     Create a new {@link Channel} and bind it.
         /// </summary>
         public Task<IChannel> BindAsync(string inetHost, int inetPort)
         {
-            return this.BindAsync(new DnsEndPoint(inetHost, inetPort));
+            return BindAsync(new DnsEndPoint(inetHost, inetPort));
         }
 
         /// <summary>
-        /// Create a new {@link Channel} and bind it.
+        ///     Create a new {@link Channel} and bind it.
         /// </summary>
         public Task<IChannel> BindAsync(IPAddress inetHost, int inetPort)
         {
-            return this.BindAsync(new IPEndPoint(inetHost, inetPort));
+            return BindAsync(new IPEndPoint(inetHost, inetPort));
         }
 
         /// <summary>
-        /// Create a new {@link Channel} and bind it.
+        ///     Create a new {@link Channel} and bind it.
         /// </summary>
         public Task<IChannel> BindAsync(EndPoint localAddress)
         {
-            this.Validate();
+            Validate();
             Contract.Requires(localAddress != null);
 
-            return this.DoBind(localAddress);
+            return DoBind(localAddress);
         }
 
-        async Task<IChannel> DoBind(EndPoint localAddress)
+        private async Task<IChannel> DoBind(EndPoint localAddress)
         {
-            IChannel channel = await this.InitAndRegisterAsync();
+            var channel = await InitAndRegisterAsync();
             await DoBind0(channel, localAddress);
 
             return channel;
@@ -209,10 +211,10 @@ namespace Helios.Channels.Bootstrap
 
         protected async Task<IChannel> InitAndRegisterAsync()
         {
-            IChannel channel = this._channelFactory();
+            IChannel channel = _channelFactory();
             try
             {
-                this.Init(channel);
+                Init(channel);
             }
             catch (Exception ex)
             {
@@ -223,7 +225,7 @@ namespace Helios.Channels.Bootstrap
 
             try
             {
-                await this.Group().GetNext().RegisterAsync(channel);
+                await Group().GetNext().RegisterAsync(channel);
             }
             catch (Exception)
             {
@@ -250,7 +252,7 @@ namespace Helios.Channels.Bootstrap
             return channel;
         }
 
-        static Task DoBind0(IChannel channel, EndPoint localAddress)
+        private static Task DoBind0(IChannel channel, EndPoint localAddress)
         {
             // This method is invoked before channelRegistered() is triggered.  Give user handlers a chance to set up
             // the pipeline in its channelRegistered() implementation.
@@ -273,36 +275,37 @@ namespace Helios.Channels.Bootstrap
         protected abstract void Init(IChannel channel);
 
         /// <summary>
-        /// the {@link ChannelHandler} to use for serving the requests.
+        ///     the {@link ChannelHandler} to use for serving the requests.
         /// </summary>
         public TBootstrap Handler(IChannelHandler handler)
         {
             Contract.Requires(handler != null);
-            this._handler = handler;
-            return (TBootstrap)this;
+            _handler = handler;
+            return (TBootstrap) this;
         }
 
         protected EndPoint LocalAddress()
         {
-            return this._localAddress;
+            return _localAddress;
         }
 
         protected IChannelHandler Handler()
         {
-            return this._handler;
+            return _handler;
         }
 
         /// <summary>
-        /// Return the configured {@link EventLoopGroup} or {@code null} if non is configured yet.
+        ///     Return the configured {@link EventLoopGroup} or {@code null} if non is configured yet.
         /// </summary>
         public IEventLoopGroup Group()
         {
-            return this._group;
+            return _group;
         }
 
         protected IDictionary<ChannelOption, object> Options()
         {
-            return this._options;
+            return _options;
         }
     }
 }
+

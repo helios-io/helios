@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -14,22 +18,26 @@ using Helios.Tracing;
 namespace Helios.Reactor.Tcp
 {
     /// <summary>
-    /// High-performance TCP reactor that uses a single buffer and manages all client connections internally.
-    /// 
-    /// Passes <see cref="ReactorProxyResponseChannel"/> instances to connected clients and allows them to set up their own event loop behavior.
-    /// 
-    /// All I/O is still handled internally through the proxy reactor.
+    ///     High-performance TCP reactor that uses a single buffer and manages all client connections internally.
+    ///     Passes <see cref="ReactorProxyResponseChannel" /> instances to connected clients and allows them to set up their
+    ///     own event loop behavior.
+    ///     All I/O is still handled internally through the proxy reactor.
     /// </summary>
     public class TcpProxyReactor : ProxyReactorBase
     {
-        public TcpProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
-            : base(localAddress, localPort, eventLoop, encoder, decoder, allocator, SocketType.Stream, ProtocolType.Tcp, bufferSize)
+        public TcpProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop,
+            IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator,
+            int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : base(
+                localAddress, localPort, eventLoop, encoder, decoder, allocator, SocketType.Stream, ProtocolType.Tcp,
+                bufferSize)
         {
             LocalEndpoint = new IPEndPoint(localAddress, localPort);
             Listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         }
 
         public override bool IsActive { get; protected set; }
+
         public override void Configure(IConnectionConfig config)
         {
             if (config.HasOption<int>("receiveBufferSize"))
@@ -37,13 +45,15 @@ namespace Helios.Reactor.Tcp
             if (config.HasOption<int>("sendBufferSize"))
                 Listener.SendBufferSize = config.GetOption<int>("sendBufferSize");
             if (config.HasOption<bool>("reuseAddress"))
-                Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, config.GetOption<bool>("reuseAddress"));
+                Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress,
+                    config.GetOption<bool>("reuseAddress"));
             if (config.HasOption<int>("backlog"))
                 Backlog = config.GetOption<int>("backlog");
             if (config.HasOption<bool>("tcpNoDelay"))
                 Listener.NoDelay = config.GetOption<bool>("tcpNoDelay");
             if (config.HasOption<bool>("keepAlive"))
-                Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, config.GetOption<bool>("keepAlive"));
+                Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive,
+                    config.GetOption<bool>("keepAlive"));
             if (config.HasOption<bool>("linger") && config.GetOption<bool>("linger"))
                 Listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Linger, new LingerOption(true, 10));
             else
@@ -52,7 +62,6 @@ namespace Helios.Reactor.Tcp
                 ProxiesShareFiber = config.GetOption<bool>("proxiesShareFiber");
             else
                 ProxiesShareFiber = true;
-
         }
 
         protected override void StartInternal()
@@ -87,7 +96,7 @@ namespace Helios.Reactor.Tcp
 
         private void ReceiveCallback(IAsyncResult ar)
         {
-            var receiveState = (NetworkState)ar.AsyncState;
+            var receiveState = (NetworkState) ar.AsyncState;
             try
             {
                 var received = receiveState.Socket.EndReceive(ar);
@@ -112,7 +121,7 @@ namespace Helios.Reactor.Tcp
                 {
                     var networkData = NetworkData.Create(receiveState.RemoteHost, message);
                     ReceivedData(networkData, adapter);
-					HeliosTrace.Instance.TcpInboundReceiveSuccess();
+                    HeliosTrace.Instance.TcpInboundReceiveSuccess();
                 }
 
                 //reuse the buffer
@@ -128,7 +137,6 @@ namespace Helios.Reactor.Tcp
                 //continue receiving in a loop
                 receiveState.Socket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length,
                     SocketFlags.None, ReceiveCallback, receiveState);
-
             }
             catch (SocketException ex) //node disconnected
             {
@@ -213,10 +221,10 @@ namespace Helios.Reactor.Tcp
             {
                 if (clientSocket.Socket.Connected)
                 {
-                    clientSocket.Socket.Close();                    
+                    clientSocket.Socket.Close();
                 }
             }
-            catch(Exception innerEx)
+            catch (Exception innerEx)
             {
                 OnErrorIfNotNull(innerEx, remoteHost);
             }
@@ -256,7 +264,9 @@ namespace Helios.Reactor.Tcp
 
     public class TcpSingleEventLoopProxyReactor : TcpProxyReactor
     {
-        public TcpSingleEventLoopProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        public TcpSingleEventLoopProxyReactor(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop,
+            IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator,
+            int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base(localAddress, localPort, eventLoop, encoder, decoder, allocator, bufferSize)
         {
         }
@@ -270,3 +280,4 @@ namespace Helios.Reactor.Tcp
         }
     }
 }
+

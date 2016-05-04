@@ -1,18 +1,21 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Timers;
 
 namespace Helios.Util.TimedOps
 {
     /// <summary>
-    /// When triggered, ScheduledValue will update an underlying
-    /// value to a new one after a period of time has elapsed
+    ///     When triggered, ScheduledValue will update an underlying
+    ///     value to a new one after a period of time has elapsed
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class ScheduledValue<T> : IDisposable
     {
+        protected T FutureValue;
         protected Timer SetTimer;
-
-        public event EventHandler ScheduleFinished;
 
         public ScheduledValue(T initialValue)
         {
@@ -24,18 +27,18 @@ namespace Helios.Util.TimedOps
             Schedule(futureValue, timeToSet);
         }
 
-        protected T FutureValue;
-
         public T Value { get; set; }
 
         public bool IsScheduled { get; protected set; }
 
         /// <summary>
-        /// Indicates that the future value was successfully set
+        ///     Indicates that the future value was successfully set
         /// </summary>
         public bool WasSet { get; set; }
 
         public bool WasDisposed { get; set; }
+
+        public event EventHandler ScheduleFinished;
 
         public void Cancel()
         {
@@ -54,7 +57,7 @@ namespace Helios.Util.TimedOps
                 SetTimer = new Timer();
             }
             IsScheduled = true;
-            SetTimer.Interval = Math.Max(timeToSet.TotalMilliseconds,1);
+            SetTimer.Interval = Math.Max(timeToSet.TotalMilliseconds, 1);
             SetTimer.Enabled = true;
             SetTimer.Elapsed += SetTimerOnElapsed;
         }
@@ -134,3 +137,4 @@ namespace Helios.Util.TimedOps
         #endregion
     }
 }
+

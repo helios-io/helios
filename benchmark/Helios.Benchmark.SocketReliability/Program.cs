@@ -1,21 +1,25 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using Helios.MultiNodeTests.TestKit;
 using Helios.Tracing;
 
 namespace Helios.Benchmark.TCPThroughput
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             HeliosTrace.SetWriter(HeliosCounterTraceWriter.Instance);
             var harness = new TcpHarness();
             //harness.SetUp();
             Console.WriteLine("Helios TCP Client --> Server Reliability benchmark");
-            Console.WriteLine("TCP is a reliable protocol, so this should never be a problem. Buuuuuuuuut concurrent programming.");
+            Console.WriteLine(
+                "TCP is a reliable protocol, so this should never be a problem. Buuuuuuuuut concurrent programming.");
             Console.WriteLine("Testing delivery rate of {0} messages round trip", harness.BufferSize);
             Console.WriteLine("Client.Write --> Server.Receive --> Server.Write --> Client.Receive");
             Console.WriteLine("200b payload size");
@@ -26,13 +30,13 @@ namespace Helios.Benchmark.TCPThroughput
             sw.Stop();
             Console.WriteLine("Trips completed in {0} ms", sw.ElapsedMilliseconds);
             harness.CleanUp();
-			var counters = HeliosCounterTraceWriter.Instance.Counter;
+            var counters = HeliosCounterTraceWriter.Instance.Counter;
             Console.WriteLine("Checking counters");
         }
     }
 
     /// <summary>
-    /// Going to re-use the multi-node testkit for running this benchmark
+    ///     Going to re-use the multi-node testkit for running this benchmark
     /// </summary>
     public class TcpHarness : MultiNodeTest
     {
@@ -87,3 +91,4 @@ namespace Helios.Benchmark.TCPThroughput
         }
     }
 }
+

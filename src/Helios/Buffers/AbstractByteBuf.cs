@@ -1,3 +1,7 @@
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,14 +12,15 @@ using Helios.Util;
 namespace Helios.Buffers
 {
     /// <summary>
-    /// Abstract base class implementation of a <see cref="IByteBuf"/>
+    ///     Abstract base class implementation of a <see cref="IByteBuf" />
     /// </summary>
     public abstract class AbstractByteBuf : IByteBuf
     {
+        private static readonly bool _checkAccessible;
+
         private int _markedReaderIndex;
         private int _markedWriterIndex;
         private SwappedByteBuffer _swapped;
-        private static readonly bool _checkAccessible;
 
         static AbstractByteBuf()
         {
@@ -29,6 +34,8 @@ namespace Helios.Buffers
         {
             MaxCapacity = maxCapacity;
         }
+
+        public static IEqualityComparer<IByteBuf> ByteBufComparer { get; } = new ByteBufEqualityComparer();
 
         public abstract int Capacity { get; }
 
@@ -47,14 +54,17 @@ namespace Helios.Buffers
             return _swapped;
         }
 
-        public int MaxCapacity { get; private set; }
+        public int MaxCapacity { get; }
         public abstract IByteBufAllocator Allocator { get; }
         public virtual int ReaderIndex { get; protected set; }
         public virtual int WriterIndex { get; protected set; }
+
         public virtual IByteBuf SetWriterIndex(int writerIndex)
         {
             if (writerIndex < ReaderIndex || writerIndex > Capacity)
-                throw new IndexOutOfRangeException(string.Format("WriterIndex: {0} (expected: 0 <= readerIndex({1}) <= writerIndex <= capacity ({2})", writerIndex, ReaderIndex, Capacity));
+                throw new IndexOutOfRangeException(
+                    string.Format("WriterIndex: {0} (expected: 0 <= readerIndex({1}) <= writerIndex <= capacity ({2})",
+                        writerIndex, ReaderIndex, Capacity));
 
             WriterIndex = writerIndex;
             return this;
@@ -63,7 +73,9 @@ namespace Helios.Buffers
         public virtual IByteBuf SetReaderIndex(int readerIndex)
         {
             if (readerIndex < 0 || readerIndex > WriterIndex)
-                throw new IndexOutOfRangeException(string.Format("ReaderIndex: {0} (expected: 0 <= readerIndex <= writerIndex({1})", readerIndex, WriterIndex));
+                throw new IndexOutOfRangeException(
+                    string.Format("ReaderIndex: {0} (expected: 0 <= readerIndex <= writerIndex({1})", readerIndex,
+                        WriterIndex));
             ReaderIndex = readerIndex;
             return this;
         }
@@ -71,15 +83,25 @@ namespace Helios.Buffers
         public virtual IByteBuf SetIndex(int readerIndex, int writerIndex)
         {
             if (readerIndex < 0 || readerIndex > writerIndex || writerIndex > Capacity)
-                throw new IndexOutOfRangeException(string.Format("ReaderIndex: {0}, WriterIndex: {1} (expected: 0 <= readerIndex <= writerIndex <= capacity ({2})", readerIndex, writerIndex, Capacity));
+                throw new IndexOutOfRangeException(
+                    string.Format(
+                        "ReaderIndex: {0}, WriterIndex: {1} (expected: 0 <= readerIndex <= writerIndex <= capacity ({2})",
+                        readerIndex, writerIndex, Capacity));
 
             ReaderIndex = readerIndex;
             WriterIndex = writerIndex;
             return this;
         }
 
-        public virtual int ReadableBytes { get { return WriterIndex - ReaderIndex; } }
-        public virtual int WritableBytes { get { return Capacity - WriterIndex; } }
+        public virtual int ReadableBytes
+        {
+            get { return WriterIndex - ReaderIndex; }
+        }
+
+        public virtual int WritableBytes
+        {
+            get { return Capacity - WriterIndex; }
+        }
 
         public virtual int MaxWritableBytes
         {
@@ -206,41 +228,6 @@ namespace Helios.Buffers
             return this;
         }
 
-        private int CalculateNewCapacity(int minNewCapacity)
-        {
-            var maxCapacity = MaxCapacity;
-            var threshold = 1048576 * 4; // 4 MiB page
-            var newCapacity = 0;
-            if (minNewCapacity == threshold)
-            {
-                return threshold;
-            }
-
-            // If over threshold, do not double but just increase by threshold.
-            if (minNewCapacity > threshold)
-            {
-                newCapacity = minNewCapacity / threshold * threshold;
-                if (newCapacity > maxCapacity - threshold)
-                {
-                    newCapacity = maxCapacity;
-                }
-                else
-                {
-                    newCapacity += threshold;
-                }
-                return newCapacity;
-            }
-
-            // Not over threshold. Double up to 4 MiB, starting from 64.
-            newCapacity = 64;
-            while (newCapacity < minNewCapacity)
-            {
-                newCapacity <<= 1;
-            }
-
-            return Math.Min(newCapacity, maxCapacity);
-        }
-
         public virtual bool GetBoolean(int index)
         {
             CheckIndex(index);
@@ -253,23 +240,18 @@ namespace Helios.Buffers
             return _GetByte(index);
         }
 
-        protected abstract byte _GetByte(int index);
-
         public virtual short GetShort(int index)
         {
             CheckIndex(index, 2);
             return _GetShort(index);
         }
 
-        protected abstract short _GetShort(int index);
-
         public virtual ushort GetUnsignedShort(int index)
         {
             unchecked
             {
-                return (ushort)(GetShort(index));
+                return (ushort) GetShort(index);
             }
-            
         }
 
         public virtual int GetInt(int index)
@@ -278,13 +260,11 @@ namespace Helios.Buffers
             return _GetInt(index);
         }
 
-        protected abstract int _GetInt(int index);
-
         public virtual uint GetUnsignedInt(int index)
         {
             unchecked
             {
-                return (uint)(GetInt(index));
+                return (uint) GetInt(index);
             }
         }
 
@@ -293,8 +273,6 @@ namespace Helios.Buffers
             CheckIndex(index, 8);
             return _GetLong(index);
         }
-
-        protected abstract long _GetLong(int index);
 
         public virtual char GetChar(int index)
         {
@@ -341,8 +319,6 @@ namespace Helios.Buffers
             return this;
         }
 
-        protected abstract IByteBuf _SetByte(int index, int value);
-
         public virtual IByteBuf SetShort(int index, int value)
         {
             CheckIndex(index, 2);
@@ -356,8 +332,6 @@ namespace Helios.Buffers
             return this;
         }
 
-        protected abstract IByteBuf _SetShort(int index, int value);
-
         public virtual IByteBuf SetInt(int index, int value)
         {
             CheckIndex(index, 4);
@@ -369,12 +343,10 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                SetInt(index, (int)value);
+                SetInt(index, (int) value);
             }
             return this;
         }
-
-        protected abstract IByteBuf _SetInt(int index, int value);
 
         public virtual IByteBuf SetLong(int index, long value)
         {
@@ -382,8 +354,6 @@ namespace Helios.Buffers
             _SetLong(index, value);
             return this;
         }
-
-        protected abstract IByteBuf _SetLong(int index, long value);
 
         public virtual IByteBuf SetChar(int index, char value)
         {
@@ -406,9 +376,10 @@ namespace Helios.Buffers
         public virtual IByteBuf SetBytes(int index, IByteBuf src, int length)
         {
             CheckIndex(index, length);
-            if(src == null) throw new NullReferenceException("src cannot be null");
-            if (length > src.ReadableBytes) throw new IndexOutOfRangeException(string.Format(
-                     "length({0}) exceeds src.readableBytes({1}) where src is: {2}", length, src.ReadableBytes, src));
+            if (src == null) throw new NullReferenceException("src cannot be null");
+            if (length > src.ReadableBytes)
+                throw new IndexOutOfRangeException(string.Format(
+                    "length({0}) exceeds src.readableBytes({1}) where src is: {2}", length, src.ReadableBytes, src));
             SetBytes(index, src, src.ReaderIndex, length);
             src.SetReaderIndex(src.ReaderIndex + length);
             return this;
@@ -450,7 +421,7 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                return (ushort)(ReadShort());
+                return (ushort) ReadShort();
             }
         }
 
@@ -466,7 +437,7 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                return (uint)(ReadInt());
+                return (uint) ReadInt();
             }
         }
 
@@ -507,9 +478,10 @@ namespace Helios.Buffers
 
         public virtual IByteBuf ReadBytes(IByteBuf destination, int length)
         {
-            if(length > destination.WritableBytes) 
-                throw new IndexOutOfRangeException(string.Format("length({0}) exceeds destination.WritableBytes({1}) where destination is: {2}", 
-                    length, destination.WritableBytes, destination));
+            if (length > destination.WritableBytes)
+                throw new IndexOutOfRangeException(
+                    string.Format("length({0}) exceeds destination.WritableBytes({1}) where destination is: {2}",
+                        length, destination.WritableBytes, destination));
             ReadBytes(destination, destination.WriterIndex, length);
             destination.SetWriterIndex(destination.WriterIndex + length);
             return this;
@@ -541,7 +513,7 @@ namespace Helios.Buffers
         {
             CheckReadableBytes(length);
             var newReaderIndex = ReaderIndex + length;
-            if(newReaderIndex > WriterIndex)
+            if (newReaderIndex > WriterIndex)
                 throw new IndexOutOfRangeException(string.Format(
                     "length: {0} (expected: readerIndex({1}) + length <= writerIndex({2}))",
                     length, ReaderIndex, WriterIndex));
@@ -626,7 +598,9 @@ namespace Helios.Buffers
         public virtual IByteBuf WriteBytes(IByteBuf src, int length)
         {
             if (length > src.ReadableBytes)
-                throw new IndexOutOfRangeException(string.Format("length({0}) exceeds src.readableBytes({1}) where src is: {2}", length, src.ReadableBytes, src));
+                throw new IndexOutOfRangeException(
+                    string.Format("length({0}) exceeds src.readableBytes({1}) where src is: {2}", length,
+                        src.ReadableBytes, src));
             WriteBytes(src, src.ReaderIndex, length);
             src.SetReaderIndex(src.ReaderIndex + length);
             return this;
@@ -667,10 +641,10 @@ namespace Helios.Buffers
             int nBytes;
             unchecked
             {
-                nLong = (int)((uint)length >> 3);
+                nLong = (int) ((uint) length >> 3);
                 nBytes = length & 7;
             }
-           
+
             for (var i = nLong; i > 0; i--)
             {
                 _SetLong(wIndex, 0);
@@ -730,7 +704,9 @@ namespace Helios.Buffers
         {
             return Copy(ReaderIndex, ReadableBytes);
         }
+
         public abstract IByteBuf Copy(int index, int length);
+
         public IByteBuf Slice()
         {
             return Slice(ReaderIndex, ReadableBytes);
@@ -758,10 +734,70 @@ namespace Helios.Buffers
         public abstract IByteBuf Unwrap();
         public abstract IByteBuf Compact();
         public abstract IByteBuf CompactIfNecessary();
+
         public string ToString(Encoding encoding)
         {
             return ByteBufferUtil.DecodeString(this, ReaderIndex, ReadableBytes, encoding);
         }
+
+        public abstract int ReferenceCount { get; }
+        public abstract IReferenceCounted Retain();
+        public abstract IReferenceCounted Retain(int increment);
+        public abstract IReferenceCounted Touch();
+        public abstract IReferenceCounted Touch(object hint);
+        public abstract bool Release();
+        public abstract bool Release(int decrement);
+
+        private int CalculateNewCapacity(int minNewCapacity)
+        {
+            var maxCapacity = MaxCapacity;
+            var threshold = 1048576*4; // 4 MiB page
+            var newCapacity = 0;
+            if (minNewCapacity == threshold)
+            {
+                return threshold;
+            }
+
+            // If over threshold, do not double but just increase by threshold.
+            if (minNewCapacity > threshold)
+            {
+                newCapacity = minNewCapacity/threshold*threshold;
+                if (newCapacity > maxCapacity - threshold)
+                {
+                    newCapacity = maxCapacity;
+                }
+                else
+                {
+                    newCapacity += threshold;
+                }
+                return newCapacity;
+            }
+
+            // Not over threshold. Double up to 4 MiB, starting from 64.
+            newCapacity = 64;
+            while (newCapacity < minNewCapacity)
+            {
+                newCapacity <<= 1;
+            }
+
+            return Math.Min(newCapacity, maxCapacity);
+        }
+
+        protected abstract byte _GetByte(int index);
+
+        protected abstract short _GetShort(int index);
+
+        protected abstract int _GetInt(int index);
+
+        protected abstract long _GetLong(int index);
+
+        protected abstract IByteBuf _SetByte(int index, int value);
+
+        protected abstract IByteBuf _SetShort(int index, int value);
+
+        protected abstract IByteBuf _SetInt(int index, int value);
+
+        protected abstract IByteBuf _SetLong(int index, long value);
 
         public override string ToString()
         {
@@ -812,7 +848,8 @@ namespace Helios.Buffers
 
             if (index < 0 || index > Capacity - fieldLength)
             {
-                throw new IndexOutOfRangeException(string.Format("index: {0}, length: {1} (expected: range(0, {2})", index, fieldLength, Capacity));
+                throw new IndexOutOfRangeException(string.Format("index: {0}, length: {1} (expected: range(0, {2})",
+                    index, fieldLength, Capacity));
             }
         }
 
@@ -822,7 +859,7 @@ namespace Helios.Buffers
             if (srcIndex < 0 || srcIndex > srcCapacity - length)
             {
                 throw new IndexOutOfRangeException(string.Format(
-                        "srcIndex: {0}, length: {1} (expected: range(0, {2}))", srcIndex, length, srcCapacity));
+                    "srcIndex: {0}, length: {1} (expected: range(0, {2}))", srcIndex, length, srcCapacity));
             }
         }
 
@@ -832,20 +869,22 @@ namespace Helios.Buffers
             if (dstIndex < 0 || dstIndex > dstCapacity - length)
             {
                 throw new IndexOutOfRangeException(string.Format(
-                        "dstIndex: {0}, length: {1} (expected: range(0, {2}))", dstIndex, length, dstCapacity));
+                    "dstIndex: {0}, length: {1} (expected: range(0, {2}))", dstIndex, length, dstCapacity));
             }
         }
 
         /// <summary>
-        /// Throws a <see cref="IndexOutOfRangeException"/> if the current <see cref="ReadableBytes"/> of this buffer
-        /// is less than <see cref="minimumReadableBytes"/>.
+        ///     Throws a <see cref="IndexOutOfRangeException" /> if the current <see cref="ReadableBytes" /> of this buffer
+        ///     is less than <see cref="minimumReadableBytes" />.
         /// </summary>
         protected void CheckReadableBytes(int minimumReadableBytes)
         {
             EnsureAccessible();
-            if (minimumReadableBytes < 0) throw new ArgumentOutOfRangeException("minimumReadableBytes", string.Format("minimumReadableBytes: {0} (expected: >= 0)", minimumReadableBytes));
+            if (minimumReadableBytes < 0)
+                throw new ArgumentOutOfRangeException("minimumReadableBytes",
+                    string.Format("minimumReadableBytes: {0} (expected: >= 0)", minimumReadableBytes));
 
-            if(ReaderIndex > WriterIndex - minimumReadableBytes)
+            if (ReaderIndex > WriterIndex - minimumReadableBytes)
                 throw new IndexOutOfRangeException(string.Format(
                     "readerIndex({0}) + length({1}) exceeds writerIndex({2}): {3}",
                     ReaderIndex, minimumReadableBytes, WriterIndex, this));
@@ -879,16 +918,6 @@ namespace Helios.Buffers
                 return obj.GetHashCode();
             }
         }
-
-        private static readonly IEqualityComparer<IByteBuf> ByteBufComparerInstance = new ByteBufEqualityComparer();
-
-        public static IEqualityComparer<IByteBuf> ByteBufComparer => ByteBufComparerInstance;
-        public abstract int ReferenceCount { get; }
-        public abstract IReferenceCounted Retain();
-        public abstract IReferenceCounted Retain(int increment);
-        public abstract IReferenceCounted Touch();
-        public abstract IReferenceCounted Touch(object hint);
-        public abstract bool Release();
-        public abstract bool Release(int decrement);
     }
 }
+

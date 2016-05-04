@@ -1,20 +1,22 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Channels;
-using Helios.Channels.Local;
 using Helios.Channels.Bootstrap;
+using Helios.Channels.Local;
 using Helios.Codecs;
 using Helios.Concurrency;
 using Helios.Logging;
 using Helios.Util;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Helios.Tests.Channels.Local
 {
@@ -23,15 +25,23 @@ namespace Helios.Tests.Channels.Local
         private static readonly ILogger Logger = LoggingFactory.GetLogger<LocalChannelTest>();
         private static readonly LocalAddress TEST_ADDRESS = new LocalAddress("test.id");
 
-        private IEventLoopGroup _group1;
-        private IEventLoopGroup _group2;
-        private IEventLoopGroup _sharedGroup;
+        private readonly IEventLoopGroup _group1;
+        private readonly IEventLoopGroup _group2;
+        private readonly IEventLoopGroup _sharedGroup;
 
         public LocalChannelTest()
         {
             _group1 = new MultithreadEventLoopGroup(2);
             _group2 = new MultithreadEventLoopGroup(2);
             _sharedGroup = new MultithreadEventLoopGroup(1);
+        }
+
+        public void Dispose()
+        {
+            var t1 = _group1.ShutdownGracefullyAsync();
+            var t2 = _group2.ShutdownGracefullyAsync();
+            var t3 = _sharedGroup.ShutdownGracefullyAsync();
+            //Task.WaitAll(t1, t2, t3);
         }
 
         [Fact(Skip = "Not relevant for Helios 2.0")]
@@ -42,15 +52,28 @@ namespace Helios.Tests.Channels.Local
             var reads = 100;
             var resetEvent = new ManualResetEventSlim();
 
-            cb.Group(_group1).Channel<LocalChannel>().Handler(new ActionChannelInitializer<LocalChannel>(channel =>
-            {
-                channel.Pipeline.AddLast(new LengthFieldBasedFrameDecoder(20, 0, 4, 0, 4)).AddLast(new LengthFieldPrepender(4, false)).AddLast(new TestHandler());
-            }));
+            cb.Group(_group1)
+                .Channel<LocalChannel>()
+                .Handler(
+                    new ActionChannelInitializer<LocalChannel>(
+                        channel =>
+                        {
+                            channel.Pipeline.AddLast(new LengthFieldBasedFrameDecoder(20, 0, 4, 0, 4))
+                                .AddLast(new LengthFieldPrepender(4, false))
+                                .AddLast(new TestHandler());
+                        }));
 
-            sb.Group(_group2).Channel<LocalServerChannel>().ChildHandler(new ActionChannelInitializer<LocalChannel>(channel =>
-            {
-                channel.Pipeline.AddLast(new LengthFieldBasedFrameDecoder(20, 0, 4, 0, 4)).AddLast(new LengthFieldPrepender(4, false)).AddLast(new ReadCountAwaiter(resetEvent, reads)).AddLast(new TestHandler());
-            }));
+            sb.Group(_group2)
+                .Channel<LocalServerChannel>()
+                .ChildHandler(
+                    new ActionChannelInitializer<LocalChannel>(
+                        channel =>
+                        {
+                            channel.Pipeline.AddLast(new LengthFieldBasedFrameDecoder(20, 0, 4, 0, 4))
+                                .AddLast(new LengthFieldPrepender(4, false))
+                                .AddLast(new ReadCountAwaiter(resetEvent, reads))
+                                .AddLast(new TestHandler());
+                        }));
 
             IChannel sc = null;
             IChannel cc = null;
@@ -76,53 +99,41 @@ namespace Helios.Tests.Channels.Local
             }
         }
 
-        private class ReadAssertHandler : ChannelHandlerAdapter
-        {
-            private readonly Queue<int> _expectedReads;
-            private readonly List<int> _accumulatedReads;
-            private ManualResetEventSlim _resetEventSlim;
-
-            public ReadAssertHandler(List<int> accumulatedReads, ManualResetEventSlim resetEventSlim, params int[] expectedReads)
-            {
-                _accumulatedReads = accumulatedReads;
-                _resetEventSlim = resetEventSlim;
-                _expectedReads = new Queue<int>(expectedReads);
-            }
-
-            public override void ChannelRead(IChannelHandlerContext context, object message)
-            {
-                var next = _expectedReads.Dequeue();
-                Assert.Equal(next, message);
-                _accumulatedReads.Add((int)message);
-                if (!_expectedReads.Any())
-                {
-                    _resetEventSlim.Set();
-                }
-            }
-        }
-
         /// <summary>
-        /// Verify that messages written out to a server following a connection
-        /// are read by a child <see cref="LocalChannel"/>
+        ///     Verify that messages written out to a server following a connection
+        ///     are read by a child <see cref="LocalChannel" />
         /// </summary>
         [Fact(Skip = "Not relevant for Helios 2.0")]
         public void LocalChannel_writes_to_server_should_be_read_by_LocalChannel()
         {
             var cb = new ClientBootstrap();
             var sb = new ServerBootstrap();
-            var reads = new int[] {-11, 2, 9, 13, 1013, 1, 4};
+            var reads = new[] {-11, 2, 9, 13, 1013, 1, 4};
             var resetEvent = new ManualResetEventSlim();
             var accumulatedReads = new List<int>();
 
-            cb.Group(_group1).Channel<LocalChannel>().Handler(new ActionChannelInitializer<LocalChannel>(channel =>
-            {
-                channel.Pipeline.AddLast(new LengthFieldBasedFrameDecoder(20, 0, 4, 0, 4)).AddLast(new LengthFieldPrepender(4, false)).AddLast(new IntCodec());
-            }));
+            cb.Group(_group1)
+                .Channel<LocalChannel>()
+                .Handler(
+                    new ActionChannelInitializer<LocalChannel>(
+                        channel =>
+                        {
+                            channel.Pipeline.AddLast(new LengthFieldBasedFrameDecoder(20, 0, 4, 0, 4))
+                                .AddLast(new LengthFieldPrepender(4, false))
+                                .AddLast(new IntCodec());
+                        }));
 
-            sb.Group(_group2).Channel<LocalServerChannel>().ChildHandler(new ActionChannelInitializer<LocalChannel>(channel =>
-            {
-                channel.Pipeline.AddLast(new LengthFieldBasedFrameDecoder(20, 0, 4, 0, 4)).AddLast(new LengthFieldPrepender(4, false)).AddLast(new IntCodec()).AddLast(new ReadAssertHandler(accumulatedReads, resetEvent, reads));
-            }));
+            sb.Group(_group2)
+                .Channel<LocalServerChannel>()
+                .ChildHandler(
+                    new ActionChannelInitializer<LocalChannel>(
+                        channel =>
+                        {
+                            channel.Pipeline.AddLast(new LengthFieldBasedFrameDecoder(20, 0, 4, 0, 4))
+                                .AddLast(new LengthFieldPrepender(4, false))
+                                .AddLast(new IntCodec())
+                                .AddLast(new ReadAssertHandler(accumulatedReads, resetEvent, reads));
+                        }));
 
             IChannel sc = null;
             IChannel cc = null;
@@ -161,10 +172,7 @@ namespace Helios.Tests.Channels.Local
                 cb.Group(_group1).Channel<LocalChannel>().Handler(new TestHandler());
 
                 sb.Group(_group2).Channel<LocalServerChannel>().ChildHandler(new ActionChannelInitializer<LocalChannel>(
-                    channel =>
-                    {
-                        channel.Pipeline.AddLast(new TestHandler());
-                    }));
+                    channel => { channel.Pipeline.AddLast(new TestHandler()); }));
 
                 IChannel sc = null;
                 IChannel cc = null;
@@ -211,10 +219,7 @@ namespace Helios.Tests.Channels.Local
             cb.Group(_group1).Channel<LocalChannel>().Handler(new TestHandler());
 
             sb.Group(_group2).Channel<LocalServerChannel>().ChildHandler(new ActionChannelInitializer<LocalChannel>(
-                channel =>
-                {
-                    channel.Pipeline.AddLast(new TestHandler());
-                }));
+                channel => { channel.Pipeline.AddLast(new TestHandler()); }));
 
             IChannel sc = null;
             IChannel cc = null;
@@ -230,40 +235,14 @@ namespace Helios.Tests.Channels.Local
 
                 // Close the channel and write something
                 cc.CloseAsync().Wait();
-                var ag = Assert.Throws<AggregateException>(() =>
-                {
-                    cc.WriteAndFlushAsync(new object()).Wait();
-                }).Flatten();
+                var ag =
+                    Assert.Throws<AggregateException>(() => { cc.WriteAndFlushAsync(new object()).Wait(); }).Flatten();
                 Assert.IsType<ClosedChannelException>(ag.InnerException);
             }
             finally
             {
                 CloseChannel(cc);
                 CloseChannel(sc);
-            }
-        }
-
-        private class ReadHandler1 : ChannelHandlerAdapter
-        {
-            private CountdownEvent _event;
-
-            public ReadHandler1(CountdownEvent @event)
-            {
-                _event = @event;
-            }
-
-            public override void ChannelRead(IChannelHandlerContext context, object message)
-            {
-                _event.Signal();
-                context.CloseAsync();
-            }
-        }
-
-        private class ReadHandler2 : ChannelHandlerAdapter
-        {
-            public override void ChannelRead(IChannelHandlerContext context, object message)
-            {
-                //discard
             }
         }
 
@@ -293,37 +272,6 @@ namespace Helios.Tests.Channels.Local
             {
                 CloseChannel(cc);
                 CloseChannel(sc);
-            }
-        }
-
-        private class ReadCountdown1 : ChannelHandlerAdapter
-        {
-            private readonly CountdownEvent _latch;
-            private readonly IByteBuf _expectedData;
-
-            public ReadCountdown1(CountdownEvent latch, IByteBuf expectedData)
-            {
-                _latch = latch;
-                _expectedData = expectedData;
-            }
-
-            public override void ChannelRead(IChannelHandlerContext context, object message)
-            {
-                if (AbstractByteBuf.ByteBufComparer.Equals(_expectedData, message as IByteBuf))
-                {
-                    ReferenceCountUtil.SafeRelease(message);
-                    _latch.Signal();
-                }
-                else
-                {
-                    base.ChannelRead(context, message);
-                }
-            }
-
-            public override void ChannelInactive(IChannelHandlerContext context)
-            {
-                _latch.Signal();
-                base.ChannelInactive(context);
             }
         }
 
@@ -360,13 +308,13 @@ namespace Helios.Tests.Channels.Local
                     var ccCpy = cc;
 
                     // Make sure a write operation is executed in the eventloop
-                    cc.Pipeline.LastContext().Executor.Execute(() =>
-                    {
-                        ccCpy.WriteAndFlushAsync(data.Duplicate().Retain()).ContinueWith(tr =>
-                        {
-                            ccCpy.Pipeline.LastContext().CloseAsync();
-                        });
-                    });
+                    cc.Pipeline.LastContext()
+                        .Executor.Execute(
+                            () =>
+                            {
+                                ccCpy.WriteAndFlushAsync(data.Duplicate().Retain())
+                                    .ContinueWith(tr => { ccCpy.Pipeline.LastContext().CloseAsync(); });
+                            });
 
                     Assert.True(messageLatch.Wait(TimeSpan.FromSeconds(5)));
                     Assert.False(cc.IsOpen);
@@ -380,36 +328,6 @@ namespace Helios.Tests.Channels.Local
             finally
             {
                 data.Release();
-            }
-        }
-
-        private class ReadCountdown2 : ChannelHandlerAdapter
-        {
-            private readonly CountdownEvent _latch;
-            private readonly IByteBuf _expectedData1;
-            private readonly IByteBuf _expectedData2;
-
-            public ReadCountdown2(CountdownEvent latch, IByteBuf expectedData1, IByteBuf expectedData2)
-            {
-                _latch = latch;
-                _expectedData1 = expectedData1;
-                _expectedData2 = expectedData2;
-            }
-
-            public override void ChannelRead(IChannelHandlerContext context, object message)
-            {
-                var count = _latch.CurrentCount;
-                if ((AbstractByteBuf.ByteBufComparer.Equals(_expectedData1, message as IByteBuf) && count == 2)
-                    || (AbstractByteBuf.ByteBufComparer.Equals(_expectedData2, message as IByteBuf) && count == 1))
-                {
-                    Logger.Info("Received message");
-                    ReferenceCountUtil.SafeRelease(message);
-                    _latch.Signal();
-                }
-                else
-                {
-                    base.ChannelRead(context, message);
-                }
             }
         }
 
@@ -468,31 +386,6 @@ namespace Helios.Tests.Channels.Local
             {
                 data1.Release();
                 data2.Release();
-            }
-        }
-
-        private class ReadCountdown3 : ChannelHandlerAdapter
-        {
-            private readonly CountdownEvent _latch;
-            private readonly IByteBuf _expectedData;
-
-            public ReadCountdown3(CountdownEvent latch, IByteBuf expectedData)
-            {
-                _latch = latch;
-                _expectedData = expectedData;
-            }
-
-            public override void ChannelRead(IChannelHandlerContext context, object message)
-            {
-                if (AbstractByteBuf.ByteBufComparer.Equals(_expectedData, message as IByteBuf))
-                {
-                    ReferenceCountUtil.SafeRelease(message);
-                    _latch.Signal();
-                }
-                else
-                {
-                    base.ChannelRead(context, message);
-                }
             }
         }
 
@@ -696,12 +589,194 @@ namespace Helios.Tests.Channels.Local
             }
         }
 
-        private class DummyHandler : ChannelHandlerAdapter { }
+        [Fact(Skip = "Not relevant for Helios 2.0")]
+        public void LocalChannel_should_not_fire_channel_active_before_connecting()
+        {
+            var cb = new ClientBootstrap();
+            var sb = new ServerBootstrap();
+
+            cb.Group(_group1).Channel<LocalChannel>().Handler(new DummyHandler());
+
+            sb.Group(_group2).Channel<LocalServerChannel>().ChildHandler(new ActionChannelInitializer<LocalChannel>(
+                channel => { channel.Pipeline.AddLast(new TestHandler()); }));
+
+            IChannel sc = null;
+            IChannel cc = null;
+
+            try
+            {
+                // Start server
+                sc = sb.BindAsync(TEST_ADDRESS).Result;
+
+                cc = cb.Register().Result;
+
+                var promise = new TaskCompletionSource();
+                var assertPromise = new TaskCompletionSource();
+
+                cc.Pipeline.AddLast(new PromiseAssertHandler(promise, assertPromise));
+
+                // Connect to the server
+                cc.ConnectAsync(sc.LocalAddress).Wait();
+
+                assertPromise.Task.Wait();
+                Assert.True(promise.Task.IsCompleted);
+            }
+            finally
+            {
+                CloseChannel(cc);
+                CloseChannel(sc);
+            }
+        }
+
+        private static void CloseChannel(IChannel cc)
+        {
+            cc?.CloseAsync().Wait();
+        }
+
+        private class ReadAssertHandler : ChannelHandlerAdapter
+        {
+            private readonly List<int> _accumulatedReads;
+            private readonly Queue<int> _expectedReads;
+            private readonly ManualResetEventSlim _resetEventSlim;
+
+            public ReadAssertHandler(List<int> accumulatedReads, ManualResetEventSlim resetEventSlim,
+                params int[] expectedReads)
+            {
+                _accumulatedReads = accumulatedReads;
+                _resetEventSlim = resetEventSlim;
+                _expectedReads = new Queue<int>(expectedReads);
+            }
+
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                var next = _expectedReads.Dequeue();
+                Assert.Equal(next, message);
+                _accumulatedReads.Add((int) message);
+                if (!_expectedReads.Any())
+                {
+                    _resetEventSlim.Set();
+                }
+            }
+        }
+
+        private class ReadHandler1 : ChannelHandlerAdapter
+        {
+            private readonly CountdownEvent _event;
+
+            public ReadHandler1(CountdownEvent @event)
+            {
+                _event = @event;
+            }
+
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                _event.Signal();
+                context.CloseAsync();
+            }
+        }
+
+        private class ReadHandler2 : ChannelHandlerAdapter
+        {
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                //discard
+            }
+        }
+
+        private class ReadCountdown1 : ChannelHandlerAdapter
+        {
+            private readonly IByteBuf _expectedData;
+            private readonly CountdownEvent _latch;
+
+            public ReadCountdown1(CountdownEvent latch, IByteBuf expectedData)
+            {
+                _latch = latch;
+                _expectedData = expectedData;
+            }
+
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                if (AbstractByteBuf.ByteBufComparer.Equals(_expectedData, message as IByteBuf))
+                {
+                    ReferenceCountUtil.SafeRelease(message);
+                    _latch.Signal();
+                }
+                else
+                {
+                    base.ChannelRead(context, message);
+                }
+            }
+
+            public override void ChannelInactive(IChannelHandlerContext context)
+            {
+                _latch.Signal();
+                base.ChannelInactive(context);
+            }
+        }
+
+        private class ReadCountdown2 : ChannelHandlerAdapter
+        {
+            private readonly IByteBuf _expectedData1;
+            private readonly IByteBuf _expectedData2;
+            private readonly CountdownEvent _latch;
+
+            public ReadCountdown2(CountdownEvent latch, IByteBuf expectedData1, IByteBuf expectedData2)
+            {
+                _latch = latch;
+                _expectedData1 = expectedData1;
+                _expectedData2 = expectedData2;
+            }
+
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                var count = _latch.CurrentCount;
+                if ((AbstractByteBuf.ByteBufComparer.Equals(_expectedData1, message as IByteBuf) && count == 2)
+                    || (AbstractByteBuf.ByteBufComparer.Equals(_expectedData2, message as IByteBuf) && count == 1))
+                {
+                    Logger.Info("Received message");
+                    ReferenceCountUtil.SafeRelease(message);
+                    _latch.Signal();
+                }
+                else
+                {
+                    base.ChannelRead(context, message);
+                }
+            }
+        }
+
+        private class ReadCountdown3 : ChannelHandlerAdapter
+        {
+            private readonly IByteBuf _expectedData;
+            private readonly CountdownEvent _latch;
+
+            public ReadCountdown3(CountdownEvent latch, IByteBuf expectedData)
+            {
+                _latch = latch;
+                _expectedData = expectedData;
+            }
+
+            public override void ChannelRead(IChannelHandlerContext context, object message)
+            {
+                if (AbstractByteBuf.ByteBufComparer.Equals(_expectedData, message as IByteBuf))
+                {
+                    ReferenceCountUtil.SafeRelease(message);
+                    _latch.Signal();
+                }
+                else
+                {
+                    base.ChannelRead(context, message);
+                }
+            }
+        }
+
+        private class DummyHandler : ChannelHandlerAdapter
+        {
+        }
 
         private class PromiseAssertHandler : ChannelHandlerAdapter
         {
-            private readonly TaskCompletionSource _promise;
             private readonly TaskCompletionSource _assertPromise;
+            private readonly TaskCompletionSource _promise;
 
             public PromiseAssertHandler(TaskCompletionSource promise, TaskCompletionSource assertPromise)
             {
@@ -709,7 +784,8 @@ namespace Helios.Tests.Channels.Local
                 _assertPromise = assertPromise;
             }
 
-            public override Task ConnectAsync(IChannelHandlerContext context, EndPoint remoteAddress, EndPoint localAddress)
+            public override Task ConnectAsync(IChannelHandlerContext context, EndPoint remoteAddress,
+                EndPoint localAddress)
             {
                 _promise.TryComplete();
                 return base.ConnectAsync(context, remoteAddress, localAddress);
@@ -729,53 +805,6 @@ namespace Helios.Tests.Channels.Local
             }
         }
 
-        [Fact(Skip = "Not relevant for Helios 2.0")]
-        public void LocalChannel_should_not_fire_channel_active_before_connecting()
-        {
-            var cb = new ClientBootstrap();
-            var sb = new ServerBootstrap();
-
-            cb.Group(_group1).Channel<LocalChannel>().Handler(new DummyHandler());
-
-            sb.Group(_group2).Channel<LocalServerChannel>().ChildHandler(new ActionChannelInitializer<LocalChannel>(
-                channel =>
-                {
-                    channel.Pipeline.AddLast(new TestHandler());
-                }));
-
-            IChannel sc = null;
-            IChannel cc = null;
-
-            try
-            {
-                // Start server
-                sc = sb.BindAsync(TEST_ADDRESS).Result;
-             
-                cc = cb.Register().Result;
-
-                var promise = new TaskCompletionSource();
-                var assertPromise = new TaskCompletionSource();
-
-                cc.Pipeline.AddLast(new PromiseAssertHandler(promise, assertPromise));
-                
-                // Connect to the server
-                cc.ConnectAsync(sc.LocalAddress).Wait();
-
-                assertPromise.Task.Wait();
-                Assert.True(promise.Task.IsCompleted);
-            }
-            finally
-            {
-                CloseChannel(cc);
-                CloseChannel(sc);
-            }
-        }
-
-        private static void CloseChannel(IChannel cc)
-        {
-            cc?.CloseAsync().Wait();
-        }
-
         private class TestHandler : ChannelHandlerAdapter
         {
             public override void ChannelRead(IChannelHandlerContext context, object message)
@@ -784,13 +813,6 @@ namespace Helios.Tests.Channels.Local
                 ReferenceCountUtil.SafeRelease(message);
             }
         }
-
-        public void Dispose()
-        {
-            var t1 = _group1.ShutdownGracefullyAsync();
-            var t2 = _group2.ShutdownGracefullyAsync();
-            var t3 = _sharedGroup.ShutdownGracefullyAsync();
-            //Task.WaitAll(t1, t2, t3);
-        }
     }
 }
+

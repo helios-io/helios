@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using Helios.Concurrency;
 using Helios.Util;
 using Xunit;
@@ -12,7 +16,6 @@ namespace Helios.Tests.Concurrency
         [Fact]
         public void STE_should_complete_task_when_operation_is_completed()
         {
-
             var executor = new SingleThreadEventExecutor("Foo" + ThreadNameCounter.GetAndIncrement(),
                 TimeSpan.FromMilliseconds(100));
 
@@ -26,9 +29,9 @@ namespace Helios.Tests.Concurrency
         [Fact]
         public void STE_should_execute_scheduled_tasks_on_time()
         {
-            AtomicCounter counter = new AtomicCounter(0);
+            var counter = new AtomicCounter(0);
             var executor = new SingleThreadEventExecutor("Foo" + ThreadNameCounter.GetAndIncrement(),
-               TimeSpan.FromMilliseconds(100));
+                TimeSpan.FromMilliseconds(100));
             Action<object> increment = o => ((AtomicCounter) o).GetAndIncrement();
 
             // schedule a delayed operation
@@ -45,20 +48,9 @@ namespace Helios.Tests.Concurrency
             checkCounter.Wait(TimeSpan.FromMilliseconds(100));
         }
 
-        class MyHook : IRunnable
-        {
-            public bool WasExecuted { get; private set; }
-
-            public void Run()
-            {
-                WasExecuted = true;
-            }
-        }
-
         [Fact]
         public void STE_should_run_shutdown_hooks()
         {
-
             var executor = new SingleThreadEventExecutor("Foo" + ThreadLocalRandom.Current.Next(),
                 TimeSpan.FromMilliseconds(100));
 
@@ -74,13 +66,11 @@ namespace Helios.Tests.Concurrency
 
             executor.GracefulShutdownAsync().Wait();
             Assert.True(hook.WasExecuted);
-
         }
 
         [Fact]
         public void STE_should_not_run_cancelled_shutdown_hooks()
         {
-
             var executor = new SingleThreadEventExecutor("Foo" + ThreadLocalRandom.Current.Next(),
                 TimeSpan.FromMilliseconds(100));
 
@@ -89,7 +79,17 @@ namespace Helios.Tests.Concurrency
             executor.RemoveShutdownHook(hook);
             executor.GracefulShutdownAsync().Wait();
             Assert.False(hook.WasExecuted);
+        }
 
+        private class MyHook : IRunnable
+        {
+            public bool WasExecuted { get; private set; }
+
+            public void Run()
+            {
+                WasExecuted = true;
+            }
         }
     }
 }
+

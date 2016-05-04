@@ -1,15 +1,17 @@
-﻿using System.Linq;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System.Linq;
 using System.Net;
 using Helios.Channels;
 using Helios.MultiNodeTests.TestKit;
-using Helios.Net;
 using Xunit;
 
 namespace Helios.MultiNodeTests
 {
     public abstract class ClientServerReplyTests : MultiNodeTest
     {
-
         [Fact]
         public virtual void Should_receive_reply_from_server_200b_messages()
         {
@@ -27,13 +29,14 @@ namespace Helios.MultiNodeTests
             WaitUntilNMessagesReceived(sends);
 
             //assert
-            Assert.Equal(0, ClientExceptions.Length); // "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length
-            Assert.Equal(0, ServerExceptions.Length); // "Did not expect to find any exceptions on Server, instead found: {0}", ServerExceptions.Length)
+            Assert.Equal(0, ClientExceptions.Length);
+                // "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length
+            Assert.Equal(0, ServerExceptions.Length);
+                // "Did not expect to find any exceptions on Server, instead found: {0}", ServerExceptions.Length)
             Assert.Equal(sends, ClientSendBuffer.Count);
             Assert.Equal(sends, ClientReceiveBuffer.Count);
             var outsizedMessages = ClientReceiveBuffer.Select(x => x.Length != messageLength).ToList();
             Assert.True(ClientReceiveBuffer.DequeueAll().All(x => x.Length == messageLength));
-            
         }
 
         [Fact]
@@ -53,8 +56,10 @@ namespace Helios.MultiNodeTests
             WaitUntilNMessagesReceived(sends);
 
             //assert
-            Assert.Equal(0, ClientExceptions.Length); // "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length
-            Assert.Equal(0, ServerExceptions.Length); // "Did not expect to find any exceptions on Server, instead found: {0}", ServerExceptions.Length
+            Assert.Equal(0, ClientExceptions.Length);
+                // "Did not expect to find any exceptions on client, instead found: {0}", ClientExceptions.Length
+            Assert.Equal(0, ServerExceptions.Length);
+                // "Did not expect to find any exceptions on Server, instead found: {0}", ServerExceptions.Length
             Assert.Equal(sends, ClientSendBuffer.Count);
             Assert.Equal(sends, ClientReceiveBuffer.Count);
             Assert.True(ClientReceiveBuffer.DequeueAll().All(x => x.Length == messageLength));
@@ -88,3 +93,4 @@ namespace Helios.MultiNodeTests
         }
     }
 }
+

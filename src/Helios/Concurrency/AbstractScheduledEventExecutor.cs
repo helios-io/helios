@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Threading;
@@ -11,11 +15,18 @@ using Helios.Util.TimedOps;
 namespace Helios.Concurrency
 {
     /// <summary>
-    /// Abstract base class for <see cref="IEventExecutor"/>s that need to support scheduling
+    ///     Abstract base class for <see cref="IEventExecutor" />s that need to support scheduling
     /// </summary>
     public abstract class AbstractScheduledEventExecutor : AbstractEventExecutor
     {
-        protected readonly PriorityQueue<IScheduledRunnable> ScheduledTaskQueue = new PriorityQueue<IScheduledRunnable>();
+        private static readonly Action<object, object> EnqueueAction =
+            (e, t) => ((AbstractScheduledEventExecutor) e).ScheduledTaskQueue.Enqueue((IScheduledRunnable) t);
+
+        private static readonly Action<object, object> RemoveAction =
+            (e, t) => ((AbstractScheduledEventExecutor) e).ScheduledTaskQueue.Remove((IScheduledRunnable) t);
+
+        protected readonly PriorityQueue<IScheduledRunnable> ScheduledTaskQueue =
+            new PriorityQueue<IScheduledRunnable>();
 
         protected static bool IsNullOrEmpty<T>(PriorityQueue<T> taskQueue) where T : class
         {
@@ -80,7 +91,7 @@ namespace Helios.Concurrency
 
         protected bool HasScheduledTasks()
         {
-            IScheduledRunnable scheduledTask = ScheduledTaskQueue.Peek();
+            var scheduledTask = ScheduledTaskQueue.Peek();
             return scheduledTask != null && scheduledTask.Deadline.IsOverdue;
         }
 
@@ -94,9 +105,12 @@ namespace Helios.Concurrency
             return Schedule(new ActionWithStateScheduledTask(this, action, state, new PreciseDeadline(delay)));
         }
 
-        public override IScheduledTask Schedule(Action<object, object> action, object context, object state, TimeSpan delay)
+        public override IScheduledTask Schedule(Action<object, object> action, object context, object state,
+            TimeSpan delay)
         {
-            return Schedule(new ActionWithStateAndContextScheduledTask(this, action, context, state, new PreciseDeadline(delay)));
+            return
+                Schedule(new ActionWithStateAndContextScheduledTask(this, action, context, state,
+                    new PreciseDeadline(delay)));
         }
 
         public override Task ScheduleAsync(Action action, TimeSpan delay, CancellationToken cancellationToken)
@@ -116,7 +130,8 @@ namespace Helios.Concurrency
                     .Completion;
         }
 
-        public override Task ScheduleAsync(Action<object, object> action, object context, object state, TimeSpan delay, CancellationToken cancellationToken)
+        public override Task ScheduleAsync(Action<object, object> action, object context, object state, TimeSpan delay,
+            CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -129,11 +144,13 @@ namespace Helios.Concurrency
             }
 
             return
-                Schedule(new ActionWithStateAndContextScheduledAsyncTask(this, action, context, state, new PreciseDeadline(delay), cancellationToken))
+                Schedule(new ActionWithStateAndContextScheduledAsyncTask(this, action, context, state,
+                    new PreciseDeadline(delay), cancellationToken))
                     .Completion;
         }
 
-        public override Task ScheduleAsync(Action<object> action, object state, TimeSpan delay, CancellationToken cancellationToken)
+        public override Task ScheduleAsync(Action<object> action, object state, TimeSpan delay,
+            CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -146,12 +163,10 @@ namespace Helios.Concurrency
             }
 
             return
-                Schedule(new ActionWithStateScheduledAsyncTask(this, action, state, new PreciseDeadline(delay), cancellationToken))
+                Schedule(new ActionWithStateScheduledAsyncTask(this, action, state, new PreciseDeadline(delay),
+                    cancellationToken))
                     .Completion;
         }
-
-        private static readonly Action<object, object> EnqueueAction =
-            (e, t) => ((AbstractScheduledEventExecutor)e).ScheduledTaskQueue.Enqueue((IScheduledRunnable)t);
 
         protected IScheduledRunnable Schedule(IScheduledRunnable task)
         {
@@ -166,9 +181,6 @@ namespace Helios.Concurrency
             return task;
         }
 
-        private static readonly Action<object, object> RemoveAction =
-            (e, t) => ((AbstractScheduledEventExecutor) e).ScheduledTaskQueue.Remove((IScheduledRunnable) t);
-
         internal void RemoveScheduled(IScheduledRunnable scheduledTask)
         {
             if (InEventLoop)
@@ -182,3 +194,4 @@ namespace Helios.Concurrency
         }
     }
 }
+

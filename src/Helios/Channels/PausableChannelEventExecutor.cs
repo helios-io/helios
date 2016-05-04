@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -102,7 +106,8 @@ namespace Helios.Channels
             return Unwrap().Schedule(action, context, state, delay);
         }
 
-        public Task ScheduleAsync(Action<object> action, object state, TimeSpan delay, CancellationToken cancellationToken)
+        public Task ScheduleAsync(Action<object> action, object state, TimeSpan delay,
+            CancellationToken cancellationToken)
         {
             VerifyAcceptingNewTasks();
             return Unwrap().ScheduleAsync(action, state, delay, cancellationToken);
@@ -132,7 +137,8 @@ namespace Helios.Channels
             return Unwrap().ScheduleAsync(action, context, state, delay);
         }
 
-        public Task ScheduleAsync(Action<object, object> action, object context, object state, TimeSpan delay, CancellationToken cancellationToken)
+        public Task ScheduleAsync(Action<object, object> action, object context, object state, TimeSpan delay,
+            CancellationToken cancellationToken)
         {
             VerifyAcceptingNewTasks();
             return Unwrap().ScheduleAsync(action, context, state, delay, cancellationToken);
@@ -165,3 +171,4 @@ namespace Helios.Channels
         }
     }
 }
+

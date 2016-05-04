@@ -1,98 +1,23 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Helios.Concurrency;
-using System.Threading;
 
 namespace Helios.Channels.Embedded
 {
-    sealed class EmbeddedEventLoop : AbstractEventExecutor, IChannelHandlerInvoker, IEventLoop
+    internal sealed class EmbeddedEventLoop : AbstractEventExecutor, IChannelHandlerInvoker, IEventLoop
     {
-        readonly Queue<IRunnable> _tasks = new Queue<IRunnable>(20);
+        private readonly Queue<IRunnable> _tasks = new Queue<IRunnable>(20);
 
         public IEventExecutor Executor
         {
             get { return this; }
-        }
-
-        public IChannelHandlerInvoker Invoker
-        {
-            get { return this; }
-        }
-
-        public Task RegisterAsync(IChannel channel)
-        {
-            return channel.Unsafe.RegisterAsync(this);
-        }
-
-        public override Task GracefulShutdownAsync(TimeSpan quietPeriod, TimeSpan timeout)
-        {
-            throw new NotSupportedException();
-        }
-
-        public override IEventExecutor Unwrap()
-        {
-            return this;
-        }
-
-        IEventLoop IEventLoop.Unwrap()
-        {
-            return this;
-        }
-
-        public override bool IsShuttingDown
-        {
-            get { return false; }
-        }
-
-        public override bool IsShutDown { get { return false; } }
-
-
-        public override bool IsTerminated
-        {
-            get { return false; }
-        }
-
-        public override bool IsInEventLoop(Thread thread)
-        {
-            return true;
-        }
-
-        public override Task TerminationTask { get { throw new NotSupportedException(); } }
-
-        IEventExecutor IEventExecutor.Unwrap()
-        {
-            return this.Unwrap();
-        }
-
-        public override void Execute(IRunnable command)
-        {
-            if (command == null)
-            {
-                throw new NullReferenceException("command");
-            }
-            this._tasks.Enqueue(command);
-        }
-
-        internal void RunTasks()
-        {
-            for (;;)
-            {
-                // have to perform an additional check since Queue<T> throws upon empty dequeue in .NET
-                if (this._tasks.Count == 0)
-                {
-                    break;
-                }
-                IRunnable task = this._tasks.Dequeue();
-                if (task == null)
-                {
-                    break;
-                }
-                task.Run();
-            }
         }
 
         public void InvokeChannelRegistered(IChannelHandlerContext ctx)
@@ -179,5 +104,89 @@ namespace Helios.Channels.Embedded
         {
             ChannelHandlerInvokerUtil.InvokeFlushNow(ctx);
         }
+
+        public IChannelHandlerInvoker Invoker
+        {
+            get { return this; }
+        }
+
+        public Task RegisterAsync(IChannel channel)
+        {
+            return channel.Unsafe.RegisterAsync(this);
+        }
+
+        public override Task GracefulShutdownAsync(TimeSpan quietPeriod, TimeSpan timeout)
+        {
+            throw new NotSupportedException();
+        }
+
+        IEventLoop IEventLoop.Unwrap()
+        {
+            return this;
+        }
+
+        public override bool IsShuttingDown
+        {
+            get { return false; }
+        }
+
+        public override bool IsShutDown
+        {
+            get { return false; }
+        }
+
+
+        public override bool IsTerminated
+        {
+            get { return false; }
+        }
+
+        public override bool IsInEventLoop(Thread thread)
+        {
+            return true;
+        }
+
+        public override Task TerminationTask
+        {
+            get { throw new NotSupportedException(); }
+        }
+
+        IEventExecutor IEventExecutor.Unwrap()
+        {
+            return Unwrap();
+        }
+
+        public override void Execute(IRunnable command)
+        {
+            if (command == null)
+            {
+                throw new NullReferenceException("command");
+            }
+            _tasks.Enqueue(command);
+        }
+
+        public override IEventExecutor Unwrap()
+        {
+            return this;
+        }
+
+        internal void RunTasks()
+        {
+            for (;;)
+            {
+                // have to perform an additional check since Queue<T> throws upon empty dequeue in .NET
+                if (_tasks.Count == 0)
+                {
+                    break;
+                }
+                var task = _tasks.Dequeue();
+                if (task == null)
+                {
+                    break;
+                }
+                task.Run();
+            }
+        }
     }
 }
+

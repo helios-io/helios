@@ -1,20 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using Helios.Buffers;
 
 namespace Helios.Channels.Sockets
 {
     public abstract class AbstractSocketByteChannel : AbstractSocketChannel
     {
-        static readonly string ExpectedTypes =
-            string.Format(" (expected: {0})", typeof(IByteBuf).Name); //+ ", " +
+        private static readonly string ExpectedTypes =
+            string.Format(" (expected: {0})", typeof (IByteBuf).Name); //+ ", " +
 
-        static readonly Action<object> FlushAction = _ => ((AbstractSocketByteChannel)_).Flush();
-        static readonly Action<object, object> ReadCompletedSyncCallback = OnReadCompletedSync;
+        private static readonly Action<object> FlushAction = _ => ((AbstractSocketByteChannel) _).Flush();
+        private static readonly Action<object, object> ReadCompletedSyncCallback = OnReadCompletedSync;
 
         protected AbstractSocketByteChannel(IChannel parent, Socket socket) : base(parent, socket)
         {
@@ -25,6 +25,145 @@ namespace Helios.Channels.Sockets
             return new SocketByteChannelUnsafe(this);
         }
 
+        protected override void ScheduleSocketRead()
+        {
+            var operation = ReadOperation;
+            var pending = Socket.ReceiveAsync(operation);
+            if (!pending)
+            {
+                // todo: potential allocation / non-static field?
+                EventLoop.Execute(ReadCompletedSyncCallback, Unsafe, operation);
+            }
+        }
+
+        private static void OnReadCompletedSync(object u, object e)
+        {
+            ((ISocketChannelUnsafe) u).FinishRead((SocketChannelAsyncOperation) e);
+        }
+
+        protected override void DoWrite(ChannelOutboundBuffer input)
+        {
+            var writeSpinCount = -1;
+
+            while (true)
+            {
+                var msg = input.Current;
+                if (msg == null)
+                {
+                    // Wrote all messages.
+                    break;
+                }
+
+                if (msg is IByteBuf)
+                {
+                    var buf = (IByteBuf) msg;
+                    var readableBytes = buf.ReadableBytes;
+                    if (readableBytes == 0)
+                    {
+                        input.Remove();
+                        continue;
+                    }
+
+                    var scheduleAsync = false;
+                    var done = false;
+                    long flushedAmount = 0;
+                    if (writeSpinCount == -1)
+                    {
+                        writeSpinCount = Configuration.WriteSpinCount;
+                    }
+                    for (var i = writeSpinCount - 1; i >= 0; i--)
+                    {
+                        var localFlushedAmount = DoWriteBytes(buf);
+                        if (localFlushedAmount == 0)
+                            // todo: check for "sent less than attempted bytes" to avoid unnecessary extra doWriteBytes call?
+                        {
+                            scheduleAsync = true;
+                            break;
+                        }
+
+                        flushedAmount += localFlushedAmount;
+                        if (!buf.IsReadable())
+                        {
+                            done = true;
+                            break;
+                        }
+                    }
+
+                    //input.Progress(flushedAmount); // todo: support progress reports on ChannelOutboundBuffer
+
+                    if (done)
+                    {
+                        input.Remove();
+                    }
+                    else
+                    {
+                        IncompleteWrite(scheduleAsync, buf);
+                        break;
+                    }
+                }
+                else
+                {
+                    // Should not reach here.
+                    throw new InvalidOperationException();
+                }
+            }
+        }
+
+        protected override object FilterOutboundMessage(object msg)
+        {
+            if (msg is IByteBuf)
+            {
+                return msg;
+                //IByteBuffer buf = (IByteBuffer) msg;
+                //if (buf.isDirect()) {
+                //    return msg;
+                //}
+
+                //return newDirectBuffer(buf);
+            }
+
+            // todo: FileRegion support
+            //if (msg is FileRegion) {
+            //    return msg;
+            //}
+
+            throw new NotSupportedException(
+                "unsupported message type: " + msg.GetType().Name + ExpectedTypes);
+        }
+
+        protected void IncompleteWrite(bool scheduleAsync, IByteBuf buffer)
+        {
+            // Did not write completely.
+            if (scheduleAsync)
+            {
+                var operation = PrepareWriteOperation(buffer);
+
+                SetState(StateFlags.WriteScheduled);
+                var pending = Socket.SendAsync(operation);
+                if (!pending)
+                {
+                    ((ISocketChannelUnsafe) Unsafe).FinishWrite(operation);
+                }
+            }
+            else
+            {
+                // Schedule flush again later so other tasks can be picked up input the meantime
+                EventLoop.Execute(FlushAction, this);
+            }
+        }
+
+        /// <summary>
+        ///     Read bytes into the given {@link ByteBuf} and return the amount.
+        /// </summary>
+        protected abstract int DoReadBytes(IByteBuf buf);
+
+        /// <summary>
+        ///     Write bytes form the given {@link ByteBuf} to the underlying {@link java.nio.channels.Channel}.
+        ///     @param buf           the {@link ByteBuf} from which the bytes should be written
+        ///     @return amount       the amount of written bytes
+        /// </summary>
+        protected abstract int DoWriteBytes(IByteBuf buf);
+
         protected class SocketByteChannelUnsafe : AbstractSocketUnsafe
         {
             public SocketByteChannelUnsafe(AbstractSocketByteChannel channel)
@@ -32,33 +171,33 @@ namespace Helios.Channels.Sockets
             {
             }
 
-            new AbstractSocketByteChannel Channel
+            private new AbstractSocketByteChannel Channel
             {
-                get { return (AbstractSocketByteChannel)this._channel; }
+                get { return (AbstractSocketByteChannel) _channel; }
             }
 
-            void CloseOnRead()
+            private void CloseOnRead()
             {
-                this.Channel.ShutdownInput();
-                if (this._channel.IsOpen)
+                Channel.ShutdownInput();
+                if (_channel.IsOpen)
                 {
                     // todo: support half-closure
                     //if (bool.TrueString.Equals(this.channel.Configuration.getOption(ChannelOption.ALLOW_HALF_CLOSURE))) {
                     //    key.interestOps(key.interestOps() & ~readInterestOp);
                     //    this.channel.Pipeline.FireUserEventTriggered(ChannelInputShutdownEvent.INSTANCE);
                     //} else {
-                    this.CloseAsync();
+                    CloseAsync();
                     //}
                 }
             }
 
-            void HandleReadException(IChannelPipeline pipeline, IByteBuf byteBuf, Exception cause, bool close)
+            private void HandleReadException(IChannelPipeline pipeline, IByteBuf byteBuf, Exception cause, bool close)
             {
                 if (byteBuf != null)
                 {
                     if (byteBuf.IsReadable())
                     {
-                        this.Channel.ReadPending = false;
+                        Channel.ReadPending = false;
                         pipeline.FireChannelRead(byteBuf);
                     }
                     else
@@ -70,15 +209,15 @@ namespace Helios.Channels.Sockets
                 pipeline.FireExceptionCaught(cause);
                 if (close || cause is SocketException)
                 {
-                    this.CloseOnRead();
+                    CloseOnRead();
                 }
             }
 
             public override void FinishRead(SocketChannelAsyncOperation operation)
             {
-                AbstractSocketByteChannel ch = this.Channel;
+                var ch = Channel;
                 ch.ResetState(StateFlags.ReadScheduled);
-                IChannelConfiguration config = ch.Configuration;
+                var config = ch.Configuration;
                 if (!config.AutoRead && !ch.ReadPending)
                 {
                     // ChannelConfig.setAutoRead(false) was called in the meantime
@@ -86,25 +225,25 @@ namespace Helios.Channels.Sockets
                     return;
                 }
 
-                IChannelPipeline pipeline = ch.Pipeline;
-                IByteBufAllocator allocator = config.Allocator;
-                int maxMessagesPerRead = config.MaxMessagesPerRead;
-                IRecvByteBufferAllocatorHandle allocHandle = this.RecvBufAllocHandle;
+                var pipeline = ch.Pipeline;
+                var allocator = config.Allocator;
+                var maxMessagesPerRead = config.MaxMessagesPerRead;
+                var allocHandle = RecvBufAllocHandle;
 
                 IByteBuf byteBuf = null;
-                int messages = 0;
-                bool close = false;
+                var messages = 0;
+                var close = false;
                 try
                 {
                     operation.Validate();
 
-                    int totalReadAmount = 0;
-                    bool readPendingReset = false;
+                    var totalReadAmount = 0;
+                    var readPendingReset = false;
                     do
                     {
                         byteBuf = allocHandle.Allocate(allocator);
-                        int writable = byteBuf.WritableBytes;
-                        int localReadAmount = ch.DoReadBytes(byteBuf);
+                        var writable = byteBuf.WritableBytes;
+                        var localReadAmount = ch.DoReadBytes(byteBuf);
                         if (localReadAmount <= 0)
                         {
                             // not was read release the buffer
@@ -142,21 +281,20 @@ namespace Helios.Channels.Sockets
                             // which might mean we drained the recv buffer completely.
                             break;
                         }
-                    }
-                    while (++messages < maxMessagesPerRead);
+                    } while (++messages < maxMessagesPerRead);
 
                     pipeline.FireChannelReadComplete();
                     allocHandle.Record(totalReadAmount);
 
                     if (close)
                     {
-                        this.CloseOnRead();
+                        CloseOnRead();
                         close = false;
                     }
                 }
                 catch (Exception t)
                 {
-                    this.HandleReadException(pipeline, byteBuf, t, close);
+                    HandleReadException(pipeline, byteBuf, t, close);
                 }
                 finally
                 {
@@ -173,143 +311,6 @@ namespace Helios.Channels.Sockets
                 }
             }
         }
-
-        protected override void ScheduleSocketRead()
-        {
-            SocketChannelAsyncOperation operation = this.ReadOperation;
-            bool pending = this.Socket.ReceiveAsync(operation);
-            if (!pending)
-            {
-                // todo: potential allocation / non-static field?
-                this.EventLoop.Execute(ReadCompletedSyncCallback, this.Unsafe, operation);
-            }
-        }
-
-        static void OnReadCompletedSync(object u, object e)
-        {
-            ((ISocketChannelUnsafe)u).FinishRead((SocketChannelAsyncOperation)e);
-        }
-
-        protected override void DoWrite(ChannelOutboundBuffer input)
-        {
-            int writeSpinCount = -1;
-
-            while (true)
-            {
-                object msg = input.Current;
-                if (msg == null)
-                {
-                    // Wrote all messages.
-                    break;
-                }
-
-                if (msg is IByteBuf)
-                {
-                    var buf = (IByteBuf)msg;
-                    int readableBytes = buf.ReadableBytes;
-                    if (readableBytes == 0)
-                    {
-                        input.Remove();
-                        continue;
-                    }
-
-                    bool scheduleAsync = false;
-                    bool done = false;
-                    long flushedAmount = 0;
-                    if (writeSpinCount == -1)
-                    {
-                        writeSpinCount = this.Configuration.WriteSpinCount;
-                    }
-                    for (int i = writeSpinCount - 1; i >= 0; i--)
-                    {
-                        int localFlushedAmount = this.DoWriteBytes(buf);
-                        if (localFlushedAmount == 0) // todo: check for "sent less than attempted bytes" to avoid unnecessary extra doWriteBytes call?
-                        {
-                            scheduleAsync = true;
-                            break;
-                        }
-
-                        flushedAmount += localFlushedAmount;
-                        if (!buf.IsReadable())
-                        {
-                            done = true;
-                            break;
-                        }
-                    }
-
-                    //input.Progress(flushedAmount); // todo: support progress reports on ChannelOutboundBuffer
-
-                    if (done)
-                    {
-                        input.Remove();
-                    }
-                    else
-                    {
-                        this.IncompleteWrite(scheduleAsync, buf);
-                        break;
-                    }
-                } 
-                else
-                {
-                    // Should not reach here.
-                    throw new InvalidOperationException();
-                }
-            }
-        }
-
-        protected override object FilterOutboundMessage(object msg)
-        {
-            if (msg is IByteBuf)
-            {
-                return msg;
-                //IByteBuffer buf = (IByteBuffer) msg;
-                //if (buf.isDirect()) {
-                //    return msg;
-                //}
-
-                //return newDirectBuffer(buf);
-            }
-
-            // todo: FileRegion support
-            //if (msg is FileRegion) {
-            //    return msg;
-            //}
-
-            throw new NotSupportedException(
-                "unsupported message type: " + msg.GetType().Name + ExpectedTypes);
-        }
-
-        protected void IncompleteWrite(bool scheduleAsync, IByteBuf buffer)
-        {
-            // Did not write completely.
-            if (scheduleAsync)
-            {
-                SocketChannelAsyncOperation operation = this.PrepareWriteOperation(buffer);
-
-                this.SetState(StateFlags.WriteScheduled);
-                bool pending = this.Socket.SendAsync(operation);
-                if (!pending)
-                {
-                    ((ISocketChannelUnsafe)this.Unsafe).FinishWrite(operation);
-                }
-            }
-            else
-            {
-                // Schedule flush again later so other tasks can be picked up input the meantime
-                this.EventLoop.Execute(FlushAction, this);
-            }
-        }
-
-        /// <summary>
-        /// Read bytes into the given {@link ByteBuf} and return the amount.
-        /// </summary>
-        protected abstract int DoReadBytes(IByteBuf buf);
-
-        /// <summary>
-        /// Write bytes form the given {@link ByteBuf} to the underlying {@link java.nio.channels.Channel}.
-        /// @param buf           the {@link ByteBuf} from which the bytes should be written
-        /// @return amount       the amount of written bytes
-        /// </summary>
-        protected abstract int DoWriteBytes(IByteBuf buf);
     }
 }
+

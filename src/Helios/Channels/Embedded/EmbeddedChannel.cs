@@ -1,8 +1,10 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Helios.Concurrency;
 using Helios.Logging;
@@ -14,28 +16,20 @@ namespace Helios.Channels.Embedded
 {
     public class EmbeddedChannel : AbstractChannel
     {
-        static readonly EndPoint LOCAL_ADDRESS = new EmbeddedSocketAddress();
-        static readonly EndPoint REMOTE_ADDRESS = new EmbeddedSocketAddress();
+        private static readonly EndPoint LOCAL_ADDRESS = new EmbeddedSocketAddress();
+        private static readonly EndPoint REMOTE_ADDRESS = new EmbeddedSocketAddress();
 
-        enum State
-        {
-            Open,
-            Active,
-            Closed
-        };
-
-        static readonly IChannelHandler[] EMPTY_HANDLERS = new IChannelHandler[0];
+        private static readonly IChannelHandler[] EMPTY_HANDLERS = new IChannelHandler[0];
 
         //TODO: ChannelMetadata
-        static readonly ILogger logger = LoggingFactory.GetLogger<EmbeddedChannel>();
+        private static readonly ILogger logger = LoggingFactory.GetLogger<EmbeddedChannel>();
 
-        readonly EmbeddedEventLoop loop = new EmbeddedEventLoop();
-        readonly IChannelConfiguration config;
+        private readonly EmbeddedEventLoop loop = new EmbeddedEventLoop();
 
-        Queue<object> inboundMessages;
-        Queue<object> outboundMessages;
-        Exception lastException;
-        State state;
+        private Queue<object> inboundMessages;
+        private Exception lastException;
+        private Queue<object> outboundMessages;
+        private State state;
 
         public EmbeddedChannel()
             : this(EMPTY_HANDLERS)
@@ -43,26 +37,26 @@ namespace Helios.Channels.Embedded
         }
 
         /// <summary>
-        /// Create a new instance with the pipeline initialized with the specified handlers.
+        ///     Create a new instance with the pipeline initialized with the specified handlers.
         /// </summary>
-        /// <param name="id">The <see cref="IChannelId"/> of this channel.</param>
+        /// <param name="id">The <see cref="IChannelId" /> of this channel.</param>
         /// <param name="handlers">
-        /// The <see cref="IChannelHandler"/>s that will be added to the <see cref="IChannelPipeline"/>
+        ///     The <see cref="IChannelHandler" />s that will be added to the <see cref="IChannelPipeline" />
         /// </param>
         public EmbeddedChannel(params IChannelHandler[] handlers)
             : base(EmbeddedChannelId.Instance, null)
         {
-            this.config = new DefaultChannelConfiguration(this);
+            Configuration = new DefaultChannelConfiguration(this);
             if (handlers == null)
             {
                 throw new NullReferenceException("handlers cannot be null");
             }
 
-            IChannelPipeline p = this.Pipeline;
+            var p = Pipeline;
             p.AddLast(new ActionChannelInitializer<IChannel>(channel =>
             {
-                IChannelPipeline pipeline = channel.Pipeline;
-                foreach (IChannelHandler h in handlers)
+                var pipeline = channel.Pipeline;
+                foreach (var h in handlers)
                 {
                     if (h == null)
                     {
@@ -72,42 +66,29 @@ namespace Helios.Channels.Embedded
                 }
             }));
 
-            Task future = this.loop.RegisterAsync(this);
+            var future = loop.RegisterAsync(this);
             Debug.Assert(future.IsCompleted);
-            p.AddLast(new LastInboundHandler(this.InboundMessages, this.RecordException));
+            p.AddLast(new LastInboundHandler(InboundMessages, RecordException));
         }
 
-        public override IChannelConfiguration Configuration
-        {
-            get { return this.config; }
-        }
+        public override IChannelConfiguration Configuration { get; }
 
         /// <summary>
-        /// Returns the <see cref="Queue{T}"/> which holds all of the <see cref="object"/>s that 
-        /// were received by this <see cref="IChannel"/>.
+        ///     Returns the <see cref="Queue{T}" /> which holds all of the <see cref="object" />s that
+        ///     were received by this <see cref="IChannel" />.
         /// </summary>
         public Queue<object> InboundMessages
         {
-            get { return this.inboundMessages ?? (this.inboundMessages = new Queue<object>()); }
+            get { return inboundMessages ?? (inboundMessages = new Queue<object>()); }
         }
 
         /// <summary>
-        /// Returns the <see cref="Queue{T}"/> which holds all of the <see cref="object"/>s that 
-        /// were written by this <see cref="IChannel"/>.
+        ///     Returns the <see cref="Queue{T}" /> which holds all of the <see cref="object" />s that
+        ///     were written by this <see cref="IChannel" />.
         /// </summary>
         public Queue<object> OutboundMessages
         {
-            get { return this.outboundMessages ?? (this.outboundMessages = new Queue<object>()); }
-        }
-
-        public T ReadInbound<T>()
-        {
-            return (T)Poll(this.inboundMessages);
-        }
-
-        public T ReadOutbound<T>()
-        {
-            return (T)Poll(this.outboundMessages);
+            get { return outboundMessages ?? (outboundMessages = new Queue<object>()); }
         }
 
         public override bool DisconnectSupported
@@ -117,12 +98,32 @@ namespace Helios.Channels.Embedded
 
         protected override EndPoint LocalAddressInternal
         {
-            get { return this.IsActive ? LOCAL_ADDRESS : null; }
+            get { return IsActive ? LOCAL_ADDRESS : null; }
         }
 
         protected override EndPoint RemoteAddressInternal
         {
-            get { return this.IsActive ? REMOTE_ADDRESS : null; }
+            get { return IsActive ? REMOTE_ADDRESS : null; }
+        }
+
+        public override bool IsOpen
+        {
+            get { return state != State.Closed; }
+        }
+
+        public override bool IsActive
+        {
+            get { return state == State.Active; }
+        }
+
+        public T ReadInbound<T>()
+        {
+            return (T) Poll(inboundMessages);
+        }
+
+        public T ReadOutbound<T>()
+        {
+            return (T) Poll(outboundMessages);
         }
 
         protected override IChannelUnsafe NewUnsafe()
@@ -142,17 +143,17 @@ namespace Helios.Channels.Embedded
 
         protected override void DoRegister()
         {
-            this.state = State.Active;
+            state = State.Active;
         }
 
         protected override void DoDisconnect()
         {
-            this.DoClose();
+            DoClose();
         }
 
         protected override void DoClose()
         {
-            this.state = State.Closed;
+            state = State.Closed;
         }
 
         protected override void DoBeginRead()
@@ -164,115 +165,105 @@ namespace Helios.Channels.Embedded
         {
             for (;;)
             {
-                object msg = input.Current;
+                var msg = input.Current;
                 if (msg == null)
                 {
                     break;
                 }
 
                 ReferenceCountUtil.Retain(msg);
-                this.OutboundMessages.Enqueue(msg);
+                OutboundMessages.Enqueue(msg);
                 input.Remove();
             }
         }
 
-        public override bool IsOpen
-        {
-            get { return this.state != State.Closed; }
-        }
-
-        public override bool IsActive
-        {
-            get { return this.state == State.Active; }
-        }
-
         /// <summary>
-        /// Run all tasks (which also includes scheduled tasks) that are pending in the <see cref="IEventLoop"/>
-        /// for this <see cref="IChannel"/>.
+        ///     Run all tasks (which also includes scheduled tasks) that are pending in the <see cref="IEventLoop" />
+        ///     for this <see cref="IChannel" />.
         /// </summary>
         public void RunPendingTasks()
         {
             try
             {
-                this.loop.RunTasks();
+                loop.RunTasks();
             }
             catch (Exception ex)
             {
-                this.RecordException(ex);
+                RecordException(ex);
             }
         }
 
-        void FinishPendingTasks()
+        private void FinishPendingTasks()
         {
-            this.RunPendingTasks();
+            RunPendingTasks();
         }
 
         /// <summary>
-        /// Write messages to the inbound of this <see cref="IChannel"/>
+        ///     Write messages to the inbound of this <see cref="IChannel" />
         /// </summary>
         /// <param name="msgs">The messages to be written.</param>
         /// <returns><c>true</c> if the write operation did add something to the inbound buffer</returns>
         public bool WriteInbound(params object[] msgs)
         {
-            this.EnsureOpen();
+            EnsureOpen();
             if (msgs.Length == 0)
             {
-                return IsNotEmpty(this.inboundMessages);
+                return IsNotEmpty(inboundMessages);
             }
 
-            IChannelPipeline p = this.Pipeline;
-            foreach (object m in msgs)
+            var p = Pipeline;
+            foreach (var m in msgs)
             {
                 p.FireChannelRead(m);
             }
             p.FireChannelReadComplete();
-            this.RunPendingTasks();
-            this.CheckException();
-            return IsNotEmpty(this.inboundMessages);
+            RunPendingTasks();
+            CheckException();
+            return IsNotEmpty(inboundMessages);
         }
 
         /// <summary>
-        /// Write messages to the outbound of this <see cref="IChannel"/>.
+        ///     Write messages to the outbound of this <see cref="IChannel" />.
         /// </summary>
         /// <param name="msgs">The messages to be written.</param>
         /// <returns><c>true</c> if the write operation did add something to the inbound buffer</returns>
         public bool WriteOutbound(params object[] msgs)
         {
-            this.EnsureOpen();
+            EnsureOpen();
             if (msgs.Length == 0)
             {
-                return IsNotEmpty(this.outboundMessages);
+                return IsNotEmpty(outboundMessages);
             }
 
             var futures = RecyclableArrayList.Take();
 
             try
             {
-                foreach (object m in msgs)
+                foreach (var m in msgs)
                 {
                     if (m == null)
                     {
                         break;
                     }
-                    futures.Add(this.WriteAsync(m));
+                    futures.Add(WriteAsync(m));
                 }
 
-                this.Flush();
+                Flush();
 
-                int size = futures.Count;
-                for (int i = 0; i < size; i++)
+                var size = futures.Count;
+                for (var i = 0; i < size; i++)
                 {
-                    Task future = (Task) futures[i];
+                    var future = (Task) futures[i];
                     Debug.Assert(future.IsCompleted);
                     if (future.Exception != null)
                     {
-                        this.RecordException(future.Exception);
+                        RecordException(future.Exception);
                     }
                 }
 
-                this.RunPendingTasks();
-                this.CheckException();
-                return IsNotEmpty(this.outboundMessages);
+                RunPendingTasks();
+                CheckException();
+                return IsNotEmpty(outboundMessages);
             }
             finally
             {
@@ -280,83 +271,90 @@ namespace Helios.Channels.Embedded
             }
         }
 
-        void RecordException(Exception cause)
+        private void RecordException(Exception cause)
         {
-            if (this.lastException == null)
+            if (lastException == null)
             {
-                this.lastException = cause;
+                lastException = cause;
             }
             else
             {
                 logger.Warning(
                     "More than one exception was raised. " +
-                        "Will report only the first one and log others. Cause: {0}", cause);
+                    "Will report only the first one and log others. Cause: {0}", cause);
             }
         }
 
         /// <summary>
-        /// Mark this <see cref="IChannel"/> as finished. Any further try to write data to it will fail.
+        ///     Mark this <see cref="IChannel" /> as finished. Any further try to write data to it will fail.
         /// </summary>
         /// <returns>bufferReadable returns <c>true</c></returns>
         public bool Finish()
         {
-            this.CloseAsync();
-            this.CheckException();
-            return IsNotEmpty(this.inboundMessages) || IsNotEmpty(this.outboundMessages);
+            CloseAsync();
+            CheckException();
+            return IsNotEmpty(inboundMessages) || IsNotEmpty(outboundMessages);
         }
 
         public override Task CloseAsync()
         {
-            Task future = base.CloseAsync();
-            this.FinishPendingTasks();
+            var future = base.CloseAsync();
+            FinishPendingTasks();
             return future;
         }
 
         public override Task DisconnectAsync()
         {
-            Task future = base.DisconnectAsync();
-            this.FinishPendingTasks();
+            var future = base.DisconnectAsync();
+            FinishPendingTasks();
             return future;
         }
 
         /// <summary>
-        /// Check to see if there was any <see cref="Exception"/> and rethrow if so.
+        ///     Check to see if there was any <see cref="Exception" /> and rethrow if so.
         /// </summary>
         public void CheckException()
         {
-            Exception e = this.lastException;
+            var e = lastException;
             if (e == null)
             {
                 return;
             }
 
-            this.lastException = null;
+            lastException = null;
             throw e;
         }
 
         /// <summary>
-        /// Ensure the <see cref="IChannel"/> is open and if not throw an exception.
+        ///     Ensure the <see cref="IChannel" /> is open and if not throw an exception.
         /// </summary>
         protected void EnsureOpen()
         {
-            if (!this.IsOpen)
+            if (!IsOpen)
             {
-                this.RecordException(ClosedChannelException.Instance);
-                this.CheckException();
+                RecordException(ClosedChannelException.Instance);
+                CheckException();
             }
         }
 
-        static bool IsNotEmpty(Queue<object> queue)
+        private static bool IsNotEmpty(Queue<object> queue)
         {
             return queue != null && queue.Count > 0;
         }
 
-        static object Poll(Queue<object> queue)
+        private static object Poll(Queue<object> queue)
         {
             return IsNotEmpty(queue) ? queue.Dequeue() : null;
         }
 
-        class DefaultUnsafe : AbstractUnsafe
+        private enum State
+        {
+            Open,
+            Active,
+            Closed
+        }
+
+        private class DefaultUnsafe : AbstractUnsafe
         {
             public DefaultUnsafe(AbstractChannel channel)
                 : base(channel)
@@ -371,8 +369,8 @@ namespace Helios.Channels.Embedded
 
         internal sealed class LastInboundHandler : ChannelHandlerAdapter
         {
-            readonly Queue<object> inboundMessages;
-            readonly Action<Exception> recordException;
+            private readonly Queue<object> inboundMessages;
+            private readonly Action<Exception> recordException;
 
             public LastInboundHandler(Queue<object> inboundMessages, Action<Exception> recordException)
             {
@@ -383,14 +381,15 @@ namespace Helios.Channels.Embedded
             public override void ChannelRead(IChannelHandlerContext context, object message)
             {
                 // have to pass the EmbeddedChannel.InboundMessages by reference via the constructor
-                this.inboundMessages.Enqueue(message);
+                inboundMessages.Enqueue(message);
             }
 
             public override void ExceptionCaught(IChannelHandlerContext context, Exception exception)
             {
                 // have to pass the EmbeddedChannel.RecordException method via reference
-                this.recordException(exception);
+                recordException(exception);
             }
         }
     }
 }
+

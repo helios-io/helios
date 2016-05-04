@@ -1,9 +1,11 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Channels;
@@ -13,17 +15,21 @@ using Helios.Serialization;
 using Helios.Topology;
 using Helios.Tracing;
 using Helios.Util;
-using Helios.Util.TimedOps;
 
 namespace Helios.Net.Connections
 {
     public abstract class UnstreamedConnectionBase : IConnection
     {
-        
-        protected UnstreamedConnectionBase(int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(EventLoopFactory.CreateNetworkEventLoop(), null, Encoders.DefaultEncoder, Encoders.DefaultDecoder, UnpooledByteBufAllocator.Default, bufferSize) { }
+        protected UnstreamedConnectionBase(int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : this(
+                EventLoopFactory.CreateNetworkEventLoop(), null, Encoders.DefaultEncoder, Encoders.DefaultDecoder,
+                UnpooledByteBufAllocator.Default, bufferSize)
+        {
+        }
 
-        protected UnstreamedConnectionBase(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
-            : base()
+        protected UnstreamedConnectionBase(NetworkEventLoop eventLoop, INode binding, TimeSpan timeout,
+            IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator,
+            int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
         {
             Decoder = decoder;
             Encoder = encoder;
@@ -35,8 +41,18 @@ namespace Helios.Net.Connections
             NetworkEventLoop = eventLoop;
         }
 
-        protected UnstreamedConnectionBase(NetworkEventLoop eventLoop, INode binding, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE) : this(eventLoop, binding, NetworkConstants.DefaultConnectivityTimeout, encoder, decoder, allocator, bufferSize) { }
+        protected UnstreamedConnectionBase(NetworkEventLoop eventLoop, INode binding, IMessageEncoder encoder,
+            IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+            : this(
+                eventLoop, binding, NetworkConstants.DefaultConnectivityTimeout, encoder, decoder, allocator, bufferSize
+                )
+        {
+        }
 
+        protected int BufferSize { get; set; }
+
+        protected NetworkEventLoop NetworkEventLoop { get; set; }
+        public INode Binding { get; protected set; }
 
 
         public event ReceivedDataCallback Receive
@@ -52,6 +68,7 @@ namespace Helios.Net.Connections
 // ReSharper disable once ValueParameterNotUsed
             remove { NetworkEventLoop.Connection = null; }
         }
+
         public event ConnectionTerminatedCallback OnDisconnection
         {
             add { NetworkEventLoop.Disconnection = value; }
@@ -61,24 +78,23 @@ namespace Helios.Net.Connections
 
         public event ExceptionCallback OnError
         {
-            add{ NetworkEventLoop.SetExceptionHandler(value, this); }
+            add { NetworkEventLoop.SetExceptionHandler(value, this); }
 // ReSharper disable once ValueParameterNotUsed
             remove { NetworkEventLoop.SetExceptionHandler(null, this); }
         }
 
-        protected int BufferSize { get; set; }
+        public IEventLoop EventLoop
+        {
+            get { return NetworkEventLoop; }
+        }
 
-        public IEventLoop EventLoop { get { return NetworkEventLoop; } }
         public IMessageEncoder Encoder { get; protected set; }
         public IMessageDecoder Decoder { get; protected set; }
         public IByteBufAllocator Allocator { get; protected set; }
 
-        protected NetworkEventLoop NetworkEventLoop { get; set; }
-
-        public DateTimeOffset Created { get; private set; }
+        public DateTimeOffset Created { get; }
         public INode RemoteHost { get; protected set; }
         public INode Local { get; protected set; }
-        public INode Binding { get; protected set; }
         public TimeSpan Timeout { get; protected set; }
         public abstract TransportType Transport { get; }
         public abstract bool Blocking { get; set; }
@@ -89,11 +105,16 @@ namespace Helios.Net.Connections
         public abstract int Available { get; }
 
         [Obsolete("No longer supported")]
-        public int MessagesInSendQueue { get { return 0; } }
+        public int MessagesInSendQueue
+        {
+            get { return 0; }
+        }
+
         public abstract Task<bool> OpenAsync();
         public abstract void Configure(IConnectionConfig config);
 
         public abstract void Open();
+
         public void BeginReceive()
         {
             if (NetworkEventLoop.Receive == null) throw new NullReferenceException("Receive cannot be null");
@@ -106,11 +127,29 @@ namespace Helios.Net.Connections
         public void BeginReceive(ReceivedDataCallback callback)
         {
             if (callback == null) throw new ArgumentNullException("callback");
-            if(Receiving) return;
+            if (Receiving) return;
 
             Receive += callback;
             Receiving = true;
             BeginReceiveInternal();
+        }
+
+        public virtual void StopReceive()
+        {
+            Receiving = false;
+        }
+
+        public abstract void Close();
+
+        public void Send(NetworkData data)
+        {
+            HeliosTrace.Instance.TcpClientSendQueued();
+            SendInternal(data.Buffer, 0, data.Length, data.RemoteHost);
+        }
+
+        public void Send(byte[] buffer, int index, int length, INode destination)
+        {
+            Send(NetworkData.Create(destination, buffer.Slice(index, length), length));
         }
 
         protected NetworkState CreateNetworkState(Socket socket, INode remotehost)
@@ -147,7 +186,7 @@ namespace Helios.Net.Connections
                 {
                     var networkData = NetworkData.Create(receiveState.RemoteHost, message);
                     InvokeReceiveIfNotNull(networkData);
-					HeliosTrace.Instance.TcpClientReceiveSuccess();
+                    HeliosTrace.Instance.TcpClientReceiveSuccess();
                 }
 
                 //reuse the buffer
@@ -162,7 +201,6 @@ namespace Helios.Net.Connections
                     receiveState.Socket.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length,
                         SocketFlags.None, ReceiveCallback, receiveState);
                 }
-                
             }
             catch (SocketException ex) //typically means that the socket is now closed
             {
@@ -222,25 +260,7 @@ namespace Helios.Net.Connections
 
         protected abstract void BeginReceiveInternal();
 
-        public virtual void StopReceive()
-        {
-            Receiving = false;
-        }
-
         public abstract void Close(Exception reason);
-
-        public abstract void Close();
-
-        public void Send(NetworkData data)
-        {
-			HeliosTrace.Instance.TcpClientSendQueued ();
-            SendInternal(data.Buffer, 0, data.Length, data.RemoteHost);
-        }
-
-        public void Send(byte[] buffer, int index, int length, INode destination)
-        {
-            Send(NetworkData.Create(destination, buffer.Slice(index, length), length));
-        }
 
         protected abstract void SendInternal(byte[] buffer, int index, int length, INode destination);
 
@@ -252,7 +272,7 @@ namespace Helios.Net.Connections
         #region IDisposable members
 
         /// <summary>
-        /// Prevents disposed connections from being re-used again
+        ///     Prevents disposed connections from being re-used again
         /// </summary>
         protected void CheckWasDisposed()
         {
@@ -266,7 +286,9 @@ namespace Helios.Net.Connections
             {
                 Close();
             }
-            catch { }
+            catch
+            {
+            }
             Dispose(true);
             GC.SuppressFinalize(this);
         }
@@ -276,3 +298,4 @@ namespace Helios.Net.Connections
         #endregion
     }
 }
+

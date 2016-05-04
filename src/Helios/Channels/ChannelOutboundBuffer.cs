@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Threading;
 using Helios.Buffers;
 using Helios.Concurrency;
@@ -16,15 +20,12 @@ namespace Helios.Channels
     {
         private static readonly ILogger Logger = LoggingFactory.GetLogger<ChannelOutboundBuffer>();
 
-        private int _writeBufferHighWaterMark => _channel.Configuration.WriteBufferHighWaterMark;
-        private int _writeBufferLowWaterMark => _channel.Configuration.WriteBufferLowWaterMark;
-
-        private IChannel _channel;
-
         /// <summary>
         ///     Callback used to indicate that the channel is going to become writeable or unwriteable
         /// </summary>
         private readonly Action _fireChannelWritabilityChanged;
+
+        private readonly IChannel _channel;
 
         /// <summary>
         ///     Number of flushed entries not yet written
@@ -51,6 +52,9 @@ namespace Helios.Channels
             _channel = channel;
             _fireChannelWritabilityChanged = fireChannelWritabilityChanged;
         }
+
+        private int _writeBufferHighWaterMark => _channel.Configuration.WriteBufferHighWaterMark;
+        private int _writeBufferLowWaterMark => _channel.Configuration.WriteBufferLowWaterMark;
 
         /// <summary>
         ///     Return the current message to write or <c>null</c> if nothing was flushed before and so is ready to be written.
@@ -435,3 +439,4 @@ namespace Helios.Channels
         }
     }
 }
+

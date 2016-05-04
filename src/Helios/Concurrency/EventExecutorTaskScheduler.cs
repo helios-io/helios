@@ -1,12 +1,15 @@
-using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Helios.Concurrency
 {
     /// <summary>
-    /// Wraps a <see cref="IEventExecutor"/> inside a <see cref="TaskScheduler"/>
-    /// and allow scheduling of <see cref="Task"/> instances onto that executor.
+    ///     Wraps a <see cref="IEventExecutor" /> inside a <see cref="TaskScheduler" />
+    ///     and allow scheduling of <see cref="Task" /> instances onto that executor.
     /// </summary>
     public sealed class EventExecutorTaskScheduler : TaskScheduler
     {
@@ -51,7 +54,7 @@ namespace Helios.Concurrency
             return false;
         }
 
-        sealed class TaskQueueNode : IRunnable
+        private sealed class TaskQueueNode : IRunnable
         {
             private readonly EventExecutorTaskScheduler _scheduler;
             private readonly Task _task;
@@ -69,3 +72,4 @@ namespace Helios.Concurrency
         }
     }
 }
+

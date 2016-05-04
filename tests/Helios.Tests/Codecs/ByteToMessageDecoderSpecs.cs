@@ -1,8 +1,10 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Channels;
 using Helios.Channels.Embedded;
@@ -14,7 +16,78 @@ namespace Helios.Tests.Codecs
 {
     public class ByteToMessageDecoderSpecs
     {
-        class RemovedDecoder1 : ByteToMessageDecoder
+        [Fact]
+        public void Should_remove_itself()
+        {
+            var ec = new EmbeddedChannel(new RemovedDecoder1());
+            var buf = Unpooled.WrappedBuffer(new[] {'a', 'b', 'c'}.Select(Convert.ToByte).ToArray());
+            ec.WriteInbound(buf.Copy());
+            var b = ec.ReadInbound<IByteBuf>();
+            Assert.Equal(b, buf.SkipBytes(1), AbstractByteBuf.ByteBufComparer);
+            buf.Release();
+            b.Release();
+        }
+
+        [Fact]
+        public void Should_remove_itself_WriteBuffer()
+        {
+            var buf = Unpooled.Buffer().WriteBytes(new[] {'a', 'b', 'c'}.Select(Convert.ToByte).ToArray());
+            var ec = new EmbeddedChannel(new RemovedDecoder2(buf));
+            ec.WriteInbound(buf.Copy());
+            var expected = Unpooled.WrappedBuffer(new[] {'b', 'c'}.Select(Convert.ToByte).ToArray());
+            var b = ec.ReadInbound<IByteBuf>();
+            Assert.Equal(expected, b, AbstractByteBuf.ByteBufComparer);
+            buf.Release();
+            b.Release();
+        }
+
+        [Fact]
+        public void Should_remove_while_in_Decode()
+        {
+            var decoder = new RemovedDecoder3();
+            var ec = new EmbeddedChannel(decoder, new InboundAdapter(decoder));
+
+            var buf = Unpooled.WrappedBuffer(new[] {'a', 'b', 'c'}.Select(Convert.ToByte).ToArray());
+            Assert.True(ec.WriteInbound(buf.Copy()));
+            var b = ec.ReadInbound<IByteBuf>();
+            Assert.Equal(b, buf.SkipBytes(1), AbstractByteBuf.ByteBufComparer);
+            Assert.False(ec.Finish());
+            buf.Release();
+            b.Release();
+        }
+
+        [Fact]
+        public void Should_DecodeLast_with_EmptyBuffer()
+        {
+            var ec = new EmbeddedChannel(new LastEmptyBufferDecoder());
+            var bytes = new byte[1024];
+            ThreadLocalRandom.Current.NextBytes(bytes);
+
+            Assert.True(ec.WriteInbound(Unpooled.WrappedBuffer(bytes)));
+            Assert.Equal(Unpooled.WrappedBuffer(bytes), ec.ReadInbound<IByteBuf>(), AbstractByteBuf.ByteBufComparer);
+            Assert.Null(ec.ReadInbound<IByteBuf>());
+            Assert.False(ec.Finish());
+            Assert.Null(ec.ReadInbound<IByteBuf>());
+        }
+
+        [Fact]
+        public void Should_DecodeLast_with_NonEmptyBuffer()
+        {
+            var ec = new EmbeddedChannel(new LastNonEmptyBufferDecoder());
+            var bytes = new byte[1024];
+            ThreadLocalRandom.Current.NextBytes(bytes);
+
+            Assert.True(ec.WriteInbound(Unpooled.WrappedBuffer(bytes)));
+            Assert.Equal(Unpooled.WrappedBuffer(bytes, 0, bytes.Length - 1), ec.ReadInbound<IByteBuf>(),
+                AbstractByteBuf.ByteBufComparer);
+            Assert.Null(ec.ReadInbound<IByteBuf>());
+            Assert.True(ec.Finish());
+            Assert.Equal(Unpooled.WrappedBuffer(bytes, bytes.Length - 1, 1), ec.ReadInbound<IByteBuf>(),
+                AbstractByteBuf.ByteBufComparer);
+            Assert.Null(ec.ReadInbound<IByteBuf>());
+        }
+
+        private class RemovedDecoder1 : ByteToMessageDecoder
         {
             private bool _removed;
 
@@ -27,22 +100,10 @@ namespace Helios.Tests.Codecs
             }
         }
 
-        [Fact]
-        public void Should_remove_itself()
+        private class RemovedDecoder2 : ByteToMessageDecoder
         {
-            var ec = new EmbeddedChannel(new RemovedDecoder1());
-            var buf = Unpooled.WrappedBuffer(new char[] { 'a', 'b', 'c' }.Select(Convert.ToByte).ToArray());
-            ec.WriteInbound(buf.Copy());
-            IByteBuf b = ec.ReadInbound<IByteBuf>();
-            Assert.Equal(b, buf.SkipBytes(1), AbstractByteBuf.ByteBufComparer);
-            buf.Release();
-            b.Release();
-        }
-
-        class RemovedDecoder2 : ByteToMessageDecoder
-        {
+            private readonly IByteBuf _buf;
             private bool _removed;
-            private IByteBuf _buf;
 
             public RemovedDecoder2(IByteBuf buf)
             {
@@ -62,20 +123,7 @@ namespace Helios.Tests.Codecs
             }
         }
 
-        [Fact]
-        public void Should_remove_itself_WriteBuffer()
-        {
-            var buf = Unpooled.Buffer().WriteBytes(new char[] { 'a', 'b', 'c' }.Select(Convert.ToByte).ToArray());
-            var ec = new EmbeddedChannel(new RemovedDecoder2(buf));
-            ec.WriteInbound(buf.Copy());
-            var expected = Unpooled.WrappedBuffer(new char[] { 'b', 'c' }.Select(Convert.ToByte).ToArray());
-            IByteBuf b = ec.ReadInbound<IByteBuf>();
-            Assert.Equal(expected, b, AbstractByteBuf.ByteBufComparer);
-            buf.Release();
-            b.Release();
-        }
-
-        class RemovedDecoder3 : ByteToMessageDecoder
+        private class RemovedDecoder3 : ByteToMessageDecoder
         {
             public readonly object UpgradeMessage = new object();
 
@@ -86,10 +134,10 @@ namespace Helios.Tests.Codecs
             }
         }
 
-        class InboundAdapter : ChannelHandlerAdapter
+        private class InboundAdapter : ChannelHandlerAdapter
         {
-            private readonly object _upgradeMessage;
             private readonly RemovedDecoder3 _decoder;
+            private readonly object _upgradeMessage;
 
             public InboundAdapter(RemovedDecoder3 decoder)
             {
@@ -108,22 +156,7 @@ namespace Helios.Tests.Codecs
             }
         }
 
-        [Fact]
-        public void Should_remove_while_in_Decode()
-        {
-            var decoder = new RemovedDecoder3();
-            var ec = new EmbeddedChannel(decoder, new InboundAdapter(decoder));
-
-            var buf = Unpooled.WrappedBuffer(new char[] { 'a', 'b', 'c' }.Select(Convert.ToByte).ToArray());
-            Assert.True(ec.WriteInbound(buf.Copy()));
-            IByteBuf b = ec.ReadInbound<IByteBuf>();
-            Assert.Equal(b, buf.SkipBytes(1), AbstractByteBuf.ByteBufComparer);
-            Assert.False(ec.Finish());
-            buf.Release();
-            b.Release();
-        }
-
-        class LastEmptyBufferDecoder : ByteToMessageDecoder
+        private class LastEmptyBufferDecoder : ByteToMessageDecoder
         {
             protected override void Decode(IChannelHandlerContext context, IByteBuf input, List<object> output)
             {
@@ -133,21 +166,7 @@ namespace Helios.Tests.Codecs
             }
         }
 
-        [Fact]
-        public void Should_DecodeLast_with_EmptyBuffer()
-        {
-            var ec = new EmbeddedChannel(new LastEmptyBufferDecoder());
-            byte[] bytes = new byte[1024];
-            ThreadLocalRandom.Current.NextBytes(bytes);
-
-            Assert.True(ec.WriteInbound(Unpooled.WrappedBuffer(bytes)));
-            Assert.Equal(Unpooled.WrappedBuffer(bytes), ec.ReadInbound<IByteBuf>(), AbstractByteBuf.ByteBufComparer);
-            Assert.Null(ec.ReadInbound<IByteBuf>());
-            Assert.False(ec.Finish());
-            Assert.Null(ec.ReadInbound<IByteBuf>());
-        }
-
-        class LastNonEmptyBufferDecoder : ByteToMessageDecoder
+        private class LastNonEmptyBufferDecoder : ByteToMessageDecoder
         {
             private bool _decodeLast;
 
@@ -167,20 +186,6 @@ namespace Helios.Tests.Codecs
                 base.DecodeLast(context, input, output);
             }
         }
-
-        [Fact]
-        public void Should_DecodeLast_with_NonEmptyBuffer()
-        {
-            var ec = new EmbeddedChannel(new LastNonEmptyBufferDecoder());
-            byte[] bytes = new byte[1024];
-            ThreadLocalRandom.Current.NextBytes(bytes);
-
-            Assert.True(ec.WriteInbound(Unpooled.WrappedBuffer(bytes)));
-            Assert.Equal(Unpooled.WrappedBuffer(bytes, 0, bytes.Length -1), ec.ReadInbound<IByteBuf>(), AbstractByteBuf.ByteBufComparer);
-            Assert.Null(ec.ReadInbound<IByteBuf>());
-            Assert.True(ec.Finish());
-            Assert.Equal(Unpooled.WrappedBuffer(bytes, bytes.Length - 1, 1), ec.ReadInbound<IByteBuf>(), AbstractByteBuf.ByteBufComparer);
-            Assert.Null(ec.ReadInbound<IByteBuf>());
-        }
     }
 }
+

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System.Collections.Generic;
 using System.Linq;
 using FsCheck;
@@ -10,47 +13,55 @@ namespace Helios.FsCheck.Tests.Buffers
     {
         public static Gen<BufferOperations.IWrite> WriteInt()
         {
-            return Arb.Default.Int32().Generator.Select(i => (BufferOperations.IWrite)new BufferOperations.WriteInt(i));
+            return Arb.Default.Int32().Generator.Select(i => (BufferOperations.IWrite) new BufferOperations.WriteInt(i));
         }
 
         public static Gen<BufferOperations.IWrite> WriteUInt()
         {
-            return Arb.Default.UInt32().Generator.Select(i => (BufferOperations.IWrite)new BufferOperations.WriteUInt(i));
+            return
+                Arb.Default.UInt32().Generator.Select(i => (BufferOperations.IWrite) new BufferOperations.WriteUInt(i));
         }
 
         public static Gen<BufferOperations.IWrite> WriteShort()
         {
-            return Arb.Default.Int16().Generator.Select(s => (BufferOperations.IWrite)new BufferOperations.WriteShort(s));
+            return
+                Arb.Default.Int16().Generator.Select(s => (BufferOperations.IWrite) new BufferOperations.WriteShort(s));
         }
 
         public static Gen<BufferOperations.IWrite> WriteUShort()
         {
-            return Arb.Default.UInt16().Generator.Select(s => (BufferOperations.IWrite)new BufferOperations.WriteUShort(s));
+            return
+                Arb.Default.UInt16()
+                    .Generator.Select(s => (BufferOperations.IWrite) new BufferOperations.WriteUShort(s));
         }
 
         public static Gen<BufferOperations.IWrite> WriteLong()
         {
-            return Arb.Default.Int64().Generator.Select(l => (BufferOperations.IWrite)new BufferOperations.WriteLong(l));
+            return Arb.Default.Int64()
+                .Generator.Select(l => (BufferOperations.IWrite) new BufferOperations.WriteLong(l));
         }
 
         public static Gen<BufferOperations.IWrite> WriteByte()
         {
-            return Arb.Default.Byte().Generator.Select(b => (BufferOperations.IWrite)(new BufferOperations.WriteByte(b)));
+            return Arb.Default.Byte().Generator.Select(b => (BufferOperations.IWrite) new BufferOperations.WriteByte(b));
         }
 
         public static Gen<BufferOperations.IWrite> WriteBytes()
         {
-            return Gen.ListOf(Arb.Default.Byte().Generator).Select(bytes => (BufferOperations.IWrite)(new BufferOperations.WriteBytes(bytes.ToArray())));
+            return
+                Gen.ListOf(Arb.Default.Byte().Generator)
+                    .Select(bytes => (BufferOperations.IWrite) new BufferOperations.WriteBytes(bytes.ToArray()));
         }
 
         public static Gen<BufferOperations.IWrite> WriteBool()
         {
-            return Arb.Default.Bool().Generator.Select(b => (BufferOperations.IWrite)(new BufferOperations.WriteBoolean(b)));
+            return
+                Arb.Default.Bool().Generator.Select(b => (BufferOperations.IWrite) new BufferOperations.WriteBoolean(b));
         }
 
         public static Gen<BufferOperations.IWrite> WriteChar()
         {
-            return Arb.Default.Char().Generator.Select(c => (BufferOperations.IWrite)(new BufferOperations.WriteChar(c)));
+            return Arb.Default.Char().Generator.Select(c => (BufferOperations.IWrite) new BufferOperations.WriteChar(c));
         }
 
         public static Gen<BufferOperations.IWrite> DiscardReadBytes()
@@ -60,19 +71,19 @@ namespace Helios.FsCheck.Tests.Buffers
 
         public static Gen<BufferOperations.IWrite> DiscardSomeReadBytes()
         {
-            return Gen.Constant((BufferOperations.IWrite)new BufferOperations.DiscardSomeReadBytes());
+            return Gen.Constant((BufferOperations.IWrite) new BufferOperations.DiscardSomeReadBytes());
         }
 
         public static Arbitrary<BufferOperations.IWrite[]> Writes()
         {
-            var seq = (Gen.Sequence<BufferOperations.IWrite>(WriteChar(), WriteInt(), WriteBool(), WriteByte(), WriteBytes(), WriteLong(),
-                    WriteShort(), WriteUInt(), WriteUShort(), DiscardReadBytes(), DiscardSomeReadBytes()));
+            var seq = Gen.Sequence(WriteChar(), WriteInt(), WriteBool(), WriteByte(), WriteBytes(), WriteLong(),
+                WriteShort(), WriteUInt(), WriteUShort(), DiscardReadBytes(), DiscardSomeReadBytes());
             return Arb.From(seq);
         }
 
         public static Arbitrary<BufferSize> BufferSize()
         {
-            return Arb.From(Gen.Choose(10, 1024).Select(i => new BufferSize(i, Int32.MaxValue)));
+            return Arb.From(Gen.Choose(10, 1024).Select(i => new BufferSize(i, int.MaxValue)));
         }
 
         public static Arbitrary<IByteBuf> ByteBuf()
@@ -87,7 +98,7 @@ namespace Helios.FsCheck.Tests.Buffers
                 }
                 return buf;
             }));
-        } 
+        }
     }
 
     public class BufferSize
@@ -116,7 +127,7 @@ namespace Helios.FsCheck.Tests.Buffers
             if (bytes != null && y is byte[])
             {
                 var xBytes = bytes;
-                var yBytes = (byte[])y;
+                var yBytes = (byte[]) y;
                 return xBytes.SequenceEqual(yBytes);
             }
 
@@ -138,7 +149,7 @@ namespace Helios.FsCheck.Tests.Buffers
             object UntypedData { get; }
 
             /// <summary>
-            /// Returns the number of bytes written.
+            ///     Returns the number of bytes written.
             /// </summary>
             int Execute(IByteBuf buf);
 
@@ -146,7 +157,7 @@ namespace Helios.FsCheck.Tests.Buffers
         }
 
         /// <summary>
-        /// A write operation we'll execute against a <see cref="IByteBuf"/>
+        ///     A write operation we'll execute against a <see cref="IByteBuf" />
         /// </summary>
         /// <typeparam name="T">Primitive data type</typeparam>
         public abstract class Write<T> : IWrite
@@ -156,12 +167,12 @@ namespace Helios.FsCheck.Tests.Buffers
                 Data = data;
             }
 
-            public T Data { get; private set; }
+            public T Data { get; }
 
             public object UntypedData => Data;
 
             /// <summary>
-            /// Applies the write to the underlying <see cref="IByteBuf"/>
+            ///     Applies the write to the underlying <see cref="IByteBuf" />
             /// </summary>
             /// <param name="buf">The underlying buffer we're going to write to</param>
             /// <returns>The number of bytes written</returns>
@@ -172,13 +183,13 @@ namespace Helios.FsCheck.Tests.Buffers
                 return buf.WriterIndex - currentLength;
             }
 
-            protected abstract void ExecuteInternal(IByteBuf buf);
-
             public abstract IRead ToRead();
+
+            protected abstract void ExecuteInternal(IByteBuf buf);
 
             public override string ToString()
             {
-                return $"Write<{typeof(T)}>({Data})";
+                return $"Write<{typeof (T)}>({Data})";
             }
         }
 
@@ -358,7 +369,7 @@ namespace Helios.FsCheck.Tests.Buffers
         }
 
         /// <summary>
-        /// Not really a write operation, but we interleave it so as to verify the behavior following a few reads
+        ///     Not really a write operation, but we interleave it so as to verify the behavior following a few reads
         /// </summary>
         public class DiscardReadBytes : Write<byte>
         {
@@ -401,21 +412,21 @@ namespace Helios.FsCheck.Tests.Buffers
 
         public abstract class Read<T> : IRead
         {
-            public abstract T Execute(IByteBuf buf);
-
             object IRead.Execute(IByteBuf buf)
             {
                 return Execute(buf);
             }
 
+            public abstract T Execute(IByteBuf buf);
+
             public override string ToString()
             {
-                return $"Read<{typeof(T)}>()";
+                return $"Read<{typeof (T)}>()";
             }
         }
 
         /// <summary>
-        /// Used for <see cref="IWrite"/> operations that don't actually modify the buffer
+        ///     Used for <see cref="IWrite" /> operations that don't actually modify the buffer
         /// </summary>
         public class ReadNoOp : Read<byte>
         {
@@ -521,3 +532,4 @@ namespace Helios.FsCheck.Tests.Buffers
         }
     }
 }
+

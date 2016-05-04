@@ -1,6 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -9,10 +11,8 @@ using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Channels;
 using Helios.Channels.Bootstrap;
-using Helios.Channels.Local;
 using Helios.Channels.Sockets;
 using Helios.Codecs;
-using Helios.Concurrency;
 using Helios.Logging;
 using NBench;
 
@@ -20,40 +20,41 @@ namespace Helios.Tests.Performance.Channels
 {
     public class TcpChannelPerfSpecs
     {
+        private const string InboundThroughputCounterName = "inbound ops";
+
+        private const string OutboundThroughputCounterName = "outbound ops";
+
+        public const int IterationCount = 5;
+        public const int WriteCount = 1000000;
+        public const int MessagesPerMinute = 1000000;
+
+        private static readonly IPEndPoint TEST_ADDRESS = new IPEndPoint(IPAddress.IPv6Loopback, 0);
+        protected readonly ManualResetEventSlim ResetEvent = new ManualResetEventSlim(false);
+        private IChannel _clientChannel;
+        private Counter _inboundThroughputCounter;
+        private Counter _outboundThroughputCounter;
+
+        private IChannel _serverChannel;
+
+        private IReadFinishedSignal _signal;
+
+        protected ClientBootstrap ClientBootstrap;
+
+        protected IEventLoopGroup ClientGroup;
+
+        private byte[] message;
+
+        private readonly IByteBuf[] messages = new IByteBuf[WriteCount];
+        protected ServerBootstrap ServerBoostrap;
+        protected IEventLoopGroup ServerGroup;
+        public TimeSpan Timeout = TimeSpan.FromMinutes((double) WriteCount/MessagesPerMinute);
+        protected IEventLoopGroup WorkerGroup;
+
         static TcpChannelPerfSpecs()
         {
             // Disable the logging factory
             LoggingFactory.DefaultFactory = new NoOpLoggerFactory();
         }
-
-        private static readonly IPEndPoint TEST_ADDRESS = new IPEndPoint(IPAddress.IPv6Loopback, 0);
-
-        protected ClientBootstrap ClientBootstrap;
-        protected ServerBootstrap ServerBoostrap;
-
-        protected IEventLoopGroup ClientGroup;
-        protected IEventLoopGroup WorkerGroup;
-        protected IEventLoopGroup ServerGroup;
-
-        private byte[] message;
-        private const string InboundThroughputCounterName = "inbound ops";
-        private Counter _inboundThroughputCounter;
-
-        private const string OutboundThroughputCounterName = "outbound ops";
-        private Counter _outboundThroughputCounter;
-
-        private IChannel _serverChannel;
-        private IChannel _clientChannel;
-        protected readonly ManualResetEventSlim ResetEvent = new ManualResetEventSlim(false);
-
-        public const int IterationCount = 5;
-        public const int WriteCount = 1000000;
-        public const int MessagesPerMinute = 1000000;
-        public TimeSpan Timeout = TimeSpan.FromMinutes((double)WriteCount / MessagesPerMinute);
-
-        private IReadFinishedSignal _signal;
-
-        private IByteBuf[] messages = new IByteBuf[WriteCount];
 
         protected virtual IChannelHandler GetEncoder()
         {
@@ -62,7 +63,7 @@ namespace Helios.Tests.Performance.Channels
 
         protected virtual IChannelHandler GetDecoder()
         {
-            return new LengthFieldBasedFrameDecoder(Int32.MaxValue, 0, 4, 0, 4);
+            return new LengthFieldBasedFrameDecoder(int.MaxValue, 0, 4, 0, 4);
         }
 
         [PerfSetup]
@@ -71,9 +72,9 @@ namespace Helios.Tests.Performance.Channels
             ClientGroup = new MultithreadEventLoopGroup(1);
             ServerGroup = new MultithreadEventLoopGroup(1);
             WorkerGroup = new MultithreadEventLoopGroup();
-            
 
-            Encoding iso = Encoding.GetEncoding("ISO-8859-1");
+
+            var iso = Encoding.GetEncoding("ISO-8859-1");
             message = iso.GetBytes("ABC");
 
             // pre-allocate all messages
@@ -89,19 +90,25 @@ namespace Helios.Tests.Performance.Channels
 
             var sb = new ServerBootstrap().Group(ServerGroup, WorkerGroup).Channel<TcpServerSocketChannel>()
                 .ChildOption(ChannelOption.TcpNodelay, true)
-                .ChildHandler(new ActionChannelInitializer<TcpSocketChannel>(channel =>
-                {
-                    channel.Pipeline.AddLast(GetEncoder()).AddLast(GetDecoder()).AddLast(counterHandler).AddLast(new CounterHandlerOutbound(_outboundThroughputCounter)).AddLast(new ReadFinishedHandler(_signal, WriteCount));
-                }));
+                .ChildHandler(
+                    new ActionChannelInitializer<TcpSocketChannel>(
+                        channel =>
+                        {
+                            channel.Pipeline.AddLast(GetEncoder())
+                                .AddLast(GetDecoder())
+                                .AddLast(counterHandler)
+                                .AddLast(new CounterHandlerOutbound(_outboundThroughputCounter))
+                                .AddLast(new ReadFinishedHandler(_signal, WriteCount));
+                        }));
 
             var cb = new ClientBootstrap().Group(ClientGroup)
                 .Option(ChannelOption.TcpNodelay, true)
                 .Channel<TcpSocketChannel>().Handler(new ActionChannelInitializer<TcpSocketChannel>(
-                channel =>
-                {
-                    channel.Pipeline.AddLast(GetEncoder()).AddLast(GetDecoder()).AddLast(counterHandler)
-                        .AddLast(new CounterHandlerOutbound(_outboundThroughputCounter));
-                }));
+                    channel =>
+                    {
+                        channel.Pipeline.AddLast(GetEncoder()).AddLast(GetDecoder()).AddLast(counterHandler)
+                            .AddLast(new CounterHandlerOutbound(_outboundThroughputCounter));
+                    }));
 
             // start server
             _serverChannel = sb.BindAsync(TEST_ADDRESS).Result;
@@ -111,7 +118,9 @@ namespace Helios.Tests.Performance.Channels
             //_clientChannel.Configuration.AutoRead = false;
         }
 
-        [PerfBenchmark(Description = "Measures how quickly and with how much GC overhead a TcpSocketChannel --> TcpServerSocketChannel connection can decode / encode realistic messages",
+        [PerfBenchmark(
+            Description =
+                "Measures how quickly and with how much GC overhead a TcpSocketChannel --> TcpServerSocketChannel connection can decode / encode realistic messages",
             NumberOfIterations = IterationCount, RunMode = RunMode.Iterations)]
         [CounterMeasurement(InboundThroughputCounterName)]
         [CounterMeasurement(OutboundThroughputCounterName)]
@@ -122,7 +131,7 @@ namespace Helios.Tests.Performance.Channels
             for (var i = 0; i < WriteCount; i++)
             {
                 _clientChannel.WriteAsync(messages[i]);
-                if (i % 100 == 0) // flush every 100 writes
+                if (i%100 == 0) // flush every 100 writes
                     _clientChannel.Flush();
             }
             _clientChannel.Flush();
@@ -135,7 +144,8 @@ namespace Helios.Tests.Performance.Channels
         {
             CloseChannel(_clientChannel);
             CloseChannel(_serverChannel);
-            Task.WaitAll(ClientGroup.ShutdownGracefullyAsync(), ServerGroup.ShutdownGracefullyAsync(), WorkerGroup.ShutdownGracefullyAsync());
+            Task.WaitAll(ClientGroup.ShutdownGracefullyAsync(), ServerGroup.ShutdownGracefullyAsync(),
+                WorkerGroup.ShutdownGracefullyAsync());
         }
 
         private static void CloseChannel(IChannel cc)
@@ -144,3 +154,4 @@ namespace Helios.Tests.Performance.Channels
         }
     }
 }
+

@@ -1,17 +1,21 @@
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System;
 using System.Threading;
 using Helios.Util.TimedOps;
 
 namespace Helios.Concurrency
 {
-    abstract class ScheduledAsyncTask : ScheduledTask
+    internal abstract class ScheduledAsyncTask : ScheduledTask
     {
+        private static readonly Action<object> CancellationAction = s => ((ScheduledAsyncTask) s).Cancel();
         private readonly CancellationToken _cancellationToken;
         private CancellationTokenRegistration _cancellationTokenRegistration;
 
-        private static readonly Action<object> CancellationAction = s => ((ScheduledAsyncTask) s).Cancel();
-
-        protected ScheduledAsyncTask(AbstractScheduledEventExecutor executor, PreciseDeadline deadline, TaskCompletionSource promise, CancellationToken cancellationToken) 
+        protected ScheduledAsyncTask(AbstractScheduledEventExecutor executor, PreciseDeadline deadline,
+            TaskCompletionSource promise, CancellationToken cancellationToken)
             : base(executor, deadline, promise)
         {
             _cancellationToken = cancellationToken;
@@ -32,3 +36,4 @@ namespace Helios.Concurrency
         }
     }
 }
+

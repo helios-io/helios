@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using Helios.Buffers;
 using Helios.Channels;
@@ -8,12 +12,12 @@ namespace Helios.Codecs
     public class LengthFieldPrepender : MessageToMessageEncoder<IByteBuf>
     {
         private readonly ByteOrder _byteOrder;
-        private readonly int _lengthFieldLength;
-        private readonly bool _lengthFieldIncludesLengthFieldLength;
         private readonly int _lengthAdjustment;
+        private readonly bool _lengthFieldIncludesLengthFieldLength;
+        private readonly int _lengthFieldLength;
 
         /// <summary>
-        /// Creates a new <see cref="LengthFieldPrepender"/> instance.
+        ///     Creates a new <see cref="LengthFieldPrepender" /> instance.
         /// </summary>
         /// <param name="lengthFieldLength">
         ///     The length of the prepended length field.
@@ -25,7 +29,7 @@ namespace Helios.Codecs
         }
 
         /// <summary>
-        /// Creates a new <see cref="LengthFieldPrepender"/> instance.
+        ///     Creates a new <see cref="LengthFieldPrepender" /> instance.
         /// </summary>
         /// <param name="lengthFieldLength">
         ///     The length of the prepended length field.
@@ -41,7 +45,7 @@ namespace Helios.Codecs
         }
 
         /// <summary>
-        /// Creates a new <see cref="LengthFieldPrepender"/> instance.
+        ///     Creates a new <see cref="LengthFieldPrepender" /> instance.
         /// </summary>
         /// <param name="lengthFieldLength">
         ///     The length of the prepended length field.
@@ -54,7 +58,7 @@ namespace Helios.Codecs
         }
 
         /// <summary>
-        /// Creates a new <see cref="LengthFieldPrepender"/> instance.
+        ///     Creates a new <see cref="LengthFieldPrepender" /> instance.
         /// </summary>
         /// <param name="lengthFieldLength">
         ///     The length of the prepended length field.
@@ -65,15 +69,16 @@ namespace Helios.Codecs
         ///     to the value of the prepended length field.
         /// </param>
         /// <param name="lengthAdjustment">The compensation value to add to the value of the length field.</param>
-        public LengthFieldPrepender(int lengthFieldLength, int lengthAdjustment, bool lengthFieldIncludesLengthFieldLength)
+        public LengthFieldPrepender(int lengthFieldLength, int lengthAdjustment,
+            bool lengthFieldIncludesLengthFieldLength)
             : this(ByteOrder.LittleEndian, lengthFieldLength, lengthAdjustment, lengthFieldIncludesLengthFieldLength)
         {
         }
 
         /// <summary>
-        /// Creates a new <see cref="LengthFieldPrepender"/> instance.
+        ///     Creates a new <see cref="LengthFieldPrepender" /> instance.
         /// </summary>
-        /// <param name="byteOrder">The <see cref="ByteOrder"/> of the length field.</param>
+        /// <param name="byteOrder">The <see cref="ByteOrder" /> of the length field.</param>
         /// <param name="lengthFieldLength">
         ///     The length of the prepended length field.
         ///     Only 1, 2, 4, and 8 are allowed.
@@ -83,14 +88,15 @@ namespace Helios.Codecs
         ///     to the value of the prepended length field.
         /// </param>
         /// <param name="lengthAdjustment">The compensation value to add to the value of the length field.</param>
-        public LengthFieldPrepender(ByteOrder byteOrder, int lengthFieldLength, int lengthAdjustment, bool lengthFieldIncludesLengthFieldLength)
+        public LengthFieldPrepender(ByteOrder byteOrder, int lengthFieldLength, int lengthAdjustment,
+            bool lengthFieldIncludesLengthFieldLength)
         {
             if (lengthFieldLength != 1 && lengthFieldLength != 2 &&
                 lengthFieldLength != 4 && lengthFieldLength != 8)
             {
                 throw new ArgumentException(
                     "lengthFieldLength must be either 1, 2, 3, 4, or 8: " +
-                        lengthFieldLength, "lengthFieldLength");
+                    lengthFieldLength, "lengthFieldLength");
             }
 
             _byteOrder = byteOrder;
@@ -101,7 +107,7 @@ namespace Helios.Codecs
 
         protected override void Encode(IChannelHandlerContext context, IByteBuf message, List<object> output)
         {
-            int length = message.ReadableBytes + _lengthAdjustment;
+            var length = message.ReadableBytes + _lengthAdjustment;
             if (_lengthFieldIncludesLengthFieldLength)
             {
                 length += _lengthFieldLength;
@@ -119,14 +125,14 @@ namespace Helios.Codecs
                     {
                         throw new ArgumentException("length of object does not fit into one byte: " + length);
                     }
-                    output.Add(context.Allocator.Buffer(1).WithOrder(_byteOrder).WriteByte((byte)length));
+                    output.Add(context.Allocator.Buffer(1).WithOrder(_byteOrder).WriteByte((byte) length));
                     break;
                 case 2:
                     if (length >= 65536)
                     {
                         throw new ArgumentException("length of object does not fit into a short integer: " + length);
                     }
-                    output.Add(context.Allocator.Buffer(2).WithOrder(_byteOrder).WriteShort((short)length));
+                    output.Add(context.Allocator.Buffer(2).WithOrder(_byteOrder).WriteShort((short) length));
                     break;
                 case 4:
                     output.Add(context.Allocator.Buffer(4).WithOrder(_byteOrder).WriteInt(length));
@@ -142,3 +148,4 @@ namespace Helios.Codecs
         }
     }
 }
+

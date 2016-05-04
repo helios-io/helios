@@ -1,9 +1,11 @@
-﻿using Helios.Concurrency;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
 
 namespace Helios.Buffers
 {
     /// <summary>
-    /// Utility class for managing and creating unpooled buffers
+    ///     Utility class for managing and creating unpooled buffers
     /// </summary>
     public static class Unpooled
     {
@@ -28,7 +30,7 @@ namespace Helios.Buffers
 
         public static IByteBuf WrappedBuffer(byte[] bytes)
         {
-           return WrappedBuffer(bytes, 0, bytes.Length);
+            return WrappedBuffer(bytes, 0, bytes.Length);
         }
 
         public static IByteBuf WrappedBuffer(byte[] bytes, int index, int length)
@@ -39,3 +41,4 @@ namespace Helios.Buffers
         }
     }
 }
+

@@ -1,9 +1,13 @@
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System;
 
 namespace Helios.Buffers
 {
     /// <summary>
-    /// Abstract base class for <see cref="IByteBufAllocator"/> instances
+    ///     Abstract base class for <see cref="IByteBufAllocator" /> instances
     /// </summary>
     public abstract class AbstractByteBufAllocator : IByteBufAllocator
     {
@@ -28,6 +32,21 @@ namespace Helios.Buffers
         {
             return DirectBuffer(initialCapacity, maxCapacity);
         }
+
+        #region Range validation
+
+        private static void Validate(int initialCapacity, int maxCapacity)
+        {
+            if (initialCapacity < 0)
+                throw new ArgumentOutOfRangeException("initialCapacity", "initialCapacity must be greater than zero");
+
+            if (initialCapacity > maxCapacity)
+                throw new ArgumentOutOfRangeException("initialCapacity",
+                    string.Format("initialCapacity ({0}) must be greater than maxCapacity ({1})", initialCapacity,
+                        maxCapacity));
+        }
+
+        #endregion
 
         #region Direct buffer methods
 
@@ -54,18 +73,6 @@ namespace Helios.Buffers
         protected abstract IByteBuf NewDirectBuffer(int initialCapacity, int maxCapacity);
 
         #endregion
-
-        #region Range validation
-
-        private static void Validate(int initialCapacity, int maxCapacity)
-        {
-            if(initialCapacity < 0)
-                throw new ArgumentOutOfRangeException("initialCapacity", "initialCapacity must be greater than zero");
-
-            if(initialCapacity > maxCapacity)
-                throw new ArgumentOutOfRangeException("initialCapacity", string.Format("initialCapacity ({0}) must be greater than maxCapacity ({1})", initialCapacity, maxCapacity));
-        }
-
-        #endregion
     }
 }
+

@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Diagnostics.Contracts;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Helios.Concurrency;
 using Helios.Util;
@@ -13,23 +14,34 @@ namespace Helios.Channels
 {
     public class DefaultChannelHandlerInvoker : IChannelHandlerInvoker
     {
-        private static readonly Action<object> InvokeChannelReadCompleteAction = ctx => ChannelHandlerInvokerUtil.InvokeChannelReadCompleteNow((IChannelHandlerContext)ctx);
-        private static readonly Action<object> InvokeReadAction = ctx => ChannelHandlerInvokerUtil.InvokeReadNow((IChannelHandlerContext)ctx);
-        private static readonly Action<object> InvokeChannelWritabilityChangedAction = ctx => ChannelHandlerInvokerUtil.InvokeChannelWritabilityChangedNow((IChannelHandlerContext)ctx);
-        private static readonly Action<object> InvokeFlushAction = ctx => ChannelHandlerInvokerUtil.InvokeFlushNow((IChannelHandlerContext)ctx);
-        private static readonly Action<object, object> InvokeUserEventTriggeredAction = (ctx, evt) => ChannelHandlerInvokerUtil.InvokeUserEventTriggeredNow((IChannelHandlerContext)ctx, evt);
-        private static readonly Action<object, object> InvokeChannelReadAction = (ctx, msg) => ChannelHandlerInvokerUtil.InvokeChannelReadNow((IChannelHandlerContext)ctx, msg);
+        private static readonly Action<object> InvokeChannelReadCompleteAction =
+            ctx => ChannelHandlerInvokerUtil.InvokeChannelReadCompleteNow((IChannelHandlerContext) ctx);
 
-        static readonly Action<object, object> InvokeWriteAsyncAction = (p, msg) =>
+        private static readonly Action<object> InvokeReadAction =
+            ctx => ChannelHandlerInvokerUtil.InvokeReadNow((IChannelHandlerContext) ctx);
+
+        private static readonly Action<object> InvokeChannelWritabilityChangedAction =
+            ctx => ChannelHandlerInvokerUtil.InvokeChannelWritabilityChangedNow((IChannelHandlerContext) ctx);
+
+        private static readonly Action<object> InvokeFlushAction =
+            ctx => ChannelHandlerInvokerUtil.InvokeFlushNow((IChannelHandlerContext) ctx);
+
+        private static readonly Action<object, object> InvokeUserEventTriggeredAction =
+            (ctx, evt) => ChannelHandlerInvokerUtil.InvokeUserEventTriggeredNow((IChannelHandlerContext) ctx, evt);
+
+        private static readonly Action<object, object> InvokeChannelReadAction =
+            (ctx, msg) => ChannelHandlerInvokerUtil.InvokeChannelReadNow((IChannelHandlerContext) ctx, msg);
+
+        private static readonly Action<object, object> InvokeWriteAsyncAction = (p, msg) =>
         {
-            var promise = (TaskCompletionSource)p;
-            var context = (IChannelHandlerContext)promise.Task.AsyncState;
-            var channel = (AbstractChannel)context.Channel;
+            var promise = (TaskCompletionSource) p;
+            var context = (IChannelHandlerContext) promise.Task.AsyncState;
+            var channel = (AbstractChannel) context.Channel;
             // todo: size is counted twice. is that a problem?
-            int size = channel.EstimatorHandle.Size(msg);
+            var size = channel.EstimatorHandle.Size(msg);
             if (size > 0)
             {
-                ChannelOutboundBuffer buffer = channel.Unsafe.OutboundBuffer;
+                var buffer = channel.Unsafe.OutboundBuffer;
                 // Check for null as it may be set to null if the channel is closed already
                 if (buffer != null)
                 {
@@ -42,57 +54,59 @@ namespace Helios.Channels
         public DefaultChannelHandlerInvoker(IEventExecutor executor)
         {
             Contract.Requires(executor != null);
-            _executor = executor;
+            Executor = executor;
         }
 
-        private readonly IEventExecutor _executor;
-        public IEventExecutor Executor => _executor;
+        public IEventExecutor Executor { get; }
 
         public void InvokeChannelRegistered(IChannelHandlerContext ctx)
         {
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 ChannelHandlerInvokerUtil.InvokeChannelRegisteredNow(ctx);
             }
             else
             {
-                _executor.Execute(c => ChannelHandlerInvokerUtil.InvokeChannelRegisteredNow((IChannelHandlerContext)c), ctx);
+                Executor.Execute(c => ChannelHandlerInvokerUtil.InvokeChannelRegisteredNow((IChannelHandlerContext) c),
+                    ctx);
             }
         }
 
         public void InvokeChannelUnregistered(IChannelHandlerContext ctx)
         {
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 ChannelHandlerInvokerUtil.InvokeChannelUnregisteredNow(ctx);
             }
             else
             {
-                _executor.Execute(c => ChannelHandlerInvokerUtil.InvokeChannelUnregisteredNow((IChannelHandlerContext)c), ctx);
+                Executor.Execute(
+                    c => ChannelHandlerInvokerUtil.InvokeChannelUnregisteredNow((IChannelHandlerContext) c), ctx);
             }
         }
 
         public void InvokeChannelActive(IChannelHandlerContext ctx)
         {
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 ChannelHandlerInvokerUtil.InvokeChannelActiveNow(ctx);
             }
             else
             {
-                _executor.Execute(c => ChannelHandlerInvokerUtil.InvokeChannelActiveNow((IChannelHandlerContext)c), ctx);
+                Executor.Execute(c => ChannelHandlerInvokerUtil.InvokeChannelActiveNow((IChannelHandlerContext) c), ctx);
             }
         }
 
         public void InvokeChannelInactive(IChannelHandlerContext ctx)
         {
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 ChannelHandlerInvokerUtil.InvokeChannelInactiveNow(ctx);
             }
             else
             {
-                _executor.Execute(c => ChannelHandlerInvokerUtil.InvokeChannelInactiveNow((IChannelHandlerContext)c), ctx);
+                Executor.Execute(c => ChannelHandlerInvokerUtil.InvokeChannelInactiveNow((IChannelHandlerContext) c),
+                    ctx);
             }
         }
 
@@ -100,7 +114,7 @@ namespace Helios.Channels
         {
             Contract.Requires(cause != null);
 
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 ChannelHandlerInvokerUtil.InvokeExceptionCaughtNow(ctx, cause);
             }
@@ -108,14 +122,19 @@ namespace Helios.Channels
             {
                 try
                 {
-                    _executor.Execute((c, e) => ChannelHandlerInvokerUtil.InvokeExceptionCaughtNow((IChannelHandlerContext)c, (Exception)e), ctx, cause);
+                    Executor.Execute(
+                        (c, e) =>
+                            ChannelHandlerInvokerUtil.InvokeExceptionCaughtNow((IChannelHandlerContext) c, (Exception) e),
+                        ctx, cause);
                 }
                 catch (Exception t)
                 {
                     if (DefaultChannelPipeline.Logger.IsWarningEnabled)
                     {
-                        DefaultChannelPipeline.Logger.Warning("Failed to submit an ExceptionCaught() event. Cause: {0}", t);
-                        DefaultChannelPipeline.Logger.Warning("The ExceptionCaught() event that was failed to submit was: {0}", cause);
+                        DefaultChannelPipeline.Logger.Warning(
+                            "Failed to submit an ExceptionCaught() event. Cause: {0}", t);
+                        DefaultChannelPipeline.Logger.Warning(
+                            "The ExceptionCaught() event that was failed to submit was: {0}", cause);
                     }
                 }
             }
@@ -125,7 +144,7 @@ namespace Helios.Channels
         {
             Contract.Requires(evt != null);
 
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 ChannelHandlerInvokerUtil.InvokeUserEventTriggeredNow(ctx, evt);
             }
@@ -139,7 +158,7 @@ namespace Helios.Channels
         {
             Contract.Requires(msg != null);
 
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 ChannelHandlerInvokerUtil.InvokeChannelReadNow(ctx, msg);
             }
@@ -151,25 +170,25 @@ namespace Helios.Channels
 
         public void InvokeChannelReadComplete(IChannelHandlerContext ctx)
         {
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 ChannelHandlerInvokerUtil.InvokeChannelReadCompleteNow(ctx);
             }
             else
             {
-                _executor.Execute(InvokeChannelReadCompleteAction, ctx);
+                Executor.Execute(InvokeChannelReadCompleteAction, ctx);
             }
         }
 
         public void InvokeChannelWritabilityChanged(IChannelHandlerContext ctx)
         {
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 ChannelHandlerInvokerUtil.InvokeChannelWritabilityChangedNow(ctx);
             }
             else
             {
-                _executor.Execute(InvokeChannelWritabilityChangedAction, ctx);
+                Executor.Execute(InvokeChannelWritabilityChangedAction, ctx);
             }
         }
 
@@ -183,14 +202,11 @@ namespace Helios.Channels
             //    return;
             //}
 
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 return ChannelHandlerInvokerUtil.InvokeBindAsyncNow(ctx, localAddress);
             }
-            else
-            {
-                return SafeExecuteOutboundAsync(() => ChannelHandlerInvokerUtil.InvokeBindAsyncNow(ctx, localAddress));
-            }
+            return SafeExecuteOutboundAsync(() => ChannelHandlerInvokerUtil.InvokeBindAsyncNow(ctx, localAddress));
         }
 
         public Task InvokeConnectAsync(
@@ -204,14 +220,13 @@ namespace Helios.Channels
             //    return;
             //}
 
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 return ChannelHandlerInvokerUtil.InvokeConnectAsyncNow(ctx, remoteAddress, localAddress);
             }
-            else
-            {
-                return SafeExecuteOutboundAsync(() => ChannelHandlerInvokerUtil.InvokeConnectAsyncNow(ctx, remoteAddress, localAddress));
-            }
+            return
+                SafeExecuteOutboundAsync(
+                    () => ChannelHandlerInvokerUtil.InvokeConnectAsyncNow(ctx, remoteAddress, localAddress));
         }
 
         public Task InvokeDisconnectAsync(IChannelHandlerContext ctx)
@@ -222,14 +237,11 @@ namespace Helios.Channels
             //    return;
             //}
 
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 return ChannelHandlerInvokerUtil.InvokeDisconnectAsyncNow(ctx);
             }
-            else
-            {
-                return SafeExecuteOutboundAsync(() => ChannelHandlerInvokerUtil.InvokeDisconnectAsyncNow(ctx));
-            }
+            return SafeExecuteOutboundAsync(() => ChannelHandlerInvokerUtil.InvokeDisconnectAsyncNow(ctx));
         }
 
         public Task InvokeCloseAsync(IChannelHandlerContext ctx)
@@ -240,14 +252,11 @@ namespace Helios.Channels
             //    return;
             //}
 
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 return ChannelHandlerInvokerUtil.InvokeCloseAsyncNow(ctx);
             }
-            else
-            {
-                return SafeExecuteOutboundAsync(() => ChannelHandlerInvokerUtil.InvokeCloseAsyncNow(ctx));
-            }
+            return SafeExecuteOutboundAsync(() => ChannelHandlerInvokerUtil.InvokeCloseAsyncNow(ctx));
         }
 
         public Task InvokeDeregisterAsync(IChannelHandlerContext ctx)
@@ -258,25 +267,22 @@ namespace Helios.Channels
             //    return;
             //}
 
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 return ChannelHandlerInvokerUtil.InvokeDeregisterAsyncNow(ctx);
             }
-            else
-            {
-                return SafeExecuteOutboundAsync(() => ChannelHandlerInvokerUtil.InvokeDeregisterAsyncNow(ctx));
-            }
+            return SafeExecuteOutboundAsync(() => ChannelHandlerInvokerUtil.InvokeDeregisterAsyncNow(ctx));
         }
 
         public void InvokeRead(IChannelHandlerContext ctx)
         {
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 ChannelHandlerInvokerUtil.InvokeReadNow(ctx);
             }
             else
             {
-                _executor.Execute(InvokeReadAction, ctx);
+                Executor.Execute(InvokeReadAction, ctx);
             }
         }
 
@@ -289,57 +295,54 @@ namespace Helios.Channels
             //    return;
             //}
 
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 return ChannelHandlerInvokerUtil.InvokeWriteAsyncNow(ctx, msg);
             }
-            else
+            var channel = (AbstractChannel) ctx.Channel;
+            var promise = new TaskCompletionSource(ctx);
+
+            try
             {
-                var channel = (AbstractChannel)ctx.Channel;
-                var promise = new TaskCompletionSource(ctx);
-
-                try
+                var size = channel.EstimatorHandle.Size(msg);
+                if (size > 0)
                 {
-                    int size = channel.EstimatorHandle.Size(msg);
-                    if (size > 0)
+                    var buffer = channel.Unsafe.OutboundBuffer;
+                    // Check for null as it may be set to null if the channel is closed already
+                    if (buffer != null)
                     {
-                        ChannelOutboundBuffer buffer = channel.Unsafe.OutboundBuffer;
-                        // Check for null as it may be set to null if the channel is closed already
-                        if (buffer != null)
-                        {
-                            buffer.IncrementPendingOutboundBytes(size);
-                        }
+                        buffer.IncrementPendingOutboundBytes(size);
                     }
+                }
 
-                    _executor.Execute(InvokeWriteAsyncAction, promise, msg);
-                }
-                catch (Exception cause)
-                {
-                    ReferenceCountUtil.Release(msg);
-                    promise.TrySetException(cause);
-                }
-                return promise.Task;
+                Executor.Execute(InvokeWriteAsyncAction, promise, msg);
             }
+            catch (Exception cause)
+            {
+                ReferenceCountUtil.Release(msg);
+                promise.TrySetException(cause);
+            }
+            return promise.Task;
         }
 
         public void InvokeFlush(IChannelHandlerContext ctx)
         {
-            if (_executor.InEventLoop)
+            if (Executor.InEventLoop)
             {
                 ChannelHandlerInvokerUtil.InvokeFlushNow(ctx);
             }
             else
             {
-                _executor.Execute(InvokeFlushAction, ctx);
+                Executor.Execute(InvokeFlushAction, ctx);
             }
         }
 
-        void SafeProcessInboundMessage(Action<object, object> action, object state, object msg)
+        private void SafeProcessInboundMessage(Action<object, object> action, object state, object msg)
         {
-            bool success = false;
+            var success = false;
             try
             {
-                _executor.Execute(action, state, msg);
+                Executor.Execute(action, state, msg);
                 success = true;
             }
             finally
@@ -351,12 +354,13 @@ namespace Helios.Channels
             }
         }
 
-        Task SafeExecuteOutboundAsync(Func<Task> function)
+        private Task SafeExecuteOutboundAsync(Func<Task> function)
         {
             var promise = new TaskCompletionSource();
             try
             {
-                _executor.Execute((p, func) => ((Func<Task>)func)().LinkOutcome((TaskCompletionSource)p), promise, function);
+                Executor.Execute((p, func) => ((Func<Task>) func)().LinkOutcome((TaskCompletionSource) p), promise,
+                    function);
             }
             catch (Exception cause)
             {
@@ -366,3 +370,4 @@ namespace Helios.Channels
         }
     }
 }
+

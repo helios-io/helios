@@ -1,17 +1,21 @@
-﻿using Helios.Concurrency.Impl;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using Helios.Concurrency.Impl;
 using Helios.Ops;
 
 namespace Helios.Concurrency
 {
     /// <summary>
-    /// Factory class for creating Fiber instances
+    ///     Factory class for creating Fiber instances
     /// </summary>
     public static class FiberFactory
     {
         /// <summary>
-        /// 3 threads is the default for a constrained DedicatedThreadPoolFiber
+        ///     3 threads is the default for a constrained DedicatedThreadPoolFiber
         /// </summary>
-        public const int DefaultLimitedThreadPoolSize = 3; 
+        public const int DefaultLimitedThreadPoolSize = 3;
 
         public static IFiber CreateFiber(FiberMode mode = FiberMode.SingleThreaded)
         {
@@ -56,3 +60,4 @@ namespace Helios.Concurrency
         }
     }
 }
+

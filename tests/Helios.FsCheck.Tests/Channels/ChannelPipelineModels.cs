@@ -1,18 +1,18 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net;
-using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using FsCheck;
 using FsCheck.Experimental;
-using FSharpx;
 using Helios.Buffers;
 using Helios.Channels;
 using Helios.Channels.Embedded;
-using Microsoft.FSharp.Core;
-using Random = FsCheck.Random;
-using Task = System.Threading.Tasks.Task;
 using static Helios.FsCheck.Tests.FsharpDelegateHelper;
 
 // ReSharper disable RedundantOverridenMember
@@ -21,10 +21,10 @@ namespace Helios.FsCheck.Tests.Channels
 {
     public class PipelineModelNode
     {
-        public string Name;
         public NamedChannelHandler Handler;
-        public PipelineModelNode Previous;
+        public string Name;
         public PipelineModelNode Next;
+        public PipelineModelNode Previous;
 
         public override string ToString()
         {
@@ -33,16 +33,16 @@ namespace Helios.FsCheck.Tests.Channels
 
         public PipelineModelNode Clone()
         {
-            return new PipelineModelNode() { Handler = Handler, Next = Next, Name = Name, Previous = Previous };
+            return new PipelineModelNode {Handler = Handler, Next = Next, Name = Name, Previous = Previous};
         }
     }
 
     public class PipelineMutationModel
     {
-        public PipelineModelNode Head;
-        public PipelineModelNode Tail;
         public Queue<Tuple<string, SupportedEvent>> EventQueue;
+        public PipelineModelNode Head;
         public int Length;
+        public PipelineModelNode Tail;
 
         public bool Contains(string name)
         {
@@ -110,16 +110,28 @@ namespace Helios.FsCheck.Tests.Channels
                 next = next.Next;
                 current = clone;
             }
-            return new PipelineMutationModel() { Head = newHead, Length = Length, Tail = current, EventQueue = new Queue<Tuple<string, SupportedEvent>>() };
+            return new PipelineMutationModel
+            {
+                Head = newHead,
+                Length = Length,
+                Tail = current,
+                EventQueue = new Queue<Tuple<string, SupportedEvent>>()
+            };
         }
 
         public static PipelineMutationModel Fresh()
         {
-            var head = new PipelineModelNode() { Handler = new NamedChannelHandler("HEAD"), Name = "HEAD" };
-            var tail = new PipelineModelNode() { Handler = new NamedChannelHandler("TAIL"), Name = "TAIL" };
+            var head = new PipelineModelNode {Handler = new NamedChannelHandler("HEAD"), Name = "HEAD"};
+            var tail = new PipelineModelNode {Handler = new NamedChannelHandler("TAIL"), Name = "TAIL"};
             head.Next = tail;
             tail.Previous = head;
-            return new PipelineMutationModel() { Length = 2, Head = head, Tail = tail, EventQueue = new Queue<Tuple<string, SupportedEvent>>() };
+            return new PipelineMutationModel
+            {
+                Length = 2,
+                Head = head,
+                Tail = tail,
+                EventQueue = new Queue<Tuple<string, SupportedEvent>>()
+            };
         }
     }
 
@@ -152,6 +164,38 @@ namespace Helios.FsCheck.Tests.Channels
 
     public class NamedChannelHandler : ChannelHandlerAdapter
     {
+        private string _eventsStr;
+
+        public NamedChannelHandler(string name)
+        {
+            Name = name;
+            Event |= SupportedEvent.None;
+        }
+
+        public SupportedEvent Event { get; internal set; }
+
+        public SupportedEvent LastFiredEvent { get; private set; } = SupportedEvent.None;
+
+        public string Name { get; }
+
+        protected string EventsStr
+        {
+            get
+            {
+                if (_eventsStr == null)
+                {
+                    var supportedEvents = new List<SupportedEvent>();
+                    foreach (var value in Enum.GetValues(typeof (SupportedEvent)).Cast<SupportedEvent>())
+                    {
+                        if (Event.HasFlag(value))
+                            supportedEvents.Add(value);
+                    }
+                    _eventsStr = string.Join("|", supportedEvents);
+                }
+                return _eventsStr;
+            }
+        }
+
         public static Gen<string> CreateName()
         {
             return Arb.Default.Char().Generator.ArrayOf(30).Select(x => new string(x));
@@ -168,12 +212,8 @@ namespace Helios.FsCheck.Tests.Channels
                 AllEventsChannelHandler.GenAllEventsHandler());
         }
 
-        public SupportedEvent Event { get; internal set; }
-
-        public SupportedEvent LastFiredEvent { get; private set; } = SupportedEvent.None;
-
         /// <summary>
-        /// NOTE: NOT AN IDEMPOTENT OPERATION. Clears the last fired event.
+        ///     NOTE: NOT AN IDEMPOTENT OPERATION. Clears the last fired event.
         /// </summary>
         /// <param name="inputQueue">The queue we're going to input operations into</param>
         public void RecordLastFiredEvent(Queue<Tuple<string, SupportedEvent>> inputQueue)
@@ -184,14 +224,6 @@ namespace Helios.FsCheck.Tests.Channels
                 LastFiredEvent = SupportedEvent.None;
             }
         }
-
-        public NamedChannelHandler(string name)
-        {
-            Name = name;
-            Event |= SupportedEvent.None;
-        }
-
-        public string Name { get; }
 
         public bool SupportsEvent(SupportedEvent e)
         {
@@ -206,29 +238,8 @@ namespace Helios.FsCheck.Tests.Channels
             }
         }
 
-        private string _eventsStr;
-
-        protected string EventsStr
-        {
-            get
-            {
-                if (_eventsStr == null)
-                {
-                    var supportedEvents = new List<SupportedEvent>();
-                    foreach (var value in Enum.GetValues(typeof(SupportedEvent)).Cast<SupportedEvent>())
-                    {
-                        if (Event.HasFlag(value))
-                            supportedEvents.Add(value);
-                    }
-                    _eventsStr = string.Join("|", supportedEvents);
-                }
-                return _eventsStr;
-            }
-        }
-
         public override string ToString()
         {
-
             return $"NamedChannelHandler(Name={Name}, Events={EventsStr})";
         }
 
@@ -366,22 +377,22 @@ namespace Helios.FsCheck.Tests.Channels
 
     public class OutboundNamedChannelHandler : NamedChannelHandler
     {
-        public static Gen<NamedChannelHandler> CreateOutboundHandler()
-        {
-            return CreateName().Select(s => (NamedChannelHandler)new OutboundNamedChannelHandler(s));
-        }
-
         public OutboundNamedChannelHandler(string name) : base(name)
         {
             Event = SupportedEvent.WriteAsync
-                     | SupportedEvent.Flush
-                     | SupportedEvent.BindAsync
-                     | SupportedEvent.ConnectAsync
-                     | SupportedEvent.DisconnectAsync
-                     | SupportedEvent.CloseAsync
-                     | SupportedEvent.ExceptionCaught
-                     | SupportedEvent.DeregisterAsync
-                     | SupportedEvent.Read;
+                    | SupportedEvent.Flush
+                    | SupportedEvent.BindAsync
+                    | SupportedEvent.ConnectAsync
+                    | SupportedEvent.DisconnectAsync
+                    | SupportedEvent.CloseAsync
+                    | SupportedEvent.ExceptionCaught
+                    | SupportedEvent.DeregisterAsync
+                    | SupportedEvent.Read;
+        }
+
+        public static Gen<NamedChannelHandler> CreateOutboundHandler()
+        {
+            return CreateName().Select(s => (NamedChannelHandler) new OutboundNamedChannelHandler(s));
         }
 
         public override Task WriteAsync(IChannelHandlerContext context, object message)
@@ -433,7 +444,15 @@ namespace Helios.FsCheck.Tests.Channels
     public class AllEventsChannelHandler : NamedChannelHandler
     {
         public static readonly SupportedEvent[] AllValidEvent =
-            Enum.GetValues(typeof(SupportedEvent)).Cast<SupportedEvent>().Except(new[] { SupportedEvent.None }).ToArray();
+            Enum.GetValues(typeof (SupportedEvent)).Cast<SupportedEvent>().Except(new[] {SupportedEvent.None}).ToArray();
+
+        public AllEventsChannelHandler(string name, SupportedEvent[] @event) : base(name)
+        {
+            foreach (var e in @event.Distinct())
+            {
+                Event |= e;
+            }
+        }
 
         public static Gen<SupportedEvent[]> GenEvents()
         {
@@ -447,17 +466,10 @@ namespace Helios.FsCheck.Tests.Channels
 
         public static Gen<NamedChannelHandler> GenAllEventsHandler()
         {
-            Func<string, SupportedEvent[], NamedChannelHandler> producer = (s, e) => new AllEventsChannelHandler(s, e) as NamedChannelHandler;
-            var fsFunc = FsharpDelegateHelper.Create(producer);
+            Func<string, SupportedEvent[], NamedChannelHandler> producer =
+                (s, e) => new AllEventsChannelHandler(s, e) as NamedChannelHandler;
+            var fsFunc = Create(producer);
             return Gen.Map2(fsFunc, CreateName(), GenEvents());
-        }
-
-        public AllEventsChannelHandler(string name, SupportedEvent[] @event) : base(name)
-        {
-            foreach (var e in @event.Distinct())
-            {
-                Event |= e;
-            }
         }
 
         public override void ChannelRegistered(IChannelHandlerContext context)
@@ -560,6 +572,39 @@ namespace Helios.FsCheck.Tests.Channels
 
     public class ChannelPipelineModel : Machine<IChannelPipeline, PipelineMutationModel>
     {
+        public static readonly Gen<Operation<IChannelPipeline, PipelineMutationModel>>[] MutationHandlers =
+        {
+            AddFirst.AddFirstGen(), AddLast.AddLastGen(),
+            RemoveFirst.RemoveFirstGen(), RemoveLast.RemoveLastGen(), ContainsAllModelHandlers.GenContainsAll()
+        };
+
+        public static readonly Gen<Operation<IChannelPipeline, PipelineMutationModel>>[] InvocationHandlers =
+        {
+            InvokeChannelInactive.GenInvocation(), InvokeChannelActive.GenInvocation(),
+            InvokeChannelRead.GenInvocation(),
+            InvokeChannelReadComplete.GenInvocation(), InvokeChannelWritabilityChanged.GenInvocation(),
+            InvokeBindAsync.GenInvocation(),
+            InvokeConnectAsync.GenInvocation(), InvokeChannelRegistered.GenInvocation(),
+            InvokeExceptionCaught.GenInvocation(), InvokeUserEventTriggered.GenInvocation(),
+            InvokeFlush.GenInvocation(), InvokeRead.GenInvocation(), InvokeWriteAsync.GenInvocation(),
+            InvokeDisconnectAsync.GenInvocation()
+            // InvokeChannelUnregistered.GenInvocation(), kills the spec
+            // InvokeDeregisterAsync.GenInvocation(), kills the spec
+        };
+
+        public static readonly Gen<Operation<IChannelPipeline, PipelineMutationModel>>[] AllHandlers =
+            MutationHandlers.Concat(InvocationHandlers).ToArray();
+
+        private readonly bool _supportsEventFiring;
+
+        public ChannelPipelineModel(bool supportsEventFiring = false)
+        {
+            _supportsEventFiring = supportsEventFiring;
+        }
+
+        public override Arbitrary<Setup<IChannelPipeline, PipelineMutationModel>> Setup
+            => Arb.From(Gen.Fresh(() => (Setup<IChannelPipeline, PipelineMutationModel>) new PipelineSetup()));
+
         public static PipelineMutationModel AddToHead(PipelineMutationModel obj0, PipelineModelNode newNode)
         {
             var model = obj0.Clone();
@@ -620,33 +665,6 @@ namespace Helios.FsCheck.Tests.Channels
             return queue;
         }
 
-        private readonly bool _supportsEventFiring;
-
-        public ChannelPipelineModel(bool supportsEventFiring = false)
-        {
-            _supportsEventFiring = supportsEventFiring;
-        }
-
-
-        public static readonly Gen<Operation<IChannelPipeline, PipelineMutationModel>>[] MutationHandlers = {
-            AddFirst.AddFirstGen(), AddLast.AddLastGen(),
-            RemoveFirst.RemoveFirstGen(), RemoveLast.RemoveLastGen(), ContainsAllModelHandlers.GenContainsAll()
-        };
-
-        public static readonly Gen<Operation<IChannelPipeline, PipelineMutationModel>>[] InvocationHandlers =
-        {
-            InvokeChannelInactive.GenInvocation(), InvokeChannelActive.GenInvocation(), InvokeChannelRead.GenInvocation(),
-            InvokeChannelReadComplete.GenInvocation(), InvokeChannelWritabilityChanged.GenInvocation(), InvokeBindAsync.GenInvocation(),
-            InvokeConnectAsync.GenInvocation(), InvokeChannelRegistered.GenInvocation(),
-            InvokeExceptionCaught.GenInvocation(), InvokeUserEventTriggered.GenInvocation(),
-            InvokeFlush.GenInvocation(), InvokeRead.GenInvocation(), InvokeWriteAsync.GenInvocation(), InvokeDisconnectAsync.GenInvocation(),
-            // InvokeChannelUnregistered.GenInvocation(), kills the spec
-            // InvokeDeregisterAsync.GenInvocation(), kills the spec
-        };
-
-        public static readonly Gen<Operation<IChannelPipeline, PipelineMutationModel>>[] AllHandlers =
-            MutationHandlers.Concat(InvocationHandlers).ToArray();
-
         public override Gen<Operation<IChannelPipeline, PipelineMutationModel>> Next(PipelineMutationModel obj0)
         {
             if (!_supportsEventFiring)
@@ -654,12 +672,9 @@ namespace Helios.FsCheck.Tests.Channels
             return Gen.OneOf(AllHandlers);
         }
 
-        public override Arbitrary<Setup<IChannelPipeline, PipelineMutationModel>> Setup
-            => Arb.From(Gen.Fresh(() => (Setup<IChannelPipeline, PipelineMutationModel>)new PipelineSetup()));
-
         #region Mutation Commands
 
-        class PipelineSetup : Setup<IChannelPipeline, PipelineMutationModel>
+        private class PipelineSetup : Setup<IChannelPipeline, PipelineMutationModel>
         {
             public override IChannelPipeline Actual()
             {
@@ -674,12 +689,8 @@ namespace Helios.FsCheck.Tests.Channels
 
         internal abstract class DoAnythingWithHandler : Operation<IChannelPipeline, PipelineMutationModel>
         {
-            protected DoAnythingWithHandler()
-            {
-                // always reset the queue
-            }
-
-            protected Property CheckEventInQueue(NamedChannelHandler mFirst, SupportedEvent e, Property prop, Queue<Tuple<string, SupportedEvent>> eventQueue)
+            protected Property CheckEventInQueue(NamedChannelHandler mFirst, SupportedEvent e, Property prop,
+                Queue<Tuple<string, SupportedEvent>> eventQueue)
             {
                 if (mFirst.SupportsEvent(e))
                 {
@@ -708,8 +719,7 @@ namespace Helios.FsCheck.Tests.Channels
 
             protected PipelineModelNode NewHandler()
             {
-
-                var node = new PipelineModelNode() { Handler = Handler, Name = Name };
+                var node = new PipelineModelNode {Handler = Handler, Name = Name};
                 return node;
             }
 
@@ -727,12 +737,15 @@ namespace Helios.FsCheck.Tests.Channels
 
         internal class AddFirst : AddHandler
         {
-            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> AddFirstGen()
-            {
-                return NamedChannelHandler.AllHandlers().Select(x => (Operation<IChannelPipeline, PipelineMutationModel>)new AddFirst(x));
-            }
             public AddFirst(NamedChannelHandler handler) : base(handler)
             {
+            }
+
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> AddFirstGen()
+            {
+                return
+                    NamedChannelHandler.AllHandlers()
+                        .Select(x => (Operation<IChannelPipeline, PipelineMutationModel>) new AddFirst(x));
             }
 
             public override Property Check(IChannelPipeline obj0, PipelineMutationModel obj1)
@@ -746,7 +759,8 @@ namespace Helios.FsCheck.Tests.Channels
                 var pLength = pipeline.Count();
                 var prop = (pFirst == mFirst)
                     .Label($"Expected head of pipeline to be {mFirst}, was {pFirst}")
-                    .And(() => pLength == obj1.Length).Label($"Expected length of pipeline to be {obj1.Length}, was {pLength}");
+                    .And(() => pLength == obj1.Length)
+                    .Label($"Expected length of pipeline to be {obj1.Length}, was {pLength}");
                 // TODO: need some kind of "when" syntax for conditionally checking a property
                 return CheckEventInQueue(mFirst, SupportedEvent.HandlerAdded, prop, LastEventHistory(obj0));
             }
@@ -757,19 +771,19 @@ namespace Helios.FsCheck.Tests.Channels
                 var model = AddToHead(obj0, newNode);
                 return model;
             }
-
-
         }
 
         internal class AddLast : AddHandler
         {
-            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> AddLastGen()
-            {
-                return NamedChannelHandler.AllHandlers().Select(x => (Operation<IChannelPipeline, PipelineMutationModel>)new AddLast(x));
-            }
-
             public AddLast(NamedChannelHandler handler) : base(handler)
             {
+            }
+
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> AddLastGen()
+            {
+                return
+                    NamedChannelHandler.AllHandlers()
+                        .Select(x => (Operation<IChannelPipeline, PipelineMutationModel>) new AddLast(x));
             }
 
             public override Property Check(IChannelPipeline obj0, PipelineMutationModel obj1)
@@ -783,7 +797,8 @@ namespace Helios.FsCheck.Tests.Channels
                 var pLength = pipeline.Count();
                 var prop = (pFirst == mFirst)
                     .Label($"Expected tail of pipeline to be {mFirst}, was {pFirst}")
-                    .And(() => pLength == obj1.Length).Label($"Expected length of pipeline to be {obj1.Length}, was {pLength}");
+                    .And(() => pLength == obj1.Length)
+                    .Label($"Expected length of pipeline to be {obj1.Length}, was {pLength}");
 
                 return CheckEventInQueue(mFirst, SupportedEvent.HandlerAdded, prop, LastEventHistory(obj0));
             }
@@ -794,14 +809,13 @@ namespace Helios.FsCheck.Tests.Channels
                 var model = AddToTail(obj0, newNode);
                 return model;
             }
-
         }
 
-        class RemoveFirst : DoAnythingWithHandler
+        private class RemoveFirst : DoAnythingWithHandler
         {
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> RemoveFirstGen()
             {
-                return Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new RemoveFirst());
+                return Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new RemoveFirst());
             }
 
             public override Property Check(IChannelPipeline obj0, PipelineMutationModel obj1)
@@ -825,8 +839,8 @@ namespace Helios.FsCheck.Tests.Channels
                 if (removed != null && removed.SupportsEvent(SupportedEvent.HandlerRemoved))
                 {
                     prop = prop.And(() => removed.LastFiredEvent == SupportedEvent.HandlerRemoved)
-                    .Label(
-                        $"Expected last fired property of handler to be {SupportedEvent.HandlerRemoved}, but was {removed.LastFiredEvent}");
+                        .Label(
+                            $"Expected last fired property of handler to be {SupportedEvent.HandlerRemoved}, but was {removed.LastFiredEvent}");
                 }
 
                 return prop;
@@ -843,11 +857,11 @@ namespace Helios.FsCheck.Tests.Channels
             }
         }
 
-        class RemoveLast : DoAnythingWithHandler
+        private class RemoveLast : DoAnythingWithHandler
         {
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> RemoveLastGen()
             {
-                return Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new RemoveLast());
+                return Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new RemoveLast());
             }
 
             public override Property Check(IChannelPipeline obj0, PipelineMutationModel obj1)
@@ -871,8 +885,8 @@ namespace Helios.FsCheck.Tests.Channels
                 if (removed != null && removed.SupportsEvent(SupportedEvent.HandlerRemoved))
                 {
                     prop = prop.And(() => removed.LastFiredEvent == SupportedEvent.HandlerRemoved)
-                    .Label(
-                        $"Expected last fired property of handler to be {SupportedEvent.HandlerRemoved}, but was {removed.LastFiredEvent}");
+                        .Label(
+                            $"Expected last fired property of handler to be {SupportedEvent.HandlerRemoved}, but was {removed.LastFiredEvent}");
                 }
 
                 return prop;
@@ -889,11 +903,12 @@ namespace Helios.FsCheck.Tests.Channels
             }
         }
 
-        class ContainsAllModelHandlers : DoAnythingWithHandler
+        private class ContainsAllModelHandlers : DoAnythingWithHandler
         {
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenContainsAll()
             {
-                return Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new ContainsAllModelHandlers());
+                return
+                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new ContainsAllModelHandlers());
             }
 
             public override Property Check(IChannelPipeline obj0, PipelineMutationModel obj1)
@@ -909,7 +924,6 @@ namespace Helios.FsCheck.Tests.Channels
                         return false.Label($"Expected to find handler {inPipe} in pipeline, but did not");
                     }
                     next = next.Next;
-
                 }
                 return true.ToProperty();
             }
@@ -926,17 +940,18 @@ namespace Helios.FsCheck.Tests.Channels
 
         private abstract class ChannelInvocationBaseEvent : DoAnythingWithHandler
         {
-            public SupportedEvent Event { get; private set; }
-
             protected ChannelInvocationBaseEvent(SupportedEvent es)
             {
                 Event = es;
             }
 
+            public SupportedEvent Event { get; }
+
             public override bool Pre(PipelineMutationModel _arg1)
             {
                 var outcome = _arg1.PredictedOutcome(Event);
-                return _arg1.Length > 2 && base.Pre(_arg1) && outcome.Any(); // need to have at least 1 handler who can take the event
+                return _arg1.Length > 2 && base.Pre(_arg1) && outcome.Any();
+                    // need to have at least 1 handler who can take the event
             }
 
             public override Property Check(IChannelPipeline obj0, PipelineMutationModel obj1)
@@ -945,7 +960,8 @@ namespace Helios.FsCheck.Tests.Channels
                 var actual = Execute(obj0);
                 return
                     model.SequenceEqual(actual)
-                        .Label($"Expected model ({string.Join(",", model)}) to equal actual ({string.Join(",", actual)})");
+                        .Label(
+                            $"Expected model ({string.Join(",", model)}) to equal actual ({string.Join(",", actual)})");
             }
 
             protected Queue<Tuple<string, SupportedEvent>> Execute(IChannelPipeline pipeline)
@@ -968,13 +984,13 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeChannelActive : ChannelInvocationBaseEvent
         {
-            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
-            {
-                return Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeChannelActive());
-            }
-
             public InvokeChannelActive() : base(SupportedEvent.ChannelActive)
             {
+            }
+
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeChannelActive());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -985,13 +1001,13 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeChannelInactive : ChannelInvocationBaseEvent
         {
-            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
-            {
-                return Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeChannelInactive());
-            }
-
             public InvokeChannelInactive() : base(SupportedEvent.ChannelInactive)
             {
+            }
+
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeChannelInactive());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1002,13 +1018,13 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeChannelRead : ChannelInvocationBaseEvent
         {
-            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
-            {
-                return Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeChannelRead());
-            }
-
             public InvokeChannelRead() : base(SupportedEvent.ChannelRead)
             {
+            }
+
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeChannelRead());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1019,14 +1035,14 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeChannelReadComplete : ChannelInvocationBaseEvent
         {
+            public InvokeChannelReadComplete() : base(SupportedEvent.ChannelReadComplete)
+            {
+            }
+
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return
-                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeChannelReadComplete());
-            }
-
-            public InvokeChannelReadComplete() : base(SupportedEvent.ChannelReadComplete)
-            {
+                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeChannelReadComplete());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1037,14 +1053,15 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeChannelWritabilityChanged : ChannelInvocationBaseEvent
         {
+            public InvokeChannelWritabilityChanged() : base(SupportedEvent.ChannelWritabilityChanged)
+            {
+            }
+
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return
-                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeChannelWritabilityChanged());
-            }
-
-            public InvokeChannelWritabilityChanged() : base(SupportedEvent.ChannelWritabilityChanged)
-            {
+                    Gen.Fresh(
+                        () => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeChannelWritabilityChanged());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1055,14 +1072,14 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeUserEventTriggered : ChannelInvocationBaseEvent
         {
+            public InvokeUserEventTriggered() : base(SupportedEvent.UserEventTriggered)
+            {
+            }
+
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return
-                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeUserEventTriggered());
-            }
-
-            public InvokeUserEventTriggered() : base(SupportedEvent.UserEventTriggered)
-            {
+                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeUserEventTriggered());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1073,14 +1090,14 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeWriteAsync : ChannelInvocationBaseEvent
         {
+            public InvokeWriteAsync() : base(SupportedEvent.WriteAsync)
+            {
+            }
+
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return
-                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeWriteAsync());
-            }
-
-            public InvokeWriteAsync() : base(SupportedEvent.WriteAsync)
-            {
+                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeWriteAsync());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1091,14 +1108,14 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeFlush : ChannelInvocationBaseEvent
         {
+            public InvokeFlush() : base(SupportedEvent.Flush)
+            {
+            }
+
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return
-                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeFlush());
-            }
-
-            public InvokeFlush() : base(SupportedEvent.Flush)
-            {
+                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeFlush());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1109,14 +1126,14 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeBindAsync : ChannelInvocationBaseEvent
         {
+            public InvokeBindAsync() : base(SupportedEvent.BindAsync)
+            {
+            }
+
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return
-                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeBindAsync());
-            }
-
-            public InvokeBindAsync() : base(SupportedEvent.BindAsync)
-            {
+                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeBindAsync());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1127,14 +1144,14 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeConnectAsync : ChannelInvocationBaseEvent
         {
+            public InvokeConnectAsync() : base(SupportedEvent.ConnectAsync)
+            {
+            }
+
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return
-                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeConnectAsync());
-            }
-
-            public InvokeConnectAsync() : base(SupportedEvent.ConnectAsync)
-            {
+                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeConnectAsync());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1145,18 +1162,18 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeDisconnectAsync : ChannelInvocationBaseEvent
         {
-            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
-            {
-                return
-                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeDisconnectAsync());
-            }
-
             /// <summary>
-            /// <see cref="EmbeddedChannel.DisconnectSupported"/> is <c>false</c>,
-            /// so the default implementation will always call "close" instead
+            ///     <see cref="EmbeddedChannel.DisconnectSupported" /> is <c>false</c>,
+            ///     so the default implementation will always call "close" instead
             /// </summary>
             public InvokeDisconnectAsync() : base(SupportedEvent.CloseAsync)
             {
+            }
+
+            public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
+            {
+                return
+                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeDisconnectAsync());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1167,14 +1184,14 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeExceptionCaught : ChannelInvocationBaseEvent
         {
+            public InvokeExceptionCaught() : base(SupportedEvent.ExceptionCaught)
+            {
+            }
+
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return
-                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeExceptionCaught());
-            }
-
-            public InvokeExceptionCaught() : base(SupportedEvent.ExceptionCaught)
-            {
+                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeExceptionCaught());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1185,14 +1202,14 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeDeregisterAsync : ChannelInvocationBaseEvent
         {
+            public InvokeDeregisterAsync() : base(SupportedEvent.DeregisterAsync)
+            {
+            }
+
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return
-                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeDeregisterAsync());
-            }
-
-            public InvokeDeregisterAsync() : base(SupportedEvent.DeregisterAsync)
-            {
+                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeDeregisterAsync());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1203,14 +1220,14 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeRead : ChannelInvocationBaseEvent
         {
+            public InvokeRead() : base(SupportedEvent.Read)
+            {
+            }
+
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return
-                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeRead());
-            }
-
-            public InvokeRead() : base(SupportedEvent.Read)
-            {
+                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeRead());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1221,14 +1238,14 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeChannelRegistered : ChannelInvocationBaseEvent
         {
+            public InvokeChannelRegistered() : base(SupportedEvent.ChannelRegistered)
+            {
+            }
+
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return
-                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeChannelRegistered());
-            }
-
-            public InvokeChannelRegistered() : base(SupportedEvent.ChannelRegistered)
-            {
+                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeChannelRegistered());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1239,14 +1256,14 @@ namespace Helios.FsCheck.Tests.Channels
 
         private class InvokeChannelUnregistered : ChannelInvocationBaseEvent
         {
+            public InvokeChannelUnregistered() : base(SupportedEvent.ChannelUnregistered)
+            {
+            }
+
             public static Gen<Operation<IChannelPipeline, PipelineMutationModel>> GenInvocation()
             {
                 return
-                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>)new InvokeChannelUnregistered());
-            }
-
-            public InvokeChannelUnregistered() : base(SupportedEvent.ChannelUnregistered)
-            {
+                    Gen.Fresh(() => (Operation<IChannelPipeline, PipelineMutationModel>) new InvokeChannelUnregistered());
             }
 
             protected override void ExecuteInternal(IChannelPipeline pipeline)
@@ -1258,3 +1275,4 @@ namespace Helios.FsCheck.Tests.Channels
         #endregion
     }
 }
+

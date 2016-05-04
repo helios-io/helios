@@ -1,10 +1,13 @@
-﻿using System;
-using System.Security.Cryptography.X509Certificates;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 
 namespace Helios.Logging
 {
     /// <summary>
-    /// Provides a logging interface used to log events within the system.
+    ///     Provides a logging interface used to log events within the system.
     /// </summary>
     public interface ILogger
     {
@@ -20,13 +23,13 @@ namespace Helios.Logging
         /// <summary>Returns <c>true</c> if Error level is enabled.</summary>
         bool IsErrorEnabled { get; }
 
-        /// <summary>Returns <c>true</c> if the specified level is enabled.</summary>
-        bool IsEnabled(LogLevel logLevel);
-
         /// <summary>
-        /// The name of producer of these log messages
+        ///     The name of producer of these log messages
         /// </summary>
         string LogSource { get; }
+
+        /// <summary>Returns <c>true</c> if the specified level is enabled.</summary>
+        bool IsEnabled(LogLevel logLevel);
 
         /// <summary>Logs a message with the Debug level.</summary>
         /// <param name="format">The format.</param>
@@ -67,3 +70,4 @@ namespace Helios.Logging
         void Log(LogLevel logLevel, string format, params object[] args);
     }
 }
+

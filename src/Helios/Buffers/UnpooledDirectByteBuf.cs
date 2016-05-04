@@ -1,39 +1,61 @@
-using System;
-using System.Diagnostics;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System.Diagnostics.Contracts;
-using Helios.Util;
 
 namespace Helios.Buffers
 {
     /// <summary>
-    /// An unpooled non-blocking IO byte buffer implementation.
+    ///     An unpooled non-blocking IO byte buffer implementation.
     /// </summary>
     public class UnpooledDirectByteBuf : AbstractReferenceCountedByteBuf
     {
         private byte[] _buffer;
 
-        public UnpooledDirectByteBuf(IByteBufAllocator alloc, int initialCapacity, int maxCapacity) : this(alloc, new byte[initialCapacity], 0, 0, maxCapacity)
+        public UnpooledDirectByteBuf(IByteBufAllocator alloc, int initialCapacity, int maxCapacity)
+            : this(alloc, new byte[initialCapacity], 0, 0, maxCapacity)
         {
-           
         }
 
-        public UnpooledDirectByteBuf(IByteBufAllocator alloc, byte[] initialArray, int maxCapacity) : this(alloc, initialArray, 0, initialArray.Length, maxCapacity)
+        public UnpooledDirectByteBuf(IByteBufAllocator alloc, byte[] initialArray, int maxCapacity)
+            : this(alloc, initialArray, 0, initialArray.Length, maxCapacity)
         {
-
         }
 
-        public UnpooledDirectByteBuf(IByteBufAllocator alloc,  byte[] initialArray, int readerIndex, int writerIndex, int maxCapacity) : base(maxCapacity)
+        public UnpooledDirectByteBuf(IByteBufAllocator alloc, byte[] initialArray, int readerIndex, int writerIndex,
+            int maxCapacity) : base(maxCapacity)
         {
             Contract.Requires(alloc != null);
             Contract.Requires(initialArray != null);
             Contract.Requires(initialArray.Length <= maxCapacity);
 
-            _allocator = alloc;
+            Allocator = alloc;
             SetBuffer(initialArray);
             SetIndex(readerIndex, writerIndex);
         }
 
         public override int Capacity => _buffer.Length;
+
+        public override ByteOrder Order => ByteOrder.LittleEndian;
+        public override IByteBufAllocator Allocator { get; }
+
+        public override bool HasArray
+        {
+            get { return true; }
+        }
+
+        public override byte[] Array
+        {
+            get { return _buffer; }
+        }
+
+        public override bool IsDirect
+        {
+            get { return true; }
+        }
+
+        public override int ArrayOffset => 0;
 
         protected void SetBuffer(byte[] initialBuffer)
         {
@@ -44,7 +66,7 @@ namespace Helios.Buffers
         {
             EnsureAccessible();
             Contract.Requires(newCapacity >= 0 && newCapacity <= MaxCapacity);
-            
+
             var oldCapacity = _buffer.Length;
             //expand
             if (newCapacity > oldCapacity)
@@ -53,11 +75,11 @@ namespace Helios.Buffers
                 System.Array.Copy(_buffer, 0, newBuffer, 0, _buffer.Length);
                 SetBuffer(newBuffer);
             }
-            else if(newCapacity < oldCapacity) //shrink
+            else if (newCapacity < oldCapacity) //shrink
             {
                 var newBuffer = new byte[newCapacity];
                 var readerIndex = ReaderIndex;
-               
+
                 if (readerIndex < newCapacity)
                 {
                     var writerIndex = WriterIndex;
@@ -77,11 +99,6 @@ namespace Helios.Buffers
             return this;
         }
 
-        public override ByteOrder Order => ByteOrder.LittleEndian;
-
-        private readonly IByteBufAllocator _allocator;
-        public override IByteBufAllocator Allocator { get {return _allocator;} }
-
         protected override byte _GetByte(int index)
         {
             return _buffer[index];
@@ -89,30 +106,30 @@ namespace Helios.Buffers
 
         protected override short _GetShort(int index)
         {
-            return unchecked((short)(_buffer[index] << 8 | _buffer[index + 1]));
+            return unchecked((short) (_buffer[index] << 8 | _buffer[index + 1]));
         }
 
         protected override int _GetInt(int index)
         {
             return unchecked(_buffer[index] << 24 |
-                _buffer[index + 1] << 16 |
-                _buffer[index + 2] << 8 |
-                _buffer[index + 3]);
+                             _buffer[index + 1] << 16 |
+                             _buffer[index + 2] << 8 |
+                             _buffer[index + 3]);
         }
 
         protected override long _GetLong(int index)
         {
             unchecked
             {
-                int i1 = _buffer[index] << 24 |
-                    _buffer[index + 1] << 16 |
-                    _buffer[index + 2] << 8 |
-                    _buffer[index + 3];
-                int i2 = _buffer[index + 4] << 24 |
-                    _buffer[index + 5] << 16 |
-                    _buffer[index + 6] << 8 |
-                    _buffer[index + 7];
-                return (uint)i2 | ((long)i1 << 32);
+                var i1 = _buffer[index] << 24 |
+                         _buffer[index + 1] << 16 |
+                         _buffer[index + 2] << 8 |
+                         _buffer[index + 3];
+                var i2 = _buffer[index + 4] << 24 |
+                         _buffer[index + 5] << 16 |
+                         _buffer[index + 6] << 8 |
+                         _buffer[index + 7];
+                return (uint) i2 | ((long) i1 << 32);
             }
         }
 
@@ -139,7 +156,7 @@ namespace Helios.Buffers
 
         protected override IByteBuf _SetByte(int index, int value)
         {
-            _buffer.SetValue((byte)value, index);
+            _buffer.SetValue((byte) value, index);
             return this;
         }
 
@@ -147,8 +164,8 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                _buffer[index] = (byte)((ushort)value >> 8);
-                _buffer[index + 1] = (byte)value;
+                _buffer[index] = (byte) ((ushort) value >> 8);
+                _buffer[index + 1] = (byte) value;
             }
             return this;
         }
@@ -157,11 +174,11 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                uint unsignedValue = (uint)value;
-                _buffer[index] = (byte)(unsignedValue >> 24);
-                _buffer[index + 1] = (byte)(unsignedValue >> 16);
-                _buffer[index + 2] = (byte)(unsignedValue >> 8);
-                _buffer[index + 3] = (byte)value;
+                var unsignedValue = (uint) value;
+                _buffer[index] = (byte) (unsignedValue >> 24);
+                _buffer[index + 1] = (byte) (unsignedValue >> 16);
+                _buffer[index + 2] = (byte) (unsignedValue >> 8);
+                _buffer[index + 3] = (byte) value;
             }
             return this;
         }
@@ -170,15 +187,15 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                ulong unsignedValue = (ulong)value;
-                _buffer[index] = (byte)(unsignedValue >> 56);
-                _buffer[index + 1] = (byte)(unsignedValue >> 48);
-                _buffer[index + 2] = (byte)(unsignedValue >> 40);
-                _buffer[index + 3] = (byte)(unsignedValue >> 32);
-                _buffer[index + 4] = (byte)(unsignedValue >> 24);
-                _buffer[index + 5] = (byte)(unsignedValue >> 16);
-                _buffer[index + 6] = (byte)(unsignedValue >> 8);
-                _buffer[index + 7] = (byte)value;
+                var unsignedValue = (ulong) value;
+                _buffer[index] = (byte) (unsignedValue >> 56);
+                _buffer[index + 1] = (byte) (unsignedValue >> 48);
+                _buffer[index + 2] = (byte) (unsignedValue >> 40);
+                _buffer[index + 3] = (byte) (unsignedValue >> 32);
+                _buffer[index + 4] = (byte) (unsignedValue >> 24);
+                _buffer[index + 5] = (byte) (unsignedValue >> 16);
+                _buffer[index + 6] = (byte) (unsignedValue >> 8);
+                _buffer[index + 7] = (byte) value;
             }
             return this;
         }
@@ -204,21 +221,6 @@ namespace Helios.Buffers
             return this;
         }
 
-        public override bool HasArray
-        {
-            get { return true; }
-        }
-
-        public override byte[] Array
-        {
-            get { return _buffer; }
-        }
-
-        public override bool IsDirect
-        {
-            get { return true; }
-        }
-
         public override IByteBuf Copy(int index, int length)
         {
             CheckIndex(index, length);
@@ -226,8 +228,6 @@ namespace Helios.Buffers
             System.Array.Copy(_buffer, index, copiedArray, 0, length);
             return new UnpooledDirectByteBuf(Allocator, copiedArray, MaxCapacity);
         }
-
-        public override int ArrayOffset => 0;
 
         public override IByteBuf Unwrap()
         {
@@ -250,3 +250,4 @@ namespace Helios.Buffers
         }
     }
 }
+

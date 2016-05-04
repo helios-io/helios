@@ -1,3 +1,7 @@
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,47 +16,51 @@ using Helios.Util.TimedOps;
 namespace Helios.Concurrency
 {
     /// <summary>
-    /// A single-threaded <see cref="IEventExecutor"/>
+    ///     A single-threaded <see cref="IEventExecutor" />
     /// </summary>
     public class SingleThreadEventExecutor : AbstractScheduledEventExecutor
     {
-        private class WakeupTask : IRunnable
-        {
-            public static readonly WakeupTask Instance = new WakeupTask();
+        private const int ST_NOT_STARTED = 1;
+        private const int ST_STARTED = 2;
+        private const int ST_SHUTTING_DOWN = 3;
+        private const int ST_SHUTDOWN = 4;
+        private const int ST_TERMINATED = 5;
 
-            private WakeupTask() { }
-
-            public void Run()
-            {
-                // do nothing
-            }
-        }
-
-        const int ST_NOT_STARTED = 1;
-        const int ST_STARTED = 2;
-        const int ST_SHUTTING_DOWN = 3;
-        const int ST_SHUTDOWN = 4;
-        const int ST_TERMINATED = 5;
-
-        const string DefaultWorkerThreadName = "SingleThreadEventExecutor";
+        private const string DefaultWorkerThreadName = "SingleThreadEventExecutor";
 
         private static readonly ILogger Logger = LoggingFactory.GetLogger<SingleThreadEventExecutor>();
-        private readonly ConcurrentQueue<IRunnable> _taskQueue = new ConcurrentQueue<IRunnable>();
-        private readonly HashSet<IRunnable> _shutdownHooks = new HashSet<IRunnable>();
-        private Thread _workerThread;
+
+        private static readonly Action<object, object> AddEventHookAction = (hook, hooks) =>
+        {
+            var run = hook as IRunnable;
+            var shutdownHooks = hooks as HashSet<IRunnable>;
+            if (run == null || shutdownHooks == null) return;
+            shutdownHooks.Add(run);
+        };
+
+        private static readonly Action<object, object> RemoveEventHookAction = (hook, hooks) =>
+        {
+            var run = hook as IRunnable;
+            var shutdownHooks = hooks as HashSet<IRunnable>;
+            if (run == null || shutdownHooks == null) return;
+            shutdownHooks.Remove(run);
+        };
+
+        private readonly TimeSpan _breakoutInterval;
         private readonly ManualResetEventSlim _emptyQueueEvent = new ManualResetEventSlim();
-        volatile int _runningState = ST_NOT_STARTED;
+        private readonly HashSet<IRunnable> _shutdownHooks = new HashSet<IRunnable>();
+        private readonly ConcurrentQueue<IRunnable> _taskQueue = new ConcurrentQueue<IRunnable>();
         private readonly TaskCompletionSource<int> _terminationCompletionSource;
-        private readonly TaskScheduler _scheduler;
         private TimeSpan _gracefulShutdownQuietPeriod;
         private PreciseDeadline _gracefulShutdownTimeout;
         private TimeSpan _lastExecutionTime;
-        private readonly TimeSpan _breakoutInterval;
+        private volatile int _runningState = ST_NOT_STARTED;
+        private readonly Thread _workerThread;
 
         public SingleThreadEventExecutor(string threadName, TimeSpan breakoutInterval)
         {
             _terminationCompletionSource = new TaskCompletionSource<int>();
-            _scheduler = new EventExecutorTaskScheduler(this);
+            Scheduler = new EventExecutorTaskScheduler(this);
             _breakoutInterval = breakoutInterval;
             _workerThread = new Thread(Loop)
             {
@@ -62,17 +70,17 @@ namespace Helios.Concurrency
             _workerThread.Start();
         }
 
-        public override bool IsInEventLoop(Thread thread)
-        {
-            return _workerThread == thread;
-        }
-
-        public TaskScheduler Scheduler => _scheduler;
+        public TaskScheduler Scheduler { get; }
 
         public override Task TerminationTask => _terminationCompletionSource.Task;
         public override bool IsShuttingDown => _runningState >= ST_SHUTTING_DOWN;
         public override bool IsShutDown => _runningState >= ST_SHUTDOWN;
         public override bool IsTerminated => _runningState >= ST_TERMINATED;
+
+        public override bool IsInEventLoop(Thread thread)
+        {
+            return _workerThread == thread;
+        }
 
         public override void Execute(IRunnable task)
         {
@@ -90,7 +98,7 @@ namespace Helios.Concurrency
                 return TerminationTask;
 
             int oldState;
-            bool inEventLoop = InEventLoop;
+            var inEventLoop = InEventLoop;
             bool wakeup;
             while (true)
             {
@@ -147,11 +155,10 @@ namespace Helios.Concurrency
 
                 while (!ConfirmShutdown())
                 {
-                    this.RunAllTasks(_breakoutInterval);
+                    RunAllTasks(_breakoutInterval);
                 }
 
-                this.CleanupAndShutdown(true);
-
+                CleanupAndShutdown(true);
             }, CancellationToken.None, TaskCreationOptions.None, Scheduler);
         }
 
@@ -206,9 +213,11 @@ namespace Helios.Concurrency
             // Check if confirmShutdown() was called at the end of the loop.
             if (success && _gracefulShutdownTimeout == PreciseDeadline.Zero)
             {
-                Logger.Error("Buggy {0} implementation; {1}.ConfirmShutdown() must be called " + "before run() implementation terminates.",
-                        typeof(IEventExecutor).Name,
-                        typeof(SingleThreadEventExecutor).Name);
+                Logger.Error(
+                    "Buggy {0} implementation; {1}.ConfirmShutdown() must be called " +
+                    "before run() implementation terminates.",
+                    typeof (IEventExecutor).Name,
+                    typeof (SingleThreadEventExecutor).Name);
             }
 
             try
@@ -305,25 +314,10 @@ namespace Helios.Concurrency
             return true;
         }
 
-        private static readonly Action<object, object> AddEventHookAction = (hook, hooks) =>
-        {
-            var run = hook as IRunnable;
-            var shutdownHooks = hooks as HashSet<IRunnable>;
-            if (run == null || shutdownHooks == null) return;
-            shutdownHooks.Add(run);
-        };
-
-        private static readonly Action<object, object> RemoveEventHookAction = (hook, hooks) =>
-        {
-            var run = hook as IRunnable;
-            var shutdownHooks = hooks as HashSet<IRunnable>;
-            if (run == null || shutdownHooks == null) return;
-            shutdownHooks.Remove(run);
-        };
-
         /// <summary>
-        /// Add a <see cref="IRunnable"/> which will be executed on the shutdown of this instance
-        /// </summary>>
+        ///     Add a <see cref="IRunnable" /> which will be executed on the shutdown of this instance
+        /// </summary>
+        /// >
         public void AddShutdownHook(IRunnable hook)
         {
             if (InEventLoop)
@@ -337,8 +331,9 @@ namespace Helios.Concurrency
         }
 
         /// <summary>
-        /// Remove a previously added <see cref="IRunnable"/> as a shutdown hook
-        /// </summary>>
+        ///     Remove a previously added <see cref="IRunnable" /> as a shutdown hook
+        /// </summary>
+        /// >
         public void RemoveShutdownHook(IRunnable hook)
         {
             if (InEventLoop)
@@ -391,7 +386,7 @@ namespace Helios.Concurrency
                 var tickCount = MonotonicClock.GetTicks();
                 while (true)
                 {
-                    IScheduledRunnable scheduledTask = PollScheduledTask(tickCount);
+                    var scheduledTask = PollScheduledTask(tickCount);
                     if (scheduledTask == null)
                     {
                         break;
@@ -409,7 +404,8 @@ namespace Helios.Concurrency
             if (!_taskQueue.TryDequeue(out task))
             {
                 _emptyQueueEvent.Reset();
-                if (!_taskQueue.TryDequeue(out task) && !IsShuttingDown) // revisit queue as producer might have put a task in meanwhile
+                if (!_taskQueue.TryDequeue(out task) && !IsShuttingDown)
+                    // revisit queue as producer might have put a task in meanwhile
                 {
                     var nextScheduledTask = ScheduledTaskQueue.Peek();
                     if (nextScheduledTask != null)
@@ -429,7 +425,6 @@ namespace Helios.Concurrency
                         _emptyQueueEvent.Wait(); // wait until work is put into the queue
                         _taskQueue.TryDequeue(out task);
                     }
-                   
                 }
             }
             return task;
@@ -442,5 +437,20 @@ namespace Helios.Concurrency
                 Execute(WakeupTask.Instance);
             }
         }
+
+        private class WakeupTask : IRunnable
+        {
+            public static readonly WakeupTask Instance = new WakeupTask();
+
+            private WakeupTask()
+            {
+            }
+
+            public void Run()
+            {
+                // do nothing
+            }
+        }
     }
 }
+

@@ -1,3 +1,7 @@
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System.Threading.Tasks;
 using Helios.Buffers;
 using Helios.Channels;
@@ -20,7 +24,7 @@ namespace Helios.Tests.Channels
             {
                 var buf = (IByteBuf) message;
                 var integer = buf.ReadInt();
-                if(ReleaseMessages)
+                if (ReleaseMessages)
                     ReferenceCountUtil.SafeRelease(message);
                 context.FireChannelRead(integer);
             }
@@ -37,10 +41,8 @@ namespace Helios.Tests.Channels
                 var buf = Unpooled.Buffer(4).WriteInt((int) message);
                 return context.WriteAsync(buf);
             }
-            else
-            {
-                return context.WriteAsync(message);
-            }
+            return context.WriteAsync(message);
         }
     }
 }
+

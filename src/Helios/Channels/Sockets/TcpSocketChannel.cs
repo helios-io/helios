@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -9,10 +13,10 @@ namespace Helios.Channels.Sockets
 {
     public class TcpSocketChannel : AbstractSocketByteChannel
     {
-        readonly ISocketChannelConfiguration _config;
+        private readonly ISocketChannelConfiguration _config;
 
         /// <summary>
-        ///  Create a new instance
+        ///     Create a new instance
         /// </summary>
         public TcpSocketChannel()
             : this(new Socket(SocketType.Stream, ProtocolType.Tcp))
@@ -20,7 +24,7 @@ namespace Helios.Channels.Sockets
         }
 
         /// <summary>
-        ///  Create a new instance
+        ///     Create a new instance
         /// </summary>
         public TcpSocketChannel(AddressFamily addressFamily)
             : this(new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp))
@@ -28,7 +32,7 @@ namespace Helios.Channels.Sockets
         }
 
         /// <summary>
-        ///  Create a new instance using the given {@link SocketChannel}.
+        ///     Create a new instance using the given {@link SocketChannel}.
         /// </summary>
         public TcpSocketChannel(Socket socket)
             : this(null, socket)
@@ -36,10 +40,9 @@ namespace Helios.Channels.Sockets
         }
 
         /// <summary>
-        ///  Create a new instance
-        /// 
-        ///  @param parent    the {@link Channel} which created this instance or {@code null} if it was created by the user
-        ///  @param socket    the {@link SocketChannel} which will be used
+        ///     Create a new instance
+        ///     @param parent    the {@link Channel} which created this instance or {@code null} if it was created by the user
+        ///     @param socket    the {@link SocketChannel} which will be used
         /// </summary>
         public TcpSocketChannel(IChannel parent, Socket socket)
             : this(parent, socket, false)
@@ -49,23 +52,37 @@ namespace Helios.Channels.Sockets
         internal TcpSocketChannel(IChannel parent, Socket socket, bool connected)
             : base(parent, socket)
         {
-            this._config = new TcpSocketChannelConfig(this, socket);
+            _config = new TcpSocketChannelConfig(this, socket);
             if (connected)
             {
-                this.OnConnected();
+                OnConnected();
             }
         }
 
-        public override bool DisconnectSupported { get { return false; } }
-        protected override EndPoint LocalAddressInternal { get { return Socket.LocalEndPoint; } }
-        protected override EndPoint RemoteAddressInternal { get { return Socket.RemoteEndPoint; } }
+        public override bool DisconnectSupported
+        {
+            get { return false; }
+        }
+
+        protected override EndPoint LocalAddressInternal
+        {
+            get { return Socket.LocalEndPoint; }
+        }
+
+        protected override EndPoint RemoteAddressInternal
+        {
+            get { return Socket.RemoteEndPoint; }
+        }
 
         public bool IsOutputShutdown
         {
             get { throw new NotImplementedException(); } // todo: impl with stateflags
         }
 
-        public override IChannelConfiguration Configuration { get { return _config; } }
+        public override IChannelConfiguration Configuration
+        {
+            get { return _config; }
+        }
 
         protected override IChannelUnsafe NewUnsafe()
         {
@@ -75,23 +92,23 @@ namespace Helios.Channels.Sockets
         public Task ShutdownOutputAsync()
         {
             var tcs = new TaskCompletionSource();
-            IEventLoop loop = this.EventLoop;
+            var loop = EventLoop;
             if (loop.InEventLoop)
             {
-                this.ShutdownOutput0(tcs);
+                ShutdownOutput0(tcs);
             }
             else
             {
-                loop.Execute(promise => this.ShutdownOutput0((TaskCompletionSource)promise), tcs);
+                loop.Execute(promise => ShutdownOutput0((TaskCompletionSource) promise), tcs);
             }
             return tcs.Task;
         }
 
-        void ShutdownOutput0(TaskCompletionSource promise)
+        private void ShutdownOutput0(TaskCompletionSource promise)
         {
             try
             {
-                this.Socket.Shutdown(SocketShutdown.Send);
+                Socket.Shutdown(SocketShutdown.Send);
                 promise.Complete();
             }
             catch (Exception ex)
@@ -104,15 +121,15 @@ namespace Helios.Channels.Sockets
         {
             if (localAddress != null)
             {
-                this.Socket.Bind(localAddress);
+                Socket.Bind(localAddress);
             }
 
-            bool success = false;
+            var success = false;
             try
             {
                 var eventPayload = new SocketChannelAsyncOperation(this, false);
                 eventPayload.RemoteEndPoint = remoteAddress;
-                bool connected = !this.Socket.ConnectAsync(eventPayload);
+                var connected = !Socket.ConnectAsync(eventPayload);
                 success = true;
                 return connected;
             }
@@ -120,7 +137,7 @@ namespace Helios.Channels.Sockets
             {
                 if (!success)
                 {
-                    this.DoClose();
+                    DoClose();
                 }
             }
         }
@@ -135,16 +152,16 @@ namespace Helios.Channels.Sockets
             {
                 operation.Dispose();
             }
-            this.OnConnected();
+            OnConnected();
         }
 
-        void OnConnected()
+        private void OnConnected()
         {
-            this.SetState(StateFlags.Active);
+            SetState(StateFlags.Active);
 
             // preserve local and remote addresses for later availability even if Socket fails
-            this.CacheLocalAddress();
-            this.CacheRemoteAddress();
+            CacheLocalAddress();
+            CacheRemoteAddress();
         }
 
         protected override void DoBind(EndPoint localAddress)
@@ -154,16 +171,16 @@ namespace Helios.Channels.Sockets
 
         protected override void DoDisconnect()
         {
-            this.DoClose();
+            DoClose();
         }
 
         protected override void DoClose()
         {
             base.DoClose();
-            if (this.ResetState(StateFlags.Open | StateFlags.Active))
+            if (ResetState(StateFlags.Open | StateFlags.Active))
             {
-                this.Socket.Shutdown(SocketShutdown.Both);
-                this.Socket.Close(0);
+                Socket.Shutdown(SocketShutdown.Both);
+                Socket.Close(0);
             }
         }
 
@@ -175,7 +192,8 @@ namespace Helios.Channels.Sockets
             }
 
             SocketError errorCode;
-            int received = this.Socket.Receive(buf.Array, buf.ArrayOffset + buf.WriterIndex, buf.WritableBytes, SocketFlags.None, out errorCode);
+            var received = Socket.Receive(buf.Array, buf.ArrayOffset + buf.WriterIndex, buf.WritableBytes,
+                SocketFlags.None, out errorCode);
 
             switch (errorCode)
             {
@@ -192,7 +210,7 @@ namespace Helios.Channels.Sockets
                     }
                     break;
                 default:
-                    throw new SocketException((int)errorCode);
+                    throw new SocketException((int) errorCode);
             }
 
             buf.SetWriterIndex(buf.WriterIndex + received);
@@ -208,11 +226,12 @@ namespace Helios.Channels.Sockets
             }
 
             SocketError errorCode;
-            int sent = this.Socket.Send(buf.Array, buf.ArrayOffset + buf.ReaderIndex, buf.ReadableBytes, SocketFlags.None, out errorCode);
+            var sent = Socket.Send(buf.Array, buf.ArrayOffset + buf.ReaderIndex, buf.ReadableBytes, SocketFlags.None,
+                out errorCode);
 
             if (errorCode != SocketError.Success && errorCode != SocketError.WouldBlock)
             {
-                throw new SocketException((int)errorCode);
+                throw new SocketException((int) errorCode);
             }
 
             if (sent > 0)
@@ -223,7 +242,7 @@ namespace Helios.Channels.Sockets
             return sent;
         }
 
-        sealed class TcpSocketChannelUnsafe : SocketByteChannelUnsafe
+        private sealed class TcpSocketChannelUnsafe : SocketByteChannelUnsafe
         {
             public TcpSocketChannelUnsafe(TcpSocketChannel channel)
                 : base(channel)
@@ -231,7 +250,7 @@ namespace Helios.Channels.Sockets
             }
         }
 
-        sealed class TcpSocketChannelConfig : DefaultSocketChannelConfiguration
+        private sealed class TcpSocketChannelConfig : DefaultSocketChannelConfiguration
         {
             public TcpSocketChannelConfig(TcpSocketChannel channel, Socket javaSocket)
                 : base(channel, javaSocket)
@@ -240,8 +259,9 @@ namespace Helios.Channels.Sockets
 
             protected override void AutoReadCleared()
             {
-                ((TcpSocketChannel)this.Channel).ReadPending = false;
+                ((TcpSocketChannel) Channel).ReadPending = false;
             }
         }
     }
 }
+
