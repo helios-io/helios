@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Net;
 using System.Runtime.Serialization;
 using Helios.Util;
@@ -6,11 +10,13 @@ using Helios.Util;
 namespace Helios.Topology
 {
     /// <summary>
-    /// Uri representation of an INode instance
+    ///     Uri representation of an INode instance
     /// </summary>
     public class NodeUri : Uri
     {
-        public NodeUri(INode node) : base(GetUriStringForNode(node)) { }
+        public NodeUri(INode node) : base(GetUriStringForNode(node))
+        {
+        }
 
         public NodeUri(string uriString)
             : base(uriString)
@@ -27,7 +33,8 @@ namespace Helios.Topology
         public static string GetUriStringForNode(INode node)
         {
             if (node.IsEmpty()) return string.Empty;
-            return string.Format("{0}://{1}:{2}", GetProtocolStringForTransportType(node.TransportType), node.Host, node.Port);
+            return string.Format("{0}://{1}:{2}", GetProtocolStringForTransportType(node.TransportType), node.Host,
+                node.Port);
         }
 
         public static string GetProtocolStringForTransportType(TransportType transport)
@@ -56,3 +63,4 @@ namespace Helios.Topology
         #endregion
     }
 }
+

@@ -1,9 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Buffers;
+using Helios.Channels;
 using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;
@@ -18,14 +22,23 @@ namespace Helios.Reactor
     {
         protected Socket Listener;
 
-        protected ReactorBase(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, SocketType socketType = SocketType.Stream, ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        protected ReactorBase(IPAddress localAddress, int localPort, NetworkEventLoop eventLoop, IMessageEncoder encoder,
+            IMessageDecoder decoder, IByteBufAllocator allocator, SocketType socketType = SocketType.Stream,
+            ProtocolType protocol = ProtocolType.Tcp, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
         {
             Decoder = decoder;
             Encoder = encoder;
             Allocator = allocator;
             LocalEndpoint = new IPEndPoint(localAddress, localPort);
             Listener = new Socket(AddressFamily.InterNetwork, socketType, protocol);
-            if (protocol == ProtocolType.Tcp) { Transport = TransportType.Tcp; } else if (protocol == ProtocolType.Udp) { Transport = TransportType.Udp; }
+            if (protocol == ProtocolType.Tcp)
+            {
+                Transport = TransportType.Tcp;
+            }
+            else if (protocol == ProtocolType.Udp)
+            {
+                Transport = TransportType.Udp;
+            }
             Backlog = NetworkConstants.DefaultBacklog;
             EventLoop = eventLoop;
             ConnectionAdapter = new ReactorConnectionAdapter(this);
@@ -33,6 +46,12 @@ namespace Helios.Reactor
         }
 
         protected int BufferSize { get; set; }
+
+        public bool Blocking
+        {
+            get { return Listener.Blocking; }
+            set { Listener.Blocking = value; }
+        }
 
         public event ReceivedDataCallback OnReceive
         {
@@ -62,12 +81,12 @@ namespace Helios.Reactor
             remove { EventLoop.SetExceptionHandler(null, ConnectionAdapter); }
         }
 
-        public IMessageEncoder Encoder { get; private set; }
-        public IMessageDecoder Decoder { get; private set; }
-        public IByteBufAllocator Allocator { get; private set; }
+        public IMessageEncoder Encoder { get; }
+        public IMessageDecoder Decoder { get; }
+        public IByteBufAllocator Allocator { get; }
 
-        public IConnection ConnectionAdapter { get; private set; }
-        public NetworkEventLoop EventLoop { get; private set; }
+        public IConnection ConnectionAdapter { get; }
+        public NetworkEventLoop EventLoop { get; }
 
         public abstract bool IsActive { get; protected set; }
         public bool WasDisposed { get; protected set; }
@@ -82,11 +101,9 @@ namespace Helios.Reactor
             CheckWasDisposed();
             IsActive = true;
             Listener.Bind(LocalEndpoint);
-            LocalEndpoint = (IPEndPoint)Listener.LocalEndPoint;
+            LocalEndpoint = (IPEndPoint) Listener.LocalEndPoint;
             StartInternal();
         }
-
-        protected abstract void StartInternal();
 
         public void Stop()
         {
@@ -98,18 +115,31 @@ namespace Helios.Reactor
             }
             catch
             {
-
             }
             IsActive = false;
             StopInternal();
         }
 
+        public void Send(NetworkData data)
+        {
+            Send(data.Buffer, 0, data.Length, data.RemoteHost);
+        }
+
+        public abstract void Send(byte[] buffer, int index, int length, INode destination);
+
+        public int Backlog { get; set; }
+
+        public IPEndPoint LocalEndpoint { get; protected set; }
+        public TransportType Transport { get; }
+
+        protected abstract void StartInternal();
+
         protected abstract void StopInternal();
 
         /// <summary>
-        /// Invoked when a new node has connected to this server
+        ///     Invoked when a new node has connected to this server
         /// </summary>
-        /// <param name="node">The <see cref="INode"/> instance that just connected</param>
+        /// <param name="node">The <see cref="INode" /> instance that just connected</param>
         /// <param name="responseChannel">The channel that the server can respond to</param>
         protected void NodeConnected(INode node, IConnection responseChannel)
         {
@@ -120,9 +150,9 @@ namespace Helios.Reactor
         }
 
         /// <summary>
-        /// Invoked when a node's connection to this server has been disconnected
+        ///     Invoked when a node's connection to this server has been disconnected
         /// </summary>
-        /// <param name="closedChannel">The <see cref="IConnection"/> instance that just closed</param>
+        /// <param name="closedChannel">The <see cref="IConnection" /> instance that just closed</param>
         /// <param name="reason">The reason why this node disconnected</param>
         protected void NodeDisconnected(HeliosConnectionException reason, IConnection closedChannel)
         {
@@ -133,8 +163,8 @@ namespace Helios.Reactor
         }
 
         /// <summary>
-        /// Abstract method to be filled in by a child class - data received from the
-        /// network is injected into this method via the <see cref="NetworkData"/> data type.
+        ///     Abstract method to be filled in by a child class - data received from the
+        ///     network is injected into this method via the <see cref="NetworkData" /> data type.
         /// </summary>
         /// <param name="availableData">Data available from the network, including a response address</param>
         /// <param name="responseChannel">Available channel for handling network response</param>
@@ -153,6 +183,7 @@ namespace Helios.Reactor
                 EventLoop.Exception(reason, connection);
             }
         }
+
         protected NetworkState CreateNetworkState(Socket socket, INode remotehost)
         {
             return CreateNetworkState(socket, remotehost, Allocator.Buffer(), BufferSize);
@@ -164,50 +195,18 @@ namespace Helios.Reactor
         }
 
         /// <summary>
-        /// Closes a connection to a remote host (without shutting down the server.)
+        ///     Closes a connection to a remote host (without shutting down the server.)
         /// </summary>
         /// <param name="remoteHost">The remote host to terminate</param>
         internal abstract void CloseConnection(IConnection remoteHost);
 
         internal abstract void CloseConnection(Exception reason, IConnection remoteHost);
 
-        public void Send(NetworkData data)
-        {
-            Send(data.Buffer, 0, data.Length, data.RemoteHost);
-        }
-        public abstract void Send(byte[] buffer, int index, int length, INode destination);
-
-        public int Backlog { get; set; }
-
-        public IPEndPoint LocalEndpoint { get; protected set; }
-        public TransportType Transport { get; private set; }
-        public bool Blocking { get { return Listener.Blocking; } set { Listener.Blocking = value; } }
-
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public abstract void Dispose(bool disposing);
-
-        public void CheckWasDisposed()
-        {
-            if (WasDisposed)
-            {
-                throw new HeliosConnectionException(ExceptionType.NotOpen, "Already disposed this Reactor");
-            }
-        }
-
-        #endregion
-
         #region ReactorConnectionAdapter
 
         /// <summary>
-        /// Wraps the <see cref="IReactor"/> itself inside a <see cref="IConnection"/> object and makes it callable
-        /// directly to end users
+        ///     Wraps the <see cref="IReactor" /> itself inside a <see cref="IConnection" /> object and makes it callable
+        ///     directly to end users
         /// </summary>
         protected class ReactorConnectionAdapter : IConnection
         {
@@ -300,7 +299,10 @@ namespace Helios.Reactor
                 get { throw new NotSupportedException("[Available] is not supported on ReactorConnectionAdapter"); }
             }
 
-            public int MessagesInSendQueue { get { return 0; } }
+            public int MessagesInSendQueue
+            {
+                get { return 0; }
+            }
 
             public Task<bool> OpenAsync()
             {
@@ -366,13 +368,12 @@ namespace Helios.Reactor
             {
                 if (!WasDisposed)
                 {
-
                     if (disposing)
                     {
                         Close();
                         if (_reactor != null)
                         {
-                            ((IDisposable)_reactor).Dispose();
+                            ((IDisposable) _reactor).Dispose();
                             _reactor = null;
                         }
                     }
@@ -385,5 +386,25 @@ namespace Helios.Reactor
 
         #endregion
 
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public abstract void Dispose(bool disposing);
+
+        public void CheckWasDisposed()
+        {
+            if (WasDisposed)
+            {
+                throw new HeliosConnectionException(ExceptionType.NotOpen, "Already disposed this Reactor");
+            }
+        }
+
+        #endregion
     }
 }
+

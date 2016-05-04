@@ -1,28 +1,34 @@
-﻿namespace Helios.Util.Collections
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+namespace Helios.Util.Collections
 {
     /// <summary>
-    /// Stack with a fixed size number of members - old items get pushed
-    /// off the stack. Concurrent.
+    ///     Stack with a fixed size number of members - old items get pushed
+    ///     off the stack. Concurrent.
     /// </summary>
-    public  class ConcurrentFixedSizeStack<T> : FixedSizeStack<T>
+    public class ConcurrentFixedSizeStack<T> : FixedSizeStack<T>
     {
-        public ConcurrentFixedSizeStack() : base() { } 
-
-        public ConcurrentFixedSizeStack(int capacity) : base(capacity)
-        {
-        }
-
         #region Internal members
 
         private readonly object m_lockObject = new object();
 
         #endregion
 
+        public ConcurrentFixedSizeStack()
+        {
+        }
+
+        public ConcurrentFixedSizeStack(int capacity) : base(capacity)
+        {
+        }
+
         #region Stack Methods
 
         public override T Peek()
         {
-            T item = default(T);
+            var item = default(T);
 
             lock (m_lockObject)
             {
@@ -73,7 +79,7 @@
         #region ICollection methods
 
         /// <summary>
-        /// Copies the contents of the ConcurrentFixedSizeStack into a new array
+        ///     Copies the contents of the ConcurrentFixedSizeStack into a new array
         /// </summary>
         /// <param name="array">The destination array for the copy</param>
         /// <param name="index">The starting index for copying in the destination array</param>
@@ -103,10 +109,17 @@
             }
         }
 
-        public override object SyncRoot { get { return m_lockObject; } }
+        public override object SyncRoot
+        {
+            get { return m_lockObject; }
+        }
 
-        public override bool IsSynchronized { get { return true; } }
+        public override bool IsSynchronized
+        {
+            get { return true; }
+        }
 
         #endregion
     }
 }
+

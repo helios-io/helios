@@ -1,18 +1,22 @@
-﻿using System.Net;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System.Net;
 using Helios.Net;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.Tests.Net
 {
-    [TestFixture]
     public class MulticastHelperTests
     {
         #region Setup / Teardown
+
         #endregion
 
         #region Tests
 
-        [Test]
+        [Fact]
         public void Should_mark_valid_IPv4_multicast_address_as_valid()
         {
             //arrange
@@ -22,10 +26,10 @@ namespace Helios.Tests.Net
             var isValid = MulticastHelper.IsValidMulticastAddress(IPAddress.Parse(validMulticastIp));
 
             //assert
-            Assert.IsTrue(isValid);
+            Assert.True(isValid);
         }
 
-        [Test]
+        [Fact]
         public void Should_mark_invalid_IPv4_multicast_address_as_invalid()
         {
             //arrange
@@ -35,9 +39,10 @@ namespace Helios.Tests.Net
             var isValid = MulticastHelper.IsValidMulticastAddress(IPAddress.Parse(invalidMulticastIp));
 
             //assert
-            Assert.IsFalse(isValid);
+            Assert.False(isValid);
         }
 
         #endregion
     }
 }
+

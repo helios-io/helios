@@ -1,4 +1,8 @@
-﻿/*
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+/*
  * Copyright 2015 Roger Alsing, Aaron Stannard
  * Helios.DedicatedThreadPool - https://github.com/helios-io/DedicatedThreadPool
  */
@@ -405,21 +409,28 @@ namespace Helios.Concurrency
                 _thread = new Thread(() =>
                 {
                     CurrentWorker = this;
-
-                    foreach (var action in _workQueue.GetConsumingEnumerable())
+                    try
                     {
-                        try
+                        foreach (var action in _workQueue.GetConsumingEnumerable())
                         {
-                            //bail if shutdown has been requested
-                            if (_pool.ShutdownRequested) return;
-                            action();
-                        }
-                        catch (Exception ex)
-                        {
-                            Failover(true);
-                            return;
+                            try
+                            {
+                                //bail if shutdown has been requested
+                                if (_pool.ShutdownRequested) return;
+                                action();
+                            }
+                            catch (Exception ex)
+                            {
+                                Failover(true);
+                                return;
+                            }
                         }
                     }
+                    catch (ThreadAbortException)
+                    {
+                        return;
+                    }
+
                 })
                 {
                     IsBackground = _pool.Settings.ThreadType == ThreadType.Background
@@ -448,3 +459,4 @@ namespace Helios.Concurrency
         #endregion
     }
 }
+

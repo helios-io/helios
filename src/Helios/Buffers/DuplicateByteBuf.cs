@@ -1,11 +1,13 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
 
 namespace Helios.Buffers
 {
     /// <summary>
-    /// Derived buffer that forwards requests to the original underlying buffer
+    ///     Derived buffer that forwards requests to the original underlying buffer
     /// </summary>
-    public class DuplicateByteBuf : AbstractByteBuf
+    public class DuplicateByteBuf : AbstractDerivedByteBuffer
     {
         private readonly IByteBuf _buffer;
 
@@ -22,14 +24,33 @@ namespace Helios.Buffers
             get { return _buffer.Capacity; }
         }
 
-        public override IByteBuf AdjustCapacity(int newCapacity)
-        {
-            return _buffer.AdjustCapacity(newCapacity);
-        }
+        public override ByteOrder Order => _buffer.Order;
 
         public override IByteBufAllocator Allocator
         {
             get { return _buffer.Allocator; }
+        }
+
+        public override bool HasArray
+        {
+            get { return _buffer.HasArray; }
+        }
+
+        public override byte[] Array
+        {
+            get { return _buffer.Array; }
+        }
+
+        public override bool IsDirect
+        {
+            get { return _buffer.IsDirect; }
+        }
+
+        public override int ArrayOffset => _buffer.ArrayOffset;
+
+        public override IByteBuf AdjustCapacity(int newCapacity)
+        {
+            return _buffer.AdjustCapacity(newCapacity);
         }
 
         public override byte GetByte(int index)
@@ -150,29 +171,14 @@ namespace Helios.Buffers
             return this;
         }
 
-        public override bool HasArray
+        public override IByteBuf Copy(int index, int length)
         {
-            get { return _buffer.HasArray; }
-        }
-
-        public override byte[] InternalArray()
-        {
-            return _buffer.InternalArray();
-        }
-
-        public override bool IsDirect
-        {
-            get { return _buffer.IsDirect; }
+            return _buffer.Copy(index, length);
         }
 
         public override IByteBuf Unwrap()
         {
             return _buffer;
-        }
-
-        public override ByteBuffer InternalNioBuffer(int index, int length)
-        {
-            return _buffer.InternalNioBuffer(index, length);
         }
 
         public override IByteBuf Compact()
@@ -188,15 +194,6 @@ namespace Helios.Buffers
             SetIndex(_buffer.ReaderIndex, _buffer.WriterIndex);
             return this;
         }
-
-        #region Conversion
-
-        public static implicit operator ByteBuffer(DuplicateByteBuf buf)
-        {
-            if (buf.Unwrap() is ByteBuffer) return (ByteBuffer)buf.Unwrap();
-            return null;
-        }
-
-        #endregion
     }
 }
+

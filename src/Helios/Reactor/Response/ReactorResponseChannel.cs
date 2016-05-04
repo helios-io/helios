@@ -1,8 +1,13 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Buffers;
+using Helios.Channels;
 using Helios.Exceptions;
 using Helios.Net;
 using Helios.Ops;
@@ -14,22 +19,22 @@ using Helios.Util.Concurrency;
 namespace Helios.Reactor.Response
 {
     /// <summary>
-    /// Wraps a remote endpoint which connected <see cref="IReactor"/> instance inside a <see cref="IConnection"/> object
+    ///     Wraps a remote endpoint which connected <see cref="IReactor" /> instance inside a <see cref="IConnection" /> object
     /// </summary>
     public abstract class ReactorResponseChannel : IConnection
     {
-
-        protected ICircularBuffer<NetworkData> UnreadMessages = new ConcurrentCircularBuffer<NetworkData>(1000);
         private readonly ReactorBase _reactor;
         internal Socket Socket;
 
-        protected ReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, NetworkEventLoop eventLoop)
-            : this(reactor, outboundSocket, (IPEndPoint)outboundSocket.RemoteEndPoint, eventLoop)
-        {
+        protected ICircularBuffer<NetworkData> UnreadMessages = new ConcurrentCircularBuffer<NetworkData>(1000);
 
+        protected ReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, NetworkEventLoop eventLoop)
+            : this(reactor, outboundSocket, (IPEndPoint) outboundSocket.RemoteEndPoint, eventLoop)
+        {
         }
 
-        protected ReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, IPEndPoint endPoint, NetworkEventLoop eventLoop)
+        protected ReactorResponseChannel(ReactorBase reactor, Socket outboundSocket, IPEndPoint endPoint,
+            NetworkEventLoop eventLoop)
         {
             _reactor = reactor;
             Socket = outboundSocket;
@@ -40,6 +45,8 @@ namespace Helios.Reactor.Response
             RemoteHost = NodeBuilder.FromEndpoint(endPoint);
             NetworkEventLoop = eventLoop;
         }
+
+        public NetworkEventLoop NetworkEventLoop { get; }
 
 
         public event ReceivedDataCallback Receive
@@ -55,6 +62,7 @@ namespace Helios.Reactor.Response
             // ReSharper disable once ValueParameterNotUsed
             remove { NetworkEventLoop.Connection = null; }
         }
+
         public event ConnectionTerminatedCallback OnDisconnection
         {
             add { NetworkEventLoop.Disconnection = value; }
@@ -69,28 +77,63 @@ namespace Helios.Reactor.Response
             remove { NetworkEventLoop.SetExceptionHandler(null, this); }
         }
 
-        public IEventLoop EventLoop { get { return NetworkEventLoop; } }
-        public IMessageEncoder Encoder { get; private set; }
-        public IMessageDecoder Decoder { get; private set; }
-        public IByteBufAllocator Allocator { get; private set; }
+        public IEventLoop EventLoop
+        {
+            get { return NetworkEventLoop; }
+        }
 
-        public NetworkEventLoop NetworkEventLoop { get; private set; }
+        public IMessageEncoder Encoder { get; }
+        public IMessageDecoder Decoder { get; }
+        public IByteBufAllocator Allocator { get; }
 
         public DateTimeOffset Created { get; private set; }
-        public INode RemoteHost { get; private set; }
-        public INode Local { get; private set; }
-        public TimeSpan Timeout { get { return TimeSpan.FromSeconds(Socket.ReceiveTimeout); } }
-        public TransportType Transport { get { if (Socket.ProtocolType == ProtocolType.Tcp) { return TransportType.Tcp; } return TransportType.Udp; } }
-        public bool Blocking { get { return Socket.Blocking; } set { Socket.Blocking = value; } }
+        public INode RemoteHost { get; }
+        public INode Local { get; }
+
+        public TimeSpan Timeout
+        {
+            get { return TimeSpan.FromSeconds(Socket.ReceiveTimeout); }
+        }
+
+        public TransportType Transport
+        {
+            get
+            {
+                if (Socket.ProtocolType == ProtocolType.Tcp)
+                {
+                    return TransportType.Tcp;
+                }
+                return TransportType.Udp;
+            }
+        }
+
+        public bool Blocking
+        {
+            get { return Socket.Blocking; }
+            set { Socket.Blocking = value; }
+        }
+
         public bool WasDisposed { get; private set; }
-        public bool Receiving { get { return _reactor.IsActive; } }
+
+        public bool Receiving
+        {
+            get { return _reactor.IsActive; }
+        }
+
         public bool IsOpen()
         {
             return Socket != null && Socket.Connected;
         }
 
-        public int Available { get { return Socket == null ? 0 : Socket.Available; } }
-        public int MessagesInSendQueue { get { return 0; } }
+        public int Available
+        {
+            get { return Socket == null ? 0 : Socket.Available; }
+        }
+
+        public int MessagesInSendQueue
+        {
+            get { return 0; }
+        }
 
         public Task<bool> OpenAsync()
         {
@@ -126,36 +169,11 @@ namespace Helios.Reactor.Response
             BeginReceiveInternal();
         }
 
-        protected abstract void BeginReceiveInternal();
-
-
-        /// <summary>
-        /// Method is called directly by the <see cref="ReactorBase"/> implementation to send data to this <see cref="IConnection"/>.
-        /// 
-        /// Can also be called by the socket itself if this reactor doesn't use <see cref="ReactorProxyResponseChannel"/>.
-        /// </summary>
-        /// <param name="data">The data to pass directly to the recipient</param>
-
-        internal virtual void OnReceive(NetworkData data)
-        {
-            if (NetworkEventLoop.Receive != null)
-            {
-                NetworkEventLoop.Receive(data, this);
-            }
-            else
-            {
-                UnreadMessages.Enqueue(data);
-            }
-        }
-
         public void StopReceive()
         {
             StopReceiveInternal();
             NetworkEventLoop.Receive = null;
         }
-
-
-        protected abstract void StopReceiveInternal();
 
         public void Close()
         {
@@ -176,6 +194,47 @@ namespace Helios.Reactor.Response
         public void Send(byte[] buffer, int index, int length, INode destination)
         {
             _reactor.Send(buffer, index, length, destination);
+        }
+
+        protected abstract void BeginReceiveInternal();
+
+
+        /// <summary>
+        ///     Method is called directly by the <see cref="ReactorBase" /> implementation to send data to this
+        ///     <see cref="IConnection" />.
+        ///     Can also be called by the socket itself if this reactor doesn't use <see cref="ReactorProxyResponseChannel" />.
+        /// </summary>
+        /// <param name="data">The data to pass directly to the recipient</param>
+        internal virtual void OnReceive(NetworkData data)
+        {
+            if (NetworkEventLoop.Receive != null)
+            {
+                NetworkEventLoop.Receive(data, this);
+            }
+            else
+            {
+                UnreadMessages.Enqueue(data);
+            }
+        }
+
+
+        protected abstract void StopReceiveInternal();
+
+        public void InvokeReceiveIfNotNull(NetworkData data)
+        {
+            OnReceive(data);
+        }
+
+        protected void InvokeErrorIfNotNull(Exception ex)
+        {
+            if (NetworkEventLoop.Exception != null)
+            {
+                NetworkEventLoop.Exception(ex, this);
+            }
+            else
+            {
+                throw new HeliosException("Unhandled exception on a connection with no error handler", ex);
+            }
         }
 
         #region IDisposable members
@@ -201,22 +260,6 @@ namespace Helios.Reactor.Response
         }
 
         #endregion
-
-        public void InvokeReceiveIfNotNull(NetworkData data)
-        {
-            OnReceive(data);
-        }
-
-        protected void InvokeErrorIfNotNull(Exception ex)
-        {
-            if (NetworkEventLoop.Exception != null)
-            {
-                NetworkEventLoop.Exception(ex, this);
-            }
-            else
-            {
-                throw new HeliosException("Unhandled exception on a connection with no error handler", ex);
-            }
-        }
     }
 }
+

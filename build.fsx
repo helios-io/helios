@@ -3,6 +3,7 @@
 
 open System
 open System.IO
+open System.Text
 open Fake
 open Fake.FileUtils
 open Fake.TaskRunnerHelper
@@ -39,7 +40,8 @@ let release = if isPreRelease then ReleaseNotesHelper.ReleaseNotes.New(version, 
 // Directories
 
 let binDir = "bin"
-let testOutput = "TestResults"
+let testOutput = FullName "TestResults"
+let perfOutput = FullName "PerfResults"
 
 let nugetDir = binDir @@ "nuget"
 let workingDir = binDir @@ "build"
@@ -96,8 +98,6 @@ Target "CopyOutput" (fun _ ->
         let dst = binDir @@ project
         CopyDir dst src allFiles
     [ "Helios"
-      "Helios.NET35"
-      "Helios.NET40"
     ]
     |> List.iter copyOutput
 )
@@ -106,16 +106,56 @@ Target "BuildRelease" DoNothing
 Target "BuildReleaseMono" DoNothing
 
 //--------------------------------------------------------------------------------
+// NBench targets
+//--------------------------------------------------------------------------------
+Target "NBench" <| fun _ ->
+    let testSearchPath =
+        let assemblyFilter = getBuildParamOrDefault "spec-assembly" String.Empty
+        sprintf "benchmark/**/bin/Release/*%s*.Tests.Performance.dll" assemblyFilter
+
+    mkdir perfOutput
+    let nbenchTestPath = findToolInSubPath "NBench.Runner.exe" "./packages/NBench.Runner*"
+    let nbenchTestAssemblies = !! testSearchPath
+    printfn "Using NBench.Runner: %s" nbenchTestPath
+
+    let runNBench assembly =
+        let spec = getBuildParam "include"
+
+        let args = new StringBuilder()
+                |> append assembly
+                |> append (sprintf "output-directory=\"%s\"" perfOutput)
+                |> append (sprintf "concurrent=\"%b\"" true)
+                |> appendIfNotNullOrEmpty spec "include="
+                |> toText
+
+        let result = ExecProcess(fun info -> 
+            info.FileName <- nbenchTestPath
+            info.WorkingDirectory <- (Path.GetDirectoryName (FullName nbenchTestPath))
+            info.Arguments <- args) (System.TimeSpan.FromMinutes 60.0) (* Reasonably long-running task. *)
+        if result <> 0 then failwithf "NBench.Runner failed. %s %s" nbenchTestPath args
+    
+    nbenchTestAssemblies |> Seq.iter (runNBench)
+
+//--------------------------------------------------------------------------------
+// Clean NBench output
+Target "CleanPerf" <| fun _ ->
+    DeleteDir perfOutput
+
+
+//--------------------------------------------------------------------------------
 // Tests targets
 //--------------------------------------------------------------------------------
+open Fake.Testing
 Target "RunTests" <| fun _ ->
-    let nunitAssemblies = !! "tests/**/bin/Release/*.Tests.dll" ++ "tests/**/bin/Release/Helios.MultiNodeTests.dll"
+    let xunitTestAssemblies = !! "tests/**/bin/Release/*.Tests.dll" ++ "tests/**/bin/Release/Helios.MultiNodeTests.dll"
 
     mkdir testOutput
-    nunitAssemblies |> NUnit(fun p -> 
-        {p with 
-            DisableShadowCopy = true;
-            OutputFile = testOutput + "TestResults.xml" })
+    let xunitToolPath = findToolInSubPath "xunit.console.exe" "packages/xunit.runner.console*/tools"
+    printfn "Using XUnit runner: %s" xunitToolPath
+    xUnit2
+        (fun p -> { p with XmlOutputPath = Some (testOutput + @"\XUnitTestResults.xml"); HtmlOutputPath = Some (testOutput + @"\XUnitTestResults.HTML"); ToolPath = xunitToolPath; TimeOut = System.TimeSpan.FromMinutes 30.0; Parallel = ParallelMode.NoParallelization; NoAppDomain = true; MaxThreads = CollectionConcurrencyMode.MaxThreads 200 })
+
+        xunitTestAssemblies
 
 //--------------------------------------------------------------------------------
 // Clean test output
@@ -139,8 +179,6 @@ module Nuget =
     let getProjectBinFolders project =
         match project with
         | "Helios" -> "lib" @@ "net45"
-        | "Helios.NET40" -> "lib" @@ "net40"
-        | "Helios.NET35" -> "lib" @@ "net35"
         | _ -> "lib" @@ "net45"
 
     // selected nuget description
@@ -152,8 +190,6 @@ module Nuget =
     let getHeliosDependency project =
         match project with
         | "Helios" -> []
-        | "Helios.NET40" -> []
-        | "Helios.NET35" -> []
         | _ -> ["Helios", release.NugetVersion]
 
 open Nuget
@@ -373,10 +409,14 @@ Target "All" DoNothing
 "CleanTests" ==> "RunTests"
 "CleanNuget" ==> "BuildRelease" ==> "Nuget"
 
+// NBench dependencies
+"CleanPerf" ==> "NBench"
+
 // nuget dependencies
 
 "BuildRelease" ==> "All"
 "RunTests" ==> "All"
+"NBench" ==> "All"
 "Nuget" ==> "All"
 
 Target "AllTests" DoNothing //used for Mono builds, due to Mono 4.0 bug with FAKE / NuGet https://github.com/fsharp/fsharp/issues/427

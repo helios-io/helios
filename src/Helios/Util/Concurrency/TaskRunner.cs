@@ -1,11 +1,15 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Helios.Util.Concurrency
 {
     /// <summary>
-    /// Internal factory class for spawning Task instances
+    ///     Internal factory class for spawning Task instances
     /// </summary>
     internal static class TaskRunner
     {
@@ -23,7 +27,6 @@ namespace Helios.Util.Concurrency
 #else
             return Task.Factory.StartNew(a);
 #endif
-
         }
 
         public static Task Run(Action a, CancellationToken c)
@@ -33,7 +36,6 @@ namespace Helios.Util.Concurrency
 #else
             return Task.Factory.StartNew(a, c);
 #endif
-
         }
 
         public static Task<T> Run<T>(Func<T> f)
@@ -43,7 +45,6 @@ namespace Helios.Util.Concurrency
 #else
             return Task.Factory.StartNew(f);
 #endif
-
         }
 
         public static Task<T> Run<T>(Func<T> f, CancellationToken c)
@@ -53,7 +54,6 @@ namespace Helios.Util.Concurrency
 #else
             return Task.Factory.StartNew(f,c);
 #endif
-
         }
 
         public static Task Delay(TimeSpan gracePeriod)
@@ -66,3 +66,4 @@ namespace Helios.Util.Concurrency
         }
     }
 }
+

@@ -1,22 +1,24 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Linq;
 using System.Threading;
 using Helios.Ops;
 using Helios.Ops.Executors;
 using Helios.Util;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.Tests.Ops
 {
-    [TestFixture]
     public class BasicExecutorTests
     {
         #region Setup / Teardown
 
         protected IExecutor Executor;
 
-        [SetUp]
-        public virtual void SetUp()
+        public BasicExecutorTests()
         {
             Executor = new BasicExecutor();
         }
@@ -25,26 +27,26 @@ namespace Helios.Tests.Ops
 
         #region Tests
 
-        [Test]
+        [Fact]
         public void Should_execute_operation_when_AcceptingJobs()
         {
             //arrange
-            bool wasCalled = false;
+            var wasCalled = false;
             var callback = new Action(() => { wasCalled = true; });
 
             //act
             Executor.Execute(callback);
 
             //assert
-            Assert.IsTrue(Executor.AcceptingJobs);
-            Assert.IsTrue(wasCalled);
+            Assert.True(Executor.AcceptingJobs);
+            Assert.True(wasCalled);
         }
 
-        [Test]
+        [Fact]
         public void Should_not_execute_operation_when_not_AcceptingJobs()
         {
             //arrange
-            bool wasCalled = false;
+            var wasCalled = false;
             var callback = new Action(() => { wasCalled = true; });
 
             //act
@@ -52,11 +54,11 @@ namespace Helios.Tests.Ops
             Executor.Execute(callback);
 
             //assert
-            Assert.IsFalse(Executor.AcceptingJobs);
-            Assert.IsFalse(wasCalled);
+            Assert.False(Executor.AcceptingJobs);
+            Assert.False(wasCalled);
         }
 
-        [Test]
+        [Fact]
         public void Should_execute_queue_of_jobs_when_AcceptingJobs()
         {
             //arrange
@@ -66,18 +68,18 @@ namespace Helios.Tests.Ops
             for (var i = 0; i < wasCalled.Count; i++)
             {
                 var i1 = i;
-                callbacks[i] = new Action(() => { wasCalled[i1] = true; });
+                callbacks[i] = () => { wasCalled[i1] = true; };
             }
 
             //act
             Executor.Execute(callbacks, null);
 
             //assert
-            Assert.IsTrue(Executor.AcceptingJobs);
-            Assert.IsTrue(wasCalled.All(x => x));
+            Assert.True(Executor.AcceptingJobs);
+            Assert.True(wasCalled.All(x => x));
         }
 
-        [Test]
+        [Fact]
         public void Should_output_unfinished_jobs_when_AcceptJobs_disabled_during_execution()
         {
             //arrange
@@ -88,7 +90,7 @@ namespace Helios.Tests.Ops
             for (var i = 0; i < wasCalled.Count; i++)
             {
                 var i1 = i;
-                callbacks[i] = new Action(() => { wasCalled[i1] = true; });
+                callbacks[i] = () => { wasCalled[i1] = true; };
             }
 
             var slowCallback = new Action(() => Thread.Sleep(TimeSpan.FromSeconds(2)));
@@ -99,11 +101,12 @@ namespace Helios.Tests.Ops
             Executor.Execute(callbacks, actions => { remainingJobsCalled = true; });
 
             //assert
-            Assert.IsFalse(Executor.AcceptingJobs);
-            Assert.IsFalse(wasCalled.All(x => x));
-            Assert.IsTrue(remainingJobsCalled);
+            Assert.False(Executor.AcceptingJobs);
+            Assert.False(wasCalled.All(x => x));
+            Assert.True(remainingJobsCalled);
         }
 
         #endregion
     }
 }
+

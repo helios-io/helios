@@ -1,8 +1,12 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Linq;
 using Helios.Ops.Executors;
 using Helios.Util;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.Tests.Ops
 {
@@ -10,7 +14,7 @@ namespace Helios.Tests.Ops
     {
         #region Setup / Teardown
 
-        public override void SetUp()
+        public TryCatchExecutorTests()
         {
             Executor = new TryCatchExecutor();
         }
@@ -19,7 +23,7 @@ namespace Helios.Tests.Ops
 
         #region Tests
 
-        [Test]
+        [Fact]
         public void Should_report_exception_when_thrown()
         {
             //arrange
@@ -32,10 +36,10 @@ namespace Helios.Tests.Ops
             Executor.Execute(exOperation);
 
             //assert
-            Assert.IsTrue(handledException);
+            Assert.True(handledException);
         }
 
-        [Test]
+        [Fact]
         public void Should_not_report_exception_when_not_thrown()
         {
             //arrange
@@ -49,11 +53,11 @@ namespace Helios.Tests.Ops
             Executor.Execute(exOperation);
 
             //assert
-            Assert.IsFalse(handledException);
-            Assert.IsTrue(called);
+            Assert.False(handledException);
+            Assert.True(called);
         }
 
-        [Test]
+        [Fact]
         public void Should_pipe_remaining_operations_when_exception_thrown()
         {
             //arrange
@@ -70,7 +74,7 @@ namespace Helios.Tests.Ops
             for (var i = 0; i < wasCalled.Count; i++)
             {
                 var i1 = i;
-                callbacks[i] = new Action(() => { wasCalled[i1] = true; });
+                callbacks[i] = () => { wasCalled[i1] = true; };
             }
             callbacks[1] = exOperation;
 
@@ -82,12 +86,13 @@ namespace Helios.Tests.Ops
             });
 
             //assert
-            Assert.IsFalse(wasCalled.All(x => x));
-            Assert.IsTrue(handledException);
-            Assert.IsTrue(remainingJobsCalled);
-            Assert.AreEqual(1, remainingJobsCount);
+            Assert.False(wasCalled.All(x => x));
+            Assert.True(handledException);
+            Assert.True(remainingJobsCalled);
+            Assert.Equal(1, remainingJobsCount);
         }
 
         #endregion
     }
 }
+

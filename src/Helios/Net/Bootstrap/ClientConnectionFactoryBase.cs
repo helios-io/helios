@@ -1,16 +1,17 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using Helios.Topology;
 
 namespace Helios.Net.Bootstrap
 {
     public abstract class ClientConnectionFactoryBase : ClientBootstrap, IConnectionFactory
     {
-        protected ClientConnectionFactoryBase(ClientBootstrap clientBootstrap) : base(clientBootstrap) { }
-
-        /// <summary>
-        /// Spawns an <see cref="IConnection"/> object internally
-        /// </summary>
-        protected abstract IConnection CreateConnection(INode localEndpoint, INode remoteEndpoint);
+        protected ClientConnectionFactoryBase(ClientBootstrap clientBootstrap) : base(clientBootstrap)
+        {
+        }
 
         public IConnection NewConnection()
         {
@@ -28,15 +29,21 @@ namespace Helios.Net.Bootstrap
             connection.Configure(Config);
 
             if (ReceivedData != null)
-                connection.Receive += (ReceivedDataCallback)ReceivedData.Clone();
+                connection.Receive += (ReceivedDataCallback) ReceivedData.Clone();
             if (ConnectionEstablishedCallback != null)
-                connection.OnConnection += (ConnectionEstablishedCallback)ConnectionEstablishedCallback.Clone();
+                connection.OnConnection += (ConnectionEstablishedCallback) ConnectionEstablishedCallback.Clone();
             if (ConnectionTerminatedCallback != null)
-                connection.OnDisconnection += (ConnectionTerminatedCallback)ConnectionTerminatedCallback.Clone();
+                connection.OnDisconnection += (ConnectionTerminatedCallback) ConnectionTerminatedCallback.Clone();
             if (ExceptionCallback != null)
-                connection.OnError += (ExceptionCallback)ExceptionCallback.Clone();
+                connection.OnError += (ExceptionCallback) ExceptionCallback.Clone();
 
             return connection;
         }
+
+        /// <summary>
+        ///     Spawns an <see cref="IConnection" /> object internally
+        /// </summary>
+        protected abstract IConnection CreateConnection(INode localEndpoint, INode remoteEndpoint);
     }
 }
+

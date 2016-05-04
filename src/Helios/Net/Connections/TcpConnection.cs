@@ -1,14 +1,18 @@
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Buffers;
+using Helios.Channels;
 using Helios.Exceptions;
 using Helios.Serialization;
 using Helios.Topology;
 using Helios.Tracing;
-using Helios.Util.Concurrency;
 
 namespace Helios.Net.Connections
 {
@@ -16,13 +20,15 @@ namespace Helios.Net.Connections
     {
         protected Socket _client;
 
-        public TcpConnection(NetworkEventLoop eventLoop, INode node, TimeSpan timeout, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        public TcpConnection(NetworkEventLoop eventLoop, INode node, TimeSpan timeout, IMessageEncoder encoder,
+            IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base(eventLoop, node, timeout, encoder, decoder, allocator, bufferSize)
         {
             InitClient();
         }
 
-        public TcpConnection(NetworkEventLoop eventLoop, INode node, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        public TcpConnection(NetworkEventLoop eventLoop, INode node, IMessageEncoder encoder, IMessageDecoder decoder,
+            IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base(eventLoop, node, encoder, decoder, allocator, bufferSize)
         {
             InitClient();
@@ -34,7 +40,8 @@ namespace Helios.Net.Connections
             InitClient(client);
         }
 
-        public TcpConnection(Socket client, IMessageEncoder encoder, IMessageDecoder decoder, IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
+        public TcpConnection(Socket client, IMessageEncoder encoder, IMessageDecoder decoder,
+            IByteBufAllocator allocator, int bufferSize = NetworkConstants.DEFAULT_BUFFER_SIZE)
             : base(bufferSize)
         {
             InitClient(client);
@@ -43,7 +50,10 @@ namespace Helios.Net.Connections
             Allocator = allocator;
         }
 
-        public override TransportType Transport { get { return TransportType.Tcp; } }
+        public override TransportType Transport
+        {
+            get { return TransportType.Tcp; }
+        }
 
         public override bool Blocking
         {
@@ -83,7 +93,7 @@ namespace Helios.Net.Connections
 
         public bool KeepAlive
         {
-            get { return ((int)_client.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive) == 1); }
+            get { return (int) _client.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive) == 1; }
             set { _client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, value ? 1 : 0); }
         }
 
@@ -131,7 +141,8 @@ namespace Helios.Net.Connections
 
             if (RemoteHost == null || RemoteHost.Host == null)
             {
-                throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to a null Node or null Node.Host");
+                throw new HeliosConnectionException(ExceptionType.NotOpen,
+                    "Cannot open a connection to a null Node or null Node.Host");
             }
 
             if (RemoteHost.Port <= 0)
@@ -156,11 +167,13 @@ namespace Helios.Net.Connections
                     SetLocal(_client);
                     InvokeConnectIfNotNull(RemoteHost);
                 }
-				else
-				{	// JKH = because I want to know if my BeginConnect has failed
-					if(x.IsFaulted)
-						InvokeDisconnectIfNotNull(RemoteHost, new HeliosConnectionException(ExceptionType.NotOpen, x.Exception.Flatten()));
-				}
+                else
+                {
+                    // JKH = because I want to know if my BeginConnect has failed
+                    if (x.IsFaulted)
+                        InvokeDisconnectIfNotNull(RemoteHost,
+                            new HeliosConnectionException(ExceptionType.NotOpen, x.Exception.Flatten()));
+                }
                 return result;
             }, TaskContinuationOptions.AttachedToParent | TaskContinuationOptions.ExecuteSynchronously);
         }
@@ -194,7 +207,8 @@ namespace Helios.Net.Connections
 
             if (RemoteHost == null || RemoteHost.Host == null)
             {
-                throw new HeliosConnectionException(ExceptionType.NotOpen, "Cannot open a connection to a null Node or null Node.Host");
+                throw new HeliosConnectionException(ExceptionType.NotOpen,
+                    "Cannot open a connection to a null Node or null Node.Host");
             }
 
             if (RemoteHost.Port <= 0)
@@ -216,10 +230,10 @@ namespace Helios.Net.Connections
                 catch (SocketException ex)
                 {
                     HeliosTrace.Instance.TcpClientConnectFailure(ex.Message);
-					// JKH = because I want to know if my BeginConnect has failed and because when I use BeginConnect I cannot catch this throw and it litters my Debug window
-					HeliosConnectionException rethrow = new HeliosConnectionException(ExceptionType.NotOpen, ex);
-					InvokeDisconnectIfNotNull(RemoteHost, rethrow);
-					return;
+                    // JKH = because I want to know if my BeginConnect has failed and because when I use BeginConnect I cannot catch this throw and it litters my Debug window
+                    var rethrow = new HeliosConnectionException(ExceptionType.NotOpen, ex);
+                    InvokeDisconnectIfNotNull(RemoteHost, rethrow);
+                    return;
                     //throw rethrow;	using BeginConnect, I cannot catch this throw...
                 }
             }
@@ -227,9 +241,9 @@ namespace Helios.Net.Connections
             {
                 _client.Close();
                 HeliosTrace.Instance.TcpClientConnectFailure("Timed out on connect");
-				// JKH = because I want to know if my BeginConnect has failed
-				HeliosConnectionException rethrow = new HeliosConnectionException(ExceptionType.TimedOut, "Timed out on connect");
-				InvokeDisconnectIfNotNull(RemoteHost, rethrow);
+                // JKH = because I want to know if my BeginConnect has failed
+                var rethrow = new HeliosConnectionException(ExceptionType.TimedOut, "Timed out on connect");
+                InvokeDisconnectIfNotNull(RemoteHost, rethrow);
                 throw rethrow;
             }
             SetLocal(_client);
@@ -239,7 +253,8 @@ namespace Helios.Net.Connections
         protected override void BeginReceiveInternal()
         {
             var receiveState = CreateNetworkState(_client, RemoteHost);
-            _client.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None, ReceiveCallback, receiveState);
+            _client.BeginReceive(receiveState.RawBuffer, 0, receiveState.RawBuffer.Length, SocketFlags.None,
+                ReceiveCallback, receiveState);
         }
 
 
@@ -309,7 +324,7 @@ namespace Helios.Net.Connections
                 {
                     if (_client != null)
                     {
-                        ((IDisposable)_client).Dispose();
+                        ((IDisposable) _client).Dispose();
                         _client = null;
                         EventLoop.Dispose();
                     }
@@ -327,9 +342,9 @@ namespace Helios.Net.Connections
             _client.ReceiveTimeout = Timeout.Seconds;
             _client.SendTimeout = Timeout.Seconds;
             _client.ReceiveBufferSize = BufferSize;
-            var ipAddress = (IPEndPoint)_client.RemoteEndPoint;
+            var ipAddress = (IPEndPoint) _client.RemoteEndPoint;
             RemoteHost = Binding = NodeBuilder.FromEndpoint(ipAddress);
-            Local = NodeBuilder.FromEndpoint((IPEndPoint)_client.LocalEndPoint);
+            Local = NodeBuilder.FromEndpoint((IPEndPoint) _client.LocalEndPoint);
         }
 
         private void InitClient()
@@ -344,13 +359,14 @@ namespace Helios.Net.Connections
         }
 
         /// <summary>
-        /// After a TCP connection is successfully established, set the value of the local node
-        /// to whatever port / IP was assigned.
+        ///     After a TCP connection is successfully established, set the value of the local node
+        ///     to whatever port / IP was assigned.
         /// </summary>
         protected void SetLocal(Socket client)
         {
-            var localEndpoint = (IPEndPoint)client.LocalEndPoint;
+            var localEndpoint = (IPEndPoint) client.LocalEndPoint;
             Local = NodeBuilder.FromEndpoint(localEndpoint);
         }
     }
 }
+

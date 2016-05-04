@@ -1,22 +1,21 @@
-﻿using System.Net;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System.Net;
 using System.Threading;
-using Helios.Exceptions;
 using Helios.Net;
 using Helios.Topology;
-using NUnit.Framework;
+using Xunit;
 
 namespace Helios.Tests.Net
 {
-    [TestFixture]
     public class TcpConnectionTests
     {
-        #region Setup / Teardown
-        #endregion
-
         #region Tests
 
         //[ExpectedException(typeof(HeliosConnectionException))]
-        [Test]
+        [Fact]
         public void Should_throw_exception_when_connecting_to_unreachable_node()
         {
             //arrange
@@ -24,7 +23,7 @@ namespace Helios.Tests.Net
             var connection = node.GetConnection();
             var boolDisconnected = false;
             var resetEvent = new AutoResetEvent(false);
-            connection.OnDisconnection += delegate(HeliosConnectionException reason, IConnection channel)
+            connection.OnDisconnection += delegate
             {
                 boolDisconnected = true;
                 resetEvent.Set();
@@ -39,5 +38,10 @@ namespace Helios.Tests.Net
         }
 
         #endregion
+
+        #region Setup / Teardown
+
+        #endregion
     }
 }
+
