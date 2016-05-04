@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Threading.Tasks;
 using Helios.Ops;
 
@@ -7,6 +11,7 @@ namespace Helios.Concurrency
     /// <summary>
     /// Interface for lightweight threading and execution
     /// </summary>
+    [Obsolete()]
     public interface IFiber : IDisposable
     {
         /// <summary>
@@ -24,7 +29,7 @@ namespace Helios.Concurrency
         void Add(Action op);
 
         /// <summary>
-        /// Replaces the current <see cref="Executor"/> with a new <see cref="IExecutor"/> instance
+        /// Replaces the current <see cref="Executor"/> with a new <see cref="IEventExecutor"/> instance
         /// </summary>
         /// <param name="executor">The new executor</param>
         void SwapExecutor(IExecutor executor);
@@ -54,3 +59,4 @@ namespace Helios.Concurrency
         IFiber Clone();
     }
 }
+

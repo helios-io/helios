@@ -1,6 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Net;
 using Helios.Buffers;
+using Helios.Channels;
 using Helios.Net;
 using Helios.Net.Bootstrap;
 using Helios.Ops;
@@ -9,6 +14,7 @@ using Helios.Serialization;
 
 namespace Helios.Reactor.Bootstrap
 {
+    [Obsolete()]
     public class ServerBootstrap : AbstractBootstrap
     {
         public ServerBootstrap()
@@ -168,3 +174,4 @@ namespace Helios.Reactor.Bootstrap
         }
     }
 }
+

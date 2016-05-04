@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -7,17 +11,16 @@ using System.Threading;
 using Helios.Concurrency;
 using Helios.Net;
 using Helios.Net.Bootstrap;
-using Helios.Net.Connections;
 using Helios.Topology;
 using Helios.Util;
 
 namespace TimeServiceClient
 {
-    class Program
+    internal class Program
     {
         public static IConnection TimeClient;
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             var host = IPAddress.Loopback;
             var port = 9991;
@@ -51,7 +54,7 @@ namespace TimeServiceClient
             }
         }
 
-        static void LoopWrite()
+        private static void LoopWrite()
         {
             var command = Encoding.UTF8.GetBytes("gettime");
             var fiber = FiberFactory.CreateFiber(3);
@@ -59,7 +62,7 @@ namespace TimeServiceClient
             Action dedicatedMethod = () =>
             {
                 Thread.Sleep(1);
-                TimeClient.Send(new NetworkData() {Buffer = command, Length = command.Length});
+                TimeClient.Send(new NetworkData {Buffer = command, Length = command.Length});
             };
 
             while (TimeClient.IsOpen())
@@ -70,7 +73,7 @@ namespace TimeServiceClient
             fiber.GracefulShutdown(TimeSpan.FromSeconds(1));
         }
 
-        static void LoopConnect()
+        private static void LoopConnect()
         {
             var attempts = 0;
             while (!TimeClient.IsOpen())
@@ -91,3 +94,4 @@ namespace TimeServiceClient
         }
     }
 }
+

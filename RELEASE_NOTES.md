@@ -1,5 +1,7 @@
-#### 1.5 April 12 2016
+#### 2.0 May 3 2016
 Major performance and stability rewrite of Helios, including breaking API changes.
+
+The existing API has been left intact, but marked as `Obsolete`. Going forward please use the `IChannel` APIs provided inside the `Helios.Channels` namespace. They are virtually identical to the equivalent DotNetty APIs, although with some minor differences as a result of existing code and styles within Helios itself.
 
 #### 1.4.2 Dec 12 2015
 Bugfixed - fixed an issue with `NoOpDecoder` where it wouldn't properly drain incoming `IByteBuffer` instances.

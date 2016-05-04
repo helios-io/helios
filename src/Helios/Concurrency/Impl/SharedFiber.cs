@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Threading.Tasks;
 using Helios.Ops;
 using Helios.Util.Concurrency;
@@ -7,7 +11,7 @@ using Helios.Util.TimedOps;
 namespace Helios.Concurrency.Impl
 {
     /// <summary>
-    /// A shared <see cref="IFiber"/> instance that avoids disposing the original Fiber in the event of a shutdown
+    ///     A shared <see cref="IFiber" /> instance that avoids disposing the original Fiber in the event of a shutdown
     /// </summary>
     public class SharedFiber : IFiber
     {
@@ -21,8 +25,14 @@ namespace Helios.Concurrency.Impl
         }
 
         public IExecutor Executor { get; private set; }
-        public bool Running { get { return _gracefulShutdownDeadline.HasTimeLeft; } }
+
+        public bool Running
+        {
+            get { return _gracefulShutdownDeadline.HasTimeLeft; }
+        }
+
         public bool WasDisposed { get; private set; }
+
         public void Add(Action op)
         {
             if (_gracefulShutdownDeadline.HasTimeLeft)
@@ -79,3 +89,4 @@ namespace Helios.Concurrency.Impl
         #endregion
     }
 }
+

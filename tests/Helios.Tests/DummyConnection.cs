@@ -1,7 +1,12 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Net;
 using System.Threading.Tasks;
 using Helios.Buffers;
+using Helios.Channels;
 using Helios.Net;
 using Helios.Ops;
 using Helios.Serialization;
@@ -10,7 +15,7 @@ using Helios.Topology;
 namespace Helios.Tests
 {
     /// <summary>
-    /// Fake connection used for testing purposes
+    ///     Fake connection used for testing purposes
     /// </summary>
     public class DummyConnection : IConnection
     {
@@ -22,7 +27,6 @@ namespace Helios.Tests
 
         public void Dispose()
         {
-            
         }
 
         public event ReceivedDataCallback Receive;
@@ -32,7 +36,7 @@ namespace Helios.Tests
         public IEventLoop EventLoop { get; private set; }
         public IMessageEncoder Encoder { get; private set; }
         public IMessageDecoder Decoder { get; private set; }
-        public IByteBufAllocator Allocator { get; private set; }
+        public IByteBufAllocator Allocator { get; }
         public DateTimeOffset Created { get; private set; }
         public INode RemoteHost { get; private set; }
         public INode Local { get; private set; }
@@ -41,6 +45,7 @@ namespace Helios.Tests
         public bool Blocking { get; set; }
         public bool WasDisposed { get; private set; }
         public bool Receiving { get; private set; }
+
         public bool IsOpen()
         {
             throw new NotImplementedException();
@@ -95,3 +100,4 @@ namespace Helios.Tests
         }
     }
 }
+

@@ -1,27 +1,29 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Helios.Util.Collections;
 using NBench;
 
 namespace Helios.Tests.Performance.Collections
 {
     /// <summary>
-    /// Performance specs for checking the underlying Collections' implementation's read / write performance
+    ///     Performance specs for checking the underlying Collections' implementation's read / write performance
     /// </summary>
     public class AllCollectionsSpec
     {
-        private Counter _insertsCounter;
         private const string InsertCounterName = "ItemInserts";
         private const int ItemCount = 1000;
         private const int ResizedItemCount = 10*ItemCount;
+        private Counter _insertsCounter;
 
-        private CircularBuffer<int> circularBuffer = new CircularBuffer<int>(ItemCount);
-        private ConcurrentCircularBuffer<int> concurrentCircularBuffer = new ConcurrentCircularBuffer<int>(ItemCount);
-        private ConcurrentQueue<int> concurrentQueue = new ConcurrentQueue<int>();
+        private readonly CircularBuffer<int> circularBuffer = new CircularBuffer<int>(ItemCount);
+
+        private readonly ConcurrentCircularBuffer<int> concurrentCircularBuffer =
+            new ConcurrentCircularBuffer<int>(ItemCount);
+
+        private readonly ConcurrentQueue<int> concurrentQueue = new ConcurrentQueue<int>();
 
         [PerfSetup]
         public void SetUp(BenchmarkContext context)
@@ -114,3 +116,4 @@ namespace Helios.Tests.Performance.Collections
         }
     }
 }
+

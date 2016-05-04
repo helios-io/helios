@@ -1,5 +1,11 @@
-﻿using System.Net;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
+using System.Net;
 using Helios.Buffers;
+using Helios.Channels;
 using Helios.Serialization;
 
 namespace Helios.Net.Bootstrap
@@ -7,6 +13,7 @@ namespace Helios.Net.Bootstrap
     /// <summary>
     /// Base class for bootstrapping new <see cref="IConnection"/> objects
     /// </summary>
+    [Obsolete()]
     public abstract class AbstractBootstrap
     {
         protected AbstractBootstrap()
@@ -133,3 +140,4 @@ namespace Helios.Net.Bootstrap
 
     }
 }
+

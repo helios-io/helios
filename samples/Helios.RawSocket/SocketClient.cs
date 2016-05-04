@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Helios.Exceptions;
 using Helios.Net;
@@ -17,8 +15,8 @@ namespace Helios.RawSocket
 {
     public partial class SocketClient : Form
     {
-        public INode RemoteHost;
         public IConnection Connection;
+        public INode RemoteHost;
 
         public SocketClient()
         {
@@ -64,7 +62,7 @@ namespace Helios.RawSocket
             Connection.Close();
         }
 
-        #endregion 
+        #endregion
 
         #region Network Handlers
 
@@ -72,7 +70,7 @@ namespace Helios.RawSocket
         {
             try
             {
-                var port = Int32.Parse(portStr);
+                var port = int.Parse(portStr);
                 RemoteHost = NodeBuilder.BuildNode().Host(host).WithPort(port).WithTransportType(TransportType.Tcp);
                 Connection =
                     new ClientBootstrap()
@@ -132,9 +130,6 @@ namespace Helios.RawSocket
         }
 
         #endregion
-
-       
-
-        
     }
 }
+

@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Threading.Tasks;
 using Helios.Ops;
 using Helios.Ops.Executors;
@@ -10,7 +14,9 @@ namespace Helios.Concurrency.Impl
     public class DedicatedThreadPoolFiber : IFiber
     {
         private readonly int _numThreads;
-        private DedicatedThreadPool _threadPool;
+
+        private volatile IExecutor _executor;
+        private readonly DedicatedThreadPool _threadPool;
 
         public DedicatedThreadPoolFiber(int numThreads)
             : this(new BasicExecutor(), numThreads)
@@ -27,8 +33,12 @@ namespace Helios.Concurrency.Impl
             Running = true;
         }
 
-        private volatile IExecutor _executor;
-        public IExecutor Executor { get { return _executor; } set { _executor = value; } }
+        public IExecutor Executor
+        {
+            get { return _executor; }
+            set { _executor = value; }
+        }
+
         public bool WasDisposed { get; private set; }
 
         public bool Running { get; set; }
@@ -94,3 +104,4 @@ namespace Helios.Concurrency.Impl
         #endregion
     }
 }
+

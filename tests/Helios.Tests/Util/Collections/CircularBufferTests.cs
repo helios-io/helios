@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System.Linq;
 using System.Text;
 using Helios.Util.Collections;
@@ -6,18 +9,17 @@ using Xunit;
 
 namespace Helios.Tests.Util.Collections
 {
-    
     public class CircularBufferTests
     {
         protected virtual ICircularBuffer<T> GetBuffer<T>(int capacity)
         {
             return new CircularBuffer<T>(capacity);
         }
-            
+
 
         /// <summary>
-        /// If a circular buffer is defined with a fixed maximum capacity, it should
-        /// simply overwrite the old elements even if they haven't been dequed
+        ///     If a circular buffer is defined with a fixed maximum capacity, it should
+        ///     simply overwrite the old elements even if they haven't been dequed
         /// </summary>
         [Fact]
         public void CircularBuffer_should_not_expand()
@@ -35,3 +37,4 @@ namespace Helios.Tests.Util.Collections
         }
     }
 }
+

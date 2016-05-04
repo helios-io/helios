@@ -1,25 +1,16 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
 using System.Collections.Generic;
 
 namespace Helios.Util.Collections
 {
     /// <summary>
-    /// Static helper methods for working with dictionaries
+    ///     Static helper methods for working with dictionaries
     /// </summary>
     public static class DictionaryExtensions
     {
-        /// <summary>
-        /// Dictionary helper that allows for idempotent updates. You don't need to care whether or not
-        /// this item is already in the collection in order to update it.
-        /// </summary>
-        public static void AddOrSet<TKey, TValue>(this IDictionary<TKey, TValue> hash, TKey key, TValue value)
-        {
-            if (hash.ContainsKey(key))
-                hash[key] = value;
-            else
-                hash.Add(key, value);
-        }
-
         public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> hash, TKey key)
         {
             return hash.ContainsKey(key) ? hash[key] : default(TValue);
@@ -28,7 +19,8 @@ namespace Helios.Util.Collections
         public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, object> hash,
             TKey key)
         {
-            return hash.ContainsKey(key) && hash[key] is TValue ? (TValue)hash[key] : default(TValue);
+            return hash.ContainsKey(key) && hash[key] is TValue ? (TValue) hash[key] : default(TValue);
         }
     }
 }
+

@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -6,12 +10,12 @@ using System.Net.Sockets;
 namespace Helios.Topology
 {
     /// <summary>
-    /// Static builder class for creating INode instances
+    ///     Static builder class for creating INode instances
     /// </summary>
     public static class NodeBuilder
     {
         /// <summary>
-        /// Creates a new INode instance
+        ///     Creates a new INode instance
         /// </summary>
         /// <returns>A new INode instance</returns>
         public static INode BuildNode()
@@ -21,7 +25,7 @@ namespace Helios.Topology
         }
 
         /// <summary>
-        /// Add a host to an INode instance
+        ///     Add a host to an INode instance
         /// </summary>
         /// <param name="n">A valid INode instance</param>
         /// <param name="host">A System.Net IpAddress object representing a valid host for a given service</param>
@@ -33,7 +37,7 @@ namespace Helios.Topology
         }
 
         /// <summary>
-        /// Add a host to an INode instance
+        ///     Add a host to an INode instance
         /// </summary>
         /// <param name="n">A valid INode instance</param>
         /// <param name="host">A string representation of an IP address</param>
@@ -44,14 +48,15 @@ namespace Helios.Topology
             if (!IPAddress.TryParse(host, out parseIp))
             {
                 var hostentry = Dns.GetHostEntry(host);
-                parseIp = hostentry.AddressList.First(x => x.AddressFamily == AddressFamily.InterNetwork); //first IPv4 address
+                parseIp = hostentry.AddressList.First(x => x.AddressFamily == AddressFamily.InterNetwork);
+                    //first IPv4 address
             }
-           
+
             return Host(n, parseIp);
         }
 
         /// <summary>
-        /// Add a machine name to an INode instance
+        ///     Add a machine name to an INode instance
         /// </summary>
         /// <param name="n">A valid INode instance</param>
         /// <param name="machineName">the name of this machine</param>
@@ -63,7 +68,7 @@ namespace Helios.Topology
         }
 
         /// <summary>
-        /// Add an OS name and version to an INode instance
+        ///     Add an OS name and version to an INode instance
         /// </summary>
         /// <param name="n">A valid INode instance</param>
         /// <param name="osName">The name and version of the host operating system</param>
@@ -75,7 +80,7 @@ namespace Helios.Topology
         }
 
         /// <summary>
-        /// Add the version # of the service being used to an INode instance
+        ///     Add the version # of the service being used to an INode instance
         /// </summary>
         /// <param name="n">A valid INode instance</param>
         /// <param name="serviceVersion">The version # of the service this node belongs to</param>
@@ -87,7 +92,7 @@ namespace Helios.Topology
         }
 
         /// <summary>
-        /// Adds a capability to a given INode instance
+        ///     Adds a capability to a given INode instance
         /// </summary>
         /// <param name="n">A valid INode instance</param>
         /// <param name="portNum">the port number for this node</param>
@@ -99,7 +104,7 @@ namespace Helios.Topology
         }
 
         /// <summary>
-        /// Adds a capability to a given INode instance
+        ///     Adds a capability to a given INode instance
         /// </summary>
         /// <param name="n">A valid INode instance</param>
         /// <param name="transportType">the type of network connection used by this node</param>
@@ -111,7 +116,7 @@ namespace Helios.Topology
         }
 
         /// <summary>
-        /// Add a JSON blob to a node's metadata
+        ///     Add a JSON blob to a node's metadata
         /// </summary>
         /// <param name="n">A valid INode instance</param>
         /// <param name="customData">A JSON-string representing a blob of custom data about this node</param>
@@ -123,7 +128,7 @@ namespace Helios.Topology
         }
 
         /// <summary>
-        /// Creates an INode instance from an IP endpoint
+        ///     Creates an INode instance from an IP endpoint
         /// </summary>
         /// <param name="endPoint">A System.NET.IPEndpoint argument, usually from an incoming socket connection</param>
         /// <returns>An active INode instance</returns>
@@ -134,3 +139,4 @@ namespace Helios.Topology
         }
     }
 }
+
