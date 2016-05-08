@@ -1,3 +1,6 @@
+#### 2.0.1 May 6 2016
+* Added `MessageToMessageDecoder<T>` base class to Helios.Codecs
+
 #### 2.0 May 3 2016
 Major performance and stability rewrite of Helios, including breaking API changes.
 

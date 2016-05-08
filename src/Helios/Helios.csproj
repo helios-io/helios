@@ -142,6 +142,7 @@
     <Compile Include="Codecs\HeliosBackwardsCompatabilityLengthFramePrepender.cs" />
     <Compile Include="Codecs\LengthFieldFrameBasedDecoder.cs" />
     <Compile Include="Codecs\LengthFieldPrepender.cs" />
+    <Compile Include="Codecs\MessageToMessageDecoder.cs" />
     <Compile Include="Codecs\MessageToMessageEncoder.cs" />
     <Compile Include="Concurrency\AbstractEventExecutor.cs" />
     <Compile Include="Concurrency\AbstractScheduledEventExecutor.cs" />
