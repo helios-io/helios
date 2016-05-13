@@ -1,3 +1,6 @@
+#### 2.0.2 May 6 2016
+* Added DNS support to `ServerBootstrap` so hostnames can be bound.
+
 #### 2.0.1 May 6 2016
 * Added `MessageToMessageDecoder<T>` base class to Helios.Codecs
 
