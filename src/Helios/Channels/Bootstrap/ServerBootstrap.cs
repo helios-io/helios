@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,10 @@ namespace Helios.Channels.Bootstrap
 
         private readonly ConcurrentDictionary<ChannelOption, object> _childOptions;
 
+        static readonly INameResolver DefaultResolver = new DefaultNameResolver();
+
+        volatile INameResolver _resolver = DefaultResolver;
+
         private volatile IEventLoopGroup _childGroup;
         private volatile IChannelHandler _childHandler;
 
@@ -38,6 +43,16 @@ namespace Helios.Channels.Bootstrap
             _childGroup = bootstrap._childGroup;
             _childHandler = bootstrap._childHandler;
             _childOptions = new ConcurrentDictionary<ChannelOption, object>(bootstrap._childOptions);
+        }
+
+        /// <summary>
+        /// Sets the <see cref="INameResolver"/> which will resolve the address of the unresolved named address.
+        /// </summary>
+        public ServerBootstrap Resolver(INameResolver resolver)
+        {
+            Contract.Requires(resolver != null);
+            this._resolver = resolver;
+            return this;
         }
 
         /// <summary>
@@ -139,6 +154,13 @@ namespace Helios.Channels.Bootstrap
                 ch.Pipeline.AddLast(new ServerBootstrapAcceptor(currentChildGroup, currentChildHandler,
                     childConfigSetupFunc /*, currentChildAttrs*/));
             }));
+        }
+
+        public async Task<IChannel> BindAsync(DnsEndPoint endpoint)
+        {
+            EndPoint ep = await this._resolver.ResolveAsync(endpoint);
+
+            return await BindAsync(ep);
         }
 
         public override ServerBootstrap Validate()
