@@ -207,6 +207,22 @@ namespace Helios.Tests.Buffer
             Assert.True(bytes.SequenceEqual(newBytes));
         }
 
+        [Fact]
+        public void Should_get_correct_ArrayOffset_and_copy_SlicedByteBuffer_contents_to_array()
+        {
+            var originalBuffer = GetBuffer(1024);
+            var bytes = Guid.NewGuid().ToByteArray();
+
+            // advance the read position beyond the original value
+            originalBuffer.WriteInt(4).WriteBytes(bytes);
+
+            var sliced = originalBuffer.Slice(4, originalBuffer.ReadableBytes - 4);
+
+            var newBytes = new byte[sliced.ReadableBytes];
+            Array.Copy(sliced.Array, sliced.ArrayOffset + sliced.ReaderIndex, newBytes, 0, sliced.ReadableBytes);
+            Assert.True(bytes.SequenceEqual(newBytes));
+        }
+
         #endregion
     }
 }
