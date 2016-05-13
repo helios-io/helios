@@ -2,9 +2,11 @@
 // Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
 // See ThirdPartyNotices.txt for references to third party code used inside Helios.
 
+using System;
 using System.Linq;
 using System.Text;
 using Helios.Buffers;
+using Helios.Util;
 using Xunit;
 
 namespace Helios.Tests.Buffer
@@ -183,6 +185,26 @@ namespace Helios.Tests.Buffer
             Assert.Equal(110, originalByteBuffer.ReadInt());
             var byteArray = originalByteBuffer.ToArray();
             Assert.Equal(expectedString, Encoding.Unicode.GetString(byteArray));
+        }
+
+        #endregion
+
+        #region Array operations
+
+        [Fact]
+        public void Should_get_correct_ArrayOffset_and_copy_ByteBuffer_contents_to_array()
+        {
+            var originalBuffer = GetBuffer(1024);
+            var bytes = Guid.NewGuid().ToByteArray();
+
+            // advance the read position beyond the original value
+            originalBuffer.WriteInt(4).WriteBytes(bytes);
+            var myInt = originalBuffer.ReadInt();
+            Assert.Equal(4, myInt);
+
+            var newBytes = new byte[originalBuffer.ReadableBytes];
+            Array.Copy(originalBuffer.Array, originalBuffer.ArrayOffset + originalBuffer.ReaderIndex, newBytes, 0, originalBuffer.ReadableBytes);
+            Assert.True(bytes.SequenceEqual(newBytes));
         }
 
         #endregion
