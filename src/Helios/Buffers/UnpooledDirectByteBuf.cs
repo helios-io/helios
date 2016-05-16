@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
 // See ThirdPartyNotices.txt for references to third party code used inside Helios.
 
+using System;
 using System.Diagnostics.Contracts;
 
 namespace Helios.Buffers
@@ -228,6 +229,16 @@ namespace Helios.Buffers
             System.Array.Copy(_buffer, index, copiedArray, 0, length);
             return new UnpooledDirectByteBuf(Allocator, copiedArray, MaxCapacity);
         }
+
+        public override int IoBufferCount => 1;
+
+        public override ArraySegment<byte> GetIoBuffer(int index, int length)
+        {
+            this.EnsureAccessible();
+            return new ArraySegment<byte>(_buffer, index, length);
+        }
+
+        public override ArraySegment<byte>[] GetIoBuffers(int index, int length) => new[] { this.GetIoBuffer(index, length) };
 
         public override IByteBuf Unwrap()
         {

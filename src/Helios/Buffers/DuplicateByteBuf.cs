@@ -2,6 +2,8 @@
 // Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
 // See ThirdPartyNotices.txt for references to third party code used inside Helios.
 
+using System;
+
 namespace Helios.Buffers
 {
     /// <summary>
@@ -180,6 +182,10 @@ namespace Helios.Buffers
         {
             return _buffer;
         }
+
+        public override int IoBufferCount => Unwrap().IoBufferCount;
+
+        public override ArraySegment<byte>[] GetIoBuffers(int index, int length) => Unwrap().GetIoBuffers(index, length);
 
         public override IByteBuf Compact()
         {

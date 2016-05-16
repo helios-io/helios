@@ -1,3 +1,6 @@
+#### 2.1.0 May 16 2016
+Placeholder for next major perf upgrade
+
 #### 2.0.2 May 6 2016
 * Added DNS support to `ServerBootstrap` so hostnames can be bound.
 

@@ -3,6 +3,7 @@
 // See ThirdPartyNotices.txt for references to third party code used inside Helios.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Net;
 using System.Net.Sockets;
@@ -21,13 +22,13 @@ namespace Helios.Channels.Sockets
         internal static readonly EventHandler<SocketAsyncEventArgs> IoCompletedCallback = OnIoCompleted;
 
         private static readonly Action<object, object> ConnectCallbackAction =
-            (u, e) => ((ISocketChannelUnsafe) u).FinishConnect((SocketChannelAsyncOperation) e);
+            (u, e) => ((ISocketChannelUnsafe)u).FinishConnect((SocketChannelAsyncOperation)e);
 
         private static readonly Action<object, object> ReadCallbackAction =
-            (u, e) => ((ISocketChannelUnsafe) u).FinishRead((SocketChannelAsyncOperation) e);
+            (u, e) => ((ISocketChannelUnsafe)u).FinishRead((SocketChannelAsyncOperation)e);
 
         private static readonly Action<object, object> WriteCallbackAction =
-            (u, e) => ((ISocketChannelUnsafe) u).FinishWrite((SocketChannelAsyncOperation) e);
+            (u, e) => ((ISocketChannelUnsafe)u).FinishWrite((SocketChannelAsyncOperation)e);
 
         protected readonly Socket Socket;
         private SocketChannelAsyncOperation _readOperation;
@@ -36,7 +37,7 @@ namespace Helios.Channels.Sockets
 
         private TaskCompletionSource _connectPromise;
         private volatile bool _inputShutdown;
-        private volatile bool _readPending;
+        internal bool _readPending;
         private volatile StateFlags _state;
 
         protected AbstractSocketChannel(IChannel parent, Socket socket)
@@ -67,6 +68,34 @@ namespace Helios.Channels.Sockets
             }
         }
 
+        /// <summary>
+        ///     Set read pending to <c>false</c>.
+        /// </summary>
+        protected internal void ClearReadPending()
+        {
+            if (this.Registered)
+            {
+                IEventLoop eventLoop = this.EventLoop;
+                if (eventLoop.InEventLoop)
+                {
+                    this.ClearReadPending0();
+                }
+                else
+                {
+                    eventLoop.Execute(channel => ((AbstractSocketChannel)channel).ClearReadPending0(), this);
+                }
+            }
+            else
+            {
+                // Best effort if we are not registered yet clear ReadPending. This happens during channel initialization.
+                // NB: We only set the boolean field instead of calling ClearReadPending0(), because the SelectionKey is
+                // not set yet so it would produce an assertion failure.
+                this.ReadPending = false;
+            }
+        }
+
+        void ClearReadPending0() => this.ReadPending = false;
+
         protected bool ReadPending
         {
             get { return _readPending; }
@@ -82,6 +111,8 @@ namespace Helios.Channels.Sockets
         {
             get { return _readOperation ?? (_readOperation = new SocketChannelAsyncOperation(this, true)); }
         }
+
+        SocketChannelAsyncOperation WriteOperation => _writeOperation ?? (_writeOperation = new SocketChannelAsyncOperation(this, false));
 
         public override bool IsOpen
         {
@@ -122,15 +153,17 @@ namespace Helios.Channels.Sockets
             return (_state & stateToCheck) == stateToCheck;
         }
 
-        protected SocketChannelAsyncOperation PrepareWriteOperation(IByteBuf buffer)
+        protected SocketChannelAsyncOperation PrepareWriteOperation(ArraySegment<byte> buffer)
         {
-            var operation = _writeOperation ?? (_writeOperation = new SocketChannelAsyncOperation(this, false));
-            if (!buffer.HasArray)
-            {
-                throw new NotImplementedException(
-                    "IByteBuffer implementations not backed by array are currently not supported.");
-            }
-            operation.SetBuffer(buffer.Array, buffer.ArrayOffset + buffer.WriterIndex, buffer.WritableBytes);
+            SocketChannelAsyncOperation operation = WriteOperation;
+            operation.SetBuffer(buffer.Array, buffer.Offset, buffer.Count);
+            return operation;
+        }
+
+        protected SocketChannelAsyncOperation PrepareWriteOperation(IList<ArraySegment<byte>> buffers)
+        {
+            SocketChannelAsyncOperation operation = WriteOperation;
+            operation.BufferList = buffers;
             return operation;
         }
 
@@ -138,15 +171,22 @@ namespace Helios.Channels.Sockets
         {
             var operation = _writeOperation;
             Contract.Requires(operation != null);
-            operation.SetBuffer(null, 0, 0);
+            if (operation.BufferList == null)
+            {
+                operation.SetBuffer(null, 0, 0);
+            }
+            else
+            {
+                operation.BufferList = null;
+            }
         }
 
         /// <remarks>PORT NOTE: matches behavior of NioEventLoop.processSelectedKey</remarks>
         private static void OnIoCompleted(object sender, SocketAsyncEventArgs args)
         {
-            var operation = (SocketChannelAsyncOperation) args;
+            var operation = (SocketChannelAsyncOperation)args;
             var channel = operation.Channel;
-            var @unsafe = (ISocketChannelUnsafe) channel.Unsafe;
+            var @unsafe = (ISocketChannelUnsafe)channel.Unsafe;
             var eventLoop = channel.EventLoop;
             switch (args.LastOperation)
             {
@@ -255,12 +295,14 @@ namespace Helios.Channels.Sockets
             if (readOp != null)
             {
                 readOp.Dispose();
+                _readOperation = null;
             }
 
             var writeOp = _writeOperation;
             if (writeOp != null)
             {
                 writeOp.Dispose();
+                _writeOperation = null;
             }
         }
 
@@ -298,7 +340,7 @@ namespace Helios.Channels.Sockets
 
             public AbstractSocketChannel Channel
             {
-                get { return (AbstractSocketChannel) _channel; }
+                get { return (AbstractSocketChannel)_channel; }
             }
 
             public sealed override Task ConnectAsync(EndPoint remoteAddress, EndPoint localAddress)
@@ -333,7 +375,7 @@ namespace Helios.Channels.Sockets
                             (c, a) =>
                             {
                                 // todo: make static / cache delegate?..
-                                var self = (AbstractSocketChannel) c;
+                                var self = (AbstractSocketChannel)c;
                                 // todo: call Socket.CancelConnectAsync(...)
                                 var promise = self._connectPromise;
                                 var cause = new ConnectTimeoutException("connection timed out: " + a.ToString());
@@ -350,7 +392,7 @@ namespace Helios.Channels.Sockets
                     ch._connectPromise.Task.ContinueWith(
                         (t, s) =>
                         {
-                            var c = (AbstractSocketChannel) s;
+                            var c = (AbstractSocketChannel)s;
                             if (c._connectCancellationTask != null)
                             {
                                 c._connectCancellationTask.Cancel();
@@ -384,7 +426,7 @@ namespace Helios.Channels.Sockets
                 catch (Exception ex)
                 {
                     var promise = ch._connectPromise;
-                    var remoteAddress = promise == null ? null : (EndPoint) promise.Task.AsyncState;
+                    var remoteAddress = promise == null ? null : (EndPoint)promise.Task.AsyncState;
                     FulfillConnectPromise(AnnotateConnectException(ex, remoteAddress));
                 }
                 finally
@@ -403,6 +445,9 @@ namespace Helios.Channels.Sockets
 
             public void FinishWrite(SocketChannelAsyncOperation operation)
             {
+                bool resetWritePending = this.Channel.ResetState(StateFlags.WriteScheduled);
+
+                Contract.Assert(resetWritePending);
                 var input = OutboundBuffer;
                 try
                 {
@@ -411,13 +456,7 @@ namespace Helios.Channels.Sockets
                     Channel.ResetWriteOperation();
                     if (sent > 0)
                     {
-                        var msg = input.Current;
-                        var buffer = msg as IByteBuf;
-                        if (buffer != null)
-                        {
-                            buffer.SetWriterIndex(buffer.WriterIndex + sent);
-                        }
-                        // todo: FileRegion support
+                        input.RemoveBytes(sent);
                     }
                 }
                 catch (Exception ex)
@@ -429,6 +468,7 @@ namespace Helios.Channels.Sockets
                 // directly call super.flush0() to force a flush now
                 base.Flush0();
             }
+
 
             private void FulfillConnectPromise(bool wasActive)
             {

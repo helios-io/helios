@@ -224,6 +224,55 @@ namespace Helios.Tests.Buffer
         }
 
         #endregion
+
+        #region IO Buffers
+
+        [Fact]
+        public void IoBuffer_contents_should_equal_write()
+        {
+            var buffer = GetBuffer(1024);
+            if (buffer.IoBufferCount != 1)
+            {
+                // skipping
+                return; 
+            }
+
+            var bytes = new byte[buffer.Capacity];
+            ThreadLocalRandom.Current.NextBytes(bytes);
+            buffer.WriteBytes(bytes);
+
+            AssertRemainingEquals(new ArraySegment<byte>(bytes), buffer.GetIoBuffer());
+        }
+
+        [Fact]
+        public void IoBuffer_contents_in_range_should_equal_write()
+        {
+            var buffer = GetBuffer(1024);
+            if (buffer.IoBufferCount != 1)
+            {
+                // skipping
+                return;
+            }
+
+            var bytes = new byte[buffer.Capacity];
+            buffer.WriteBytes(bytes);
+            var blockSize = buffer.Capacity/100;
+            for (var i = 0; i < buffer.Capacity - blockSize + 1; i += blockSize)
+            {
+                AssertRemainingEquals(new ArraySegment<byte>(bytes, i, blockSize), buffer.GetIoBuffer(i, blockSize));
+            }
+        }
+
+        static void AssertRemainingEquals(ArraySegment<byte> expected, ArraySegment<byte> actual)
+        {
+            int remaining = expected.Count;
+            int remaining2 = actual.Count;
+
+            Assert.Equal(remaining, remaining2);
+            Assert.Equal(expected, actual);
+        }
+
+        #endregion
     }
 }
 
