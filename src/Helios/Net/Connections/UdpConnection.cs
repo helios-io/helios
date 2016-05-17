@@ -272,7 +272,7 @@ namespace Helios.Net.Connections
 
         protected void InitClient()
         {
-            Client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp)
+            Client = new Socket(Binding.Host.AddressFamily, SocketType.Dgram, ProtocolType.Udp)
             {
                 MulticastLoopback = false
             };

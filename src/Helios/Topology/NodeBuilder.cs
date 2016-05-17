@@ -48,8 +48,11 @@ namespace Helios.Topology
             if (!IPAddress.TryParse(host, out parseIp))
             {
                 var hostentry = Dns.GetHostEntry(host);
-                parseIp = hostentry.AddressList.First(x => x.AddressFamily == AddressFamily.InterNetwork);
-                    //first IPv4 address
+                parseIp = hostentry.AddressList.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork); // first IPv4 address
+                if (parseIp == null)
+                {
+                    parseIp = hostentry.AddressList.First(x => x.AddressFamily == AddressFamily.InterNetworkV6); // first IPv6 address
+                }
             }
 
             return Host(n, parseIp);

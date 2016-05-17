@@ -349,7 +349,7 @@ namespace Helios.Net.Connections
 
         private void InitClient()
         {
-            _client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+            _client = new Socket(Binding.Host.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
             {
                 ReceiveTimeout = Timeout.Seconds,
                 SendTimeout = Timeout.Seconds,
