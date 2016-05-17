@@ -1,5 +1,33 @@
 #### 2.1.0 May 16 2016
-Placeholder for next major perf upgrade
+* Added support for batch writes
+* Made write objects reusable
+* IPv6 support for legacy API
+
+Net performance impact of above changes as reported by build server:
+
+**Before**
+
+          Metric |           Units |             Max |         Average |             Min |          StdDev |
+---------------- |---------------- |---------------- |---------------- |---------------- |---------------- |
+TotalCollections [Gen0] |     collections / s |           40.14 |           40.14 |           40.14 |            0.00 |
+TotalCollections [Gen1] |     collections / s |            2.86 |            2.86 |            2.86 |            0.00 |
+TotalCollections [Gen2] |     collections / s |            0.53 |            0.53 |            0.53 |            0.00 |
+TotalBytesAllocated |           bytes / s |      293,950.63 |      293,950.63 |      293,950.63 |            0.00 |
+[Counter] inbound ops |      operations / s |       55,782.90 |       55,782.90 |       55,782.90 |            0.00 |
+[Counter] outbound ops |      operations / |       55,783.07 |       55,783.07 |       55,783.07 |            0.00 |
+Max concurrent connections |      operations |          440.00 |          440.00 |          440.00 |            0.00 |
+
+**After**
+
+          Metric |           Units |             Max |         Average |             Min |          StdDev |
+---------------- |---------------- |---------------- |---------------- |---------------- |---------------- |
+TotalCollections [Gen0] |     collections |           26.41 |           26.41 |           26.41 |            0.00 |
+TotalCollections [Gen1] |     collections |            8.33 |            8.33 |            8.33 |            0.00 |
+TotalCollections [Gen2] |     collections |            0.08 |            0.08 |            0.08 |            0.00 |
+TotalBytesAllocated |           bytes |       38,170.63 |       38,170.63 |       38,170.63 |            0.00 |
+[Counter] inbound ops |      operations |       99,728.63 |       99,728.63 |       99,728.63 |            0.00 |
+[Counter] outbound ops |      operations |       99,728.67 |       99,728.67 |       99,728.67 |            0.00 |
+Max concurrent connections |      operations |          945.00 |          945.00 |          945.00 |            0.00 | 
 
 #### 2.0.2 May 6 2016
 * Added DNS support to `ServerBootstrap` so hostnames can be bound.
