@@ -8,9 +8,9 @@ namespace Helios.Buffers
 {
     public sealed class SlicedByteBuffer : AbstractDerivedByteBuffer
     {
-        private readonly int adjustment;
-        private readonly IByteBuf buffer;
-        private readonly int length;
+        private readonly int _adjustment;
+        private readonly IByteBuf _buffer;
+        private readonly int _length;
 
         public SlicedByteBuffer(IByteBuf buffer, int index, int length)
             : base(length)
@@ -23,59 +23,73 @@ namespace Helios.Buffers
             var slicedByteBuf = buffer as SlicedByteBuffer;
             if (slicedByteBuf != null)
             {
-                this.buffer = slicedByteBuf.buffer;
-                adjustment = slicedByteBuf.adjustment + index;
+                this._buffer = slicedByteBuf._buffer;
+                _adjustment = slicedByteBuf._adjustment + index;
             }
             else if (buffer is DuplicateByteBuf)
             {
-                this.buffer = buffer.Unwrap();
-                adjustment = index;
+                this._buffer = buffer.Unwrap();
+                _adjustment = index;
             }
             else
             {
-                this.buffer = buffer;
-                adjustment = index;
+                this._buffer = buffer;
+                _adjustment = index;
             }
-            this.length = length;
+            this._length = length;
 
             SetWriterIndex(length);
         }
 
         public override IByteBufAllocator Allocator
         {
-            get { return buffer.Allocator; }
+            get { return _buffer.Allocator; }
         }
 
         public override ByteOrder Order
         {
-            get { return buffer.Order; }
+            get { return _buffer.Order; }
         }
 
         public override int Capacity
         {
-            get { return length; }
+            get { return _length; }
+        }
+
+        public override int IoBufferCount => this.Unwrap().IoBufferCount;
+
+        public override ArraySegment<byte> GetIoBuffer(int index, int length)
+        {
+            this.CheckIndex(index, length);
+            return this.Unwrap().GetIoBuffer(index + this._adjustment, length);
+        }
+
+        public override ArraySegment<byte>[] GetIoBuffers(int index, int length)
+        {
+            this.CheckIndex(index, length);
+            return this.Unwrap().GetIoBuffers(index + this._adjustment, length);
         }
 
         public override bool HasArray
         {
-            get { return buffer.HasArray; }
+            get { return _buffer.HasArray; }
         }
 
         public override byte[] Array
         {
-            get { return buffer.Array; }
+            get { return _buffer.Array; }
         }
 
-        public override bool IsDirect => buffer.IsDirect;
+        public override bool IsDirect => _buffer.IsDirect;
 
         public override int ArrayOffset
         {
-            get { return buffer.ArrayOffset + adjustment; }
+            get { return _buffer.ArrayOffset + _adjustment; }
         }
 
         public override IByteBuf Unwrap()
         {
-            return buffer;
+            return _buffer;
         }
 
         public override IByteBuf Compact()
@@ -95,27 +109,27 @@ namespace Helios.Buffers
 
         protected override byte _GetByte(int index)
         {
-            return buffer.GetByte(index + adjustment);
+            return _buffer.GetByte(index + _adjustment);
         }
 
         protected override short _GetShort(int index)
         {
-            return buffer.GetShort(index + adjustment);
+            return _buffer.GetShort(index + _adjustment);
         }
 
         protected override int _GetInt(int index)
         {
-            return buffer.GetInt(index + adjustment);
+            return _buffer.GetInt(index + _adjustment);
         }
 
         protected override long _GetLong(int index)
         {
-            return buffer.GetLong(index + adjustment);
+            return _buffer.GetLong(index + _adjustment);
         }
 
         public override IByteBuf Duplicate()
         {
-            var duplicate = buffer.Slice(adjustment, length);
+            var duplicate = _buffer.Slice(_adjustment, _length);
             duplicate.SetIndex(ReaderIndex, WriterIndex);
             return duplicate;
         }
@@ -129,7 +143,7 @@ namespace Helios.Buffers
         public override IByteBuf Copy(int index, int length)
         {
             CheckIndex(index, length);
-            return buffer.Copy(index + adjustment, length);
+            return _buffer.Copy(index + _adjustment, length);
         }
 
         public override IByteBuf Slice(int index, int length)
@@ -139,54 +153,54 @@ namespace Helios.Buffers
             {
                 return Unpooled.Empty;
             }
-            return buffer.Slice(index + adjustment, length);
+            return _buffer.Slice(index + _adjustment, length);
         }
 
         public override IByteBuf GetBytes(int index, IByteBuf dst, int dstIndex, int length)
         {
             CheckIndex(index, length);
-            buffer.GetBytes(index + adjustment, dst, dstIndex, length);
+            _buffer.GetBytes(index + _adjustment, dst, dstIndex, length);
             return this;
         }
 
         public override IByteBuf GetBytes(int index, byte[] dst, int dstIndex, int length)
         {
             CheckIndex(index, length);
-            buffer.GetBytes(index + adjustment, dst, dstIndex, length);
+            _buffer.GetBytes(index + _adjustment, dst, dstIndex, length);
             return this;
         }
 
         protected override IByteBuf _SetByte(int index, int value)
         {
-            return buffer.SetByte(index + adjustment, value);
+            return _buffer.SetByte(index + _adjustment, value);
         }
 
         protected override IByteBuf _SetShort(int index, int value)
         {
-            return buffer.SetShort(index + adjustment, value);
+            return _buffer.SetShort(index + _adjustment, value);
         }
 
         protected override IByteBuf _SetInt(int index, int value)
         {
-            return buffer.SetInt(index + adjustment, value);
+            return _buffer.SetInt(index + _adjustment, value);
         }
 
         protected override IByteBuf _SetLong(int index, long value)
         {
-            return buffer.SetLong(index + adjustment, value);
+            return _buffer.SetLong(index + _adjustment, value);
         }
 
         public override IByteBuf SetBytes(int index, byte[] src, int srcIndex, int length)
         {
             CheckIndex(index, length);
-            buffer.SetBytes(index + adjustment, src, srcIndex, length);
+            _buffer.SetBytes(index + _adjustment, src, srcIndex, length);
             return this;
         }
 
         public override IByteBuf SetBytes(int index, IByteBuf src, int srcIndex, int length)
         {
             CheckIndex(index, length);
-            buffer.SetBytes(index + adjustment, src, srcIndex, length);
+            _buffer.SetBytes(index + _adjustment, src, srcIndex, length);
             return this;
         }
     }

@@ -3,6 +3,8 @@
 // See ThirdPartyNotices.txt for references to third party code used inside Helios.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Threading;
 using Helios.Buffers;
 using Helios.Concurrency;
@@ -19,6 +21,7 @@ namespace Helios.Channels
     public sealed class ChannelOutboundBuffer
     {
         private static readonly ILogger Logger = LoggingFactory.GetLogger<ChannelOutboundBuffer>();
+        private static readonly ThreadLocalByteBufferList NioBuffers = new ThreadLocalByteBufferList();
 
         /// <summary>
         ///     Callback used to indicate that the channel is going to become writeable or unwriteable
@@ -121,7 +124,7 @@ namespace Helios.Channels
         /// <param name="promise">A <see cref="TaskCompletionSource" /> that will be set once message was written.</param>
         public void AddMessage(object message, int size, TaskCompletionSource promise)
         {
-            var entry = Entry.NewInstance(message, size, Total(message), promise);
+            var entry = Entry.NewInstance(message, size, promise);
             if (_tailEntry == null)
             {
                 _flushedEntry = null;
@@ -373,31 +376,170 @@ namespace Helios.Channels
         }
 
         /// <summary>
+        ///     Removes the fully written entries and update the reader index of the partially written entry.
+        ///     This operation assumes all messages in this buffer is {@link ByteBuf}.
+        /// </summary>
+        public void RemoveBytes(long writtenBytes)
+        {
+            while (true)
+            {
+                object msg = this.Current;
+                if (!(msg is IByteBuf))
+                {
+                    Contract.Assert(writtenBytes == 0);
+                    break;
+                }
+
+                var buf = (IByteBuf)msg;
+                int readerIndex = buf.ReaderIndex;
+                int readableBytes = buf.WriterIndex - readerIndex;
+
+                if (readableBytes <= writtenBytes)
+                {
+                    if (writtenBytes != 0)
+                    {
+                        writtenBytes -= readableBytes;
+                    }
+                    this.Remove();
+                }
+                else
+                {
+                    // readableBytes > writtenBytes
+                    if (writtenBytes != 0)
+                    {
+                        buf.SetReaderIndex(readerIndex + (int)writtenBytes);
+                    }
+                    break;
+                }
+            }
+            this.ClearNioBuffers();
+        }
+
+        private void ClearNioBuffers() => NioBuffers.Value.Clear();
+
+        ///
+        ///Returns an array of direct NIO buffers if the currently pending messages are made of {@link ByteBuf} only.
+        ///{@link #nioBufferCount()} and {@link #nioBufferSize()} will return the number of NIO buffers in the returned
+        ///array and the total number of readable bytes of the NIO buffers respectively.
+        ///<p>
+        ///Note that the returned array is reused and thus should not escape
+        ///{@link AbstractChannel#doWrite(ChannelOutboundBuffer)}.
+        ///Refer to {@link NioSocketChannel#doWrite(ChannelOutboundBuffer)} for an example.
+        ///</p>
+        ///
+        public List<ArraySegment<byte>> GetNioBuffers()
+        {
+            long nioBufferSize = 0;
+            InternalThreadLocalMap threadLocalMap = InternalThreadLocalMap.Get();
+            List<ArraySegment<byte>> nioBuffers = NioBuffers.Get(threadLocalMap);
+            Entry entry = _flushedEntry;
+            while (IsFlushedEntry(entry) && entry.Message is IByteBuf)
+            {
+                if (!entry.Cancelled)
+                {
+                    var buf = (IByteBuf)entry.Message;
+                    int readerIndex = buf.ReaderIndex;
+                    int readableBytes = buf.WriterIndex - readerIndex;
+
+                    if (readableBytes > 0)
+                    {
+                        if (int.MaxValue - readableBytes < nioBufferSize)
+                        {
+                            // If the nioBufferSize + readableBytes will overflow an Integer we stop populate the
+                            // ByteBuffer array. This is done as bsd/osx don't allow to write more bytes then
+                            // Integer.MAX_VALUE with one writev(...) call and so will return 'EINVAL', which will
+                            // raise an IOException. On Linux it may work depending on the
+                            // architecture and kernel but to be safe we also enforce the limit here.
+                            // This said writing more the Integer.MAX_VALUE is not a good idea anyway.
+                            //
+                            // See also:
+                            // - https://www.freebsd.org/cgi/man.cgi?query=write&sektion=2
+                            // - http://linux.die.net/man/2/writev
+                            break;
+                        }
+                        nioBufferSize += readableBytes;
+                        int count = entry.Count;
+                        if (count == -1)
+                        {
+                            //noinspection ConstantValueVariableUse
+                            entry.Count = count = buf.IoBufferCount;
+                        }
+                        if (count == 1)
+                        {
+                            ArraySegment<byte> nioBuf = entry.Buffer;
+                            if (nioBuf.Array == null)
+                            {
+                                // cache ByteBuffer as it may need to create a new ByteBuffer instance if its a
+                                // derived buffer
+                                entry.Buffer = nioBuf = buf.GetIoBuffer(readerIndex, readableBytes);
+                            }
+                            nioBuffers.Add(nioBuf);
+                        }
+                        else
+                        {
+                            ArraySegment<byte>[] nioBufs = entry.Buffers;
+                            if (nioBufs == null)
+                            {
+                                // cached ByteBuffers as they may be expensive to create in terms
+                                // of Object allocation
+                                entry.Buffers = nioBufs = buf.GetIoBuffers();
+                            }
+                            foreach (ArraySegment<byte> b in nioBufs)
+                            {
+                                nioBuffers.Add(b);
+                            }
+                        }
+                    }
+                }
+                entry = entry.Next;
+            }
+            this.NioBufferSize = nioBufferSize;
+
+            return nioBuffers;
+        }
+
+        /**
+         * Returns the number of bytes that can be written out of the {@link ByteBuffer} array that was
+         * obtained via {@link #nioBuffers()}. This method <strong>MUST</strong> be called after {@link #nioBuffers()}
+         * was called.
+         */
+        public long NioBufferSize { get; private set; }
+
+        /// <summary>
+        ///     Call {@link IMessageProcessor#processMessage(Object)} for each flushed message
+        ///     in this {@link ChannelOutboundBuffer} until {@link IMessageProcessor#processMessage(Object)}
+        ///     returns {@code false} or there are no more flushed messages to process.
+        /// </summary>
+        private bool IsFlushedEntry(Entry e) => e != null && e != this._unflushedEntry;
+
+        /// <summary>
         ///     Represents an entry inside the <see cref="ChannelOutboundBuffer" />
         /// </summary>
         private sealed class Entry
         {
             private static readonly ThreadLocal<ObjectPool<Entry>> Pool =
-                new ThreadLocal<ObjectPool<Entry>>(() => new ObjectPool<Entry>(() => new Entry()));
+                new ThreadLocal<ObjectPool<Entry>>(() => new ObjectPool<Entry>(handle => new Entry(handle)));
 
             public bool Cancelled;
             public object Message;
+            public ArraySegment<byte>[] Buffers;
+            public ArraySegment<byte> Buffer;
             public Entry Next; //linked list
             public int PendingSize;
+            public int Count = -1;
             public TaskCompletionSource Promise;
+            private readonly PoolHandle<Entry> handle;
 
-            public long Total;
-
-            private Entry()
+            private Entry(PoolHandle<Entry> handle)
             {
+                this.handle = handle;
             }
 
-            public static Entry NewInstance(object message, int size, long total, TaskCompletionSource promise)
+            public static Entry NewInstance(object message, int size, TaskCompletionSource promise)
             {
                 var entry = Pool.Value.Take();
                 entry.Message = message;
                 entry.PendingSize = size;
-                entry.Total = total;
                 entry.Promise = promise;
                 return entry;
             }
@@ -413,7 +555,8 @@ namespace Helios.Channels
                     ReferenceCountUtil.SafeRelease(Message);
                     Message = Unpooled.Empty;
                     PendingSize = 0;
-                    Total = 0;
+                    Buffers = null;
+                    Buffer = new ArraySegment<byte>();
                     return pSize;
                 }
                 return 0;
@@ -421,13 +564,15 @@ namespace Helios.Channels
 
             public void Recycle()
             {
-                Total = 0;
+                Buffers = null;
+                Buffer = new ArraySegment<byte>();
                 PendingSize = 0;
                 Message = null;
                 Next = null;
                 Promise = null;
+                Count = -1;
                 Cancelled = false;
-                Pool.Value.Free(this);
+               handle.Free(this);
             }
 
             public Entry RecycleAndGetNext()
@@ -435,6 +580,14 @@ namespace Helios.Channels
                 var next = Next;
                 Recycle();
                 return next;
+            }
+        }
+
+        private sealed class ThreadLocalByteBufferList : FastThreadLocal<List<ArraySegment<byte>>>
+        {
+            protected override List<ArraySegment<byte>> GetInitialValue()
+            {
+                return new List<ArraySegment<byte>>();
             }
         }
     }

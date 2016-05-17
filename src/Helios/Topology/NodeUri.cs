@@ -4,6 +4,7 @@
 
 using System;
 using System.Net;
+using System.Net.Sockets;
 using System.Runtime.Serialization;
 using Helios.Util;
 
@@ -33,7 +34,7 @@ namespace Helios.Topology
         public static string GetUriStringForNode(INode node)
         {
             if (node.IsEmpty()) return string.Empty;
-            return string.Format("{0}://{1}:{2}", GetProtocolStringForTransportType(node.TransportType), node.Host,
+            return string.Format("{0}://{1}:{2}", GetProtocolStringForTransportType(node.TransportType), GetHostStringForAddress(node.Host),
                 node.Port);
         }
 
@@ -48,6 +49,16 @@ namespace Helios.Topology
                 default:
                     return "socket";
             }
+        }
+
+        public static string GetHostStringForAddress(IPAddress address)
+        {
+            var host = address.ToString();
+            if (address.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                host = string.Format("[{0}]", host);
+            }
+            return host;
         }
 
 #if !NET35 && !NET40

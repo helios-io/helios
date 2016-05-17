@@ -4,6 +4,7 @@
 
 using System;
 using System.Net.Sockets;
+using System.Threading;
 using Helios.Buffers;
 
 namespace Helios.Channels.Sockets
@@ -97,7 +98,7 @@ namespace Helios.Channels.Sockets
                     }
                     else
                     {
-                        IncompleteWrite(scheduleAsync, buf);
+                        IncompleteWrite(scheduleAsync, PrepareWriteOperation(buf.GetIoBuffer()));
                         break;
                     }
                 }
@@ -131,24 +132,35 @@ namespace Helios.Channels.Sockets
                 "unsupported message type: " + msg.GetType().Name + ExpectedTypes);
         }
 
-        protected void IncompleteWrite(bool scheduleAsync, IByteBuf buffer)
+        protected void IncompleteWrite(bool scheduleAsync, SocketChannelAsyncOperation operation)
         {
             // Did not write completely.
             if (scheduleAsync)
             {
-                var operation = PrepareWriteOperation(buffer);
+                this.SetState(StateFlags.WriteScheduled);
+                bool pending;
 
-                SetState(StateFlags.WriteScheduled);
-                var pending = Socket.SendAsync(operation);
+                if (ExecutionContext.IsFlowSuppressed())
+                {
+                    pending = this.Socket.SendAsync(operation);
+                }
+                else
+                {
+                    using (ExecutionContext.SuppressFlow())
+                    {
+                        pending = this.Socket.SendAsync(operation);
+                    }
+                }
+
                 if (!pending)
                 {
-                    ((ISocketChannelUnsafe) Unsafe).FinishWrite(operation);
+                    ((ISocketChannelUnsafe)this.Unsafe).FinishWrite(operation);
                 }
             }
             else
             {
                 // Schedule flush again later so other tasks can be picked up input the meantime
-                EventLoop.Execute(FlushAction, this);
+                this.EventLoop.Execute(FlushAction, this);
             }
         }
 
@@ -218,13 +230,6 @@ namespace Helios.Channels.Sockets
                 var ch = Channel;
                 ch.ResetState(StateFlags.ReadScheduled);
                 var config = ch.Configuration;
-                if (!config.AutoRead && !ch.ReadPending)
-                {
-                    // ChannelConfig.setAutoRead(false) was called in the meantime
-                    //removeReadOp(); -- noop with IOCP, just don't schedule receive again
-                    return;
-                }
-
                 var pipeline = ch.Pipeline;
                 var allocator = config.Allocator;
                 var maxMessagesPerRead = config.MaxMessagesPerRead;
@@ -304,7 +309,7 @@ namespace Helios.Channels.Sockets
                     // /// The user called Channel.read() or ChannelHandlerContext.read() input channelReadComplete(...) method
                     //
                     // See https://github.com/netty/netty/issues/2254
-                    if (!close && (config.AutoRead || ch.ReadPending))
+                    if (!close && (ch.ReadPending || config.AutoRead))
                     {
                         ch.DoBeginRead();
                     }

@@ -3,6 +3,7 @@
 // See ThirdPartyNotices.txt for references to third party code used inside Helios.
 
 using System;
+using System.Diagnostics.Contracts;
 
 namespace Helios.Util
 {
@@ -54,6 +55,24 @@ namespace Helios.Util
                         srcIndex, srcLength, src.Length));
 
             Array.Copy(src, srcIndex, array, index, srcLength);
+        }
+
+        public static void Fill<T>(this T[] array, T value)
+        {
+            for (int i = 0; i < array.Length; i++)
+            {
+                array[i] = value;
+            }
+        }
+
+        public static void Fill<T>(this T[] array, int offset, int count, T value)
+        {
+            Contract.Requires(count + offset <= array.Length);
+
+            for (int i = offset; i < count + offset; i++)
+            {
+                array[i] = value;
+            }
         }
     }
 }

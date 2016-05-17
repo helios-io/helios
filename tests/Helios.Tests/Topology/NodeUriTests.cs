@@ -35,6 +35,23 @@ namespace Helios.Tests.Topology
         }
 
         [Fact]
+        public void Should_convert_valid_ipv6_tcp_INode_to_NodeUri()
+        {
+            //arrange
+            var testNode =
+                NodeBuilder.BuildNode().Host(IPAddress.IPv6Loopback).WithPort(1337).WithTransportType(TransportType.Tcp);
+
+            //act
+            var nodeUri = new NodeUri(testNode);
+
+            //assert
+            Assert.Equal(testNode.Port, nodeUri.Port);
+            Assert.Equal(string.Format("[{0}]", testNode.Host), nodeUri.Host);
+            Assert.Equal("tcp", nodeUri.Scheme);
+            Assert.True(nodeUri.IsLoopback);
+        }
+
+        [Fact]
         public void Should_convert_valid_tcp_NodeUri_to_INode()
         {
             //arrange

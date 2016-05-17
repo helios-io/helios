@@ -3,6 +3,7 @@
 // See ThirdPartyNotices.txt for references to third party code used inside Helios.
 
 using System;
+using Helios.Util;
 
 namespace Helios.Buffers
 {
@@ -11,6 +12,9 @@ namespace Helios.Buffers
     /// </summary>
     public class EmptyByteBuf : AbstractByteBuf
     {
+        static readonly ArraySegment<byte> EmptyBuffer = new ArraySegment<byte>(ByteArrayExtensions.Empty);
+        static readonly ArraySegment<byte>[] EmptyBuffers = { EmptyBuffer };
+
         public EmptyByteBuf(IByteBufAllocator allocator) : base(0)
         {
             Allocator = allocator;
@@ -45,6 +49,20 @@ namespace Helios.Buffers
         public override int ReferenceCount
         {
             get { return 1; }
+        }
+
+        public override int IoBufferCount => 1;
+
+        public override ArraySegment<byte> GetIoBuffer(int index, int length)
+        {
+            CheckIndex(index, length);
+            return EmptyBuffer;
+        }
+
+        public override ArraySegment<byte>[] GetIoBuffers(int index, int length)
+        {
+            CheckIndex(index, length);
+            return GetIoBuffers();
         }
 
         public override IByteBuf AdjustCapacity(int newCapacity)
