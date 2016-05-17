@@ -518,7 +518,7 @@ namespace Helios.Channels
         private sealed class Entry
         {
             private static readonly ThreadLocal<ObjectPool<Entry>> Pool =
-                new ThreadLocal<ObjectPool<Entry>>(() => new ObjectPool<Entry>(() => new Entry()));
+                new ThreadLocal<ObjectPool<Entry>>(() => new ObjectPool<Entry>(handle => new Entry(handle)));
 
             public bool Cancelled;
             public object Message;
@@ -528,9 +528,11 @@ namespace Helios.Channels
             public int PendingSize;
             public int Count = -1;
             public TaskCompletionSource Promise;
+            private readonly PoolHandle<Entry> handle;
 
-            private Entry()
+            private Entry(PoolHandle<Entry> handle)
             {
+                this.handle = handle;
             }
 
             public static Entry NewInstance(object message, int size, TaskCompletionSource promise)
@@ -570,7 +572,7 @@ namespace Helios.Channels
                 Promise = null;
                 Count = -1;
                 Cancelled = false;
-                Pool.Value.Free(this);
+               handle.Free(this);
             }
 
             public Entry RecycleAndGetNext()

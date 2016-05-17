@@ -21,7 +21,7 @@ namespace Helios.FsCheck.Tests.Concurrency
         public static readonly int ObjectCount = Environment.ProcessorCount*2;
         private readonly ObjectPool<MyPooledObject> _pool;
 
-        private readonly Func<MyPooledObject> _producer = () => new MyPooledObject();
+        private readonly Func<PoolHandle<MyPooledObject>, MyPooledObject> _producer = handle => new MyPooledObject(handle);
 
         public ObjectPoolSpec()
         {
@@ -52,7 +52,7 @@ namespace Helios.FsCheck.Tests.Concurrency
             {
                 var propsEqual = o.Num == tuple.Item1 && o.Num2 == tuple.Item2;
                 pooledObjects.Add(o); //add a reference to O
-                _pool.Free(o);
+                o.Recycle();
                 return propsEqual;
             };
 
@@ -78,6 +78,13 @@ namespace Helios.FsCheck.Tests.Concurrency
 
         private class MyPooledObject
         {
+            private PoolHandle<MyPooledObject> _handle;
+
+            public MyPooledObject(PoolHandle<MyPooledObject> handle)
+            {
+                _handle = handle;
+            }
+
             public int Num { get; set; }
             public int Num2 { get; set; }
 
@@ -85,6 +92,7 @@ namespace Helios.FsCheck.Tests.Concurrency
             {
                 Num = 0;
                 Num2 = 0;
+                _handle.Free(this);
             }
         }
     }
