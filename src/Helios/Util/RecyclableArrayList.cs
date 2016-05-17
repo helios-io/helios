@@ -11,7 +11,14 @@ namespace Helios.Util
     {
         private static readonly ThreadLocal<ObjectPool<RecyclableArrayList>> _pool =
             new ThreadLocal<ObjectPool<RecyclableArrayList>>(
-                () => new ObjectPool<RecyclableArrayList>(() => new RecyclableArrayList()));
+                () => new ObjectPool<RecyclableArrayList>(handle => new RecyclableArrayList(handle)));
+
+        private readonly PoolHandle<RecyclableArrayList> _handle;
+
+        public RecyclableArrayList(PoolHandle<RecyclableArrayList> handle)
+        {
+            _handle = handle;
+        }
 
         public static RecyclableArrayList Take()
         {
@@ -21,7 +28,7 @@ namespace Helios.Util
         public void Return()
         {
             Clear();
-            _pool.Value.Free(this); // return to the pool
+            _handle.Free(this); // return to the pool
         }
     }
 }

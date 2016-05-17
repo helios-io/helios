@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics.Contracts;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Helios.Concurrency;
 using Helios.Util;
@@ -299,30 +300,12 @@ namespace Helios.Channels
             {
                 return ChannelHandlerInvokerUtil.InvokeWriteAsyncNow(ctx, msg);
             }
-            var channel = (AbstractChannel) ctx.Channel;
-            var promise = new TaskCompletionSource(ctx);
-
-            try
+            else
             {
-                var size = channel.EstimatorHandle.Size(msg);
-                if (size > 0)
-                {
-                    var buffer = channel.Unsafe.OutboundBuffer;
-                    // Check for null as it may be set to null if the channel is closed already
-                    if (buffer != null)
-                    {
-                        buffer.IncrementPendingOutboundBytes(size);
-                    }
-                }
-
-                Executor.Execute(InvokeWriteAsyncAction, promise, msg);
+                var promise = new TaskCompletionSource();
+                this.SafeExecuteOutbound(WriteTask.NewInstance(ctx, msg, promise), promise, msg);
+                return promise.Task;
             }
-            catch (Exception cause)
-            {
-                ReferenceCountUtil.Release(msg);
-                promise.TrySetException(cause);
-            }
-            return promise.Task;
         }
 
         public void InvokeFlush(IChannelHandlerContext ctx)
@@ -367,6 +350,102 @@ namespace Helios.Channels
                 promise.TrySetException(cause);
             }
             return promise.Task;
+        }
+
+        void SafeExecuteOutbound(IRunnable task, TaskCompletionSource promise, object msg)
+        {
+            try
+            {
+                Executor.Execute(task);
+            }
+            catch (Exception cause)
+            {
+                try
+                {
+                    promise.TrySetException(cause);
+                }
+                finally
+                {
+                    ReferenceCountUtil.Release(msg);
+                }
+            }
+        }
+
+        private sealed class WriteTask : IRunnable
+        {
+            private static readonly bool EstimateTaskSizeOnSubmit = true;
+
+            // Assuming a 64-bit .NET VM, 16 bytes object header, 4 reference fields and 2 int field
+            private static readonly int WriteTaskOverhead = 56;
+
+            IChannelHandlerContext ctx;
+            object msg;
+            TaskCompletionSource promise;
+            int size;
+
+            private static readonly ThreadLocal<ObjectPool<WriteTask>> Pool =
+               new ThreadLocal<ObjectPool<WriteTask>>(() => new ObjectPool<WriteTask>(handle => new WriteTask(handle)));
+            private readonly PoolHandle<WriteTask> _handle;
+
+            public static WriteTask NewInstance(
+                IChannelHandlerContext ctx, object msg, TaskCompletionSource promise)
+            {
+                WriteTask task = Pool.Value.Take();
+                task.ctx = ctx;
+                task.msg = msg;
+                task.promise = promise;
+
+                if (EstimateTaskSizeOnSubmit)
+                {
+                    ChannelOutboundBuffer buffer = ctx.Channel.Unsafe.OutboundBuffer;
+
+                    // Check for null as it may be set to null if the channel is closed already
+                    if (buffer != null)
+                    {
+                        task.size = ((AbstractChannel)ctx.Channel).EstimatorHandle.Size(msg) + WriteTaskOverhead;
+                        buffer.IncrementPendingOutboundBytes(task.size);
+                    }
+                    else
+                    {
+                        task.size = 0;
+                    }
+                }
+                else
+                {
+                    task.size = 0;
+                }
+
+                return task;
+            }
+
+            public WriteTask(PoolHandle<WriteTask> handle)
+            {
+                _handle = handle;
+            }
+
+            public void Run()
+            {
+                try
+                {
+                    ChannelOutboundBuffer buffer = this.ctx.Channel.Unsafe.OutboundBuffer;
+                    // Check for null as it may be set to null if the channel is closed already
+                    if (EstimateTaskSizeOnSubmit)
+                    {
+                        buffer?.DecrementPendingOutboundBytes(this.size);
+                    }
+                    ChannelHandlerInvokerUtil.InvokeWriteAsyncNow(this.ctx, this.msg).LinkOutcome(this.promise);
+                }
+                finally
+                {
+                    // Set to null so the GC can collect them directly
+                    this.ctx = null;
+                    this.msg = null;
+                    this.promise = null;
+
+                    // recycle
+                    _handle.Free(this);
+                }
+            }
         }
     }
 }

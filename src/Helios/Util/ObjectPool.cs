@@ -9,6 +9,22 @@ using System.Threading;
 
 namespace Helios.Util
 {
+
+    public sealed class PoolHandle<T> where T : class
+    {
+        private readonly ObjectPool<T> _pool;
+
+        internal PoolHandle(ObjectPool<T> pool)
+        {
+            _pool = pool;
+        }
+
+        public void Free(T obj)
+        {
+            _pool.Free(obj);
+        }
+    }
+
     /// <summary>
     ///     Pooling implementation for reusable objects
     ///     Roughly based on the Roslyn object pool implementation:
@@ -16,25 +32,26 @@ namespace Helios.Util
     /// </summary>
     public sealed class ObjectPool<T> where T : class
     {
-        private readonly Func<T> _producer;
+        private readonly Func<PoolHandle<T>, T> _producer;
         private T _firstItem;
         private readonly Element[] _items;
-
-        public ObjectPool(Func<T> producer) : this(producer, Environment.ProcessorCount*2)
+        private readonly PoolHandle<T> _handle;
+        public ObjectPool(Func<PoolHandle<T>, T> producer) : this(producer, Environment.ProcessorCount*2)
         {
         }
 
-        public ObjectPool(Func<T> producer, int size)
+        public ObjectPool(Func<PoolHandle<T>, T> producer, int size)
         {
             Contract.Requires(producer != null);
             Contract.Requires(size >= 1);
+            _handle = new PoolHandle<T>(this);
             _producer = producer;
             _items = new Element[size];
         }
 
         private T CreateInstance()
         {
-            var obj = _producer(); //separated the lines for debuggability
+            var obj = _producer(_handle); //separated the lines for debuggability
             return obj;
         }
 
@@ -128,6 +145,8 @@ namespace Helios.Util
         {
             internal T Value;
         }
+
+        
     }
 }
 
