@@ -3,6 +3,7 @@
 // See ThirdPartyNotices.txt for references to third party code used inside Helios.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -242,6 +243,103 @@ namespace Helios.Channels.Sockets
             return sent;
         }
 
+        protected override void DoWrite(ChannelOutboundBuffer input)
+        {
+            while (true)
+            {
+                int size = input.Count;
+                if (size == 0)
+                {
+                    // All written
+                    break;
+                }
+                long writtenBytes = 0;
+                bool done = false;
+                bool setOpWrite = false;
+
+                // Ensure the pending writes are made of ByteBufs only.
+                List<ArraySegment<byte>> nioBuffers = input.GetNioBuffers();
+                int nioBufferCnt = nioBuffers.Count;
+                long expectedWrittenBytes = input.NioBufferSize;
+                Socket socket = this.Socket;
+
+                // Always us nioBuffers() to workaround data-corruption.
+                // See https://github.com/netty/netty/issues/2761
+                switch (nioBufferCnt)
+                {
+                    case 0:
+                        // We have something else beside ByteBuffers to write so fallback to normal writes.
+                        base.DoWrite(input);
+                        return;
+                    case 1:
+                        // Only one ByteBuf so use non-gathering write
+                        ArraySegment<byte> nioBuffer = nioBuffers[0];
+                        for (int i = this.Configuration.WriteSpinCount - 1; i >= 0; i--)
+                        {
+                            SocketError errorCode;
+                            int localWrittenBytes = socket.Send(nioBuffer.Array, nioBuffer.Offset, nioBuffer.Count, SocketFlags.None, out errorCode);
+                            if (errorCode != SocketError.Success && errorCode != SocketError.WouldBlock)
+                            {
+                                throw new SocketException((int)errorCode);
+                            }
+
+                            if (localWrittenBytes == 0)
+                            {
+                                setOpWrite = true;
+                                break;
+                            }
+                            expectedWrittenBytes -= localWrittenBytes;
+                            writtenBytes += localWrittenBytes;
+                            if (expectedWrittenBytes == 0)
+                            {
+                                done = true;
+                                break;
+                            }
+                        }
+                        break;
+                    default:
+                        for (int i = this.Configuration.WriteSpinCount - 1; i >= 0; i--)
+                        {
+                            SocketError errorCode;
+                            long localWrittenBytes = socket.Send(nioBuffers, SocketFlags.None, out errorCode);
+                            if (errorCode != SocketError.Success && errorCode != SocketError.WouldBlock)
+                            {
+                                throw new SocketException((int)errorCode);
+                            }
+
+                            if (localWrittenBytes == 0)
+                            {
+                                setOpWrite = true;
+                                break;
+                            }
+                            expectedWrittenBytes -= localWrittenBytes;
+                            writtenBytes += localWrittenBytes;
+                            if (expectedWrittenBytes == 0)
+                            {
+                                done = true;
+                                break;
+                            }
+                        }
+                        break;
+                }
+
+                if (!done)
+                {
+                    SocketChannelAsyncOperation asyncOperation = this.PrepareWriteOperation(nioBuffers);
+
+                    // Release the fully written buffers, and update the indexes of the partially written buffer.
+                    input.RemoveBytes(writtenBytes);
+
+                    // Did not write all buffers completely.
+                    this.IncompleteWrite(setOpWrite, asyncOperation);
+                    break;
+                }
+
+                // Release the fully written buffers, and update the indexes of the partially written buffer.
+                input.RemoveBytes(writtenBytes);
+            }
+        }
+
         private sealed class TcpSocketChannelUnsafe : SocketByteChannelUnsafe
         {
             public TcpSocketChannelUnsafe(TcpSocketChannel channel)
@@ -257,10 +355,7 @@ namespace Helios.Channels.Sockets
             {
             }
 
-            protected override void AutoReadCleared()
-            {
-                ((TcpSocketChannel) Channel).ReadPending = false;
-            }
+            protected override void AutoReadCleared() => ((TcpSocketChannel)this.Channel).ClearReadPending();
         }
     }
 }

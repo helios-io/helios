@@ -628,6 +628,16 @@ namespace Helios.Buffers
             return this;
         }
 
+        public abstract int IoBufferCount { get; }
+
+        public ArraySegment<byte> GetIoBuffer() => GetIoBuffer(this.ReaderIndex, this.ReadableBytes);
+
+        public abstract ArraySegment<byte> GetIoBuffer(int index, int length);
+
+        public ArraySegment<byte>[] GetIoBuffers() => GetIoBuffers(this.ReaderIndex, this.ReadableBytes);
+
+        public abstract ArraySegment<byte>[] GetIoBuffers(int index, int length);
+
         public IByteBuf WriteZero(int length)
         {
             if (length == 0)
