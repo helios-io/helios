@@ -128,7 +128,7 @@ namespace Helios.Channels.Bootstrap
                 {
                     if (!channel.Configuration.SetOption(e.Key, e.Value))
                     {
-                        Logger.Warning("Unknown channel option: " + e);
+                        Logger.Warning("Unknown channel option: " + e.Key);
                     }
                 }
                 catch (Exception ex)
