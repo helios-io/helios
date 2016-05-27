@@ -1,3 +1,9 @@
+#### 2.1.1 May 27 2016
+* Fixed byte buffers - there were reporting that they were encoding as `LittleEndian`. Turns out they were using `BigEndian`. This has been fixed.
+* Fixed issue with `AbstractDerivedByteBuf` where calling `Retain` would return the original underlying buffer and not the derived buffer.
+* Made configuration warnings in `ServerBootstrap` less cryptic.
+
+
 #### 2.1.0 May 16 2016
 * Added support for batch writes
 * Made write objects reusable
