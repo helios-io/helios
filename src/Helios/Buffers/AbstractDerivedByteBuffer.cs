@@ -20,22 +20,26 @@ namespace Helios.Buffers
 
         public override IReferenceCounted Retain()
         {
-            return Unwrap().Retain();
+            Unwrap().Retain();
+            return this;
         }
 
         public override IReferenceCounted Retain(int increment)
         {
-            return Unwrap().Retain(increment);
+            Unwrap().Retain(increment);
+            return this;
         }
 
         public override IReferenceCounted Touch()
         {
-            return Unwrap().Touch();
+            Unwrap().Touch();
+            return this;
         }
 
         public override IReferenceCounted Touch(object hint)
         {
-            return Unwrap().Touch(hint);
+            Unwrap().Touch(hint);
+            return this;
         }
 
         public override bool Release()
