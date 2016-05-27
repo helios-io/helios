@@ -90,10 +90,10 @@ namespace Helios.Tests.Codecs
             Assert.Equal(4, buf.ReadableBytes);
             var writtenBytes = new byte[buf.ReadableBytes];
             buf.GetBytes(0, writtenBytes);
-            Assert.Equal(1, writtenBytes[0]);
+            Assert.Equal(0, writtenBytes[0]);
             Assert.Equal(0, writtenBytes[1]);
             Assert.Equal(0, writtenBytes[2]);
-            Assert.Equal(0, writtenBytes[3]);
+            Assert.Equal(1, writtenBytes[3]);
             //buf.Release();
 
             buf = ch.ReadOutbound<IByteBuf>();

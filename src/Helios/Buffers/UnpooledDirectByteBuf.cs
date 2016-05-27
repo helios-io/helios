@@ -107,30 +107,30 @@ namespace Helios.Buffers
 
         protected override short _GetShort(int index)
         {
-            return unchecked((short) (_buffer[index] << 8 | _buffer[index + 1]));
+            return unchecked((short) (_buffer[index] | _buffer[index + 1] << 8));
         }
 
         protected override int _GetInt(int index)
         {
-            return unchecked(_buffer[index] << 24 |
-                             _buffer[index + 1] << 16 |
-                             _buffer[index + 2] << 8 |
-                             _buffer[index + 3]);
+            return unchecked(_buffer[index] |
+                             _buffer[index + 1] << 8 |
+                             _buffer[index + 2] << 16 |
+                             _buffer[index + 3] << 24);
         }
 
         protected override long _GetLong(int index)
         {
             unchecked
             {
-                var i1 = _buffer[index] << 24 |
-                         _buffer[index + 1] << 16 |
-                         _buffer[index + 2] << 8 |
-                         _buffer[index + 3];
-                var i2 = _buffer[index + 4] << 24 |
-                         _buffer[index + 5] << 16 |
-                         _buffer[index + 6] << 8 |
-                         _buffer[index + 7];
-                return (uint) i2 | ((long) i1 << 32);
+                var i1 = _buffer[index]  |
+                         _buffer[index + 1] << 8 |
+                         _buffer[index + 2] << 16 |
+                         _buffer[index + 3] << 24;
+                var i2 = _buffer[index + 4]  |
+                         _buffer[index + 5] << 8 |
+                         _buffer[index + 6] << 16 |
+                         _buffer[index + 7] << 24;
+                return (uint) i1 | ((long) i2 << 32);
             }
         }
 
@@ -165,8 +165,8 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                _buffer[index] = (byte) ((ushort) value >> 8);
-                _buffer[index + 1] = (byte) value;
+                _buffer[index] = (byte) ((ushort) value);
+                _buffer[index + 1] = (byte) ((ushort)value >> 8);
             }
             return this;
         }
@@ -176,10 +176,10 @@ namespace Helios.Buffers
             unchecked
             {
                 var unsignedValue = (uint) value;
-                _buffer[index] = (byte) (unsignedValue >> 24);
-                _buffer[index + 1] = (byte) (unsignedValue >> 16);
-                _buffer[index + 2] = (byte) (unsignedValue >> 8);
-                _buffer[index + 3] = (byte) value;
+                _buffer[index] = (byte) (value);
+                _buffer[index + 1] = (byte) (unsignedValue >> 8);
+                _buffer[index + 2] = (byte) (unsignedValue >> 16);
+                _buffer[index + 3] = (byte) (unsignedValue >> 24);
             }
             return this;
         }
@@ -189,14 +189,14 @@ namespace Helios.Buffers
             unchecked
             {
                 var unsignedValue = (ulong) value;
-                _buffer[index] = (byte) (unsignedValue >> 56);
-                _buffer[index + 1] = (byte) (unsignedValue >> 48);
-                _buffer[index + 2] = (byte) (unsignedValue >> 40);
-                _buffer[index + 3] = (byte) (unsignedValue >> 32);
-                _buffer[index + 4] = (byte) (unsignedValue >> 24);
-                _buffer[index + 5] = (byte) (unsignedValue >> 16);
-                _buffer[index + 6] = (byte) (unsignedValue >> 8);
-                _buffer[index + 7] = (byte) value;
+                _buffer[index] = (byte) (value);
+                _buffer[index + 1] = (byte) (unsignedValue >> 8);
+                _buffer[index + 2] = (byte) (unsignedValue >> 16);
+                _buffer[index + 3] = (byte) (unsignedValue >> 24);
+                _buffer[index + 4] = (byte) (unsignedValue >> 32);
+                _buffer[index + 5] = (byte) (unsignedValue >> 40);
+                _buffer[index + 6] = (byte) (unsignedValue >> 48);
+                _buffer[index + 7] = (byte) (unsignedValue >> 56);
             }
             return this;
         }

@@ -119,6 +119,57 @@ namespace Helios.FsCheck.Tests.Buffers
             swappedWritesCanBeSwappedBack.QuickCheckThrowOnFailure();
         }
 
+        [Theory]
+        [InlineData(typeof(UnpooledByteBufAllocator))]
+        public void Buffer_default_write_int_should_be_little_endian(Type allocatorType)
+        {
+            Assert.True(BitConverter.IsLittleEndian, "this spec is designed for little endian hardware");
+            var allocator = (IByteBufAllocator)Activator.CreateInstance(allocatorType);
+            var writesInLittleEndian = Prop.ForAll<int>(i =>
+            {
+                var littleEndianBytes = BitConverter.GetBytes(i);
+                var buf = allocator.Buffer(littleEndianBytes.Length).WriteInt(i);
+                return littleEndianBytes.SequenceEqual(buf.Array)
+                    .Label("Expected little endian byte array. Was not.")
+                    .And(() => i == buf.ReadInt());
+            });
+            writesInLittleEndian.QuickCheckThrowOnFailure();
+        }
+
+        [Theory]
+        [InlineData(typeof(UnpooledByteBufAllocator))]
+        public void Buffer_default_write_long_should_be_little_endian(Type allocatorType)
+        {
+            Assert.True(BitConverter.IsLittleEndian, "this spec is designed for little endian hardware");
+            var allocator = (IByteBufAllocator)Activator.CreateInstance(allocatorType);
+            var writesInLittleEndian = Prop.ForAll<long>(i =>
+            {
+                var littleEndianBytes = BitConverter.GetBytes(i);
+                var buf = allocator.Buffer(littleEndianBytes.Length).WriteLong(i);
+                return littleEndianBytes.SequenceEqual(buf.Array)
+                    .Label("Expected little endian byte array. Was not.")
+                    .And(() => i == buf.ReadLong());
+            });
+            writesInLittleEndian.QuickCheckThrowOnFailure();
+        }
+
+        [Theory]
+        [InlineData(typeof(UnpooledByteBufAllocator))]
+        public void UnpooledDirectByteBuffer_default_write_short_should_be_little_endian(Type allocatorType)
+        {
+            Assert.True(BitConverter.IsLittleEndian, "this spec is designed for little endian hardware");
+            var allocator = (IByteBufAllocator)Activator.CreateInstance(allocatorType);
+            var writesInLittleEndian = Prop.ForAll<short>(i =>
+            {
+                var littleEndianBytes = BitConverter.GetBytes(i);
+                var buf = allocator.Buffer(littleEndianBytes.Length).WriteShort(i);
+                return littleEndianBytes.SequenceEqual(buf.Array)
+                    .Label("Expected little endian byte array. Was not.")
+                    .And(() => i == buf.ReadShort());
+            });
+            writesInLittleEndian.QuickCheckThrowOnFailure();
+        }
+
         [Property]
         public Property Buffer_should_be_able_to_WriteZero_for_sizes_within_MaxCapacity(BufferSize initialSize,
             int length)
