@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using Helios.Buffers;
 using Helios.Channels;
 
@@ -143,7 +145,6 @@ namespace Helios.Codecs
                 default:
                     throw new Exception("Unknown length field length");
             }
-
             output.Add(message.Retain());
         }
     }
