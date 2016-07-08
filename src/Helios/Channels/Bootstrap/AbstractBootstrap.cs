@@ -193,7 +193,7 @@ namespace Helios.Channels.Bootstrap
         /// <summary>
         ///     Create a new {@link Channel} and bind it.
         /// </summary>
-        public Task<IChannel> BindAsync(EndPoint localAddress)
+        public virtual Task<IChannel> BindAsync(EndPoint localAddress)
         {
             Validate();
             Contract.Requires(localAddress != null);
