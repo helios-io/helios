@@ -163,6 +163,15 @@ namespace Helios.Channels.Bootstrap
             return await BindAsync(ep);
         }
 
+        public override async Task<IChannel> BindAsync(EndPoint localAddress)
+        {
+            if (!this._resolver.IsResolved(localAddress))
+            {
+                localAddress = await this._resolver.ResolveAsync(localAddress);
+            }
+            return await base.BindAsync(localAddress);
+        }
+
         public override ServerBootstrap Validate()
         {
             base.Validate();
@@ -186,14 +195,14 @@ namespace Helios.Channels.Bootstrap
                 return null;
             }
 
-            var configParam = Expression.Parameter(typeof (IChannelConfiguration));
-            var resultVariable = Expression.Variable(typeof (bool));
+            var configParam = Expression.Parameter(typeof(IChannelConfiguration));
+            var resultVariable = Expression.Variable(typeof(bool));
             var assignments = new List<Expression>
             {
                 Expression.Assign(resultVariable, Expression.Constant(true))
             };
 
-            var setOptionMethodDefinition = typeof (IChannelConfiguration)
+            var setOptionMethodDefinition = typeof(IChannelConfiguration)
                 .FindMembers(MemberTypes.Method, BindingFlags.Instance | BindingFlags.Public, Type.FilterName,
                     "SetOption")
                 .Cast<MethodInfo>()
@@ -207,7 +216,7 @@ namespace Helios.Channels.Bootstrap
                 {
                     throw new InvalidOperationException("Only options of type ChannelOption<T> are supported.");
                 }
-                if (optionType.GetGenericTypeDefinition() != typeof (ChannelOption<>))
+                if (optionType.GetGenericTypeDefinition() != typeof(ChannelOption<>))
                 {
                     throw new NotSupportedException(
                         string.Format(
@@ -226,7 +235,7 @@ namespace Helios.Channels.Bootstrap
 
             return
                 Expression.Lambda<Func<IChannelConfiguration, bool>>(
-                    Expression.Block(typeof (bool), new[] {resultVariable}, assignments), configParam).Compile();
+                    Expression.Block(typeof(bool), new[] { resultVariable }, assignments), configParam).Compile();
         }
 
         public override object Clone()
@@ -285,7 +294,7 @@ namespace Helios.Channels.Bootstrap
 
             public override void ChannelRead(IChannelHandlerContext ctx, object msg)
             {
-                var child = (IChannel) msg;
+                var child = (IChannel)msg;
 
                 child.Pipeline.AddLast(childHandler);
 

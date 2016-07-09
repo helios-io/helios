@@ -86,6 +86,7 @@
     <Compile Include="Buffers\BufferGenerators.cs" />
     <Compile Include="Buffers\BufferHelpers.cs" />
     <Compile Include="Buffers\BufferSpecs.cs" />
+    <Compile Include="Channels\Sockets\DnsResolutionAndBindingSpec.cs" />
     <Compile Include="Channels\Sockets\Models\TcpServerSocketModelComparer.cs" />
     <Compile Include="Channels\Sockets\TcpSocketServerSpecs.cs" />
     <Compile Include="HeliosModelHelpers.cs" />
