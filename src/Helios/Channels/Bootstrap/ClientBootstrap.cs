@@ -151,7 +151,7 @@ namespace Helios.Channels.Bootstrap
             EndPoint resolvedAddress;
             try
             {
-                resolvedAddress = await this._resolver.ResolveAsync(remoteAddress);
+                resolvedAddress = await this._resolver.ResolveAsync(remoteAddress, PreferredDnsResolutionFamily());
             }
             catch (Exception ex)
             {

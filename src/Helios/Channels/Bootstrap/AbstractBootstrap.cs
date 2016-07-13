@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Helios.Concurrency;
 using Helios.Util.Concurrency;
@@ -22,6 +23,7 @@ namespace Helios.Channels.Bootstrap
         private volatile IEventLoopGroup _group;
         private volatile IChannelHandler _handler;
         private volatile EndPoint _localAddress;
+        private volatile AddressFamily _preferredAddressFamily = AddressFamily.InterNetworkV6;
 
         protected internal AbstractBootstrap()
         {
@@ -35,6 +37,7 @@ namespace Helios.Channels.Bootstrap
             _channelFactory = clientBootstrap._channelFactory;
             _handler = clientBootstrap._handler;
             _localAddress = clientBootstrap._localAddress;
+            _preferredAddressFamily = clientBootstrap._preferredAddressFamily;
             _options = new ConcurrentDictionary<ChannelOption, object>(clientBootstrap._options);
         }
 
@@ -109,6 +112,17 @@ namespace Helios.Channels.Bootstrap
         public TBootstrap LocalAddress(IPAddress inetHost, int inetPort)
         {
             return LocalAddress(new IPEndPoint(inetHost, inetPort));
+        }
+
+        /// <summary>
+        /// Specifies the default DNS resolution family for this boostrapper.
+        /// </summary>
+        /// <param name="addressFamily">The address family to use.</param>
+        /// <returns>The current bootstrap instance.</returns>
+        public TBootstrap PreferredDnsResolutionFamily(AddressFamily addressFamily)
+        {
+            _preferredAddressFamily = addressFamily;
+            return (TBootstrap)this;
         }
 
         /// <summary>
@@ -282,6 +296,11 @@ namespace Helios.Channels.Bootstrap
             Contract.Requires(handler != null);
             _handler = handler;
             return (TBootstrap) this;
+        }
+
+        protected AddressFamily PreferredDnsResolutionFamily()
+        {
+            return _preferredAddressFamily;
         }
 
         protected EndPoint LocalAddress()

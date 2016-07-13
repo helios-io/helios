@@ -167,7 +167,7 @@ namespace Helios.Channels.Bootstrap
         {
             if (!this._resolver.IsResolved(localAddress))
             {
-                localAddress = await this._resolver.ResolveAsync(localAddress);
+                localAddress = await this._resolver.ResolveAsync(localAddress, PreferredDnsResolutionFamily());
             }
             return await base.BindAsync(localAddress);
         }
