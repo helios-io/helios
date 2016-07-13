@@ -88,6 +88,7 @@
     <Compile Include="Channels\IntCodec.cs" />
     <Compile Include="Channels\Local\LocalChannelTest.cs" />
     <Compile Include="Channels\ReadCountAwaiter.cs" />
+    <Compile Include="Channels\Socket\TcpSocketChannelShutdownSpecs.cs" />
     <Compile Include="Channels\Socket\TcpSocketChannelTest.cs" />
     <Compile Include="Codecs\ByteToMessageDecoderSpecs.cs" />
     <Compile Include="Codecs\LengthFieldBasedFrameDecoderTests.cs" />

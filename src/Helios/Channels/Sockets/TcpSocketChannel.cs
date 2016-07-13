@@ -193,8 +193,16 @@ namespace Helios.Channels.Sockets
             }
 
             SocketError errorCode;
-            var received = Socket.Receive(buf.Array, buf.ArrayOffset + buf.WriterIndex, buf.WritableBytes,
-                SocketFlags.None, out errorCode);
+            int received = 0;
+            try
+            {
+                received = Socket.Receive(buf.Array, buf.ArrayOffset + buf.WriterIndex, buf.WritableBytes,
+                    SocketFlags.None, out errorCode);
+            }
+            catch (ObjectDisposedException)
+            {
+                errorCode = SocketError.Shutdown;
+            }
 
             switch (errorCode)
             {
@@ -210,6 +218,8 @@ namespace Helios.Channels.Sockets
                         return 0;
                     }
                     break;
+                case SocketError.Shutdown:
+                    return -1; // socket was closed
                 default:
                     throw new SocketException((int) errorCode);
             }
