@@ -10,7 +10,7 @@ SCRIPT_PATH=`pwd`;
 popd  > /dev/null
 
 mono $SCRIPT_PATH/.nuget/NuGet.exe install FAKE -OutputDirectory $SCRIPT_PATH/packages -ExcludeVersion -Version 4.9.1
-mono $SCRIPT_PATH/.nuget/NuGet.exe install NBench.Runner -OutputDirectory $SCRIPT_PATH/packages -ExcludeVersion -Version 0.2.2
+mono $SCRIPT_PATH/.nuget/NuGet.exe install NBench.Runner -OutputDirectory $SCRIPT_PATH/packages -ExcludeVersion -Version 0.3.0
 mono $SCRIPT_PATH/.nuget/nuget.exe install xunit.runners -OutputDirectory $SCRIPT_PATH/packages/FAKE -ExcludeVersion -Version 2.1.0
 
 if ! [ -e $SCRIPT_PATH/packages/SourceLink.Fake/tools/SourceLink.fsx ] ; then
