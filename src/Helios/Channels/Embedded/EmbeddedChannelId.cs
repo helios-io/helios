@@ -34,4 +34,3 @@ namespace Helios.Channels.Embedded
         }
     }
 }
-

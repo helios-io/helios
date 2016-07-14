@@ -18,4 +18,3 @@ namespace Helios.Eventing.Subscriptions
         }
     }
 }
-

@@ -174,4 +174,3 @@ namespace Helios.Channels.Local
         }
     }
 }
-

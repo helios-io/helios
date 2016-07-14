@@ -144,4 +144,3 @@ namespace Helios.Serialization
         }
     }
 }
-

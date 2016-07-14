@@ -47,4 +47,3 @@ namespace Helios.Ops
         T Payload { get; set; }
     }
 }
-

@@ -73,4 +73,3 @@ namespace Helios.Ops
         IExecutor Clone();
     }
 }
-

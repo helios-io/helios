@@ -69,4 +69,3 @@ namespace Helios.Codecs
         protected abstract void Decode(IChannelHandlerContext context, TMessage message, List<object> output);
     }
 }
-

@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -46,24 +50,21 @@ namespace Helios.Tests.Channels.Socket
             {
                 var sb = new ServerBootstrap()
                     .Channel<TcpServerSocketChannel>()
-                    .ChildHandler(new ActionChannelInitializer<TcpSocketChannel>(channel =>
-                    {
-                        channel.Pipeline.AddLast(new FailAssertionHandler(serverError));
-                    }))
+                    .ChildHandler(
+                        new ActionChannelInitializer<TcpSocketChannel>(
+                            channel => { channel.Pipeline.AddLast(new FailAssertionHandler(serverError)); }))
                     .Group(_serverGroup);
 
                 s = sb.BindAsync(new IPEndPoint(IPAddress.IPv6Loopback, 0)).Result;
-
 
 
                 var cb = new ClientBootstrap()
                     .Channel<TcpSocketChannel>()
                     .Option(ChannelOption.TcpNodelay, true)
                     .Option(ChannelOption.ConnectTimeout, TimeSpan.FromMilliseconds(100))
-                    .Handler(new ActionChannelInitializer<TcpSocketChannel>(channel =>
-                    {
-                        channel.Pipeline.AddLast(new FailAssertionHandler(clientError));
-                    }))
+                    .Handler(
+                        new ActionChannelInitializer<TcpSocketChannel>(
+                            channel => { channel.Pipeline.AddLast(new FailAssertionHandler(clientError)); }))
                     .Group(_clientGroup);
 
                 var clientEp = s.LocalAddress;
@@ -73,8 +74,10 @@ namespace Helios.Tests.Channels.Socket
                 await c.CloseAsync();
 
                 // assert that the counters were never decremented
-                Assert.True(clientError.Value == null, $"Expected null but error on client was {clientError.Value?.Message} {clientError.Value?.StackTrace}");
-                Assert.True(serverError.Value == null, $"Expected null but error on server was {serverError.Value?.Message} {serverError.Value?.StackTrace}");
+                Assert.True(clientError.Value == null,
+                    $"Expected null but error on client was {clientError.Value?.Message} {clientError.Value?.StackTrace}");
+                Assert.True(serverError.Value == null,
+                    $"Expected null but error on server was {serverError.Value?.Message} {serverError.Value?.StackTrace}");
             }
             finally
             {
@@ -83,7 +86,9 @@ namespace Helios.Tests.Channels.Socket
                     c?.CloseAsync().Wait(TimeSpan.FromMilliseconds(200));
                     s?.CloseAsync().Wait(TimeSpan.FromMilliseconds(200));
                 }
-                catch { }
+                catch
+                {
+                }
             }
         }
 

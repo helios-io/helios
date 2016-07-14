@@ -106,4 +106,3 @@ namespace Helios.Tests.Topology
         #endregion
     }
 }
-

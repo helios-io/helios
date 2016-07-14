@@ -91,4 +91,3 @@ namespace Helios.Benchmark.TCPThroughput
         }
     }
 }
-

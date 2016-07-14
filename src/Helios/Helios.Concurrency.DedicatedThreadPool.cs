@@ -6,6 +6,7 @@
  * Copyright 2015 Roger Alsing, Aaron Stannard
  * Helios.DedicatedThreadPool - https://github.com/helios-io/DedicatedThreadPool
  */
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -34,7 +35,10 @@ namespace Helios.Concurrency
         /// </summary>
         public const ThreadType DefaultThreadType = ThreadType.Background;
 
-        public DedicatedThreadPoolSettings(int numThreads, TimeSpan? deadlockTimeout = null) : this(numThreads, DefaultThreadType, deadlockTimeout) { }
+        public DedicatedThreadPoolSettings(int numThreads, TimeSpan? deadlockTimeout = null)
+            : this(numThreads, DefaultThreadType, deadlockTimeout)
+        {
+        }
 
         public DedicatedThreadPoolSettings(int numThreads, ThreadType threadType, TimeSpan? deadlockTimeout = null)
         {
@@ -42,9 +46,11 @@ namespace Helios.Concurrency
             NumThreads = numThreads;
             DeadlockTimeout = deadlockTimeout;
             if (deadlockTimeout.HasValue && deadlockTimeout.Value.TotalMilliseconds <= 0)
-                throw new ArgumentOutOfRangeException("deadlockTimeout", string.Format("deadlockTimeout must be null or at least 1ms. Was {0}.", deadlockTimeout));
+                throw new ArgumentOutOfRangeException("deadlockTimeout",
+                    string.Format("deadlockTimeout must be null or at least 1ms. Was {0}.", deadlockTimeout));
             if (numThreads <= 0)
-                throw new ArgumentOutOfRangeException("numThreads", string.Format("numThreads must be at least 1. Was {0}", numThreads));
+                throw new ArgumentOutOfRangeException("numThreads",
+                    string.Format("numThreads must be at least 1. Was {0}", numThreads));
         }
 
         /// <summary>
@@ -74,8 +80,7 @@ namespace Helios.Concurrency
     internal class DedicatedThreadPoolTaskScheduler : TaskScheduler
     {
         // Indicates whether the current thread is processing work items.
-        [ThreadStatic]
-        private static bool _currentThreadIsRunningTasks;
+        [ThreadStatic] private static bool _currentThreadIsRunningTasks;
 
         /// <summary>
         /// Number of tasks currently running
@@ -205,8 +210,11 @@ namespace Helios.Concurrency
                         TryExecuteTask(item);
                     }
                 }
-                // We're done processing items on the current thread 
-                finally { _currentThreadIsRunningTasks = false; }
+                    // We're done processing items on the current thread 
+                finally
+                {
+                    _currentThreadIsRunningTasks = false;
+                }
             });
         }
     }
@@ -224,7 +232,6 @@ namespace Helios.Concurrency
 
             internal DedicatedThreadPoolSupervisor(DedicatedThreadPool pool)
             {
-
                 //don't set up a timer if a timeout wasn't specified
                 if (pool.Settings.DeadlockTimeout == null)
                     return;
@@ -247,11 +254,7 @@ namespace Helios.Concurrency
                         }
 
                         //schedule heartbeat action to worker
-                        worker.AddWork(() =>
-                        {
-                            Interlocked.Increment(ref w.Status);
-                        });
-
+                        worker.AddWork(() => { Interlocked.Increment(ref w.Status); });
                     }
                 }, null, pool.Settings.DeadlockTimeout.Value, pool.Settings.DeadlockTimeout.Value);
             }
@@ -287,8 +290,7 @@ namespace Helios.Concurrency
 
         public readonly WorkerQueue[] Workers;
 
-        [ThreadStatic]
-        internal static PoolWorker CurrentWorker;
+        [ThreadStatic] internal static PoolWorker CurrentWorker;
 
         /// <summary>
         /// index for round-robin load-balancing across worker threads
@@ -328,7 +330,7 @@ namespace Helios.Concurrency
                     _index = (_index + 1);
                     //need to wrap bitwise operations in parens to preserve order, otherwise this won't round-robin
                     //to some actors if Settings.NumThreads is an odd number
-                    Workers[(_index & 0x7fffffff) % Settings.NumThreads].AddWork(work);
+                    Workers[(_index & 0x7fffffff)%Settings.NumThreads].AddWork(work);
                 }
                 //}
                 //else //recursive task queue, write directly
@@ -430,7 +432,6 @@ namespace Helios.Concurrency
                     {
                         return;
                     }
-
                 })
                 {
                     IsBackground = _pool.Settings.ThreadType == ThreadType.Background
@@ -459,4 +460,3 @@ namespace Helios.Concurrency
         #endregion
     }
 }
-

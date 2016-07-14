@@ -47,4 +47,3 @@ namespace Helios.Channels
         void UserEventTriggered(IChannelHandlerContext context, object evt);
     }
 }
-

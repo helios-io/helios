@@ -23,4 +23,3 @@ namespace Helios.FsCheck.Tests.Buffers
         }
     }
 }
-

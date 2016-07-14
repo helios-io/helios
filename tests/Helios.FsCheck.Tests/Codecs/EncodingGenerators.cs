@@ -17,7 +17,7 @@ namespace Helios.FsCheck.Tests.Codecs
 {
     public class EncodingGenerators
     {
-        public static readonly ReadMode[] AllReadModes = Enum.GetValues(typeof (ReadMode)).Cast<ReadMode>().ToArray();
+        public static readonly ReadMode[] AllReadModes = Enum.GetValues(typeof(ReadMode)).Cast<ReadMode>().ToArray();
 
         public static Arbitrary<Tuple<IByteBuf, ReadInstruction>> ChannelReads()
         {
@@ -27,7 +27,7 @@ namespace Helios.FsCheck.Tests.Codecs
                     return new Tuple<IByteBuf, ReadInstruction>(buf,
                         new ReadInstruction(mode, buf.ReadableBytes, buf.ReadableBytes));
                 var partialBytesToRead = ThreadLocalRandom.Current.Next(1, buf.ReadableBytes - 1);
-                    // TODO: find a way to use Gen here
+                // TODO: find a way to use Gen here
                 return new Tuple<IByteBuf, ReadInstruction>(buf,
                     new ReadInstruction(mode, partialBytesToRead, buf.ReadableBytes));
             };
@@ -98,7 +98,7 @@ namespace Helios.FsCheck.Tests.Codecs
                             .WriteBytes(_cumulativeBuffer)
                             .WriteBytes(buf);
                     Assert.Equal(0, _cumulativeBuffer.ReadableBytes);
-                        // verify that we've fully drained the cumulative buffer
+                    // verify that we've fully drained the cumulative buffer
                     _cumulativeBuffer.DiscardReadBytes();
                     context.FireChannelRead(writeBuf);
                 }
@@ -111,7 +111,7 @@ namespace Helios.FsCheck.Tests.Codecs
                             .WriteBytes(_cumulativeBuffer)
                             .WriteBytes(buf, partialReadBytes);
                     Assert.Equal(0, _cumulativeBuffer.ReadableBytes);
-                        // verify that we've fully drained the cumulative buffer
+                    // verify that we've fully drained the cumulative buffer
                     _cumulativeBuffer.DiscardReadBytes();
 
                     // store the rest partial read into the cumulative buffer
@@ -158,4 +158,3 @@ namespace Helios.FsCheck.Tests.Codecs
         }
     }
 }
-

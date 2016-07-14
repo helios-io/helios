@@ -29,4 +29,3 @@ namespace Helios.FsCheck.Tests.Channels.Sockets.Models
         ITcpServerSocketModel ReceiveMessages(params int[] messages);
     }
 }
-

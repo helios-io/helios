@@ -16,4 +16,3 @@ namespace Helios.Buffers
         IByteBuf Buffer(int initialCapacity, int maxCapacity);
     }
 }
-

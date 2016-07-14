@@ -27,4 +27,3 @@ namespace Helios.Tests.Channels
         }
     }
 }
-

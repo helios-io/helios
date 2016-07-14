@@ -215,4 +215,3 @@ namespace Helios.Concurrency
         IEventExecutor Unwrap();
     }
 }
-

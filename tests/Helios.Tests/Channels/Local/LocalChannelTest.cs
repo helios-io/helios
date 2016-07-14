@@ -815,4 +815,3 @@ namespace Helios.Tests.Channels.Local
         }
     }
 }
-

@@ -86,4 +86,3 @@ namespace Helios.Tests.Reactor
         }
     }
 }
-

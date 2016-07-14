@@ -57,4 +57,3 @@ namespace Helios.Tests.Performance.Channels
         public bool Finished { get; private set; }
     }
 }
-

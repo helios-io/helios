@@ -25,11 +25,11 @@ namespace Helios.Reactor.Bootstrap
             reactor.Configure(Config);
 
             if (ReceivedData != null)
-                reactor.OnReceive += (ReceivedDataCallback)ReceivedData.Clone();
+                reactor.OnReceive += (ReceivedDataCallback) ReceivedData.Clone();
             if (ConnectionEstablishedCallback != null)
-                reactor.OnConnection += (ConnectionEstablishedCallback)ConnectionEstablishedCallback.Clone();
+                reactor.OnConnection += (ConnectionEstablishedCallback) ConnectionEstablishedCallback.Clone();
             if (ConnectionTerminatedCallback != null)
-                reactor.OnDisconnection += (ConnectionTerminatedCallback)ConnectionTerminatedCallback.Clone();
+                reactor.OnDisconnection += (ConnectionTerminatedCallback) ConnectionTerminatedCallback.Clone();
             if (ExceptionCallback != null)
                 reactor.OnError += (ExceptionCallback) ExceptionCallback.Clone();
 
@@ -43,7 +43,7 @@ namespace Helios.Reactor.Bootstrap
 
         public IConnection NewConnection(INode localEndpoint)
         {
-            var reactor = (ReactorBase)NewReactor(localEndpoint);
+            var reactor = (ReactorBase) NewReactor(localEndpoint);
             return reactor.ConnectionAdapter;
         }
 
@@ -53,4 +53,3 @@ namespace Helios.Reactor.Bootstrap
         }
     }
 }
-

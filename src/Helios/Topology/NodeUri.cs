@@ -34,7 +34,8 @@ namespace Helios.Topology
         public static string GetUriStringForNode(INode node)
         {
             if (node.IsEmpty()) return string.Empty;
-            return string.Format("{0}://{1}:{2}", GetProtocolStringForTransportType(node.TransportType), GetHostStringForAddress(node.Host),
+            return string.Format("{0}://{1}:{2}", GetProtocolStringForTransportType(node.TransportType),
+                GetHostStringForAddress(node.Host),
                 node.Port);
         }
 
@@ -74,4 +75,3 @@ namespace Helios.Topology
         #endregion
     }
 }
-

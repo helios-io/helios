@@ -384,7 +384,8 @@ namespace Helios.Channels
             int size;
 
             private static readonly ThreadLocal<ObjectPool<WriteTask>> Pool =
-               new ThreadLocal<ObjectPool<WriteTask>>(() => new ObjectPool<WriteTask>(handle => new WriteTask(handle)));
+                new ThreadLocal<ObjectPool<WriteTask>>(() => new ObjectPool<WriteTask>(handle => new WriteTask(handle)));
+
             private readonly PoolHandle<WriteTask> _handle;
 
             public static WriteTask NewInstance(
@@ -402,7 +403,7 @@ namespace Helios.Channels
                     // Check for null as it may be set to null if the channel is closed already
                     if (buffer != null)
                     {
-                        task.size = ((AbstractChannel)ctx.Channel).EstimatorHandle.Size(msg) + WriteTaskOverhead;
+                        task.size = ((AbstractChannel) ctx.Channel).EstimatorHandle.Size(msg) + WriteTaskOverhead;
                         buffer.IncrementPendingOutboundBytes(task.size);
                     }
                     else
@@ -449,4 +450,3 @@ namespace Helios.Channels
         }
     }
 }
-

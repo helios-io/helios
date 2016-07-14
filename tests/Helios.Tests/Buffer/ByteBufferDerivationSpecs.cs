@@ -25,4 +25,3 @@ namespace Helios.Tests.Buffer
         }
     }
 }
-

@@ -9,7 +9,6 @@ using System.Threading;
 
 namespace Helios.Util
 {
-
     public sealed class PoolHandle<T> where T : class
     {
         private readonly ObjectPool<T> _pool;
@@ -36,6 +35,7 @@ namespace Helios.Util
         private T _firstItem;
         private readonly Element[] _items;
         private readonly PoolHandle<T> _handle;
+
         public ObjectPool(Func<PoolHandle<T>, T> producer) : this(producer, Environment.ProcessorCount*2)
         {
         }
@@ -145,8 +145,5 @@ namespace Helios.Util
         {
             internal T Value;
         }
-
-        
     }
 }
-

@@ -37,11 +37,10 @@ namespace Helios.Channels.Sockets
             SocketError socketError = this.SocketError;
             if (socketError != SocketError.Success)
             {
-                throw new SocketException((int)socketError);
+                throw new SocketException((int) socketError);
             }
         }
 
         public AbstractSocketChannel Channel { get; private set; }
     }
 }
-

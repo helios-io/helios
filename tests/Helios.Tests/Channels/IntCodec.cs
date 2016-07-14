@@ -45,4 +45,3 @@ namespace Helios.Tests.Channels
         }
     }
 }
-

@@ -24,4 +24,3 @@ namespace Helios.Channels.Sockets
         bool TcpNoDelay { get; set; }
     }
 }
-

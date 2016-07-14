@@ -738,4 +738,3 @@ namespace Helios.Buffers
         string ToString(Encoding encoding);
     }
 }
-

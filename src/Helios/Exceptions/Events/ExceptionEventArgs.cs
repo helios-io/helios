@@ -19,4 +19,3 @@ namespace Helios.Exceptions.Events
         public Exception Exception { get; protected set; }
     }
 }
-

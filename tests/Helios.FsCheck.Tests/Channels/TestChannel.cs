@@ -21,9 +21,8 @@ namespace Helios.FsCheck.Tests.Channels
             instance.Configuration.WriteBufferHighWaterMark = ChannelOutboundBufferSpecs.WriteHighWaterMark;
             instance.Configuration.WriteBufferLowWaterMark = ChannelOutboundBufferSpecs.WriteLowWaterMark;
             instance.Configuration.AutoRead = false;
-                // interferes with testing the invocation model for ChannelReadComplete
+            // interferes with testing the invocation model for ChannelReadComplete
             return instance;
         }
     }
 }
-

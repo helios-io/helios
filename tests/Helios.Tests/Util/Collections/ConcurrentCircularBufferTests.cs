@@ -14,4 +14,3 @@ namespace Helios.Tests.Util.Collections
         }
     }
 }
-

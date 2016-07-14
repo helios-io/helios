@@ -119,4 +119,3 @@ namespace Helios.Tests.Performance.Concurrency
         }
     }
 }
-

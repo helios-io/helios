@@ -46,4 +46,3 @@ namespace Helios.Net.Bootstrap
         protected abstract IConnection CreateConnection(INode localEndpoint, INode remoteEndpoint);
     }
 }
-

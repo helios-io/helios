@@ -216,8 +216,8 @@ namespace Helios.Concurrency
                 Logger.Error(
                     "Buggy {0} implementation; {1}.ConfirmShutdown() must be called " +
                     "before run() implementation terminates.",
-                    typeof (IEventExecutor).Name,
-                    typeof (SingleThreadEventExecutor).Name);
+                    typeof(IEventExecutor).Name,
+                    typeof(SingleThreadEventExecutor).Name);
             }
 
             try
@@ -453,4 +453,3 @@ namespace Helios.Concurrency
         }
     }
 }
-

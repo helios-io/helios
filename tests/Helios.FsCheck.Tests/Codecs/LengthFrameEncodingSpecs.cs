@@ -129,7 +129,7 @@ namespace Helios.FsCheck.Tests.Codecs
                 }
             } while (decoded != null);
             expectedReads = expectedReads.Select(x => x.ResetReaderIndex()).ToArray();
-                // need to perform a read reset of the buffer
+            // need to perform a read reset of the buffer
             var pass = expectedReads.SequenceEqual(actualReads, AbstractByteBuf.ByteBufComparer);
 
             if (!pass)
@@ -186,7 +186,7 @@ namespace Helios.FsCheck.Tests.Codecs
                 }
             } while (decoded != null);
             expectedReads = expectedReads.Select(x => x.ResetReaderIndex()).ToArray();
-                // need to perform a read reset of the buffer
+            // need to perform a read reset of the buffer
             var pass = expectedReads.SequenceEqual(actualReads, AbstractByteBuf.ByteBufComparer);
 
             if (!pass)
@@ -205,4 +205,3 @@ namespace Helios.FsCheck.Tests.Codecs
         }
     }
 }
-

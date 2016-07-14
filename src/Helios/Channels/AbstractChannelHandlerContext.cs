@@ -102,7 +102,7 @@ namespace Helios.Channels
             {
                 flags |= MASK_HANDLER_REMOVED;
             }
-            if (IsSkippable(handlerType, "ExceptionCaught", typeof (Exception)))
+            if (IsSkippable(handlerType, "ExceptionCaught", typeof(Exception)))
             {
                 flags |= MASK_EXCEPTION_CAUGHT;
             }
@@ -122,7 +122,7 @@ namespace Helios.Channels
             {
                 flags |= MASK_CHANNEL_INACTIVE;
             }
-            if (IsSkippable(handlerType, "ChannelRead", typeof (object)))
+            if (IsSkippable(handlerType, "ChannelRead", typeof(object)))
             {
                 flags |= MASK_CHANNEL_READ;
             }
@@ -134,15 +134,15 @@ namespace Helios.Channels
             {
                 flags |= MASK_CHANNEL_WRITABILITY_CHANGED;
             }
-            if (IsSkippable(handlerType, "UserEventTriggered", typeof (object)))
+            if (IsSkippable(handlerType, "UserEventTriggered", typeof(object)))
             {
                 flags |= MASK_USER_EVENT_TRIGGERED;
             }
-            if (IsSkippable(handlerType, "BindAsync", typeof (EndPoint)))
+            if (IsSkippable(handlerType, "BindAsync", typeof(EndPoint)))
             {
                 flags |= MASK_BIND;
             }
-            if (IsSkippable(handlerType, "ConnectAsync", typeof (EndPoint), typeof (EndPoint)))
+            if (IsSkippable(handlerType, "ConnectAsync", typeof(EndPoint), typeof(EndPoint)))
             {
                 flags |= MASK_CONNECT;
             }
@@ -162,7 +162,7 @@ namespace Helios.Channels
             {
                 flags |= MASK_READ;
             }
-            if (IsSkippable(handlerType, "WriteAsync", typeof (object)))
+            if (IsSkippable(handlerType, "WriteAsync", typeof(object)))
             {
                 flags |= MASK_WRITE;
             }
@@ -176,7 +176,7 @@ namespace Helios.Channels
         protected static bool IsSkippable(Type handlerType, string methodName, params Type[] paramTypes)
         {
             var newParamTypes = new Type[paramTypes.Length + 1];
-            newParamTypes[0] = typeof (IChannelHandlerContext);
+            newParamTypes[0] = typeof(IChannelHandlerContext);
             Array.Copy(paramTypes, 0, newParamTypes, 1, paramTypes.Length);
             return handlerType.GetMethod(methodName, newParamTypes).GetCustomAttribute<SkipAttribute>(false) != null;
         }
@@ -426,4 +426,3 @@ namespace Helios.Channels
         }
     }
 }
-

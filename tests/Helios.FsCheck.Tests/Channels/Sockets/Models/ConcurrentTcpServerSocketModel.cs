@@ -117,4 +117,3 @@ namespace Helios.FsCheck.Tests.Channels.Sockets.Models
         }
     }
 }
-

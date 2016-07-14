@@ -711,7 +711,7 @@ namespace Helios.Channels
             var ctx = (AbstractChannelHandlerContext) Context<T>();
             if (ctx == null)
             {
-                throw new ArgumentException($"Handler of type `{typeof (T).Name}` could not be found in the pipeline.");
+                throw new ArgumentException($"Handler of type `{typeof(T).Name}` could not be found in the pipeline.");
             }
 
             return ctx;
@@ -721,7 +721,7 @@ namespace Helios.Channels
 
         internal sealed class TailContext : AbstractChannelHandlerContext, IChannelHandler
         {
-            private static readonly int SkipFlags = CalculateSkipPropagationFlags(typeof (TailContext));
+            private static readonly int SkipFlags = CalculateSkipPropagationFlags(typeof(TailContext));
 
             public TailContext(DefaultChannelPipeline pipeline) : base(pipeline, null, "null", SkipFlags)
             {
@@ -848,7 +848,7 @@ namespace Helios.Channels
 
         internal sealed class HeadContext : AbstractChannelHandlerContext, IChannelHandler
         {
-            private static readonly int SkipFlags = CalculateSkipPropagationFlags(typeof (HeadContext));
+            private static readonly int SkipFlags = CalculateSkipPropagationFlags(typeof(HeadContext));
 
             private readonly IChannel _channel;
 
@@ -975,4 +975,3 @@ namespace Helios.Channels
         #endregion
     }
 }
-

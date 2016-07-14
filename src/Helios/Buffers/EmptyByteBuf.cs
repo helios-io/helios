@@ -13,7 +13,7 @@ namespace Helios.Buffers
     public class EmptyByteBuf : AbstractByteBuf
     {
         static readonly ArraySegment<byte> EmptyBuffer = new ArraySegment<byte>(ByteArrayExtensions.Empty);
-        static readonly ArraySegment<byte>[] EmptyBuffers = { EmptyBuffer };
+        static readonly ArraySegment<byte>[] EmptyBuffers = {EmptyBuffer};
 
         public EmptyByteBuf(IByteBufAllocator allocator) : base(0)
         {
@@ -181,4 +181,3 @@ namespace Helios.Buffers
         }
     }
 }
-

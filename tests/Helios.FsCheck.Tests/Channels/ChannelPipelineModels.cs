@@ -185,7 +185,7 @@ namespace Helios.FsCheck.Tests.Channels
                 if (_eventsStr == null)
                 {
                     var supportedEvents = new List<SupportedEvent>();
-                    foreach (var value in Enum.GetValues(typeof (SupportedEvent)).Cast<SupportedEvent>())
+                    foreach (var value in Enum.GetValues(typeof(SupportedEvent)).Cast<SupportedEvent>())
                     {
                         if (Event.HasFlag(value))
                             supportedEvents.Add(value);
@@ -444,7 +444,7 @@ namespace Helios.FsCheck.Tests.Channels
     public class AllEventsChannelHandler : NamedChannelHandler
     {
         public static readonly SupportedEvent[] AllValidEvent =
-            Enum.GetValues(typeof (SupportedEvent)).Cast<SupportedEvent>().Except(new[] {SupportedEvent.None}).ToArray();
+            Enum.GetValues(typeof(SupportedEvent)).Cast<SupportedEvent>().Except(new[] {SupportedEvent.None}).ToArray();
 
         public AllEventsChannelHandler(string name, SupportedEvent[] @event) : base(name)
         {
@@ -951,7 +951,7 @@ namespace Helios.FsCheck.Tests.Channels
             {
                 var outcome = _arg1.PredictedOutcome(Event);
                 return _arg1.Length > 2 && base.Pre(_arg1) && outcome.Any();
-                    // need to have at least 1 handler who can take the event
+                // need to have at least 1 handler who can take the event
             }
 
             public override Property Check(IChannelPipeline obj0, PipelineMutationModel obj1)
@@ -1275,4 +1275,3 @@ namespace Helios.FsCheck.Tests.Channels
         #endregion
     }
 }
-

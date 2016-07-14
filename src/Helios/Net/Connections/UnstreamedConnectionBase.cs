@@ -298,4 +298,3 @@ namespace Helios.Net.Connections
         #endregion
     }
 }
-

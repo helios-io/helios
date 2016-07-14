@@ -122,7 +122,7 @@ namespace Helios.Channels.Bootstrap
         public TBootstrap PreferredDnsResolutionFamily(AddressFamily addressFamily)
         {
             _preferredAddressFamily = addressFamily;
-            return (TBootstrap)this;
+            return (TBootstrap) this;
         }
 
         /// <summary>
@@ -327,4 +327,3 @@ namespace Helios.Channels.Bootstrap
         }
     }
 }
-

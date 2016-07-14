@@ -45,4 +45,3 @@ namespace Helios.Channels
         public IList<KeyValuePair<string, object>> Options => _options.ToList();
     }
 }
-
