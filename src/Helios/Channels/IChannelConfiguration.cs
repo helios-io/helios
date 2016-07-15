@@ -33,4 +33,3 @@ namespace Helios.Channels
         bool SetOption<T>(ChannelOption<T> option, T value);
     }
 }
-

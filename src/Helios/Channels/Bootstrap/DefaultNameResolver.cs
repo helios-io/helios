@@ -39,4 +39,3 @@ namespace Helios.Channels.Bootstrap
         }
     }
 }
-

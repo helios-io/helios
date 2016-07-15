@@ -76,4 +76,3 @@ namespace Helios.Util.Collections
         void CopyTo(T[] array, int index, int count);
     }
 }
-

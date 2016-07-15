@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -29,7 +33,7 @@ namespace Helios.Util
                 object v = threadLocalMap.GetIndexedVariable(VariablesToRemoveIndex);
                 if (v != null && v != InternalThreadLocalMap.Unset)
                 {
-                    var variablesToRemove = (HashSet<FastThreadLocal>)v;
+                    var variablesToRemove = (HashSet<FastThreadLocal>) v;
                     foreach (FastThreadLocal tlv in variablesToRemove) // todo: do we need to make a snapshot?
                     {
                         tlv.Remove(threadLocalMap);
@@ -54,18 +58,20 @@ namespace Helios.Util
             HashSet<FastThreadLocal> variablesToRemove;
             if (v == InternalThreadLocalMap.Unset || v == null)
             {
-                variablesToRemove = new HashSet<FastThreadLocal>(); // Collections.newSetFromMap(new IdentityHashMap<FastThreadLocal<?>, Boolean>());
+                variablesToRemove = new HashSet<FastThreadLocal>();
+                    // Collections.newSetFromMap(new IdentityHashMap<FastThreadLocal<?>, Boolean>());
                 threadLocalMap.SetIndexedVariable(VariablesToRemoveIndex, variablesToRemove);
             }
             else
             {
-                variablesToRemove = (HashSet<FastThreadLocal>)v;
+                variablesToRemove = (HashSet<FastThreadLocal>) v;
             }
 
             variablesToRemove.Add(variable);
         }
 
-        protected static void RemoveFromVariablesToRemove(InternalThreadLocalMap threadLocalMap, FastThreadLocal variable)
+        protected static void RemoveFromVariablesToRemove(InternalThreadLocalMap threadLocalMap,
+            FastThreadLocal variable)
         {
             object v = threadLocalMap.GetIndexedVariable(VariablesToRemoveIndex);
 
@@ -74,7 +80,7 @@ namespace Helios.Util
                 return;
             }
 
-            var variablesToRemove = (HashSet<FastThreadLocal>)v;
+            var variablesToRemove = (HashSet<FastThreadLocal>) v;
             variablesToRemove.Remove(variable);
         }
 
@@ -119,7 +125,7 @@ namespace Helios.Util
             object v = threadLocalMap.GetIndexedVariable(this.index);
             if (v != InternalThreadLocalMap.Unset)
             {
-                return (T)v;
+                return (T) v;
             }
 
             return this.Initialize(threadLocalMap);
@@ -157,7 +163,8 @@ namespace Helios.Util
         ///     The specified thread local map must be for the current thread.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsSet(InternalThreadLocalMap threadLocalMap) => threadLocalMap != null && threadLocalMap.IsIndexedVariableSet(this.index);
+        public bool IsSet(InternalThreadLocalMap threadLocalMap)
+            => threadLocalMap != null && threadLocalMap.IsIndexedVariableSet(this.index);
 
         /// <summary>
         ///     Returns the initial value for this thread-local variable.
@@ -182,7 +189,7 @@ namespace Helios.Util
 
             if (v != InternalThreadLocalMap.Unset)
             {
-                this.OnRemoval((T)v);
+                this.OnRemoval((T) v);
             }
         }
 

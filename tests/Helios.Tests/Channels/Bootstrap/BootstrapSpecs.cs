@@ -23,4 +23,3 @@ namespace Helios.Tests.Channels.Bootstrap
         }
     }
 }
-

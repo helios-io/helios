@@ -25,4 +25,3 @@ namespace Helios.Concurrency
         void AcceptNewTasks();
     }
 }
-

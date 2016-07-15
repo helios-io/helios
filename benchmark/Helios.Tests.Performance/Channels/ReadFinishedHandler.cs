@@ -28,4 +28,3 @@ namespace Helios.Tests.Performance.Channels
         }
     }
 }
-

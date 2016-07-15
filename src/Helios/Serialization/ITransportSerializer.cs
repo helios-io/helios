@@ -26,4 +26,3 @@ namespace Helios.Serialization
         void Serialize<T>(T obj, NetworkData data);
     }
 }
-

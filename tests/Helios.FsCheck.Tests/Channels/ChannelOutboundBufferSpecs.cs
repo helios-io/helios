@@ -35,8 +35,7 @@ namespace Helios.FsCheck.Tests.Channels
         {
             var writeable = true;
             var buffer = new ChannelOutboundBuffer(TestChannel.Instance,
-                () => {
-                          writeable = !writeable; // toggle writeability
+                () => { writeable = !writeable; // toggle writeability
                 });
 
             foreach (var msg in writes)
@@ -97,8 +96,7 @@ namespace Helios.FsCheck.Tests.Channels
                 return true.ToProperty();
             var writeable = true;
             var buffer = new ChannelOutboundBuffer(TestChannel.Instance,
-                () => {
-                          writeable = !writeable; // toggle writeability
+                () => { writeable = !writeable; // toggle writeability
                 });
 
             foreach (var message in writes)
@@ -132,8 +130,7 @@ namespace Helios.FsCheck.Tests.Channels
             var tasks = new List<Task>();
             var writeable = true;
             var buffer = new ChannelOutboundBuffer(TestChannel.Instance,
-                () => {
-                          writeable = !writeable; // toggle writeability
+                () => { writeable = !writeable; // toggle writeability
                 });
 
             // write + flush loop
@@ -174,8 +171,7 @@ namespace Helios.FsCheck.Tests.Channels
             var tasks = new List<Task>();
             var writeable = true;
             var buffer = new ChannelOutboundBuffer(TestChannel.NewInstance(new ExceptionSupressor()),
-                () => {
-                          writeable = !writeable; // toggle writeability
+                () => { writeable = !writeable; // toggle writeability
                 });
 
             // write
@@ -213,4 +209,3 @@ namespace Helios.FsCheck.Tests.Channels
         #endregion
     }
 }
-

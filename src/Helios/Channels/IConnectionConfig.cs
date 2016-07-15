@@ -56,4 +56,3 @@ namespace Helios.Channels
         T GetOption<T>(string optionKey);
     }
 }
-

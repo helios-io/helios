@@ -75,7 +75,7 @@ namespace Helios.Tests.Codecs
             var ex = Assert.Throws<AggregateException>(() =>
             {
                 ch.WriteOutbound(msg);
-                Assert.True(false, typeof (EncoderException).Name + " must be raised.");
+                Assert.True(false, typeof(EncoderException).Name + " must be raised.");
             });
 
             Assert.IsType<EncoderException>(ex.InnerExceptions.Single());
@@ -103,4 +103,3 @@ namespace Helios.Tests.Codecs
         }
     }
 }
-

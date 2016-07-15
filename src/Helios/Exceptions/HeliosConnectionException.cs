@@ -37,4 +37,3 @@ namespace Helios.Exceptions
         public ExceptionType Type { get; }
     }
 }
-

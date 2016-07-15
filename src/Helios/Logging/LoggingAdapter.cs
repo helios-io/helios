@@ -114,4 +114,3 @@ namespace Helios.Logging
         protected abstract void ErrorInternal(Error message);
     }
 }
-

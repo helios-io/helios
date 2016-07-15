@@ -203,7 +203,8 @@ namespace Helios.Tests.Buffer
             Assert.Equal(4, myInt);
 
             var newBytes = new byte[originalBuffer.ReadableBytes];
-            Array.Copy(originalBuffer.Array, originalBuffer.ArrayOffset + originalBuffer.ReaderIndex, newBytes, 0, originalBuffer.ReadableBytes);
+            Array.Copy(originalBuffer.Array, originalBuffer.ArrayOffset + originalBuffer.ReaderIndex, newBytes, 0,
+                originalBuffer.ReadableBytes);
             Assert.True(bytes.SequenceEqual(newBytes));
         }
 
@@ -234,7 +235,7 @@ namespace Helios.Tests.Buffer
             if (buffer.IoBufferCount != 1)
             {
                 // skipping
-                return; 
+                return;
             }
 
             var bytes = new byte[buffer.Capacity];
@@ -275,4 +276,3 @@ namespace Helios.Tests.Buffer
         #endregion
     }
 }
-

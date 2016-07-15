@@ -40,4 +40,3 @@ namespace Helios.Exceptions
         public INode AffectedNode { get; protected set; }
     }
 }
-

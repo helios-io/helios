@@ -59,4 +59,3 @@ namespace Helios.Concurrency
         IFiber Clone();
     }
 }
-

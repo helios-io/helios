@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Petabridge <https://petabridge.com/>. All rights reserved.
+// Licensed under the Apache 2.0 license. See LICENSE file in the project root for full license information.
+// See ThirdPartyNotices.txt for references to third party code used inside Helios.
+
+using System;
 using System.Net;
 using System.Net.Sockets;
 using FsCheck.Xunit;
@@ -11,7 +15,6 @@ using Xunit;
 
 namespace Helios.FsCheck.Tests.Channels.Sockets
 {
-
     public enum IpMapping
     {
         AnyIpv6,
@@ -73,7 +76,7 @@ namespace Helios.FsCheck.Tests.Channels.Sockets
         [InlineData(IpMapping.AnyIpv6, IpMapping.LoopbackIpv6, AddressFamily.InterNetwork)]
         [InlineData(IpMapping.AnyIpv6, IpMapping.LoopbackIpv4, AddressFamily.InterNetwork)]
         [InlineData(IpMapping.LoopbackIpv4, IpMapping.Localhost, AddressFamily.InterNetwork)]
-        [InlineData(IpMapping.LoopbackIpv6, IpMapping.Localhost, AddressFamily.InterNetworkV6)] 
+        [InlineData(IpMapping.LoopbackIpv6, IpMapping.Localhost, AddressFamily.InterNetworkV6)]
         public void TcpSocketServerChannel_can_be_connected_to_on_any_aliased_Endpoint(IpMapping actual,
             IpMapping alias, AddressFamily family)
         {
@@ -95,7 +98,6 @@ namespace Helios.FsCheck.Tests.Channels.Sockets
                 s = sb.BindAsync(inboundActual).Result;
 
 
-
                 var cb = new ClientBootstrap()
                     .Channel<TcpSocketChannel>()
                     .Option(ChannelOption.TcpNodelay, true)
@@ -105,8 +107,8 @@ namespace Helios.FsCheck.Tests.Channels.Sockets
                     .Group(_clientGroup);
 
                 EndPoint clientEp = isIp
-                    ? new IPEndPoint(((IPEndPoint)inboundAlias).Address, ((IPEndPoint) s.LocalAddress).Port)
-                    : (EndPoint)new DnsEndPoint(((DnsEndPoint)inboundAlias).Host, ((IPEndPoint)s.LocalAddress).Port);
+                    ? new IPEndPoint(((IPEndPoint) inboundAlias).Address, ((IPEndPoint) s.LocalAddress).Port)
+                    : (EndPoint) new DnsEndPoint(((DnsEndPoint) inboundAlias).Host, ((IPEndPoint) s.LocalAddress).Port);
 
                 c = cb.ConnectAsync(clientEp).Result;
                 c.WriteAndFlushAsync(Unpooled.Buffer(4).WriteInt(2)).Wait(20);
@@ -122,7 +124,9 @@ namespace Helios.FsCheck.Tests.Channels.Sockets
                     c?.CloseAsync().Wait(TimeSpan.FromMilliseconds(200));
                     s?.CloseAsync().Wait(TimeSpan.FromMilliseconds(200));
                 }
-                catch { }
+                catch
+                {
+                }
             }
         }
 
@@ -151,7 +155,7 @@ namespace Helios.FsCheck.Tests.Channels.Sockets
         public Property TcpServerSocketChannel_can_accept_connection_on_any_valid_Endpoint(EndPoint ep)
         {
             var ip = ep as IPEndPoint;
-            
+
 
             IChannel s = null;
             IChannel c = null;
@@ -175,9 +179,9 @@ namespace Helios.FsCheck.Tests.Channels.Sockets
                 if (ip != null) // handle special case of 0.0.0.0, which clients can't connect to directly.
                 {
                     if (ip.Address.Equals(IPAddress.Any))
-                        clientEp = new IPEndPoint(IPAddress.Loopback, ((IPEndPoint)s.LocalAddress).Port);
+                        clientEp = new IPEndPoint(IPAddress.Loopback, ((IPEndPoint) s.LocalAddress).Port);
                     if (ip.Address.Equals(IPAddress.IPv6Any))
-                        clientEp = new IPEndPoint(IPAddress.IPv6Loopback, ((IPEndPoint)s.LocalAddress).Port);
+                        clientEp = new IPEndPoint(IPAddress.IPv6Loopback, ((IPEndPoint) s.LocalAddress).Port);
                 }
 
                 c = cb.ConnectAsync(clientEp).Result;
@@ -194,7 +198,9 @@ namespace Helios.FsCheck.Tests.Channels.Sockets
                     c?.CloseAsync().Wait(TimeSpan.FromMilliseconds(200));
                     s?.CloseAsync().Wait(TimeSpan.FromMilliseconds(200));
                 }
-                catch { }
+                catch
+                {
+                }
             }
         }
 

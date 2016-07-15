@@ -17,4 +17,3 @@ namespace Helios.Channels.Bootstrap
         Task<EndPoint> ResolveAsync(EndPoint address, AddressFamily preferredFamily);
     }
 }
-

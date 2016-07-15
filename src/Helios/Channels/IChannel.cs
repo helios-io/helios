@@ -64,4 +64,3 @@ namespace Helios.Channels
         Task WriteAndFlushAsync(object message);
     }
 }
-

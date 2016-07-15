@@ -30,4 +30,3 @@ namespace Helios.Exceptions.Events
         }
     }
 }
-

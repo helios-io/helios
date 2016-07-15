@@ -194,7 +194,7 @@ namespace Helios.Channels.Bootstrap
         protected override void Init(IChannel channel)
         {
             IChannelPipeline p = channel.Pipeline;
-            p.AddLast(null, (string)null, this.Handler());
+            p.AddLast(null, (string) null, this.Handler());
 
             IDictionary<ChannelOption, object> options = this.Options();
             foreach (KeyValuePair<ChannelOption, object> e in options)
@@ -257,4 +257,3 @@ namespace Helios.Channels.Bootstrap
         }
     }
 }
-

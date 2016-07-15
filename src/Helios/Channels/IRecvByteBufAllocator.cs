@@ -17,4 +17,3 @@ namespace Helios.Channels
         IRecvByteBufferAllocatorHandle NewHandle();
     }
 }
-

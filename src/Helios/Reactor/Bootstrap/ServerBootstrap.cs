@@ -41,10 +41,7 @@ namespace Helios.Reactor.Bootstrap
 
         protected NetworkEventLoop EventLoop
         {
-            get
-            {
-                return EventLoopFactory.CreateNetworkEventLoop(Workers, InternalExecutor);
-            }
+            get { return EventLoopFactory.CreateNetworkEventLoop(Workers, InternalExecutor); }
         }
 
         protected int Workers { get; set; }
@@ -136,6 +133,7 @@ namespace Helios.Reactor.Bootstrap
             base.OnReceive(receivedDataCallback);
             return this;
         }
+
         public new ServerBootstrap OnError(ExceptionCallback exceptionCallback)
         {
             base.OnError(exceptionCallback);
@@ -174,4 +172,3 @@ namespace Helios.Reactor.Bootstrap
         }
     }
 }
-

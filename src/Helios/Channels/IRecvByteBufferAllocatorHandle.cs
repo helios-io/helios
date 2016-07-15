@@ -27,4 +27,3 @@ namespace Helios.Channels
         void Record(int actualReadBytes);
     }
 }
-

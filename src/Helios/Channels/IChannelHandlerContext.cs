@@ -67,4 +67,3 @@ namespace Helios.Channels
         Task DeregisterAsync();
     }
 }
-

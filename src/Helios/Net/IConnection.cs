@@ -186,4 +186,3 @@ namespace Helios.Net
         public byte[] RawBuffer { get; private set; }
     }
 }
-

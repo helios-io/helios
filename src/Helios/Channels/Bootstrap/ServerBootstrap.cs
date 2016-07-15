@@ -235,7 +235,7 @@ namespace Helios.Channels.Bootstrap
 
             return
                 Expression.Lambda<Func<IChannelConfiguration, bool>>(
-                    Expression.Block(typeof(bool), new[] { resultVariable }, assignments), configParam).Compile();
+                    Expression.Block(typeof(bool), new[] {resultVariable}, assignments), configParam).Compile();
         }
 
         public override object Clone()
@@ -294,7 +294,7 @@ namespace Helios.Channels.Bootstrap
 
             public override void ChannelRead(IChannelHandlerContext ctx, object msg)
             {
-                var child = (IChannel)msg;
+                var child = (IChannel) msg;
 
                 child.Pipeline.AddLast(childHandler);
 
@@ -343,4 +343,3 @@ namespace Helios.Channels.Bootstrap
         }
     }
 }
-

@@ -74,11 +74,17 @@ namespace Helios.Channels.Sockets
             get { return false; }
         }
 
-        IServerSocketChannelConfiguration IServerSocketChannel.Configuration { get { return (IServerSocketChannelConfiguration)Configuration; } }
+        IServerSocketChannelConfiguration IServerSocketChannel.Configuration
+        {
+            get { return (IServerSocketChannelConfiguration) Configuration; }
+        }
 
         SocketChannelAsyncOperation AcceptOperation
         {
-            get { return this.acceptOperation ?? (this.acceptOperation = new SocketChannelAsyncOperation(this, false)); }
+            get
+            {
+                return this.acceptOperation ?? (this.acceptOperation = new SocketChannelAsyncOperation(this, false));
+            }
         }
 
         protected override IChannelUnsafe NewUnsafe()
@@ -114,7 +120,7 @@ namespace Helios.Channels.Sockets
 
         static void OnReadCompletedSync(object u, object p)
         {
-            ((ISocketChannelUnsafe)u).FinishRead((SocketChannelAsyncOperation)p);
+            ((ISocketChannelUnsafe) u).FinishRead((SocketChannelAsyncOperation) p);
         }
 
         protected override bool DoConnect(EndPoint remoteAddress, EndPoint localAddress)
@@ -151,7 +157,7 @@ namespace Helios.Channels.Sockets
 
             new TcpServerSocketChannel Channel
             {
-                get { return (TcpServerSocketChannel)this._channel; }
+                get { return (TcpServerSocketChannel) this._channel; }
             }
 
             public override void FinishRead(SocketChannelAsyncOperation operation)
@@ -268,9 +274,8 @@ namespace Helios.Channels.Sockets
 
             protected override void AutoReadCleared()
             {
-                ((TcpServerSocketChannel)this.Channel).ReadPending = false;
+                ((TcpServerSocketChannel) this.Channel).ReadPending = false;
             }
         }
     }
 }
-

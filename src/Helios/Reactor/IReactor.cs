@@ -78,4 +78,3 @@ namespace Helios.Reactor
         void Dispose(bool disposing);
     }
 }
-

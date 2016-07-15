@@ -17,4 +17,3 @@ namespace Helios.Eventing
         void Invoke(object sender, EventArgs e);
     }
 }
-

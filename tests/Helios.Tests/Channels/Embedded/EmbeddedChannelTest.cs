@@ -176,4 +176,3 @@ namespace Helios.Tests.Channels.Embedded
         }
     }
 }
-

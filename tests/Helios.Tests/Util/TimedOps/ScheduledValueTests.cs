@@ -67,4 +67,3 @@ namespace Helios.Tests.Util.TimedOps
         #endregion
     }
 }
-

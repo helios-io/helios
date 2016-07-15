@@ -23,4 +23,3 @@ namespace Helios.Ops
         IExecutor Next();
     }
 }
-

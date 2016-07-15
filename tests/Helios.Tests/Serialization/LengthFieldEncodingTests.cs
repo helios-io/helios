@@ -118,4 +118,3 @@ namespace Helios.Tests.Serialization
         #endregion
     }
 }
-

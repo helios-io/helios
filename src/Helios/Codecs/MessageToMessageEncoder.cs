@@ -95,4 +95,3 @@ namespace Helios.Codecs
         protected abstract void Encode(IChannelHandlerContext context, T cast, List<object> output);
     }
 }
-

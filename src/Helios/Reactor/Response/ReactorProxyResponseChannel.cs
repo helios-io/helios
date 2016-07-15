@@ -40,4 +40,3 @@ namespace Helios.Reactor.Response
         }
     }
 }
-

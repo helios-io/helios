@@ -33,4 +33,3 @@ namespace Helios.Eventing
         void InvokeEvent(TTopic id, object sender, EventArgs e);
     }
 }
-

@@ -19,4 +19,3 @@ namespace Helios.Channels
         public override IChannelHandler Handler { get; }
     }
 }
-

@@ -8,4 +8,3 @@ namespace Helios.Tests.Concurrency
     {
     }
 }
-
