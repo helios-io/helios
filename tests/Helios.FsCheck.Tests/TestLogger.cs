@@ -48,4 +48,3 @@ namespace Helios.FsCheck.Tests
         }
     }
 }
-

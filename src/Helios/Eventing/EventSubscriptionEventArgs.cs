@@ -21,4 +21,3 @@ namespace Helios.Eventing
         public int SubscriberCount { get; protected set; }
     }
 }
-

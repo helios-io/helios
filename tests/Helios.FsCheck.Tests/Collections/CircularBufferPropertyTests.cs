@@ -107,7 +107,8 @@ namespace Helios.FsCheck.Tests.Collections
             return
                 Gen.Elements(new Command<ICircularBuffer<T>, CModel<T>>[]
                 {
-                    new Allocate(BufferFactory), new EnqueueNoWrapAround(Generator), new EnqueueWithWrapAround(Generator),
+                    new Allocate(BufferFactory), new EnqueueNoWrapAround(Generator),
+                    new EnqueueWithWrapAround(Generator),
                     new Dequeue(), new Size(), new Clear()
                 });
         }
@@ -139,7 +140,7 @@ namespace Helios.FsCheck.Tests.Collections
 
             public override string ToString()
             {
-                return $"new CircularBuffer{typeof (T)}({_listSize.Value})";
+                return $"new CircularBuffer{typeof(T)}({_listSize.Value})";
             }
 
             public override bool Pre(CModel<T> _arg1)
@@ -191,7 +192,7 @@ namespace Helios.FsCheck.Tests.Collections
 
             public override string ToString()
             {
-                return $"CircularBuffer<{typeof (T)}>.EnqueueNoWrapAround({_data.Value})";
+                return $"CircularBuffer<{typeof(T)}>.EnqueueNoWrapAround({_data.Value})";
             }
         }
 
@@ -224,7 +225,7 @@ namespace Helios.FsCheck.Tests.Collections
                 return _arg1 != null // must have called allocate first
                        && _arg1.Items.Any() // must have added at least 1 item to model
                        && _arg1.Items.Count == _arg1.Items.Capacity;
-                    // model size must equal capacity (forces wrap-around)
+                // model size must equal capacity (forces wrap-around)
             }
 
             public override Property Post(ICircularBuffer<T> _arg2, CModel<T> _arg3)
@@ -240,7 +241,7 @@ namespace Helios.FsCheck.Tests.Collections
 
             public override string ToString()
             {
-                return $"CircularBuffer<{typeof (T)}>.EnqueueWithWrapAround({_data.Value})";
+                return $"CircularBuffer<{typeof(T)}>.EnqueueWithWrapAround({_data.Value})";
             }
         }
 
@@ -272,7 +273,7 @@ namespace Helios.FsCheck.Tests.Collections
 
             public override string ToString()
             {
-                return $"CircularBuffer<{typeof (T)}>.Dequeue() => {dequeValue}";
+                return $"CircularBuffer<{typeof(T)}>.Dequeue() => {dequeValue}";
             }
         }
 
@@ -302,7 +303,7 @@ namespace Helios.FsCheck.Tests.Collections
 
             public override string ToString()
             {
-                return $"CircularBuffer<{typeof (T)}>.Size()";
+                return $"CircularBuffer<{typeof(T)}>.Size()";
             }
         }
 
@@ -334,9 +335,8 @@ namespace Helios.FsCheck.Tests.Collections
 
             public override string ToString()
             {
-                return $"CircularBuffer<{typeof (T)}>.Clear()";
+                return $"CircularBuffer<{typeof(T)}>.Clear()";
             }
         }
     }
 }
-

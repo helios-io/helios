@@ -35,4 +35,3 @@ namespace Helios.Channels
         void Flush();
     }
 }
-

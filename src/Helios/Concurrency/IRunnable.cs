@@ -15,4 +15,3 @@ namespace Helios.Concurrency
         void Run();
     }
 }
-

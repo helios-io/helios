@@ -21,7 +21,8 @@ namespace Helios.FsCheck.Tests.Concurrency
         public static readonly int ObjectCount = Environment.ProcessorCount*2;
         private readonly ObjectPool<MyPooledObject> _pool;
 
-        private readonly Func<PoolHandle<MyPooledObject>, MyPooledObject> _producer = handle => new MyPooledObject(handle);
+        private readonly Func<PoolHandle<MyPooledObject>, MyPooledObject> _producer =
+            handle => new MyPooledObject(handle);
 
         public ObjectPoolSpec()
         {
@@ -97,4 +98,3 @@ namespace Helios.FsCheck.Tests.Concurrency
         }
     }
 }
-

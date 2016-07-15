@@ -49,4 +49,3 @@ namespace Helios.Channels
         void InvokeFlush(IChannelHandlerContext ctx);
     }
 }
-

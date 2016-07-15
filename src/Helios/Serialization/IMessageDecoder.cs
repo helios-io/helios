@@ -51,4 +51,3 @@ namespace Helios.Serialization
         }
     }
 }
-

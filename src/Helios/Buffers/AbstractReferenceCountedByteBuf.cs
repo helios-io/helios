@@ -122,4 +122,3 @@ namespace Helios.Buffers
         protected abstract void Deallocate();
     }
 }
-

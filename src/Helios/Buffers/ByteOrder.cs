@@ -13,4 +13,3 @@ namespace Helios.Buffers
         BigEndian = 1
     }
 }
-

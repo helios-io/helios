@@ -181,4 +181,3 @@ namespace Helios.Tests.Util.Collections
         #endregion
     }
 }
-

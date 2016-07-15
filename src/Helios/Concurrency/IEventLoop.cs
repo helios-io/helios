@@ -16,4 +16,3 @@ namespace Helios.Concurrency
         new IEventLoop Unwrap();
     }
 }
-

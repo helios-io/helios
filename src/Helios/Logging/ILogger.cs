@@ -70,4 +70,3 @@ namespace Helios.Logging
         void Log(LogLevel logLevel, string format, params object[] args);
     }
 }
-

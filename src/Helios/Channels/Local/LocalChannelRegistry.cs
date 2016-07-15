@@ -49,4 +49,3 @@ namespace Helios.Channels.Local
         }
     }
 }
-

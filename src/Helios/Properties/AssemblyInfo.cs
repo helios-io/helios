@@ -27,4 +27,3 @@ using System.Runtime.InteropServices;
 [assembly: Guid("523dc8d0-1200-4c1e-b50c-9140bd6748c9")]
 [assembly: InternalsVisibleTo("Helios.FsCheck.Tests")]
 [assembly: InternalsVisibleTo("Helios.Tests")]
-

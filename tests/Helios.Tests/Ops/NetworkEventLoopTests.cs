@@ -46,4 +46,3 @@ namespace Helios.Tests.Ops
         #endregion
     }
 }
-

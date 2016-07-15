@@ -11,4 +11,3 @@ namespace Helios.Channels
     {
     }
 }
-

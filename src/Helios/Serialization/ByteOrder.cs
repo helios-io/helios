@@ -13,4 +13,3 @@ namespace Helios.Serialization
         BigEndian = 1
     }
 }
-

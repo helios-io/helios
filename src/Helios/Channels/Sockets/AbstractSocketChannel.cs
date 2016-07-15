@@ -22,13 +22,13 @@ namespace Helios.Channels.Sockets
         internal static readonly EventHandler<SocketAsyncEventArgs> IoCompletedCallback = OnIoCompleted;
 
         private static readonly Action<object, object> ConnectCallbackAction =
-            (u, e) => ((ISocketChannelUnsafe)u).FinishConnect((SocketChannelAsyncOperation)e);
+            (u, e) => ((ISocketChannelUnsafe) u).FinishConnect((SocketChannelAsyncOperation) e);
 
         private static readonly Action<object, object> ReadCallbackAction =
-            (u, e) => ((ISocketChannelUnsafe)u).FinishRead((SocketChannelAsyncOperation)e);
+            (u, e) => ((ISocketChannelUnsafe) u).FinishRead((SocketChannelAsyncOperation) e);
 
         private static readonly Action<object, object> WriteCallbackAction =
-            (u, e) => ((ISocketChannelUnsafe)u).FinishWrite((SocketChannelAsyncOperation)e);
+            (u, e) => ((ISocketChannelUnsafe) u).FinishWrite((SocketChannelAsyncOperation) e);
 
         protected readonly Socket Socket;
         private SocketChannelAsyncOperation _readOperation;
@@ -82,7 +82,7 @@ namespace Helios.Channels.Sockets
                 }
                 else
                 {
-                    eventLoop.Execute(channel => ((AbstractSocketChannel)channel).ClearReadPending0(), this);
+                    eventLoop.Execute(channel => ((AbstractSocketChannel) channel).ClearReadPending0(), this);
                 }
             }
             else
@@ -112,7 +112,8 @@ namespace Helios.Channels.Sockets
             get { return _readOperation ?? (_readOperation = new SocketChannelAsyncOperation(this, true)); }
         }
 
-        SocketChannelAsyncOperation WriteOperation => _writeOperation ?? (_writeOperation = new SocketChannelAsyncOperation(this, false));
+        SocketChannelAsyncOperation WriteOperation
+            => _writeOperation ?? (_writeOperation = new SocketChannelAsyncOperation(this, false));
 
         public override bool IsOpen
         {
@@ -184,9 +185,9 @@ namespace Helios.Channels.Sockets
         /// <remarks>PORT NOTE: matches behavior of NioEventLoop.processSelectedKey</remarks>
         private static void OnIoCompleted(object sender, SocketAsyncEventArgs args)
         {
-            var operation = (SocketChannelAsyncOperation)args;
+            var operation = (SocketChannelAsyncOperation) args;
             var channel = operation.Channel;
-            var @unsafe = (ISocketChannelUnsafe)channel.Unsafe;
+            var @unsafe = (ISocketChannelUnsafe) channel.Unsafe;
             var eventLoop = channel.EventLoop;
             switch (args.LastOperation)
             {
@@ -340,7 +341,7 @@ namespace Helios.Channels.Sockets
 
             public AbstractSocketChannel Channel
             {
-                get { return (AbstractSocketChannel)_channel; }
+                get { return (AbstractSocketChannel) _channel; }
             }
 
             public sealed override Task ConnectAsync(EndPoint remoteAddress, EndPoint localAddress)
@@ -375,7 +376,7 @@ namespace Helios.Channels.Sockets
                             (c, a) =>
                             {
                                 // todo: make static / cache delegate?..
-                                var self = (AbstractSocketChannel)c;
+                                var self = (AbstractSocketChannel) c;
                                 // todo: call Socket.CancelConnectAsync(...)
                                 var promise = self._connectPromise;
                                 var cause = new ConnectTimeoutException("connection timed out: " + a.ToString());
@@ -392,7 +393,7 @@ namespace Helios.Channels.Sockets
                     ch._connectPromise.Task.ContinueWith(
                         (t, s) =>
                         {
-                            var c = (AbstractSocketChannel)s;
+                            var c = (AbstractSocketChannel) s;
                             if (c._connectCancellationTask != null)
                             {
                                 c._connectCancellationTask.Cancel();
@@ -426,7 +427,7 @@ namespace Helios.Channels.Sockets
                 catch (Exception ex)
                 {
                     var promise = ch._connectPromise;
-                    var remoteAddress = promise == null ? null : (EndPoint)promise.Task.AsyncState;
+                    var remoteAddress = promise == null ? null : (EndPoint) promise.Task.AsyncState;
                     FulfillConnectPromise(AnnotateConnectException(ex, remoteAddress));
                 }
                 finally
@@ -529,4 +530,3 @@ namespace Helios.Channels.Sockets
         }
     }
 }
-

@@ -122,11 +122,11 @@ namespace Helios.Buffers
         {
             unchecked
             {
-                var i1 = _buffer[index]  |
+                var i1 = _buffer[index] |
                          _buffer[index + 1] << 8 |
                          _buffer[index + 2] << 16 |
                          _buffer[index + 3] << 24;
-                var i2 = _buffer[index + 4]  |
+                var i2 = _buffer[index + 4] |
                          _buffer[index + 5] << 8 |
                          _buffer[index + 6] << 16 |
                          _buffer[index + 7] << 24;
@@ -166,7 +166,7 @@ namespace Helios.Buffers
             unchecked
             {
                 _buffer[index] = (byte) ((ushort) value);
-                _buffer[index + 1] = (byte) ((ushort)value >> 8);
+                _buffer[index + 1] = (byte) ((ushort) value >> 8);
             }
             return this;
         }
@@ -238,7 +238,8 @@ namespace Helios.Buffers
             return new ArraySegment<byte>(_buffer, index, length);
         }
 
-        public override ArraySegment<byte>[] GetIoBuffers(int index, int length) => new[] { this.GetIoBuffer(index, length) };
+        public override ArraySegment<byte>[] GetIoBuffers(int index, int length)
+            => new[] {this.GetIoBuffer(index, length)};
 
         public override IByteBuf Unwrap()
         {
@@ -261,4 +262,3 @@ namespace Helios.Buffers
         }
     }
 }
-

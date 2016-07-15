@@ -137,7 +137,5 @@ namespace Helios.Net.Bootstrap
             Validate();
             return BuildInternal();
         }
-
     }
 }
-

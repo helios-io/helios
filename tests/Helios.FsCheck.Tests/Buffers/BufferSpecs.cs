@@ -16,11 +16,11 @@ namespace Helios.FsCheck.Tests.Buffers
     {
         public BufferSpecs()
         {
-            Arb.Register(typeof (BufferGenerators));
+            Arb.Register(typeof(BufferGenerators));
         }
 
         [Theory]
-        [InlineData(typeof (UnpooledByteBufAllocator))]
+        [InlineData(typeof(UnpooledByteBufAllocator))]
         public void Buffer_should_perform_consistent_reads_and_writes(Type allocatorType)
         {
             var allocator = (IByteBufAllocator) Activator.CreateInstance(allocatorType);
@@ -78,7 +78,7 @@ namespace Helios.FsCheck.Tests.Buffers
         }
 
         [Theory]
-        [InlineData(typeof (UnpooledByteBufAllocator))]
+        [InlineData(typeof(UnpooledByteBufAllocator))]
         public void Buffer_should_be_able_to_change_endianness_without_data_corruption(Type allocatorType)
         {
             var allocator = (IByteBufAllocator) Activator.CreateInstance(allocatorType);
@@ -91,7 +91,7 @@ namespace Helios.FsCheck.Tests.Buffers
                     write.Execute(buffer);
 
                 var swappedBuffer = buffer.Copy().WithOrder(ByteOrder.BigEndian);
-                    // have to guarantee different endianness than before, and on a fresh copy
+                // have to guarantee different endianness than before, and on a fresh copy
                 Assert.NotSame(buffer, swappedBuffer);
                 foreach (var write in writes)
                 {
@@ -124,7 +124,7 @@ namespace Helios.FsCheck.Tests.Buffers
         public void Buffer_default_write_int_should_be_little_endian(Type allocatorType)
         {
             Assert.True(BitConverter.IsLittleEndian, "this spec is designed for little endian hardware");
-            var allocator = (IByteBufAllocator)Activator.CreateInstance(allocatorType);
+            var allocator = (IByteBufAllocator) Activator.CreateInstance(allocatorType);
             var writesInLittleEndian = Prop.ForAll<int>(i =>
             {
                 var littleEndianBytes = BitConverter.GetBytes(i);
@@ -141,7 +141,7 @@ namespace Helios.FsCheck.Tests.Buffers
         public void Buffer_default_write_long_should_be_little_endian(Type allocatorType)
         {
             Assert.True(BitConverter.IsLittleEndian, "this spec is designed for little endian hardware");
-            var allocator = (IByteBufAllocator)Activator.CreateInstance(allocatorType);
+            var allocator = (IByteBufAllocator) Activator.CreateInstance(allocatorType);
             var writesInLittleEndian = Prop.ForAll<long>(i =>
             {
                 var littleEndianBytes = BitConverter.GetBytes(i);
@@ -158,7 +158,7 @@ namespace Helios.FsCheck.Tests.Buffers
         public void UnpooledDirectByteBuffer_default_write_short_should_be_little_endian(Type allocatorType)
         {
             Assert.True(BitConverter.IsLittleEndian, "this spec is designed for little endian hardware");
-            var allocator = (IByteBufAllocator)Activator.CreateInstance(allocatorType);
+            var allocator = (IByteBufAllocator) Activator.CreateInstance(allocatorType);
             var writesInLittleEndian = Prop.ForAll<short>(i =>
             {
                 var littleEndianBytes = BitConverter.GetBytes(i);
@@ -183,4 +183,3 @@ namespace Helios.FsCheck.Tests.Buffers
         }
     }
 }
-

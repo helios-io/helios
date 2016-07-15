@@ -55,4 +55,3 @@ namespace Helios.Buffers
         public override ArraySegment<byte> GetIoBuffer(int index, int length) => Unwrap().GetIoBuffer(index, length);
     }
 }
-

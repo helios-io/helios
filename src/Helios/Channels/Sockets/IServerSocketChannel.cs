@@ -9,4 +9,3 @@ namespace Helios.Channels.Sockets
         new IServerSocketChannelConfiguration Configuration { get; }
     }
 }
-

@@ -23,6 +23,7 @@ namespace Helios.Channels
         private static readonly ILogger Logger = LoggingFactory.GetLogger<AbstractChannel>();
 
         private IMessageSizeEstimatorHandle _estimatorHandle;
+
         internal IMessageSizeEstimatorHandle EstimatorHandle
         {
             get
@@ -34,6 +35,7 @@ namespace Helios.Channels
                 return _estimatorHandle;
             }
         }
+
         private readonly IChannelUnsafe _channelUnsafe;
         private readonly DefaultChannelPipeline _pipeline;
         private readonly TaskCompletionSource _closeTask = new TaskCompletionSource();
@@ -50,7 +52,6 @@ namespace Helios.Channels
 
         protected AbstractChannel(IChannel parent) : this(DefaultChannelId.NewInstance(), parent)
         {
-            
         }
 
         protected AbstractChannel(IChannelId id, IChannel parent)
@@ -159,6 +160,7 @@ namespace Helios.Channels
         public IChannelPipeline Pipeline => _pipeline;
         public abstract IChannelConfiguration Configuration { get; }
         public Task CloseCompletion => _closeTask.Task;
+
         public Task DeregisterAsync()
         {
             return _pipeline.DeregisterAsync();
@@ -303,6 +305,7 @@ namespace Helios.Channels
             //}
 
             /* Use static delegates to avoid allocations as best as we can */
+
             public static readonly Action<object> InvokeWritabilityChangedUnsafe =
                 obj => ((IChannel) obj).Pipeline.FireChannelWritabilityChanged();
 
@@ -323,7 +326,6 @@ namespace Helios.Channels
                     }
                 };
                 this.outboundBuffer = new ChannelOutboundBuffer(channel, InvokeWritabilityChanged);
-
             }
 
             public ChannelOutboundBuffer OutboundBuffer
@@ -340,7 +342,9 @@ namespace Helios.Channels
                 }
                 if (!this._channel.IsCompatible(eventLoop))
                 {
-                    return TaskEx.FromException(new InvalidOperationException("incompatible event loop type: " + eventLoop.GetType().Name));
+                    return
+                        TaskEx.FromException(
+                            new InvalidOperationException("incompatible event loop type: " + eventLoop.GetType().Name));
                 }
 
                 // It's necessary to reuse the wrapped eventloop object. Otherwise the user will end up with multiple
@@ -369,7 +373,8 @@ namespace Helios.Channels
                     catch (Exception ex)
                     {
                         Logger.Warning(
-                           "Force-closing a channel whose registration task was not accepted by an event loop: {0}; Cause: {1}", _channel,
+                            "Force-closing a channel whose registration task was not accepted by an event loop: {0}; Cause: {1}",
+                            _channel,
                             ex);
                         CloseForcibly();
                         _channel._closeTask.TryComplete();
@@ -814,7 +819,6 @@ namespace Helios.Channels
             }
         }
 
-
         #endregion
 
         #region PausableChannelEventLoop 
@@ -876,4 +880,3 @@ namespace Helios.Channels
         }
     }
 }
-

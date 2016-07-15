@@ -189,7 +189,7 @@ namespace Helios.FsCheck.Tests.Buffers
 
             public override string ToString()
             {
-                return $"Write<{typeof (T)}>({Data})";
+                return $"Write<{typeof(T)}>({Data})";
             }
         }
 
@@ -421,7 +421,7 @@ namespace Helios.FsCheck.Tests.Buffers
 
             public override string ToString()
             {
-                return $"Read<{typeof (T)}>()";
+                return $"Read<{typeof(T)}>()";
             }
         }
 
@@ -532,4 +532,3 @@ namespace Helios.FsCheck.Tests.Buffers
         }
     }
 }
-

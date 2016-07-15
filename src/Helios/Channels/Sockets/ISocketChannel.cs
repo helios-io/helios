@@ -13,4 +13,3 @@ namespace Helios.Channels.Sockets
         new ISocketChannelConfiguration Configuration { get; }
     }
 }
-

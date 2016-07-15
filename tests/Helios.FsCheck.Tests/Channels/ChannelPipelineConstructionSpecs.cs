@@ -121,4 +121,3 @@ namespace Helios.FsCheck.Tests.Channels
         }
     }
 }
-

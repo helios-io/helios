@@ -26,7 +26,7 @@ namespace Helios.Logging
                 var factory = Volatile.Read(ref _defaultFactory);
                 if (factory == null)
                 {
-                    factory = NewDefaultFactory(typeof (LoggingFactory).FullName);
+                    factory = NewDefaultFactory(typeof(LoggingFactory).FullName);
                     var current = Interlocked.CompareExchange(ref _defaultFactory, factory, null);
                     if (current != null)
                         return current;
@@ -51,7 +51,7 @@ namespace Helios.Logging
 
         public static ILogger GetLogger<T>(params LogLevel[] supportedLogLevels)
         {
-            return GetInstance(typeof (T), supportedLogLevels);
+            return GetInstance(typeof(T), supportedLogLevels);
         }
 
         public static ILogger GetInstance(Type t, params LogLevel[] supportedLogLevels)
@@ -65,4 +65,3 @@ namespace Helios.Logging
         }
     }
 }
-

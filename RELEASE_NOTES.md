@@ -1,3 +1,7 @@
+#### 2.1.2 Jul 14 2016
+* Made DNS resolution configurable - can target IPV4 / IPV6 or any other `AddressFamily`.
+* Caught `ObjectDisposedException`s that are thrown on shutdown so they are no longer logged.
+
 #### 2.1.1 May 27 2016
 * Fixed byte buffers - there were reporting that they were encoding as `LittleEndian`. Turns out they were using `BigEndian`. This has been fixed.
 * Fixed issue with `AbstractDerivedByteBuf` where calling `Retain` would return the original underlying buffer and not the derived buffer.

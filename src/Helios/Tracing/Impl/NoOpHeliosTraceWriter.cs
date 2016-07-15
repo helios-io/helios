@@ -126,4 +126,3 @@ namespace Helios.Tracing.Impl
         }
     }
 }
-

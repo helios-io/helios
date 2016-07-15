@@ -68,7 +68,7 @@ namespace Helios.HorizontalScaling.Tests.Performance.Channels
         private static readonly TimeSpan SaturationThreshold = TimeSpan.FromSeconds(15);
 
         private IReadFinishedSignal _signal;
-        
+
         protected virtual IChannelHandler GetEncoder()
         {
             return new LengthFieldPrepender(4, false);
@@ -111,15 +111,15 @@ namespace Helios.HorizontalScaling.Tests.Performance.Channels
             ClientBootstrap = new ClientBootstrap().Group(ClientGroup)
                 .Option(ChannelOption.TcpNodelay, true)
                 .Channel<TcpSocketChannel>().Handler(new ActionChannelInitializer<TcpSocketChannel>(
-                channel =>
-                {
-                    channel.Pipeline.AddLast(GetEncoder())
-                    .AddLast(GetDecoder())
-                    .AddLast(new IntCodec(true))
-                    .AddLast(new CounterHandlerInbound(_inboundThroughputCounter))
-                    .AddLast(new CounterHandlerOutbound(_outboundThroughputCounter))
-                    .AddLast(new ErrorCounterHandler(_errorCounter));
-                }));
+                    channel =>
+                    {
+                        channel.Pipeline.AddLast(GetEncoder())
+                            .AddLast(GetDecoder())
+                            .AddLast(new IntCodec(true))
+                            .AddLast(new CounterHandlerInbound(_inboundThroughputCounter))
+                            .AddLast(new CounterHandlerOutbound(_outboundThroughputCounter))
+                            .AddLast(new ErrorCounterHandler(_errorCounter));
+                    }));
 
             var token = _shutdownBenchmark.Token;
             _eventLoop = () =>
@@ -151,12 +151,13 @@ namespace Helios.HorizontalScaling.Tests.Performance.Channels
 
             // connect to server with 1 client initially
             _clientChannels.Add(ClientBootstrap.ConnectAsync(_serverChannel.LocalAddress).Result);
-            
         }
 
         private Action _eventLoop;
 
-        [PerfBenchmark(Description = "Measures how quickly and with how much GC overhead a TcpSocketChannel --> TcpServerSocketChannel connection can decode / encode realistic messages",
+        [PerfBenchmark(
+            Description =
+                "Measures how quickly and with how much GC overhead a TcpSocketChannel --> TcpServerSocketChannel connection can decode / encode realistic messages",
             NumberOfIterations = IterationCount, RunMode = RunMode.Iterations)]
         [CounterMeasurement(InboundThroughputCounterName)]
         [CounterMeasurement(OutboundThroughputCounterName)]
@@ -182,11 +183,14 @@ namespace Helios.HorizontalScaling.Tests.Performance.Channels
                 Thread.Sleep(SleepInterval);
                 if (++runCount%10 == 0)
                 {
-                    Console.WriteLine("{0} minutes remaining [{1} connections active].", (due - DateTime.Now).TotalMinutes, runCount);
+                    Console.WriteLine("{0} minutes remaining [{1} connections active].",
+                        (due - DateTime.Now).TotalMinutes, runCount);
                     var saturation = (DateTime.Now - lastMeasure);
                     if (saturation > SaturationThreshold)
                     {
-                        Console.WriteLine("Took {0} to create 10 connections; exceeded pre-defined saturation threshold of {1}. Ending stress test.", saturation, SaturationThreshold);
+                        Console.WriteLine(
+                            "Took {0} to create 10 connections; exceeded pre-defined saturation threshold of {1}. Ending stress test.",
+                            saturation, SaturationThreshold);
                         break;
                     }
                     lastMeasure = DateTime.Now;
@@ -207,7 +211,8 @@ namespace Helios.HorizontalScaling.Tests.Performance.Channels
             }
             Task.WaitAll(shutdownTasks.ToArray());
             CloseChannel(_serverChannel);
-            Task.WaitAll(ClientGroup.ShutdownGracefullyAsync(), ServerGroup.ShutdownGracefullyAsync(), WorkerGroup.ShutdownGracefullyAsync());
+            Task.WaitAll(ClientGroup.ShutdownGracefullyAsync(), ServerGroup.ShutdownGracefullyAsync(),
+                WorkerGroup.ShutdownGracefullyAsync());
         }
 
         private static void CloseChannel(IChannel cc)
@@ -216,4 +221,3 @@ namespace Helios.HorizontalScaling.Tests.Performance.Channels
         }
     }
 }
-

@@ -25,4 +25,3 @@ namespace Helios.FsCheck.Tests.Channels.Sockets
         }
     }
 }
-

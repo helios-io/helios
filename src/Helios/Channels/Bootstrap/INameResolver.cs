@@ -3,6 +3,7 @@
 // See ThirdPartyNotices.txt for references to third party code used inside Helios.
 
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace Helios.Channels.Bootstrap
@@ -12,6 +13,7 @@ namespace Helios.Channels.Bootstrap
         bool IsResolved(EndPoint address);
 
         Task<EndPoint> ResolveAsync(EndPoint address);
+
+        Task<EndPoint> ResolveAsync(EndPoint address, AddressFamily preferredFamily);
     }
 }
-

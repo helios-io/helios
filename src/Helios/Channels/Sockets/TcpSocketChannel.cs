@@ -193,8 +193,16 @@ namespace Helios.Channels.Sockets
             }
 
             SocketError errorCode;
-            var received = Socket.Receive(buf.Array, buf.ArrayOffset + buf.WriterIndex, buf.WritableBytes,
-                SocketFlags.None, out errorCode);
+            int received = 0;
+            try
+            {
+                received = Socket.Receive(buf.Array, buf.ArrayOffset + buf.WriterIndex, buf.WritableBytes,
+                    SocketFlags.None, out errorCode);
+            }
+            catch (ObjectDisposedException)
+            {
+                errorCode = SocketError.Shutdown;
+            }
 
             switch (errorCode)
             {
@@ -210,6 +218,8 @@ namespace Helios.Channels.Sockets
                         return 0;
                     }
                     break;
+                case SocketError.Shutdown:
+                    return -1; // socket was closed
                 default:
                     throw new SocketException((int) errorCode);
             }
@@ -277,10 +287,11 @@ namespace Helios.Channels.Sockets
                         for (int i = this.Configuration.WriteSpinCount - 1; i >= 0; i--)
                         {
                             SocketError errorCode;
-                            int localWrittenBytes = socket.Send(nioBuffer.Array, nioBuffer.Offset, nioBuffer.Count, SocketFlags.None, out errorCode);
+                            int localWrittenBytes = socket.Send(nioBuffer.Array, nioBuffer.Offset, nioBuffer.Count,
+                                SocketFlags.None, out errorCode);
                             if (errorCode != SocketError.Success && errorCode != SocketError.WouldBlock)
                             {
-                                throw new SocketException((int)errorCode);
+                                throw new SocketException((int) errorCode);
                             }
 
                             if (localWrittenBytes == 0)
@@ -304,7 +315,7 @@ namespace Helios.Channels.Sockets
                             long localWrittenBytes = socket.Send(nioBuffers, SocketFlags.None, out errorCode);
                             if (errorCode != SocketError.Success && errorCode != SocketError.WouldBlock)
                             {
-                                throw new SocketException((int)errorCode);
+                                throw new SocketException((int) errorCode);
                             }
 
                             if (localWrittenBytes == 0)
@@ -355,8 +366,7 @@ namespace Helios.Channels.Sockets
             {
             }
 
-            protected override void AutoReadCleared() => ((TcpSocketChannel)this.Channel).ClearReadPending();
+            protected override void AutoReadCleared() => ((TcpSocketChannel) this.Channel).ClearReadPending();
         }
     }
 }
-

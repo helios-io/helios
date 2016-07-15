@@ -22,7 +22,7 @@ namespace Helios.Tests.Codecs
                 Assert.Throws<TooLongFrameException>(() =>
                 {
                     Assert.True(ch.WriteInbound(Unpooled.WrappedBuffer(new byte[] {0, 0})));
-                    Assert.True(false, typeof (DecoderException).Name + " must be raised.");
+                    Assert.True(false, typeof(DecoderException).Name + " must be raised.");
                 });
                 ch.WriteInbound(Unpooled.WrappedBuffer(new byte[] {1, 0, 0, 0, (byte) 'A'}));
                 var buf = ch.ReadInbound<IByteBuf>();
@@ -42,23 +42,19 @@ namespace Helios.Tests.Codecs
             buf.WriteInt(1);
             buf.WriteByte('a');
             var ch = new EmbeddedChannel(
-                new LengthFieldBasedFrameDecoder(16,0,4));
+                new LengthFieldBasedFrameDecoder(16, 0, 4));
 
-            Assert.Throws<TooLongFrameException>(() =>
-            {
-                ch.WriteInbound(buf.ReadSlice(14).Retain());
-            });
+            Assert.Throws<TooLongFrameException>(() => { ch.WriteInbound(buf.ReadSlice(14).Retain()); });
             Assert.True(ch.WriteInbound(buf.ReadSlice(buf.ReadableBytes).Retain()));
             Assert.True(ch.Finish());
 
             var b = ch.ReadInbound<IByteBuf>();
             Assert.Equal(5, b.ReadableBytes);
             Assert.Equal(1, b.ReadInt());
-            Assert.Equal('a', (char)b.ReadByte());
+            Assert.Equal('a', (char) b.ReadByte());
 
             Assert.Null(ch.ReadInbound<IByteBuf>());
             ch.Finish();
         }
     }
 }
-

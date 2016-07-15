@@ -50,4 +50,3 @@ namespace Helios.Topology
         IPEndPoint ToEndPoint();
     }
 }
-

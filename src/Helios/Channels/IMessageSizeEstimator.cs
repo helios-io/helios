@@ -23,4 +23,3 @@ namespace Helios.Channels
         int Size(object obj);
     }
 }
-

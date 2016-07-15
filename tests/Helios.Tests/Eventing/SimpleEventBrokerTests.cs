@@ -129,4 +129,3 @@ namespace Helios.Tests.Eventing
         #endregion
     }
 }
-

@@ -390,7 +390,7 @@ namespace Helios.Channels
                     break;
                 }
 
-                var buf = (IByteBuf)msg;
+                var buf = (IByteBuf) msg;
                 int readerIndex = buf.ReaderIndex;
                 int readableBytes = buf.WriterIndex - readerIndex;
 
@@ -407,7 +407,7 @@ namespace Helios.Channels
                     // readableBytes > writtenBytes
                     if (writtenBytes != 0)
                     {
-                        buf.SetReaderIndex(readerIndex + (int)writtenBytes);
+                        buf.SetReaderIndex(readerIndex + (int) writtenBytes);
                     }
                     break;
                 }
@@ -437,7 +437,7 @@ namespace Helios.Channels
             {
                 if (!entry.Cancelled)
                 {
-                    var buf = (IByteBuf)entry.Message;
+                    var buf = (IByteBuf) entry.Message;
                     int readerIndex = buf.ReaderIndex;
                     int readableBytes = buf.WriterIndex - readerIndex;
 
@@ -572,7 +572,7 @@ namespace Helios.Channels
                 Promise = null;
                 Count = -1;
                 Cancelled = false;
-               handle.Free(this);
+                handle.Free(this);
             }
 
             public Entry RecycleAndGetNext()
@@ -592,4 +592,3 @@ namespace Helios.Channels
         }
     }
 }
-

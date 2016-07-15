@@ -12,7 +12,7 @@ namespace Helios.Channels.Sockets
     public abstract class AbstractSocketByteChannel : AbstractSocketChannel
     {
         private static readonly string ExpectedTypes =
-            string.Format(" (expected: {0})", typeof (IByteBuf).Name); //+ ", " +
+            string.Format(" (expected: {0})", typeof(IByteBuf).Name); //+ ", " +
 
         private static readonly Action<object> FlushAction = _ => ((AbstractSocketByteChannel) _).Flush();
         private static readonly Action<object, object> ReadCompletedSyncCallback = OnReadCompletedSync;
@@ -154,7 +154,7 @@ namespace Helios.Channels.Sockets
 
                 if (!pending)
                 {
-                    ((ISocketChannelUnsafe)this.Unsafe).FinishWrite(operation);
+                    ((ISocketChannelUnsafe) this.Unsafe).FinishWrite(operation);
                 }
             }
             else
@@ -318,4 +318,3 @@ namespace Helios.Channels.Sockets
         }
     }
 }
-

@@ -86,4 +86,3 @@ namespace Helios.Benchmark.DedicatedThreadFiber
         }
     }
 }
-

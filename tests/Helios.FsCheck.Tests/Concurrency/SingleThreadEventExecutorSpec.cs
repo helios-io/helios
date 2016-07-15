@@ -50,4 +50,3 @@ namespace Helios.FsCheck.Tests.Concurrency
         }
     }
 }
-

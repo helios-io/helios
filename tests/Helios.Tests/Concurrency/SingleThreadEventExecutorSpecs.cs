@@ -92,4 +92,3 @@ namespace Helios.Tests.Concurrency
         }
     }
 }
-

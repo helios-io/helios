@@ -11,4 +11,3 @@ namespace Helios.FsCheck.Tests.Channels.Sockets.Models
         Shutdown = 1 << 3
     }
 }
-

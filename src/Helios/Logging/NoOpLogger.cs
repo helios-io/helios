@@ -11,7 +11,7 @@ namespace Helios.Logging
     {
         public static NoOpLogger Instance = new NoOpLogger();
 
-        private NoOpLogger() : base(typeof (NoOpLogger).FullName, new LogLevel[0])
+        private NoOpLogger() : base(typeof(NoOpLogger).FullName, new LogLevel[0])
         {
         }
 
@@ -33,4 +33,3 @@ namespace Helios.Logging
         }
     }
 }
-
