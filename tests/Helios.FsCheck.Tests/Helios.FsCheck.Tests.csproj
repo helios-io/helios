@@ -89,6 +89,7 @@
     <Compile Include="Channels\Sockets\DnsResolutionAndBindingSpec.cs" />
     <Compile Include="Channels\Sockets\Models\TcpServerSocketModelComparer.cs" />
     <Compile Include="Channels\Sockets\TcpSocketServerSpecs.cs" />
+    <Compile Include="Collections\PriorityQueueSpecs.cs" />
     <Compile Include="HeliosModelHelpers.cs" />
     <Compile Include="Channels\ChannelOutboundBufferSpecs.cs" />
     <Compile Include="Channels\ChannelPipelineInvocationSpecs.cs" />

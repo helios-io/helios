@@ -12,9 +12,9 @@ using Helios.Util.Collections;
 
 namespace Helios.FsCheck.Tests.Collections
 {
-    public class CircularBufferTests
+    public class CircularBufferSpecs
     {
-        public CircularBufferTests()
+        public CircularBufferSpecs()
         {
             Arb.Register<HeliosGenerators>();
         }

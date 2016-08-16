@@ -9,9 +9,17 @@ cd `dirname ${SCRIPT_PATH}` > /dev/null
 SCRIPT_PATH=`pwd`;
 popd  > /dev/null
 
+if ! [ -f $SCRIPT_PATH/.nuget/nuget.exe ] 
+    then
+        wget "https://www.nuget.org/nuget.exe" -P $SCRIPT_PATH/.nuget/
+fi
+
+mono $SCRIPT_PATH/.nuget/nuget.exe update -self
 mono $SCRIPT_PATH/.nuget/NuGet.exe install FAKE -OutputDirectory $SCRIPT_PATH/packages -ExcludeVersion -Version 4.9.1
-mono $SCRIPT_PATH/.nuget/NuGet.exe install NBench.Runner -OutputDirectory $SCRIPT_PATH/packages -ExcludeVersion -Version 0.3.0
-mono $SCRIPT_PATH/.nuget/nuget.exe install xunit.runners -OutputDirectory $SCRIPT_PATH/packages/FAKE -ExcludeVersion -Version 2.1.0
+
+mono $SCRIPT_PATH/.nuget/NuGet.exe install NBench.Runner -OutputDirectory $SCRIPT_PATH/packages -ExcludeVersion -Version 0.3.1
+
+mono $SCRIPT_PATH/.nuget/nuget.exe install xunit.runner.console -OutputDirectory $SCRIPT_PATH/packages/FAKE -ExcludeVersion -Version 2.1.0
 
 if ! [ -e $SCRIPT_PATH/packages/SourceLink.Fake/tools/SourceLink.fsx ] ; then
 	mono $SCRIPT_PATH/.nuget/NuGet.exe install SourceLink.Fake -OutputDirectory $SCRIPT_PATH/packages -ExcludeVersion
