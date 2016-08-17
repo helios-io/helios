@@ -1,3 +1,9 @@
+#### 2.1.3 Aug 18 2016
+* Full Mono support now available for Helios 2.x.
+* Improved exception logging inside `TcpSocketChannel` and others.
+
+You can see the [full set of changes for Helios 2.1.3 here](https://github.com/helios-io/helios/milestone/3).
+
 #### 2.1.2 Jul 14 2016
 * Made DNS resolution configurable - can target IPV4 / IPV6 or any other `AddressFamily`.
 * Caught `ObjectDisposedException`s that are thrown on shutdown so they are no longer logged.
