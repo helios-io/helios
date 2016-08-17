@@ -158,7 +158,7 @@ namespace Helios.HorizontalScaling.Tests.Performance.Channels
         [PerfBenchmark(
             Description =
                 "Measures how quickly and with how much GC overhead a TcpSocketChannel --> TcpServerSocketChannel connection can decode / encode realistic messages",
-            NumberOfIterations = IterationCount, RunMode = RunMode.Iterations)]
+            NumberOfIterations = IterationCount, RunMode = RunMode.Iterations, SkipWarmups = true)]
         [CounterMeasurement(InboundThroughputCounterName)]
         [CounterMeasurement(OutboundThroughputCounterName)]
         [CounterMeasurement(ClientConnectCounterName)]
@@ -168,7 +168,7 @@ namespace Helios.HorizontalScaling.Tests.Performance.Channels
         public void TcpServerSocketChannel_horizontal_scale_stress_test(BenchmarkContext context)
         {
             _clientConnectedCounter.Increment(); // for the initial client
-            var totalRunSeconds = TimeSpan.FromSeconds(ThreadLocalRandom.Current.Next(180, 360)); // 3-6 minutes
+            var totalRunSeconds = TotalRunSeconds;
             Console.WriteLine("Running benchmark for {0} minutes", totalRunSeconds.TotalMinutes);
             var deadline = new PreciseDeadline(totalRunSeconds);
             var due = DateTime.Now + totalRunSeconds;
@@ -198,6 +198,8 @@ namespace Helios.HorizontalScaling.Tests.Performance.Channels
             }
             _shutdownBenchmark.Cancel();
         }
+
+        private static TimeSpan TotalRunSeconds => TimeSpan.FromMinutes(4);
 
 
         [PerfCleanup]

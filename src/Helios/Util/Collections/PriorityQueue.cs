@@ -10,19 +10,18 @@ using System.Diagnostics.Contracts;
 namespace Helios.Util.Collections
 {
     public class PriorityQueue<T> : IEnumerable<T>
-        where T : class
     {
-        private readonly IComparer<T> comparer;
-        private int capacity;
-        private T[] items;
+        private readonly IComparer<T> _comparer;
+        private int _capacity;
+        private T[] _items;
 
         public PriorityQueue(IComparer<T> comparer)
         {
             Contract.Requires(comparer != null);
 
-            this.comparer = comparer;
-            capacity = 11;
-            items = new T[capacity];
+            this._comparer = comparer;
+            _capacity = 11;
+            _items = new T[_capacity];
         }
 
         public PriorityQueue()
@@ -32,11 +31,15 @@ namespace Helios.Util.Collections
 
         public int Count { get; private set; }
 
+        /// <summary>
+        /// TODO: need to make this return the priority queue contents in the correct order
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator<T> GetEnumerator()
         {
             for (var i = 0; i < Count; i++)
             {
-                yield return items[i];
+                yield return _items[i];
             }
         }
 
@@ -50,12 +53,12 @@ namespace Helios.Util.Collections
             var result = Peek();
             if (result == null)
             {
-                return null;
+                return default(T);
             }
 
             var newCount = --Count;
-            var lastItem = items[newCount];
-            items[newCount] = null;
+            var lastItem = _items[newCount];
+            _items[newCount] = default(T);
             if (newCount > 0)
             {
                 TrickleDown(0, lastItem);
@@ -66,7 +69,7 @@ namespace Helios.Util.Collections
 
         public T Peek()
         {
-            return Count == 0 ? null : items[0];
+            return Count == 0 ? default(T) : _items[0];
         }
 
         public void Enqueue(T item)
@@ -74,7 +77,7 @@ namespace Helios.Util.Collections
             Contract.Requires(item != null);
 
             var oldCount = Count;
-            if (oldCount == capacity)
+            if (oldCount == _capacity)
             {
                 GrowHeap();
             }
@@ -84,7 +87,7 @@ namespace Helios.Util.Collections
 
         public void Remove(T item)
         {
-            var index = Array.IndexOf(items, item);
+            var index = Array.IndexOf(_items, item);
             if (index == -1)
             {
                 return;
@@ -93,14 +96,14 @@ namespace Helios.Util.Collections
             Count--;
             if (index == Count)
             {
-                items[index] = default(T);
+                _items[index] = default(T);
             }
             else
             {
-                var last = items[Count];
-                items[Count] = default(T);
+                var last = _items[Count];
+                _items[Count] = default(T);
                 TrickleDown(index, last);
-                if (items[index] == last)
+                if (Equals(_items[index], last))
                 {
                     BubbleUp(index, last);
                 }
@@ -113,24 +116,24 @@ namespace Helios.Util.Collections
             while (index > 0)
             {
                 var parentIndex = (index - 1) >> 1;
-                var parentItem = items[parentIndex];
-                if (comparer.Compare(item, parentItem) >= 0)
+                var parentItem = _items[parentIndex];
+                if (_comparer.Compare(item, parentItem) >= 0)
                 {
                     break;
                 }
-                items[index] = parentItem;
+                _items[index] = parentItem;
                 index = parentIndex;
             }
-            items[index] = item;
+            _items[index] = item;
         }
 
         private void GrowHeap()
         {
-            var oldCapacity = capacity;
-            capacity = oldCapacity + (oldCapacity <= 64 ? oldCapacity + 2 : oldCapacity >> 1);
-            var newHeap = new T[capacity];
-            Array.Copy(items, 0, newHeap, 0, Count);
-            items = newHeap;
+            var oldCapacity = _capacity;
+            _capacity = oldCapacity + (oldCapacity <= 64 ? oldCapacity + 2 : oldCapacity >> 1);
+            var newHeap = new T[_capacity];
+            Array.Copy(_items, 0, newHeap, 0, Count);
+            _items = newHeap;
         }
 
         private void TrickleDown(int index, T item)
@@ -139,28 +142,28 @@ namespace Helios.Util.Collections
             while (index < middleIndex)
             {
                 var childIndex = (index << 1) + 1;
-                var childItem = items[childIndex];
+                var childItem = _items[childIndex];
                 var rightChildIndex = childIndex + 1;
                 if (rightChildIndex < Count
-                    && comparer.Compare(childItem, items[rightChildIndex]) > 0)
+                    && _comparer.Compare(childItem, _items[rightChildIndex]) > 0)
                 {
                     childIndex = rightChildIndex;
-                    childItem = items[rightChildIndex];
+                    childItem = _items[rightChildIndex];
                 }
-                if (comparer.Compare(item, childItem) <= 0)
+                if (_comparer.Compare(item, childItem) <= 0)
                 {
                     break;
                 }
-                items[index] = childItem;
+                _items[index] = childItem;
                 index = childIndex;
             }
-            items[index] = item;
+            _items[index] = item;
         }
 
         public void Clear()
         {
             Count = 0;
-            Array.Clear(items, 0, 0);
+            Array.Clear(_items, 0, 0);
         }
     }
 }

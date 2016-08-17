@@ -241,7 +241,7 @@ namespace Helios.FsCheck.Tests.Concurrency
                 var delayQueue = new ConcurrentQueue<Tuple<int, TimeSpan>>();
                 var initialDelay = TimeSpan.FromMilliseconds(20).Ticks;
                 var nextDelay = initialDelay;
-                long incrementFactor = 10;
+                long incrementFactor = TimeSpan.FromMilliseconds(20).Ticks;
                 foreach (var set in Sets)
                 {
                     delayQueue.Enqueue(new Tuple<int, TimeSpan>(set, new TimeSpan(nextDelay)));
@@ -276,6 +276,11 @@ namespace Helios.FsCheck.Tests.Concurrency
             public override CounterModel Run(CounterModel obj0)
             {
                 return obj0.Next(Last);
+            }
+
+            public override string ToString()
+            {
+                return $"ScheduledSet(Sets=[{string.Join(";", Sets)}], Expected={Last})";
             }
         }
 

@@ -377,7 +377,7 @@ namespace Helios.Channels
 
         /// <summary>
         ///     Removes the fully written entries and update the reader index of the partially written entry.
-        ///     This operation assumes all messages in this buffer is {@link ByteBuf}.
+        ///     This operation assumes all messages in this buffer is <see cref="IByteBuf"/>.
         /// </summary>
         public void RemoveBytes(long writtenBytes)
         {
