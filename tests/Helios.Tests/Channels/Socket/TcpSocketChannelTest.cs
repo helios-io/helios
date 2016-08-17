@@ -26,6 +26,9 @@ namespace Helios.Tests.Channels.Socket
         [Fact]
         public void TcpSocketChannel_Flush_should_not_be_reentrant_after_Close()
         {
+            // Skip for Mono due to Code Contracts assertions not working properly there
+            if (MonotonicClock.IsMono) return;
+
             var eventLoopGroup = new MultithreadEventLoopGroup(1);
             try
             {

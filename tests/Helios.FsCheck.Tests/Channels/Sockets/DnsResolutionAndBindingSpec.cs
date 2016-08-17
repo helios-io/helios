@@ -11,6 +11,7 @@ using Helios.Buffers;
 using Helios.Channels;
 using Helios.Channels.Bootstrap;
 using Helios.Channels.Sockets;
+using Helios.Util;
 using Xunit;
 
 namespace Helios.FsCheck.Tests.Channels.Sockets
@@ -46,6 +47,8 @@ namespace Helios.FsCheck.Tests.Channels.Sockets
         {
             Arb.Register(typeof(EndpointGenerators));
         }
+
+        public static readonly bool IsMono = MonotonicClock.IsMono;
 
         public static EndPoint MappingToEndpoint(IpMapping map)
         {
@@ -84,13 +87,19 @@ namespace Helios.FsCheck.Tests.Channels.Sockets
             var inboundAlias = MappingToEndpoint(alias);
             var isIp = inboundAlias is IPEndPoint;
 
+            if (IsMono && family == AddressFamily.InterNetworkV6)
+            {
+                Assert.True(true, "Mono currently does not support IPV6 in DNS resolution");
+                return;
+            }
+
 
             IChannel s = null;
             IChannel c = null;
             try
             {
                 var sb = new ServerBootstrap()
-                    .Channel<TcpServerSocketChannel>()
+                    .ChannelFactory(() => new TcpServerSocketChannel())
                     .PreferredDnsResolutionFamily(family)
                     .ChildHandler(new ActionChannelInitializer<TcpSocketChannel>(channel => { }))
                     .Group(_serverGroup);
@@ -99,7 +108,7 @@ namespace Helios.FsCheck.Tests.Channels.Sockets
 
 
                 var cb = new ClientBootstrap()
-                    .Channel<TcpSocketChannel>()
+                    .ChannelFactory(() => new TcpSocketChannel())
                     .Option(ChannelOption.TcpNodelay, true)
                     .Option(ChannelOption.ConnectTimeout, TimeSpan.FromMilliseconds(100))
                     .PreferredDnsResolutionFamily(family)
@@ -134,11 +143,20 @@ namespace Helios.FsCheck.Tests.Channels.Sockets
         public Property TcpSocketServerChannel_can_bind_on_any_valid_EndPoint(EndPoint ep)
         {
             IChannel c = null;
+            var family = ep.BestAddressFamily();
+
+            // TODO: remove this code once https://bugzilla.xamarin.com/show_bug.cgi?id=35536 is fixed
+            if (IsMono && family == AddressFamily.InterNetworkV6 && ep is DnsEndPoint)
+            {
+                family = AddressFamily.InterNetwork;
+            }
+
             try
             {
                 var sb = new ServerBootstrap()
-                    .Channel<TcpServerSocketChannel>()
+                    .ChannelFactory(() => new TcpServerSocketChannel(family))
                     .ChildHandler(new ActionChannelInitializer<TcpSocketChannel>(channel => { }))
+                    .PreferredDnsResolutionFamily(family)
                     .Group(_serverGroup);
 
                 c = sb.BindAsync(ep).Result;
@@ -155,23 +173,32 @@ namespace Helios.FsCheck.Tests.Channels.Sockets
         public Property TcpServerSocketChannel_can_accept_connection_on_any_valid_Endpoint(EndPoint ep)
         {
             var ip = ep as IPEndPoint;
+            var family = ep.BestAddressFamily();
 
+            // TODO: remove this code once https://bugzilla.xamarin.com/show_bug.cgi?id=35536 is fixed
+
+            if (IsMono && family == AddressFamily.InterNetworkV6 && ep is DnsEndPoint)
+            {
+                family = AddressFamily.InterNetwork;
+            }
 
             IChannel s = null;
             IChannel c = null;
             try
             {
                 var sb = new ServerBootstrap()
-                    .Channel<TcpServerSocketChannel>()
+                    .ChannelFactory(() => new TcpServerSocketChannel(family))
                     .ChildHandler(new ActionChannelInitializer<TcpSocketChannel>(channel => { }))
+                    .PreferredDnsResolutionFamily(family)
                     .Group(_serverGroup);
 
                 s = sb.BindAsync(ep).Result;
 
                 var cb = new ClientBootstrap()
-                    .Channel<TcpSocketChannel>()
+                    .ChannelFactory(() => new TcpSocketChannel(family))
                     .Option(ChannelOption.TcpNodelay, true)
                     .Option(ChannelOption.ConnectTimeout, TimeSpan.FromMilliseconds(100))
+                    .PreferredDnsResolutionFamily(family)
                     .Handler(new ActionChannelInitializer<TcpSocketChannel>(channel => { }))
                     .Group(_clientGroup);
 

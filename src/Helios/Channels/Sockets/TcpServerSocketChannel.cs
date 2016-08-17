@@ -220,7 +220,7 @@ namespace Helios.Channels.Sockets
                         var asSocketException = ex as SocketException;
                         if (asSocketException == null || asSocketException.SocketErrorCode != SocketError.WouldBlock)
                         {
-                            Logger.Warning("Failed to create a new channel from an accepted socket.", ex);
+                            Logger.Warning(ex, "Failed to create a new channel from an accepted socket.");
                             if (connectedSocket != null)
                             {
                                 try
@@ -229,7 +229,7 @@ namespace Helios.Channels.Sockets
                                 }
                                 catch (Exception ex2)
                                 {
-                                    Logger.Warning("Failed to close a socket.", ex2);
+                                    Logger.Warning(ex2, "Failed to close a socket.");
                                 }
                             }
                             exception = ex;

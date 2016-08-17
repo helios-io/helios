@@ -591,7 +591,7 @@ namespace Helios.Channels
                 }
                 catch (Exception e)
                 {
-                    Logger.Warning("Failed to close a channel. Cause: {0}", e);
+                    Logger.Warning(e, "Failed to close a channel.");
                 }
             }
 

@@ -180,6 +180,7 @@
     <Compile Include="Util\Concurrency\TaskEx.cs" />
     <Compile Include="Util\FastThreadLocal.cs" />
     <Compile Include="Util\InternalThreadLocalMap.cs" />
+    <Compile Include="Util\IpHelper.cs" />
     <Compile Include="Util\MonotonicClock.cs" />
     <Compile Include="Util\ObjectPool.cs" />
     <Compile Include="Util\RecyclableArrayList.cs" />

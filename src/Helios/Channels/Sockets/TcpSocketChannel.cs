@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -273,7 +274,7 @@ namespace Helios.Channels.Sockets
                 long expectedWrittenBytes = input.NioBufferSize;
                 Socket socket = this.Socket;
 
-                // Always us nioBuffers() to workaround data-corruption.
+                // Always use nioBuffers() to workaround data-corruption.
                 // See https://github.com/netty/netty/issues/2761
                 switch (nioBufferCnt)
                 {
@@ -317,7 +318,6 @@ namespace Helios.Channels.Sockets
                             {
                                 throw new SocketException((int) errorCode);
                             }
-
                             if (localWrittenBytes == 0)
                             {
                                 setOpWrite = true;
@@ -334,20 +334,19 @@ namespace Helios.Channels.Sockets
                         break;
                 }
 
+
+                // Release the fully written buffers, and update the indexes of the partially written buffer.
+                input.RemoveBytes(writtenBytes);
+
                 if (!done)
                 {
                     SocketChannelAsyncOperation asyncOperation = this.PrepareWriteOperation(nioBuffers);
-
-                    // Release the fully written buffers, and update the indexes of the partially written buffer.
-                    input.RemoveBytes(writtenBytes);
 
                     // Did not write all buffers completely.
                     this.IncompleteWrite(setOpWrite, asyncOperation);
                     break;
                 }
 
-                // Release the fully written buffers, and update the indexes of the partially written buffer.
-                input.RemoveBytes(writtenBytes);
             }
         }
 

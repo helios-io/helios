@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Helios.Util
@@ -14,7 +15,7 @@ namespace Helios.Util
 
         private const long NanosPerTick = 100;
         private static readonly Stopwatch Stopwatch = Stopwatch.StartNew();
-        private static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;
+        internal static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;
 
         public static TimeSpan Elapsed
         {
@@ -29,6 +30,7 @@ namespace Helios.Util
         [DllImport("kernel32")]
         private static extern ulong GetTickCount64();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long GetMilliseconds()
         {
             return IsMono
@@ -41,6 +43,7 @@ namespace Helios.Util
             return GetTicks()*NanosPerTick;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long GetTicks()
         {
             return GetMilliseconds()*TicksInMillisecond;

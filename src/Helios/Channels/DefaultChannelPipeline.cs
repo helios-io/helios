@@ -749,10 +749,9 @@ namespace Helios.Channels
             {
                 try
                 {
-                    Logger.Warning(
+                    Logger.Warning(exception,
                         "An ExceptionCaught() event was fired, and it reached at the tail of the pipeline. " +
-                        "It usually means that no handler in the pipeline could handle the exception. Ex: {0}",
-                        exception);
+                        "It usually means that no handler in the pipeline could handle the exception.");
                 }
                 finally
                 {
