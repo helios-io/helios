@@ -354,6 +354,11 @@ namespace Helios.Reactor
                 return TaskRunner.Run(() => Send(payload));
             }
 
+			public void SetKeepAliveTimeouts(bool enabled, uint timeMs, uint intervalMs)
+			{
+				throw new InvalidOperationException("Cannot set KeepAlive timeouts on ReactorBase");
+			}
+
             #region IDisposable methods
 
             public void Dispose()

@@ -248,12 +248,14 @@ namespace Helios.Net.Connections
             return string.Format("{0}/{1}", Binding, Created);
         }
 
-        #region IDisposable members
+		public abstract void SetKeepAliveTimeouts(bool enabled, uint timeMs, uint intervalMs);
 
-        /// <summary>
-        /// Prevents disposed connections from being re-used again
-        /// </summary>
-        protected void CheckWasDisposed()
+		#region IDisposable members
+
+		/// <summary>
+		/// Prevents disposed connections from being re-used again
+		/// </summary>
+		protected void CheckWasDisposed()
         {
             if (WasDisposed)
                 throw new ObjectDisposedException("connection has been disposed of");

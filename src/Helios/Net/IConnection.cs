@@ -64,7 +64,9 @@ namespace Helios.Net
 
         INode Local { get; }
 
-        TimeSpan Timeout { get; }
+		void SetKeepAliveTimeouts(bool enabled, uint timeMs, uint intervalMs);
+
+		TimeSpan Timeout { get; }
 
         TransportType Transport { get; }
 

@@ -253,13 +253,17 @@ namespace Helios.Net.Connections
             }
         }
 
+		public override void SetKeepAliveTimeouts(bool enabled, uint timeMs, uint intervalMs)
+		{
+			throw new InvalidOperationException("Cannot set KeepAlive timeouts on UdpConnection");
+		}
 
-        #endregion
+		#endregion
 
-        #region Internal members
+		#region Internal members
 
 
-        protected void InitClient()
+		protected void InitClient()
         {
             Client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp) { MulticastLoopback = false };
             RemoteEndpoint = new IPEndPoint(IPAddress.Any, 0);

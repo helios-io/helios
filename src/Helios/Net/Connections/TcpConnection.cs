@@ -352,5 +352,16 @@ namespace Helios.Net.Connections
             var localEndpoint = (IPEndPoint)client.LocalEndPoint;
             Local = NodeBuilder.FromEndpoint(localEndpoint);
         }
-    }
+
+		public override void SetKeepAliveTimeouts(bool enabled, uint timeMs, uint intervalMs)
+		{
+			//IOControl needs an array of 3 UINT values as such:
+			byte[] keepAliveValues = new byte[12];
+			Array.Copy(BitConverter.GetBytes(enabled ? 1 : 0), 0, keepAliveValues, 0, 4);   //UINT #1 = enable on/off
+			Array.Copy(BitConverter.GetBytes(timeMs), 0, keepAliveValues, 4, 4);            //UINT #2 = timespan for each Keep Alive packet
+			Array.Copy(BitConverter.GetBytes(intervalMs), 0, keepAliveValues, 8, 4);        //UINT #3 = timespan after first failed (unanswered) Keep Alive
+																							//NOTE: the one thing we do not seem to control is the RETRY count, which appears to be fixed at 9 on my machine - jkh
+			_client.IOControl(IOControlCode.KeepAliveValues, keepAliveValues, null);
+		}
+	}
 }
